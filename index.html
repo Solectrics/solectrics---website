@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Solectrics | Smart Solar Living</title>
+
+<meta
+name="description"
+content="Solectrics provides practical, locally focused solar and home energy solutions on Waiheke Island and throughout New Zealand."
+>
+
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: Arial, Helvetica, sans-serif;
+color: #17332d;
+background: #ffffff;
+line-height: 1.6;
+}
+
+header {
+background: #ffffff;
+border-bottom: 1px solid #e7ece9;
+padding: 20px 7%;
+display: flex;
+justify-content: space-between;
+align-items: center;
+position: sticky;
+top: 0;
+z-index: 10;
+}
+
+.brand {
+font-size: 28px;
+font-weight: 700;
+letter-spacing: -1px;
+color: #17332d;
+}
+
+.brand span {
+color: #edae31;
+}
+
+nav a {
+color: #17332d;
+text-decoration: none;
+margin-left: 24px;
+font-size: 15px;
+}
+
+.hero {
+min-height: 72vh;
+display: flex;
+align-items: center;
+padding: 80px 7%;
+background:
+linear-gradient(135deg, rgba(237,174,49,0.16), rgba(60,135,108,0.10)),
+#f7faf7;
+}
+
+.hero-content {
+max-width: 780px;
+}
+
+.eyebrow {
+color: #3c876c;
+text-transform: uppercase;
+letter-spacing: 2px;
+font-size: 14px;
+font-weight: 700;
+margin-bottom: 14px;
+}
+
+h1 {
+font-size: clamp(44px, 7vw, 82px);
+line-height: 1.02;
+letter-spacing: -3px;
+margin-bottom: 26px;
+color: #17332d;
+}
+
+h1 span {
+color: #edae31;
+}
+
+.hero p {
+font-size: 21px;
+max-width: 690px;
+color: #49615b;
+margin-bottom: 34px;
+}
+
+.button {
+display: inline-block;
+background: #17332d;
+color: #ffffff;
+text-decoration: none;
+padding: 14px 24px;
+border-radius: 6px;
+font-weight: 700;
+margin-right: 10px;
+margin-bottom: 10px;
+}
+
+.button.secondary {
+background: transparent;
+border: 1px solid #17332d;
+color: #17332d;
+}
+
+section {
+padding: 80px 7%;
+}
+
+.section-title {
+max-width: 700px;
+margin-bottom: 45px;
+}
+
+.section-title h2 {
+font-size: 38px;
+line-height: 1.15;
+margin-bottom: 14px;
+color: #17332d;
+}
+
+.section-title p {
+color: #63736f;
+font-size: 18px;
+}
+
+.services {
+background: #ffffff;
+}
+
+.cards {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 22px;
+}
+
+.card {
+background: #f6f8f6;
+padding: 30px;
+border-radius: 10px;
+border: 1px solid #e7ece9;
+}
+
+.card-number {
+color: #edae31;
+font-weight: 700;
+font-size: 14px;
+margin-bottom: 14px;
+}
+
+.card h3 {
+font-size: 22px;
+margin-bottom: 12px;
+}
+
+.card p {
+color: #63736f;
+}
+
+.why {
+background: #17332d;
+color: white;
+}
+
+.why .section-title h2 {
+color: white;
+}
+
+.why .section-title p {
+color: #d9e3df;
+}
+
+.why-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 30px;
+}
+
+.why-item h3 {
+color: #edae31;
+font-size: 21px;
+margin-bottom: 10px;
+}
+
+.why-item p {
+color: #d9e3df;
+}
+
+.smart {
+background: #f3f7f4;
+}
+
+.smart-box {
+max-width: 900px;
+padding: 40px;
+background: white;
+border-left: 5px solid #edae31;
+border-radius: 8px;
+}
+
+.smart-box h2 {
+font-size: 34px;
+margin-bottom: 15px;
+}
+
+.smart-box p {
+color: #596c66;
+font-size: 18px;
+margin-bottom: 16px;
+}
+
+.contact {
+text-align: center;
+padding-top: 90px;
+padding-bottom: 90px;
+}
+
+.contact h2 {
+font-size: 42px;
+margin-bottom: 16px;
+}
+
+.contact p {
+color: #63736f;
+font-size: 18px;
+margin-bottom: 28px;
+}
+
+footer {
+background: #102823;
+color: #c9d6d2;
+padding: 30px 7%;
+text-align: center;
+font-size: 14px;
+}
+
+@media (max-width: 800px) {
+header {
+padding: 18px 5%;
+}
+
+nav {
+display: none;
+}
+
+.hero,
+section {
+padding-left: 6%;
+padding-right: 6%;
+}
+
+.cards,
+.why-grid {
+grid-template-columns: 1fr;
+}
+
+h1 {
+letter-spacing: -2px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="brand">sol<span>e</span>ctrics</div>
+
+<nav>
+<a href="#services">Solar</a>
+<a href="#smart">Smart Energy</a>
+<a href="#why">Why Solectrics</a>
+<a href="#contact">Contact</a>
+</nav>
+</header>
+
+<main>
+
+<section class="hero">
+<div class="hero-content">
+<div class="eyebrow">Waiheke Island • New Zealand</div>
+
+<h1>Smart Solar <span>Living.</span></h1>
+
+<p>
+Practical solar, battery and home-energy solutions designed around
+how you actually live — helping you use more of your own clean energy
+and buy less from the grid.
+</p>
+
+<a class="button" href="mailto:jane@solectrics.co.nz?subject=Solectrics%20solar%20enquiry">
+Talk to us about solar
+</a>
+
+<a class="button secondary" href="#services">
+Explore your options
+</a>
+</div>
+</section>
+
+
+<section class="services" id="services">
+<div class="section-title">
+<h2>A solar system should fit the household — not the other way around.</h2>
+
+<p>
+We help homeowners understand the choices clearly, from simple
+grid-connected solar through to batteries, backup power and smarter
+use of energy around the home.
+</p>
+</div>
+
+<div class="cards">
+
+<div class="card">
+<div class="card-number">01</div>
+<h3>Solar</h3>
+<p>
+Well-designed rooftop solar sized around your household,
+roof and electricity use.
+</p>
+</div>
+
+<div class="card">
+<div class="card-number">02</div>
+<h3>Solar + Battery</h3>
+<p>
+Store more of your daytime generation for evenings,
+peak demand and greater energy independence.
+</p>
+</div>
+
+<div class="card">
+<div class="card-number">03</div>
+<h3>Smart Home Energy</h3>
+<p>
+Make solar work harder by coordinating EV charging,
+hot water, heating and other household loads.
+</p>
+</div>
+
+</div>
+</section>
+
+
+<section class="why" id="why">
+<div class="section-title">
+<h2>Local knowledge. Clear advice. Better energy decisions.</h2>
+
+<p>
+Solectrics is building a more personal approach to residential solar,
+starting on Waiheke Island.
+</p>
+</div>
+
+<div class="why-grid">
+
+<div class="why-item">
+<h3>Designed for your home</h3>
+<p>
+We look at consumption, roof orientation, lifestyle and future
+needs before recommending a system.
+</p>
+</div>
+
+<div class="why-item">
+<h3>Understand what you’re buying</h3>
+<p>
+Solar should not be mysterious. We explain generation,
+self-consumption, export, batteries and payback in plain language.
+</p>
+</div>
+
+<div class="why-item">
+<h3>Think beyond the panels</h3>
+<p>
+EVs, hot water, heating and batteries can all form part of a
+smarter home-energy system.
+</p>
+</div>
+
+</div>
+</section>
+
+
+<section class="smart" id="smart">
+<div class="smart-box">
+<div class="eyebrow">The Solectrics approach</div>
+
+<h2>Generate it. Use it. Store it intelligently.</h2>
+
+<p>
+The value of solar isn't just how many panels are on your roof.
+It's how much of that solar energy your household can use directly.
+</p>
+
+<p>
+We help households think about when they charge an EV, heat water,
+run appliances and use stored battery energy — creating a home that
+works intelligently with the sun.
+</p>
+</div>
+</section>
+
+
+<section class="contact" id="contact">
+<h2>Thinking about solar?</h2>
+
+<p>
+Start with a conversation about your home, your electricity use
+and what you want your energy system to achieve.
+</p>
+
+<a class="button" href="mailto:jane@solectrics.co.nz?subject=Solectrics%20solar%20enquiry">
+jane@solectrics.co.nz
+</a>
+</section>
+
+</main>
+
+
+<footer>
+© 2026 Solectrics • Smart Solar Living • Waiheke Island, New Zealand
+</footer>
+
+</body>
+</html>
