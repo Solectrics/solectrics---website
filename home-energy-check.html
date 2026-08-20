@@ -1,1 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Smart Solar Home Check | Solectrics</title>
+
+<style>
+* {
+box-sizing: border-box;
+}
+
+body {
+margin: 0;
+font-family: Arial, Helvetica, sans-serif;
+background: #f7f5ef;
+color: #24342f;
+}
+
+.survey {
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+.top {
+padding: 24px 22px 10px;
+max-width: 600px;
+width: 100%;
+margin: 0 auto;
+}
+
+.brand {
+font-size: 20px;
+font-weight: 700;
+letter-spacing: 0.5px;
+}
+
+.progress {
+height: 4px;
+background: #dddcd6;
+border-radius: 10px;
+margin-top: 20px;
+overflow: hidden;
+}
+
+.progress-fill {
+width: 12%;
+height: 100%;
+background: #e98245;
+border-radius: 10px;
+}
+
+.content {
+flex: 1;
+width: 100%;
+max-width: 600px;
+margin: 0 auto;
+padding: 55px 22px 35px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+}
+
+.eyebrow {
+font-size: 14px;
+font-weight: 700;
+text-transform: uppercase;
+letter-spacing: 1.5px;
+color: #e06f32;
+margin-bottom: 14px;
+}
+
+h1 {
+font-size: clamp(38px, 10vw, 58px);
+line-height: 1;
+margin: 0 0 25px;
+font-weight: 700;
+}
+
+.intro {
+font-size: 20px;
+line-height: 1.5;
+margin: 0 0 18px;
+max-width: 520px;
+}
+
+.reassurance {
+font-size: 16px;
+line-height: 1.5;
+color: #64706c;
+margin-bottom: 36px;
+}
+
+.start-button {
+display: block;
+width: 100%;
+border: 0;
+border-radius: 14px;
+padding: 19px 22px;
+background: #e98245;
+color: white;
+font-size: 17px;
+font-weight: 700;
+text-align: center;
+cursor: pointer;
+}
+
+.small-note {
+text-align: center;
+font-size: 14px;
+color: #727a77;
+margin-top: 15px;
+}
+
+@media (min-width: 700px) {
+.content {
+padding-top: 80px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<main class="survey">
+
+<header class="top">
+<div class="brand">solectrics</div>
+
+<div class="progress">
+<div class="progress-fill"></div>
+</div>
+</header>
+
+<section class="content">
+
+<div class="eyebrow">smart solar home check</div>
+
+<h1>New to solar?<br>You’re in the right place.</h1>
+
+<p class="intro">
+Tell us a little about your home and how you use electricity.
+</p>
+
+<p class="reassurance">
+We’ll help you understand where solar could make the biggest
+difference — without expecting you to know anything about solar.
+</p>
+
+<button class="start-button">
+START MY HOME CHECK →
+</button>
+
+<div class="small-note">
+About 5 minutes. Have a summer and winter power bill handy if you can.
+</div>
+
+</section>
+
+</main>
+
+</body>
+</html>
