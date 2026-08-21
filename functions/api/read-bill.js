@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
       filePart = {
         type: "input_file",
         filename: file.name || "electricity-bill.pdf",
-        file_data: base64
+        file_data: `data:application/pdf;base64,${base64}`
       };
     } else {
       return json({ error: "Please upload a PDF or image file." }, 400);
