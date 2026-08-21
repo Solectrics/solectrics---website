@@ -6,7 +6,7 @@
 //
 // IMPORTANT:
 // Never put the API key in HTML or commit it to GitHub.
-
+// Redeploy after adding OPENAI_API_KEY secret
 export async function onRequestPost(context) {
   try {
     const { request, env } = context;
