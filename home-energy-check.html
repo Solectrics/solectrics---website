@@ -399,6 +399,518 @@ if(batteryGoal){document.getElementById('storageBadge').classList.remove('hidden
 step=screens.length-1;render()}
 function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
 render();
-</script>
+</script><!-- =========================================================
+SOLECTRICS — 5kW SOLAR + BATTERY SAVINGS REPORT
+Paste immediately ABOVE </body>
+.savings-highlight {
+margin-top: 24px;
+padding: 18px;
+border-left: 3px solid #e86f35;
+background: #faf8f5;
+line-height: 1.55;
+}
+
+.savings-note {
+margin-top: 18px;
+font-size: 12px;
+line-height: 1.55;
+color: #777;
+}
+
+@media (max-width: 650px) {
+
+.savings-summary-grid {
+grid-template-columns: 1fr;
+}
+
+}
+
+</style>
+
+
+<script>
+
+(function () {
+
+const SOLAR_SIZE_KW = 5;
+const BATTERY_SIZE_KWH = 10;
+
+
+/* Seasonal solar production pattern */
+
+const SOLAR_SEASON = [
+1.00, /* Jan */
+0.94, /* Feb */
+0.80, /* Mar */
+0.62, /* Apr */
+0.45, /* May */
+0.34, /* Jun */
+0.32, /* Jul */
+0.42, /* Aug */
+0.58, /* Sep */
+0.75, /* Oct */
+0.90, /* Nov */
+1.00 /* Dec */
+];
+
+
+const MAX_SOLAR_BILL_REDUCTION = 0.72;
+
+const MAX_EXTRA_BATTERY_REDUCTION = 0.16;
+
+
+function n(value) {
+
+const number = Number(value);
+
+return Number.isFinite(number)
+? number
+: null;
+
+}
+
+
+function money(value) {
+
+return "$" +
+Math.round(value || 0)
+.toLocaleString("en-NZ");
+
+}
+
+
+/* Convert uploaded bill into approximate monthly bill */
+
+function monthlyBillFromBill(bill) {
+
+if (!bill) return null;
+
+const total = n(bill.total_bill_nzd);
+
+const days = n(bill.billing_days);
+
+if (total === null) return null;
+
+if (days && days > 0) {
+return (total / days) * 30.4375;
+}
+
+return total;
+
+}
+
+
+/* Build estimated current monthly bills from
+customer's summer + winter bills */
+
+function buildCurrentProfile() {
+
+const summer =
+answers &&
+answers.bills
+? answers.bills.summer
+: null;
+
+const winter =
+answers &&
+answers.bills
+? answers.bills.winter
+: null;
+
+
+let summerMonthly =
+monthlyBillFromBill(summer);
+
+let winterMonthly =
+monthlyBillFromBill(winter);
+
+
+if (
+summerMonthly === null &&
+winterMonthly === null
+) {
+return null;
+}
+
+
+if (summerMonthly === null) {
+summerMonthly = winterMonthly;
+}
+
+if (winterMonthly === null) {
+winterMonthly = summerMonthly;
+}
+
+
+const WINTER_WEIGHT = [
+0.00,
+0.05,
+0.18,
+0.38,
+0.62,
+0.84,
+1.00,
+0.88,
+0.66,
+0.40,
+0.18,
+0.05
+];
+
+
+return WINTER_WEIGHT.map(function (weight) {
+
+return summerMonthly +
+(winterMonthly - summerMonthly) * weight;
+
+});
+
+}
+
+
+/* Estimate solar-only and solar+battery bills */
+
+function buildSolarProfiles(current) {
+
+const solarOnly = [];
+const solarBattery = [];
+
+
+current.forEach(function (currentBill, month) {
+
+const solarStrength =
+SOLAR_SEASON[month];
+
+
+const solarReduction =
+MAX_SOLAR_BILL_REDUCTION *
+solarStrength;
+
+
+let solarBill =
+currentBill *
+(1 - solarReduction);
+
+
+/*
+Keep a small residual bill because fixed
+network/daily charges generally remain.
+*/
+
+solarBill =
+Math.max(
+solarBill,
+currentBill * 0.08
+);
+
+
+/*
+Battery captures more daytime solar for use
+later in the day.
+*/
+
+const batteryExtra =
+MAX_EXTRA_BATTERY_REDUCTION *
+solarStrength;
+
+
+let batteryBill =
+currentBill *
+(1 - solarReduction - batteryExtra);
+
+
+batteryBill =
+Math.max(
+batteryBill,
+currentBill * 0.06
+);
+
+
+solarOnly.push(solarBill);
+
+solarBattery.push(batteryBill);
+
+});
+
+
+return {
+solarOnly: solarOnly,
+solarBattery: solarBattery
+};
+
+}
+
+
+/* Create report section automatically */
+aria-label="Estimated monthly electricity costs">
+</svg>
+
+</div>
+
+
+<div class="savings-legend">
+
+<span>
+<i class="legend-current"></i>
+Current
+</span>
+
+<span>
+<i class="legend-solar"></i>
+5 kW solar
+</span>
+
+<span>
+<i class="legend-battery"></i>
+5 kW solar + battery
+</span>
+
+</div>
+
+
+<div
+class="savings-highlight"
+id="solarSavingsMessage">
+</div>
+
+
+<p class="savings-note">
+This is an illustrative Solectrics estimate rather
+than a guaranteed saving. Actual performance depends
+on roof orientation and shading, system design,
+household electricity use, electricity tariffs,
+export rates and weather.
+</p>
+
+`;
+
+
+const actions =
+resultScreen.querySelector(".actions");
+
+
+if (actions) {
+
+resultScreen.insertBefore(
+report,
+actions
+);
+
+} else {
+
+resultScreen.appendChild(report);
+
+}
+
+}
+
+
+/* Draw graph */
+(index / (months.length - 1)) *
+graphWidth;
+
+}
+
+
+function y(value) {
+
+return top +
+graphHeight -
+(value / maxValue) *
+graphHeight;
+
+}
+
+
+function points(values) {
+
+return values.map(
+function (value, index) {
+
+return x(index) + "," + y(value);
+
+}
+).join(" ");
+
+}
+
+
+let grid = "";
+
+
+for (let i = 0; i <= 4; i++) {
+
+const value =
+maxValue * (i / 4);
+
+const yy = y(value);
+
+
+grid += `
+
+<line
+x1="${left}"
+y1="${yy}"
+x2="${width-right}"
+y2="${yy}"
+stroke="#e5e5e5"
+stroke-width="1"
+/>
+
+<text
+x="${left-12}"
+y="${yy+4}"
+text-anchor="end"
+font-size="12"
+fill="#777">
+${money(value)}
+</text>
+
+`;
+
+}
+
+
+let labels = "";
+
+
+months.forEach(
+function (month, index) {
+/* Fill the report */
+
+window.renderSavingsReport =
+function () {
+
+ensureSavingsReport();
+
+
+const current =
+buildCurrentProfile();
+
+
+if (!current) return;
+
+
+const profiles =
+buildSolarProfiles(current);
+
+
+const solar =
+profiles.solarOnly;
+
+const battery =
+profiles.solarBattery;
+
+
+const currentAnnual =
+current.reduce(
+function (a,b) {
+return a+b;
+},
+0
+);
+
+
+const solarAnnual =
+solar.reduce(
+function (a,b) {
+return a+b;
+},
+0
+);
+
+
+const batteryAnnual =
+battery.reduce(
+function (a,b) {
+return a+b;
+},
+0
+);
+
+
+const solarSaving =
+currentAnnual -
+solarAnnual;
+
+
+const batterySaving =
+currentAnnual -
+batteryAnnual;
+
+
+const extraBatterySaving =
+solarAnnual -
+batteryAnnual;
+
+
+document.getElementById(
+"annualCurrentCost"
+).textContent =
+money(currentAnnual);
+
+
+document.getElementById(
+"annualSolarCost"
+).textContent =
+money(solarAnnual);
+
+
+document.getElementById(
+"annualBatteryCost"
+).textContent =
+money(batteryAnnual);
+
+
+const message =
+document.getElementById(
+"solarSavingsMessage"
+);
+
+
+message.innerHTML = `
+
+<strong>
+Estimated first-year saving
+</strong>
+
+<br><br>
+
+5 kW solar:
+<strong>
+${money(solarSaving)}
+</strong>
+per year.
+
+<br>
+
+5 kW solar + ${BATTERY_SIZE_KWH} kWh battery:
+<strong>
+${money(batterySaving)}
+</strong>
+per year.
+
+<br><br>
+
+Estimated additional electricity-bill saving
+from adding the battery:
+<strong>
+${money(extraBatterySaving)}
+</strong>
+per year.
+
+`;
+
+
+drawSavingsChart(
+current,
+solar,
+battery
+);
+
+};
+
+
+/* Connect to your existing result page automatically */
 </body>
 </html>
