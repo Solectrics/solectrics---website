@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Solar Quote & System Check | Solectrics</title>
+<link rel="icon" type="image/png" href="./favicon.png?v=2">
+<style>
+:root{--ink:#24342f;--muted:#68736f;--orange:#e98245;--cream:#f7f5ef;--white:#fff;--line:#dddcd6}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}
+button,input,select,textarea{font:inherit}.top{position:sticky;top:0;background:rgba(247,245,239,.97);padding:18px 20px 10px;z-index:5}
+.top-inner,.screen{max-width:680px;margin:auto}.brand{font-weight:800;font-size:20px}.stage{font-size:12px;color:var(--muted);margin:10px 0 7px;text-transform:uppercase;letter-spacing:1px}
+.progress{height:4px;background:var(--line);border-radius:10px;overflow:hidden}.progress-fill{height:100%;background:var(--orange);width:7%;transition:.3s}
+.screen{display:none;padding:42px 22px 56px;min-height:78vh}.screen.active{display:block}.eyebrow{color:#d86e35;text-transform:uppercase;letter-spacing:1.4px;font-size:13px;font-weight:800;margin-bottom:12px}
+h1{font-size:clamp(36px,8vw,56px);line-height:1.02;margin:0 0 22px}h2{font-size:30px;line-height:1.1;margin:0 0 18px}p{font-size:18px;line-height:1.5}.muted{color:var(--muted);font-size:15px}
+.btn,.choice{width:100%;border:0;border-radius:14px;padding:17px 18px;margin:7px 0;background:white;color:var(--ink);font-weight:700;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.06);cursor:pointer}
+.btn.primary{background:var(--orange);color:white;text-align:center}.choice.selected{outline:3px solid var(--orange)}.actions{display:flex;gap:10px;margin-top:25px}.actions button{flex:1}.back{background:transparent;border:1px solid #c9cbc7;text-align:center}
+input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{width:100%;padding:15px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 14px}
+label.field{display:block;font-size:14px;font-weight:700;margin-top:8px}.upload{border:2px dashed #c8c8c1;border-radius:16px;padding:18px;margin:12px 0;background:white}.upload label{display:block;font-weight:800;margin-bottom:7px}
+.card{background:white;border-radius:18px;padding:20px;margin:14px 0}.score{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #ecebe7;padding:12px 0}.score strong{text-align:right}.note{background:#eef1ed;border-radius:14px;padding:15px;font-size:14px;color:#53605b;margin:18px 0}
+@media(max-width:480px){.screen{padding-top:30px}h1{font-size:39px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-inner"><div class="brand">solectrics</div><div class="stage" id="stage">your project</div><div class="progress"><div class="progress-fill" id="progress"></div></div></div></header>
+
+<section class="screen active" data-stage="your project">
+<div class="eyebrow">solar quote & system check</div>
+<h1>Already know a bit about solar?</h1>
+<p>Tell us what you’re considering, what you’ve already been quoted, and what matters most to you.</p>
+<p class="muted">We’ll help you compare the technical approach — not just the headline price.</p>
+<button class="btn primary" onclick="next()">START MY SYSTEM CHECK →</button>
+<p class="muted" style="text-align:center">Around 7–10 minutes. Have any existing quotes or system details handy if you can.</p>
+</section>
+
+<section class="screen" data-stage="your project">
+<div class="eyebrow">where are you now?</div><h2>What best describes your situation?</h2>
+<button class="choice" onclick="single('situation','Comparing quotes',this);next()">I’m comparing solar quotes</button>
+<button class="choice" onclick="single('situation','Choosing system design',this);next()">I’m deciding between different system designs</button>
+<button class="choice" onclick="single('situation','Battery decision',this);next()">I’m deciding whether to add a battery</button>
+<button class="choice" onclick="single('situation','Future proofing',this);next()">I want to make sure the system is future-ready</button>
+<button class="choice" onclick="single('situation','Other',this);next()">Something else</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button></div>
+</section>
+
+<section class="screen" data-stage="your priorities">
+<div class="eyebrow">your priorities</div><h2>What are you trying to optimise?</h2><p class="muted">Choose everything that matters.</p>
+<button class="choice" onclick="multi('priorities','Lowest upfront cost',this)">Lowest upfront cost</button>
+<button class="choice" onclick="multi('priorities','Best long-term value',this)">Best long-term value</button>
+<button class="choice" onclick="multi('priorities','High self-consumption',this)">Use as much of my own solar as possible</button>
+<button class="choice" onclick="multi('priorities','Battery backup',this)">Backup during outages</button>
+<button class="choice" onclick="multi('priorities','Future battery',this)">Easy battery addition later</button>
+<button class="choice" onclick="multi('priorities','EV ready',this)">EV charging / future EV</button>
+<button class="choice" onclick="multi('priorities','Whole-home electrification',this)">Future heat pumps / hot water / electrification</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">your electricity use</div><h2>How much power does your household use?</h2>
+<label class="field">Approximate annual electricity use (kWh), if known</label><input id="annualKwh" type="number" placeholder="e.g. 7200">
+<label class="field">Typical summer bill</label><input id="summerCost" type="text" placeholder="e.g. $160">
+<label class="field">Typical winter bill</label><input id="winterCost" type="text" placeholder="e.g. $320">
+<div class="upload"><label>Optional summer bill</label><input type="file" accept="image/*,.pdf"></div>
+<div class="upload"><label>Optional winter bill</label><input type="file" accept="image/*,.pdf"></div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveEnergy();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="system design">
+<div class="eyebrow">solar array</div><h2>What system size are you considering?</h2>
+<label class="field">Number of panels</label><input id="panelCount" type="number" placeholder="e.g. 15">
+<label class="field">Panel wattage, if known</label><input id="panelWattage" type="number" placeholder="e.g. 455 W">
+<label class="field">Proposed solar array size, if known</label><input id="arraySize" type="text" placeholder="e.g. 6.8 kW">
+<label class="field">Panel brand / model</label><input id="panelModel" type="text" placeholder="Optional">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveSolar();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="system design">
+<div class="eyebrow">inverter</div><h2>What inverter architecture are you being offered?</h2>
+<button class="choice" onclick="single('inverterType','Standard grid-tied',this)">Standard grid-tied inverter</button>
+<button class="choice" onclick="single('inverterType','Hybrid / battery-ready',this)">Hybrid / battery-ready inverter</button>
+<button class="choice" onclick="single('inverterType','Microinverters',this)">Microinverters</button>
+<button class="choice" onclick="single('inverterType','Not sure',this)">I’m not sure</button>
+<label class="field">Inverter brand / model</label><input id="inverterModel" type="text" placeholder="Optional">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveInverter();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="battery">
+<div class="eyebrow">battery</div><h2>What’s being proposed for storage?</h2>
+<button class="choice" onclick="single('batteryPlan','No battery',this)">No battery</button>
+<button class="choice" onclick="single('batteryPlan','Battery now',this)">Battery from day one</button>
+<button class="choice" onclick="single('batteryPlan','Battery later',this)">Solar now, battery later</button>
+<button class="choice" onclick="single('batteryPlan','Unsure',this)">I’m undecided</button>
+<label class="field">Battery usable capacity, if known</label><input id="batteryKwh" type="text" placeholder="e.g. 10 kWh">
+<label class="field">Battery brand / model</label><input id="batteryModel" type="text" placeholder="Optional">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveBattery();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="backup">
+<div class="eyebrow">backup & resilience</div><h2>What do you want to keep running in an outage?</h2>
+<button class="choice" onclick="multi('backupLoads','Nothing',this)">Nothing — backup isn’t important</button>
+<button class="choice" onclick="multi('backupLoads','Fridge / lights / internet',this)">Fridge, lights & internet</button>
+<button class="choice" onclick="multi('backupLoads','Water pump',this)">Water pump</button>
+<button class="choice" onclick="multi('backupLoads','Selected sockets',this)">Selected sockets</button>
+<button class="choice" onclick="multi('backupLoads','Most of house',this)">Most of the house</button>
+<button class="choice" onclick="multi('backupLoads','Whole house',this)">Whole-house backup</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="future plans">
+<div class="eyebrow">future loads</div><h2>What might change in the next few years?</h2>
+<button class="choice" onclick="multi('futureLoads','EV',this)">EV or second EV</button>
+<button class="choice" onclick="multi('futureLoads','Hot-water heat pump',this)">Hot-water heat pump</button>
+<button class="choice" onclick="multi('futureLoads','Heat pumps',this)">More space-heating heat pumps</button>
+<button class="choice" onclick="multi('futureLoads','Induction',this)">Induction / electric cooking</button>
+<button class="choice" onclick="multi('futureLoads','Pool or spa',this)">Pool / spa</button>
+<button class="choice" onclick="multi('futureLoads','Workshop',this)">Workshop / machinery</button>
+<button class="choice" onclick="multi('futureLoads','Nothing planned',this)">Nothing significant planned</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your property">
+<div class="eyebrow">site details</div><h2>Tell us what you know about the property.</h2>
+<label class="field">Electrical supply</label><select id="phase"><option>I don’t know</option><option>Single phase</option><option>Three phase</option></select>
+<label class="field">Roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Multiple directions</option><option>I don’t know</option></select>
+<label class="field">Shading</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select>
+<label class="field">Export limit / lines-company constraint, if known</label><input id="exportLimit" type="text" placeholder="Optional">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveSite();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="quote comparison">
+<div class="eyebrow">your quotes</div><h2>Upload anything you’d like us to compare.</h2>
+<div class="upload"><label>Quote 1</label><input type="file" accept="image/*,.pdf"></div>
+<div class="upload"><label>Quote 2</label><input type="file" accept="image/*,.pdf"></div>
+<div class="upload"><label>Quote 3</label><input type="file" accept="image/*,.pdf"></div>
+<label class="field">Anything specific you want us to look at?</label><textarea id="compareNotes" placeholder="e.g. One installer is recommending a standard inverter, another a hybrid."></textarea>
+<div class="note">This first version does not transmit or automatically analyse uploaded quotes. The interface is ready for a secure review system later.</div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveNotes();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your result">
+<div class="eyebrow">your details</div><h2>Where should we send your system review?</h2>
+<label class="field">First name</label><input id="name" type="text">
+<label class="field">Email</label><input id="email" type="email">
+<label class="field">Phone</label><input id="phone" type="tel">
+<label class="field">Property address</label><input id="address" type="text">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY SYSTEM CHECK →</button></div>
+</section>
+
+<section class="screen" data-stage="your result">
+<div class="eyebrow">your solar system check</div><h1 id="resultTitle">Here’s what we’d focus on.</h1>
+<div class="card">
+<div class="score"><span>System architecture</span><strong id="architectureScore">REVIEW</strong></div>
+<div class="score"><span>Battery-readiness</span><strong id="batteryScore">REVIEW</strong></div>
+<div class="score"><span>Backup design</span><strong id="backupScore">REVIEW</strong></div>
+<div class="score"><span>Future electrification</span><strong id="futureScore">REVIEW</strong></div>
+</div>
+<p id="summary"></p>
+<h2>What Solectrics would compare</h2>
+<div class="card"><h3>1 — The design</h3><p>Whether the proposed solar array, inverter architecture and battery strategy actually fit your household — not just whether the equipment looks good on paper.</p></div>
+<div class="card"><h3>2 — The trade-offs</h3><p>What you gain or give up by choosing the cheaper, middle or higher-spec option — including future battery cost, backup capability, export limits and expansion.</p></div>
+<div class="card"><h3>3 — The whole-life value</h3><p>Whether the system still makes sense once you factor in future EVs, hot water, heating, warranties, monitoring and how much solar you’re likely to use directly.</p></div>
+<h2>Want us to look at the property and the quotes together?</h2>
+<p>A site visit lets us check roof layout, shading, switchboard, equipment locations and the practical assumptions behind the quotes you’ve been given.</p>
+<button class="btn primary" onclick="bookVisit()">BOOK A SOLAR SYSTEM REVIEW →</button>
+<p class="muted" style="text-align:center">Independent-minded, practical advice — even if the right answer is not to spend more.</p>
+</section>
+
+<script>
+let step=0;const screens=[...document.querySelectorAll('.screen')];const answers={priorities:[],backupLoads:[],futureLoads:[]};
+function render(){screens.forEach((s,i)=>s.classList.toggle('active',i===step));document.getElementById('progress').style.width=((step+1)/screens.length*100)+'%';document.getElementById('stage').textContent=screens[step].dataset.stage||'solar system check';window.scrollTo({top:0,behavior:'smooth'})}
+function next(){if(step<screens.length-1){step++;render()}} function back(){if(step>0){step--;render()}}
+function single(key,value,el){answers[key]=value;document.querySelectorAll('.screen.active .choice').forEach(b=>b.classList.remove('selected'));el.classList.add('selected')}
+function multi(key,value,el){if(!answers[key])answers[key]=[];const i=answers[key].indexOf(value);if(i>=0){answers[key].splice(i,1);el.classList.remove('selected')}else{answers[key].push(value);el.classList.add('selected')}}
+function saveEnergy(){answers.annualKwh=document.getElementById('annualKwh').value.trim();answers.summerCost=document.getElementById('summerCost').value.trim();answers.winterCost=document.getElementById('winterCost').value.trim()}
+function saveSolar(){answers.panelCount=document.getElementById('panelCount').value.trim();answers.panelWattage=document.getElementById('panelWattage').value.trim();answers.arraySize=document.getElementById('arraySize').value.trim();answers.panelModel=document.getElementById('panelModel').value.trim()}
+function saveInverter(){answers.inverterModel=document.getElementById('inverterModel').value.trim()}
+function saveBattery(){answers.batteryKwh=document.getElementById('batteryKwh').value.trim();answers.batteryModel=document.getElementById('batteryModel').value.trim()}
+function saveSite(){answers.phase=document.getElementById('phase').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value;answers.exportLimit=document.getElementById('exportLimit').value.trim()}
+function saveNotes(){answers.compareNotes=document.getElementById('compareNotes').value.trim()}
+function showResult(){
+answers.name=document.getElementById('name').value.trim();answers.email=document.getElementById('email').value.trim();answers.phone=document.getElementById('phone').value.trim();answers.address=document.getElementById('address').value.trim();
+document.getElementById('resultTitle').textContent=(answers.name?answers.name+', h':'H')+"ere’s what we’d focus on.";
+let architecture='REVIEW';if(answers.inverterType==='Hybrid / battery-ready')architecture='STRONG START';if(answers.inverterType==='Standard grid-tied'&&(answers.priorities||[]).includes('Future battery'))architecture='CHECK CAREFULLY';
+let battery='WORTH COMPARING';if(answers.batteryPlan==='Battery later'&&answers.inverterType==='Standard grid-tied')battery='FUTURE COST RISK';if(answers.batteryPlan==='Battery later'&&answers.inverterType==='Hybrid / battery-ready')battery='GOOD FLEXIBILITY';
+let backup=(answers.backupLoads||[]).some(x=>x!=='Nothing')?'DESIGN MATTERS':'OPTIONAL';let future=(answers.futureLoads||[]).length>1?'HIGH':'LOW';
+document.getElementById('architectureScore').textContent=architecture;document.getElementById('batteryScore').textContent=battery;document.getElementById('backupScore').textContent=backup;document.getElementById('futureScore').textContent=future;
+document.getElementById('summary').textContent='The most useful comparison is not simply equipment brand versus price. We would look at whether the architecture suits how you want the home to work now and in a few years.';
+step=screens.length-1;render()}
+function bookVisit(){const subject=encodeURIComponent('Solectrics solar system review');const body=encodeURIComponent('Hi Solectrics,\n\nI have completed the Solar Quote & System Check and would like to arrange a review.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\nSituation: '+(answers.situation||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
+render();
+</script>
+</body>
+</html>
