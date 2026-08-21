@@ -3,195 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Smart Solar Home Check | Solectrics</title>
-
 <style>
-* {
-box-sizing: border-box;
-}
-
-body {
-margin: 0;
-font-family: Arial, Helvetica, sans-serif;
-background: #f7f5ef;
-color: #24342f;
-}
-
-.survey {
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-}
-
-.top {
-padding: 24px 22px 10px;
-max-width: 600px;
-width: 100%;
-margin: 0 auto;
-}
-
-.brand {
-font-size: 20px;
-font-weight: 700;
-letter-spacing: 0.5px;
-}
-
-.progress {
-height: 4px;
-background: #dddcd6;
-border-radius: 10px;
-margin-top: 20px;
-overflow: hidden;
-}
-
-.progress-fill {
-width: 12%;
-height: 100%;
-background: #e98245;
-border-radius: 10px;
-}
-
-.content {
-flex: 1;
-width: 100%;
-max-width: 600px;
-margin: 0 auto;
-padding: 55px 22px 35px;
-display: flex;
-flex-direction: column;
-justify-content: center;
-}
-
-.eyebrow {
-font-size: 14px;
-font-weight: 700;
-text-transform: uppercase;
-letter-spacing: 1.5px;
-color: #e06f32;
-margin-bottom: 14px;
-}
-
-h1 {
-font-size: clamp(38px, 10vw, 58px);
-line-height: 1;
-margin: 0 0 25px;
-font-weight: 700;
-}
-
-.intro {
-font-size: 20px;
-line-height: 1.5;
-margin: 0 0 18px;
-max-width: 520px;
-}
-
-.reassurance {
-font-size: 16px;
-line-height: 1.5;
-color: #64706c;
-margin-bottom: 36px;
-}
-
-.start-button {
-display: block;
-width: 100%;
-border: 0;
-border-radius: 14px;
-padding: 19px 22px;
-background: #e98245;
-color: white;
-font-size: 17px;
-font-weight: 700;
-text-align: center;
-cursor: pointer;
-}
-
-.small-note {
-text-align: center;
-font-size: 14px;
-color: #727a77;
-margin-top: 15px;
-}
-
-@media (min-width: 700px) {
-.content {
-padding-top: 80px;
-}
-}
+:root{--ink:#24342f;--muted:#68736f;--orange:#e98245;--cream:#f7f5ef;--white:#fff;--line:#dddcd6;--green:#46645a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}
+button,input,select{font:inherit}
+.shell{min-height:100vh}
+.top{position:sticky;top:0;z-index:5;background:rgba(247,245,239,.96);padding:18px 20px 10px}
+.top-inner{max-width:620px;margin:auto}
+.brand{font-weight:800;font-size:20px;letter-spacing:.5px}
+.stage{font-size:12px;color:var(--muted);margin:10px 0 7px;text-transform:uppercase;letter-spacing:1px}
+.progress{height:4px;background:var(--line);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;width:8%;background:var(--orange);transition:.3s}
+.screen{display:none;max-width:620px;margin:auto;padding:44px 22px 50px;min-height:78vh}
+.screen.active{display:block}
+.eyebrow{color:#d86e35;text-transform:uppercase;letter-spacing:1.4px;font-size:13px;font-weight:800;margin-bottom:12px}
+h1{font-size:clamp(36px,9vw,56px);line-height:1.02;margin:0 0 22px}
+h2{font-size:30px;line-height:1.1;margin:0 0 18px}
+p{font-size:18px;line-height:1.5}
+.muted{color:var(--muted);font-size:15px}
+.btn,.choice{width:100%;border:0;border-radius:14px;padding:17px 18px;margin:7px 0;background:var(--white);color:var(--ink);font-weight:700;text-align:left;box-shadow:0 1px 0 rgba(0,0,0,.06);cursor:pointer}
+.btn.primary{background:var(--orange);color:white;text-align:center}
+.choice.selected{outline:3px solid var(--orange)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.grid.five{grid-template-columns:repeat(5,1fr)}
+.grid .choice{text-align:center;margin:0;padding:16px 8px}
+.actions{display:flex;gap:10px;margin-top:25px}
+.actions button{flex:1}
+.back{background:transparent;border:1px solid #c9cbc7;text-align:center}
+.upload{border:2px dashed #c8c8c1;border-radius:16px;padding:18px;margin:12px 0;background:#fff}
+.upload label{display:block;font-weight:800;margin-bottom:7px}
+input[type=file]{width:100%}
+input[type=text],input[type=email],input[type=tel],select{width:100%;padding:15px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 14px}
+label.field{display:block;font-size:14px;font-weight:700;margin-top:8px}
+.card{background:white;border-radius:18px;padding:20px;margin:14px 0}
+.path{border:2px solid transparent}
+.path.recommended{border-color:var(--orange)}
+.badge{display:inline-block;background:var(--orange);color:white;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}
+.score{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #ecebe7;padding:12px 0}
+.score strong{text-align:right}
+.checks .choice{text-align:left}
+.note{background:#eef1ed;border-radius:14px;padding:15px;font-size:14px;color:#53605b;margin:18px 0}
+.hidden{display:none}
+@media(max-width:420px){.grid.five{grid-template-columns:repeat(5,1fr)}.screen{padding-top:30px}h1{font-size:39px}}
 </style>
 </head>
-
 <body>
-
-<main class="survey">
-
-<header class="top">
+<div class="shell">
+<header class="top"><div class="top-inner">
 <div class="brand">solectrics</div>
+<div class="stage" id="stage">your home</div>
+<div class="progress"><div class="progress-fill" id="progress"></div></div>
+</div></header>
 
-<div class="progress">
-<div class="progress-fill"></div>
-</div>
-</header>
-
-<section class="content">
-
+<section class="screen active" data-stage="your home">
 <div class="eyebrow">smart solar home check</div>
-
 <h1>New to solar?<br>You’re in the right place.</h1>
-
-<p class="intro">
-Tell us a little about your home and how you use electricity.
-</p>
-
-<p class="reassurance">
-We’ll help you understand where solar could make the biggest
-difference — without expecting you to know anything about solar.
-</p>
-
-<button class="start-button" onclick="showHome()">
-START MY HOME CHECK →
-</button>
-
-<div class="small-note">
-About 5 minutes. Have a summer and winter power bill handy if you can.
-</div>
-
+<p>Tell us a little about your home and how you use electricity.</p>
+<p class="muted">We’ll help you understand where solar could make the biggest difference — without expecting you to know anything about solar.</p>
+<button class="btn primary" onclick="next()">START MY HOME CHECK →</button>
+<p class="muted" style="text-align:center">About 5 minutes. Have a summer and winter power bill handy if you can.</p>
 </section>
 
-<section class="content" id="home-screen" style="display:none;">
-
-<div class="eyebrow">your home</div>
-
-<h1>Tell us a little about your household.</h1>
-
-<p class="intro">How many people live here?</p>
-
-<div style="
-display:grid;
-grid-template-columns:repeat(5,1fr);
-gap:10px;
-margin-top:10px;
-">
-<button class="start-button" style="padding:16px 8px;">1</button>
-<button class="start-button" style="padding:16px 8px;">2</button>
-<button class="start-button" style="padding:16px 8px;">3</button>
-<button class="start-button" style="padding:16px 8px;">4</button>
-<button class="start-button" style="padding:16px 8px;">5+</button>
-</div>
-
+<section class="screen" data-stage="your home">
+<div class="eyebrow">your household</div><h2>How many people live here?</h2>
+<div class="grid five" id="people">
+<button class="choice" onclick="single('people','1',this);next()">1</button><button class="choice" onclick="single('people','2',this);next()">2</button><button class="choice" onclick="single('people','3',this);next()">3</button><button class="choice" onclick="single('people','4',this);next()">4</button><button class="choice" onclick="single('people','5+',this);next()">5+</button>
+</div><div class="actions"><button class="btn back" onclick="back()">← Back</button></div>
 </section>
+
+<section class="screen" data-stage="your home">
+<div class="eyebrow">your home</div><h2>What kind of home do you live in?</h2>
+<button class="choice" onclick="single('homeType','House',this);next()">House</button>
+<button class="choice" onclick="single('homeType','Apartment / unit',this);next()">Apartment / unit</button>
+<button class="choice" onclick="single('homeType','Other',this);next()">Other</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button></div>
+</section>
+
+<section class="screen" data-stage="your home">
+<div class="eyebrow">your routine</div><h2>Is someone usually home during daylight hours?</h2>
+<button class="choice" onclick="single('dayHome','Often',this);next()">Often</button>
+<button class="choice" onclick="single('dayHome','Sometimes',this);next()">Sometimes</button>
+<button class="choice" onclick="single('dayHome','Rarely',this);next()">Rarely</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button></div>
+</section>
+
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">your power bills</div><h2>Show us how your home uses electricity.</h2>
+<p>The easiest way is to upload a summer and winter bill.</p>
+<div class="upload"><label>☀️ Summer power bill</label><span class="muted">January or February is ideal.</span><br><br><input type="file" id="summerBill" accept="image/*,.pdf"></div>
+<div class="upload"><label>❄️ Winter power bill</label><span class="muted">July or August is ideal.</span><br><br><input type="file" id="winterBill" accept="image/*,.pdf"></div>
+<div class="note">Bill reading will be connected securely in the next technical stage. For now, your selected files remain in this browser and are not uploaded anywhere.</div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">hot water</div><h2>How do you heat your water?</h2>
+<button class="choice" onclick="single('hotWater','Electric hot-water cylinder',this);next()">Electric hot-water cylinder</button>
+<button class="choice" onclick="single('hotWater','Heat-pump hot water',this);next()">Heat-pump hot water</button>
+<button class="choice" onclick="single('hotWater','Solar hot water',this);next()">Solar hot water</button>
+<button class="choice" onclick="single('hotWater','Gas',this);next()">Gas</button>
+<button class="choice" onclick="single('hotWater','Other / not sure',this);next()">Other / I’m not sure</button>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button></div>
+</section>
+
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">heating</div><h2>How do you keep your home warm?</h2><p class="muted">Choose everything you use.</p>
+<div class="checks">
+<button class="choice" onclick="multi('heating','Heat pump',this)">Heat pump</button>
+<button class="choice" onclick="multi('heating','Electric heaters',this)">Electric heaters</button>
+<button class="choice" onclick="multi('heating','Wood burner',this)">Wood burner</button>
+<button class="choice" onclick="multi('heating','Gas',this)">Gas</button>
+<button class="choice" onclick="multi('heating','Underfloor heating',this)">Underfloor heating</button>
+<button class="choice" onclick="multi('heating','Other',this)">Other</button>
+</div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">bigger loads</div><h2>What else uses power at your place?</h2><p class="muted">Tap everything you have.</p>
+<div class="grid checks">
+<button class="choice" onclick="multi('loads','EV',this)">🚗 EV</button><button class="choice" onclick="multi('loads','Pool',this)">🏊 Pool</button>
+<button class="choice" onclick="multi('loads','Spa',this)">♨️ Spa</button><button class="choice" onclick="multi('loads','Dryer',this)">👕 Dryer</button>
+<button class="choice" onclick="multi('loads','Electric cooking',this)">🍳 Electric cooking</button><button class="choice" onclick="multi('loads','Water pump',this)">💧 Water pump</button>
+<button class="choice" onclick="multi('loads','Sauna',this)">Sauna</button><button class="choice" onclick="multi('loads','Workshop',this)">🛠 Workshop</button>
+<button class="choice" onclick="multi('loads','Air conditioning',this)">❄️ Air con</button><button class="choice" onclick="multi('loads','Home office',this)">🏠 Home office</button>
+</div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="what matters">
+<div class="eyebrow">what matters to you</div><h2>What would you most like solar to do?</h2><p class="muted">Choose as many as you like.</p>
+<div class="checks">
+<button class="choice" onclick="multi('goals','Lower power bills',this)">Lower our power bills</button>
+<button class="choice" onclick="multi('goals','Predictable costs',this)">Give us more predictable household costs</button>
+<button class="choice" onclick="multi('goals','Use own clean energy',this)">Use more of our own clean energy</button>
+<button class="choice" onclick="multi('goals','Charge EV',this)">Charge our EV from solar</button>
+<button class="choice" onclick="multi('goals','Winter costs',this)">Reduce our winter electricity costs</button>
+<button class="choice" onclick="multi('goals','Outage backup',this)">Have power during outages</button>
+<button class="choice" onclick="multi('goals','Battery',this)">Add a battery</button>
+<button class="choice" onclick="multi('goals','Battery ready',this)">Be ready to add a battery later</button>
+<button class="choice" onclick="multi('goals','Environment',this)">Reduce our environmental impact</button>
+<button class="choice" onclick="multi('goals','Advice',this)">I’m not sure — I want advice</button>
+</div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your home">
+<div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2>
+<label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select>
+<label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select>
+<label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select>
+<div class="upload"><label>Optional house / roof photo</label><input type="file" accept="image/*"></div>
+<div class="upload"><label>Optional switchboard photo</label><input type="file" accept="image/*"></div>
+<div class="upload"><label>Optional electricity meter photo</label><input type="file" accept="image/*"></div>
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div>
+</section>
+
+<section class="screen" data-stage="your result">
+<div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2>
+<label class="field">First name</label><input id="name" type="text" autocomplete="given-name">
+<label class="field">Email</label><input id="email" type="email" autocomplete="email">
+<label class="field">Phone</label><input id="phone" type="tel" autocomplete="tel">
+<label class="field">Property address</label><input id="address" type="text" autocomplete="street-address">
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div>
+</section>
+
+<section class="screen" data-stage="your result" id="resultScreen">
+<div class="eyebrow">your smart solar home</div><h1 id="resultTitle">Here’s what we’ve learned.</h1>
+<div class="card">
+<div class="score"><span>☀️ Solar opportunity</span><strong>STRONG</strong></div>
+<div class="score"><span>🏠 Potential to use solar at home</span><strong id="useScore">GOOD</strong></div>
+<div class="score"><span>🚿 Hot-water opportunity</span><strong id="waterScore">WORTH EXPLORING</strong></div>
+<div class="score"><span>🔋 Battery</span><strong id="batteryScore">WORTH EXPLORING</strong></div>
+</div>
+<p id="summary"></p>
+<h2>Three sensible ways forward</h2>
+<div class="card path"><strong>1 — SOLAR START</strong><p>Start generating your own clean energy with a well-designed system that keeps sensible future options open.</p></div>
+<div class="card path recommended"><span class="badge" id="smartBadge">RECOMMENDED</span><h3>2 — SOLAR SMART</h3><p>Use more of the solar you generate by designing around how your household actually uses energy — including opportunities such as hot water and EV charging.</p></div>
+<div class="card path"><span class="badge hidden" id="storageBadge">RECOMMENDED</span><h3>3 — SOLAR + STORAGE</h3><p>Keep more of your solar energy for later with appropriately sized battery storage and backup options where they make sense.</p></div>
+<h2>We’ve understood your energy.<br>Now we’d like to understand your home.</h2>
+<p>Your answers tell us a lot, but they can’t show us your roof, orientation and shading, switchboard, hot-water system or the best places for equipment.</p>
+<p><strong>A short Solectrics home visit puts the two halves together.</strong></p>
+<p>After the visit, we can show you three clearly priced ways forward — so you can see what spending more actually gives you.</p>
+<button class="btn primary" onclick="bookVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
+<p class="muted" style="text-align:center">No obligation. No solar knowledge required. Just practical advice about what makes sense for your home.</p>
+<div class="note">This first version gives an indicative survey result only. Final system design, savings and suitability require review of the property, electricity data and site conditions.</div>
+</section>
+</div>
 
 <script>
-function showHome() {
-document.querySelector(".content").style.display = "none";
-document.getElementById("home-screen").style.display = "flex";
-document.querySelector(".progress-fill").style.width = "25%";
-window.scrollTo(0, 0);
+let step=0;
+const screens=[...document.querySelectorAll('.screen')];
+const answers={heating:[],loads:[],goals:[]};
+
+function render(){
+  screens.forEach((s,i)=>s.classList.toggle('active',i===step));
+  document.getElementById('progress').style.width=((step+1)/screens.length*100)+'%';
+  document.getElementById('stage').textContent=screens[step].dataset.stage||'smart solar home check';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
+function next(){if(step<screens.length-1){step++;render()}}
+function back(){if(step>0){step--;render()}}
+function single(key,value,el){
+  answers[key]=value;
+  el.parentElement.querySelectorAll('.choice').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function multi(key,value,el){
+  if(!answers[key]) answers[key]=[];
+  const i=answers[key].indexOf(value);
+  if(i>=0){answers[key].splice(i,1);el.classList.remove('selected')}
+  else{answers[key].push(value);el.classList.add('selected')}
+}
+function saveHouse(){
+  answers.roof=document.getElementById('roof').value;
+  answers.direction=document.getElementById('direction').value;
+  answers.shade=document.getElementById('shade').value;
+}
+function showResult(){
+  answers.name=document.getElementById('name').value.trim();
+  answers.email=document.getElementById('email').value.trim();
+  answers.phone=document.getElementById('phone').value.trim();
+  answers.address=document.getElementById('address').value.trim();
+  const name=answers.name ? answers.name+', h' : 'H';
+  document.getElementById('resultTitle').textContent=name+"ere’s what we’ve learned.";
+
+  const day=answers.dayHome==='Often'||answers.dayHome==='Sometimes';
+  const electricWater=(answers.hotWater||'').includes('Electric');
+  const ev=(answers.loads||[]).includes('EV');
+  const batteryGoal=(answers.goals||[]).some(x=>x==='Battery'||x==='Outage backup');
+  document.getElementById('useScore').textContent=(day||ev||electricWater)?'HIGH':'GOOD';
+  document.getElementById('waterScore').textContent=electricWater?'HIGH':'WORTH EXPLORING';
+  document.getElementById('batteryScore').textContent=batteryGoal?'HIGH INTEREST':'WORTH EXPLORING';
+
+  let bits=[];
+  if(day) bits.push('someone is often at home during solar-producing hours');
+  if(electricWater) bits.push('you have an electric hot-water cylinder');
+  if(ev) bits.push('you have an EV');
+  let text='Your answers suggest good potential for a solar system designed around the way your household actually uses energy.';
+  if(bits.length) text+=' In particular, '+bits.join(', ')+' — giving us useful opportunities to explore using more solar directly in your home.';
+  document.getElementById('summary').textContent=text;
+
+  if(batteryGoal){
+    document.getElementById('storageBadge').classList.remove('hidden');
+    document.getElementById('smartBadge').classList.add('hidden');
+  }else{
+    document.getElementById('storageBadge').classList.add('hidden');
+    document.getElementById('smartBadge').classList.remove('hidden');
+  }
+  step=screens.length-1;render();
+}
+function bookVisit(){
+  const subject=encodeURIComponent('Free Solectrics home solar visit');
+  const body=encodeURIComponent(
+    'Hi Solectrics,\n\nI have completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+
+    '\nPhone: '+(answers.phone||'')+
+    '\nProperty: '+(answers.address||'')+
+    '\n\nThanks.'
+  );
+  window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body;
+}
+render();
 </script>
-
-</main>
-
 </body>
 </html>
