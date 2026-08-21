@@ -96,7 +96,63 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 
 <section class="screen" data-stage="your energy"><div class="eyebrow">hot water</div><h2>How do you heat your water?</h2><button class="choice" onclick="single('hotWater','Electric hot-water cylinder',this);next()">Electric hot-water cylinder</button><button class="choice" onclick="single('hotWater','Heat-pump hot water',this);next()">Heat-pump hot water</button><button class="choice" onclick="single('hotWater','Solar hot water',this);next()">Solar hot water</button><button class="choice" onclick="single('hotWater','Gas',this);next()">Gas</button><button class="choice" onclick="single('hotWater','Other / not sure',this);next()">Other / I’m not sure</button><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
 
-<section class="screen" data-stage="your energy"><div class="eyebrow">bigger loads</div><h2>What else uses power at your place?</h2><button class="choice" onclick="multi('loads','EV',this)">EV</button><button class="choice" onclick="multi('loads','Pool',this)">Pool</button><button class="choice" onclick="multi('loads','Spa',this)">Spa</button><button class="choice" onclick="multi('loads','Dryer',this)">Clothes dryer</button><button class="choice" onclick="multi('loads','Electric cooking',this)">Electric / induction cooking</button><button class="choice" onclick="multi('loads','Water pump',this)">Water pump</button><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div></section>
+<section class="screen" data-stage="your energy">
+<div class="eyebrow">home energy</div>
+
+<h2>Home high power usage appliances?</h2>
+
+<p class="muted">
+Choose everything that applies.
+</p>
+
+<button class="choice" onclick="multi('loads','EV',this)">
+EV
+</button>
+
+<button class="choice" onclick="multi('loads','Pool',this)">
+Pool
+</button>
+
+<button class="choice" onclick="multi('loads','Spa',this)">
+Spa
+</button>
+
+<button class="choice" onclick="multi('loads','Clothes dryer',this)">
+Clothes dryer
+</button>
+
+<button class="choice" onclick="multi('loads','Washing machine',this)">
+Washing machine
+</button>
+
+<button class="choice" onclick="multi('loads','Dishwasher',this)">
+Dishwasher
+</button>
+
+<button class="choice" onclick="multi('loads','Electric cooking',this)">
+Electric / induction cooking
+</button>
+
+<button class="choice" onclick="multi('loads','Heat pump / electric heating',this)">
+Heat pump / electric heating
+</button>
+
+<button class="choice" onclick="multi('loads','Electric hot water',this)">
+Electric hot water
+</button>
+
+<button class="choice" onclick="multi('loads','Water pump',this)">
+Water pump
+</button>
+
+<button class="choice" onclick="multi('loads','Other',this)">
+Other
+</button>
+
+<div class="actions">
+<button class="btn back" onclick="back()">← Back</button>
+<button class="btn primary" onclick="next()">CONTINUE →</button>
+
 
 <section class="screen" data-stage="what matters"><div class="eyebrow">what matters to you</div><h2>What would you most like solar to do?</h2><button class="choice" onclick="multi('goals','Lower power bills',this)">Lower our power bills</button><button class="choice" onclick="multi('goals','Predictable costs',this)">Give us more predictable household costs</button><button class="choice" onclick="multi('goals','Use own clean energy',this)">Use more of our own clean energy</button><button class="choice" onclick="multi('goals','Charge EV',this)">Charge our EV from solar</button><button class="choice" onclick="multi('goals','Outage backup',this)">Have power during outages</button><button class="choice" onclick="multi('goals','Battery',this)">Add a battery</button><button class="choice" onclick="multi('goals','Battery ready',this)">Be ready to add a battery later</button><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div></section>
 
