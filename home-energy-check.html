@@ -152,10 +152,45 @@ Other
 <div class="actions">
 <button class="btn back" onclick="back()">← Back</button>
 <button class="btn primary" onclick="next()">CONTINUE →</button>
+</div>
+</section>
 
+<section class="screen" data-stage="what matters">
+<div class="eyebrow">what matters to you</div>
 
-<section class="screen" data-stage="what matters"><div class="eyebrow">what matters to you</div><h2>What would you most like solar to do?</h2><button class="choice" onclick="multi('goals','Lower power bills',this)">Lower our power bills</button><button class="choice" onclick="multi('goals','Predictable costs',this)">Give us more predictable household costs</button><button class="choice" onclick="multi('goals','Use own clean energy',this)">Use more of our own clean energy</button><button class="choice" onclick="multi('goals','Charge EV',this)">Charge our EV from solar</button><button class="choice" onclick="multi('goals','Outage backup',this)">Have power during outages</button><button class="choice" onclick="multi('goals','Battery',this)">Add a battery</button><button class="choice" onclick="multi('goals','Battery ready',this)">Be ready to add a battery later</button><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div></section>
+<h2>What would you most like solar to do?</h2>
 
+<p class="muted">Choose everything that matters to you.</p>
+
+<button class="choice" onclick="multi('goals','Lower my power bills',this)">
+Lower my power bills
+</button>
+
+<button class="choice" onclick="multi('goals','Use more of my own clean energy',this)">
+Use more of my own clean energy
+</button>
+
+<button class="choice" onclick="multi('goals','Reduce reliance on the grid',this)">
+Reduce reliance on the grid
+</button>
+
+<button class="choice" onclick="multi('goals','Battery backup during outages',this)">
+Battery backup during outages
+</button>
+
+<button class="choice" onclick="multi('goals','Charge an EV from solar',this)">
+Charge an EV from solar
+</button>
+
+<button class="choice" onclick="multi('goals','Prepare for future energy needs',this)">
+Prepare for future energy needs
+</button>
+
+<div class="actions">
+<button class="btn back" onclick="back()">← Back</button>
+<button class="btn primary" onclick="next()">CONTINUE →</button>
+</div>
+</section>
 <section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
