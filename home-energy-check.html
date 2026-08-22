@@ -399,518 +399,895 @@ if(batteryGoal){document.getElementById('storageBadge').classList.remove('hidden
 step=screens.length-1;render()}
 function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
 render();
-</script><!-- =========================================================
-SOLECTRICS — 5kW SOLAR + BATTERY SAVINGS REPORT
-Paste immediately ABOVE </body>
-.savings-highlight {
-margin-top: 24px;
-padding: 18px;
-border-left: 3px solid #e86f35;
-background: #faf8f5;
-line-height: 1.55;
-}
+</script>
+<!-- =========================================================
+SOLECTRICS — 5kW SOLAR SAVINGS ESTIMATE
+Paste immediately AFTER the existing </script>
+and BEFORE </body>
+========================================================= -->
 
-.savings-note {
-margin-top: 18px;
-font-size: 12px;
-line-height: 1.55;
-color: #777;
-}
+<style>
+  #solarSavingsReport{
+    margin-top:32px;
+    padding:24px;
+    background:#faf8f5;
+    border-radius:18px;
+  }
 
-@media (max-width: 650px) {
+  #solarSavingsReport h2{
+    margin:0 0 8px;
+    font-size:26px;
+  }
 
-.savings-summary-grid {
-grid-template-columns: 1fr;
-}
+  #solarSavingsReport h3{
+    margin-top:26px;
+    margin-bottom:8px;
+  }
 
-}
+  .solar-report-intro{
+    color:#666;
+    line-height:1.55;
+    margin-bottom:20px;
+  }
 
+  .solar-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin:20px 0;
+  }
+
+  .solar-summary-card{
+    background:#fff;
+    border:1px solid #eee6df;
+    border-radius:14px;
+    padding:16px;
+  }
+
+  .solar-summary-card strong{
+    display:block;
+    font-size:22px;
+    margin-top:6px;
+  }
+
+  .solar-summary-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#777;
+  }
+
+  .solar-chart-wrap{
+    margin-top:22px;
+    overflow-x:auto;
+  }
+
+  #solarSavingsChart{
+    width:100%;
+    min-width:620px;
+    height:360px;
+    display:block;
+  }
+
+  .solar-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+    margin-top:14px;
+    font-size:13px;
+  }
+
+  .solar-key{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+  }
+
+  .solar-dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    display:inline-block;
+  }
+
+  .solar-current{background:#444;}
+  .solar-only{background:#e86f35;}
+  .solar-battery{background:#777;}
+
+  .solar-note{
+    margin-top:22px;
+    padding:16px;
+    border-left:3px solid #e86f35;
+    background:#fff;
+    line-height:1.55;
+    font-size:13px;
+    color:#666;
+  }
+
+  .solar-flow{
+    margin-top:20px;
+    padding:18px;
+    background:#fff;
+    border-radius:14px;
+    line-height:1.6;
+  }
+
+  @media(max-width:700px){
+    .solar-summary-grid{
+      grid-template-columns:1fr;
+    }
+
+    #solarSavingsReport{
+      padding:18px;
+    }
+  }
 </style>
 
-
 <script>
+(function(){
 
-(function () {
+  /* ================================================
+     SOLECTRICS ENERGY MODEL
 
-const SOLAR_SIZE_KW = 5;
-const BATTERY_SIZE_KWH = 10;
+     Indicative 5 kW PV system.
 
+     Uses the customer's uploaded summer/winter bills
+     where available.
+
+     Battery scenario models a nominal ~5 kWh usable
+     battery for energy shifting.
 
-/* Seasonal solar production pattern */
+     This is an estimate, NOT a formal solar proposal.
+  ================================================= */
 
-const SOLAR_SEASON = [
-1.00, /* Jan */
-0.94, /* Feb */
-0.80, /* Mar */
-0.62, /* Apr */
-0.45, /* May */
-0.34, /* Jun */
-0.32, /* Jul */
-0.42, /* Aug */
-0.58, /* Sep */
-0.75, /* Oct */
-0.90, /* Nov */
-1.00 /* Dec */
-];
+  const SOLAR_SIZE_KW = 5;
 
+  /*
+    Approximate Waiheke/Auckland monthly PV production
+    for a reasonably positioned 5 kW system.
 
-const MAX_SOLAR_BILL_REDUCTION = 0.72;
-
-const MAX_EXTRA_BATTERY_REDUCTION = 0.16;
-
-
-function n(value) {
-
-const number = Number(value);
-
-return Number.isFinite(number)
-? number
-: null;
-
-}
-
-
-function money(value) {
-
-return "$" +
-Math.round(value || 0)
-.toLocaleString("en-NZ");
-
-}
-
-
-/* Convert uploaded bill into approximate monthly bill */
-
-function monthlyBillFromBill(bill) {
-
-if (!bill) return null;
-
-const total = n(bill.total_bill_nzd);
-
-const days = n(bill.billing_days);
-
-if (total === null) return null;
-
-if (days && days > 0) {
-return (total / days) * 30.4375;
-}
-
-return total;
-
-}
-
-
-/* Build estimated current monthly bills from
-customer's summer + winter bills */
-
-function buildCurrentProfile() {
-
-const summer =
-answers &&
-answers.bills
-? answers.bills.summer
-: null;
-
-const winter =
-answers &&
-answers.bills
-? answers.bills.winter
-: null;
-
-
-let summerMonthly =
-monthlyBillFromBill(summer);
-
-let winterMonthly =
-monthlyBillFromBill(winter);
-
-
-if (
-summerMonthly === null &&
-winterMonthly === null
-) {
-return null;
-}
-
-
-if (summerMonthly === null) {
-summerMonthly = winterMonthly;
-}
-
-if (winterMonthly === null) {
-winterMonthly = summerMonthly;
-}
-
-
-const WINTER_WEIGHT = [
-0.00,
-0.05,
-0.18,
-0.38,
-0.62,
-0.84,
-1.00,
-0.88,
-0.66,
-0.40,
-0.18,
-0.05
-];
-
-
-return WINTER_WEIGHT.map(function (weight) {
-
-return summerMonthly +
-(winterMonthly - summerMonthly) * weight;
-
-});
-
-}
-
-
-/* Estimate solar-only and solar+battery bills */
-
-function buildSolarProfiles(current) {
-
-const solarOnly = [];
-const solarBattery = [];
-
-
-current.forEach(function (currentBill, month) {
-
-const solarStrength =
-SOLAR_SEASON[month];
-
-
-const solarReduction =
-MAX_SOLAR_BILL_REDUCTION *
-solarStrength;
-
-
-let solarBill =
-currentBill *
-(1 - solarReduction);
-
-
-/*
-Keep a small residual bill because fixed
-network/daily charges generally remain.
-*/
-
-solarBill =
-Math.max(
-solarBill,
-currentBill * 0.08
-);
-
-
-/*
-Battery captures more daytime solar for use
-later in the day.
-*/
-
-const batteryExtra =
-MAX_EXTRA_BATTERY_REDUCTION *
-solarStrength;
-
-
-let batteryBill =
-currentBill *
-(1 - solarReduction - batteryExtra);
-
-
-batteryBill =
-Math.max(
-batteryBill,
-currentBill * 0.06
-);
-
-
-solarOnly.push(solarBill);
-
-solarBattery.push(batteryBill);
-
-});
-
-
-return {
-solarOnly: solarOnly,
-solarBattery: solarBattery
-};
-
-}
-
-
-/* Create report section automatically */
-aria-label="Estimated monthly electricity costs">
-</svg>
-
-</div>
-
-
-<div class="savings-legend">
-
-<span>
-<i class="legend-current"></i>
-Current
-</span>
-
-<span>
-<i class="legend-solar"></i>
-5 kW solar
-</span>
-
-<span>
-<i class="legend-battery"></i>
-5 kW solar + battery
-</span>
-
-</div>
-
-
-<div
-class="savings-highlight"
-id="solarSavingsMessage">
-</div>
-
-
-<p class="savings-note">
-This is an illustrative Solectrics estimate rather
-than a guaranteed saving. Actual performance depends
-on roof orientation and shading, system design,
-household electricity use, electricity tariffs,
-export rates and weather.
-</p>
-
-`;
-
-
-const actions =
-resultScreen.querySelector(".actions");
-
-
-if (actions) {
-
-resultScreen.insertBefore(
-report,
-actions
-);
-
-} else {
-
-resultScreen.appendChild(report);
-
-}
-
-}
-
-
-/* Draw graph */
-(index / (months.length - 1)) *
-graphWidth;
-
-}
-
-
-function y(value) {
-
-return top +
-graphHeight -
-(value / maxValue) *
-graphHeight;
-
-}
-
-
-function points(values) {
-
-return values.map(
-function (value, index) {
-
-return x(index) + "," + y(value);
-
-}
-).join(" ");
-
-}
-
-
-let grid = "";
-
-
-for (let i = 0; i <= 4; i++) {
-
-const value =
-maxValue * (i / 4);
-
-const yy = y(value);
-
-
-grid += `
-
-<line
-x1="${left}"
-y1="${yy}"
-x2="${width-right}"
-y2="${yy}"
-stroke="#e5e5e5"
-stroke-width="1"
-/>
-
-<text
-x="${left-12}"
-y="${yy+4}"
-text-anchor="end"
-font-size="12"
-fill="#777">
-${money(value)}
-</text>
-
-`;
-
-}
-
-
-let labels = "";
-
-
-months.forEach(
-function (month, index) {
-/* Fill the report */
-
-window.renderSavingsReport =
-function () {
-
-ensureSavingsReport();
-
-
-const current =
-buildCurrentProfile();
-
-
-if (!current) return;
-
-
-const profiles =
-buildSolarProfiles(current);
-
-
-const solar =
-profiles.solarOnly;
-
-const battery =
-profiles.solarBattery;
-
-
-const currentAnnual =
-current.reduce(
-function (a,b) {
-return a+b;
-},
-0
-);
-
-
-const solarAnnual =
-solar.reduce(
-function (a,b) {
-return a+b;
-},
-0
-);
-
-
-const batteryAnnual =
-battery.reduce(
-function (a,b) {
-return a+b;
-},
-0
-);
-
-
-const solarSaving =
-currentAnnual -
-solarAnnual;
-
-
-const batterySaving =
-currentAnnual -
-batteryAnnual;
-
-
-const extraBatterySaving =
-solarAnnual -
-batteryAnnual;
-
-
-document.getElementById(
-"annualCurrentCost"
-).textContent =
-money(currentAnnual);
-
-
-document.getElementById(
-"annualSolarCost"
-).textContent =
-money(solarAnnual);
-
-
-document.getElementById(
-"annualBatteryCost"
-).textContent =
-money(batteryAnnual);
-
-
-const message =
-document.getElementById(
-"solarSavingsMessage"
-);
-
-
-message.innerHTML = `
-
-<strong>
-Estimated first-year saving
-</strong>
-
-<br><br>
-
-5 kW solar:
-<strong>
-${money(solarSaving)}
-</strong>
-per year.
-
-<br>
-
-5 kW solar + ${BATTERY_SIZE_KWH} kWh battery:
-<strong>
-${money(batterySaving)}
-</strong>
-per year.
-
-<br><br>
-
-Estimated additional electricity-bill saving
-from adding the battery:
-<strong>
-${money(extraBatterySaving)}
-</strong>
-per year.
-
-`;
-
-
-drawSavingsChart(
-current,
-solar,
-battery
-);
-
-};
-
-
-/* Connect to your existing result page automatically */
+    Values are kWh/month and deliberately conservative.
+    A site assessment can later replace these with
+    roof-specific modelling.
+  */
+
+  const solarGeneration = [
+    650, // Jan
+    590, // Feb
+    520, // Mar
+    410, // Apr
+    320, // May
+    260, // Jun
+    290, // Jul
+    360, // Aug
+    440, // Sep
+    520, // Oct
+    590, // Nov
+    640  // Dec
+  ];
+
+  const monthNames = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
+
+  function numberOrNull(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function getBill(which){
+    if(!window.answers || !answers.bills) return null;
+    return answers.bills[which] || null;
+  }
+
+  function billMonthlyKwh(bill){
+    if(!bill) return null;
+
+    let kwh = numberOrNull(bill.total_import_kwh);
+    const days = numberOrNull(bill.billing_days);
+
+    if(kwh !== null && days && days > 0){
+      return (kwh / days) * 30.4375;
+    }
+
+    const daily = numberOrNull(bill.average_daily_kwh);
+
+    if(daily !== null){
+      return daily * 30.4375;
+    }
+
+    return null;
+  }
+
+  function billMonthlyCost(bill){
+    if(!bill) return null;
+
+    const total = numberOrNull(bill.total_bill_nzd);
+    const days = numberOrNull(bill.billing_days);
+
+    if(total !== null && days && days > 0){
+      return (total / days) * 30.4375;
+    }
+
+    return total;
+  }
+
+  function getRate(bill,key){
+    if(!bill) return null;
+
+    const n = numberOrNull(bill[key]);
+
+    if(n === null) return null;
+
+    return n / 100;
+  }
+
+  function firstNumber(){
+    for(let i=0;i<arguments.length;i++){
+      if(arguments[i] !== null &&
+         arguments[i] !== undefined &&
+         Number.isFinite(arguments[i])){
+        return arguments[i];
+      }
+    }
+    return null;
+  }
+
+  function interpolateMonthly(summer,winter){
+
+    /*
+      NZ seasonal demand shape.
+      Summer lowest, winter highest.
+
+      0 = summer profile
+      1 = winter profile
+    */
+
+    const winterWeight = [
+      0.00, // Jan
+      0.05,
+      0.20,
+      0.45,
+      0.75,
+      1.00, // Jun
+      1.00, // Jul
+      0.85,
+      0.60,
+      0.35,
+      0.15,
+      0.02
+    ];
+
+    return winterWeight.map(w =>
+      summer + ((winter - summer) * w)
+    );
+  }
+
+  function money(v){
+    const sign = v < 0 ? "-$" : "$";
+    return sign + Math.abs(v).toFixed(0);
+  }
+
+  function buildSolarModel(){
+
+    const summerBill = getBill("summer");
+    const winterBill = getBill("winter");
+
+    let summerKwh = billMonthlyKwh(summerBill);
+    let winterKwh = billMonthlyKwh(winterBill);
+
+    if(summerKwh === null && winterKwh === null){
+      return null;
+    }
+
+    if(summerKwh === null) summerKwh = winterKwh * 0.65;
+    if(winterKwh === null) winterKwh = summerKwh * 1.55;
+
+    const demand = interpolateMonthly(
+      summerKwh,
+      winterKwh
+    );
+
+    let summerCost = billMonthlyCost(summerBill);
+    let winterCost = billMonthlyCost(winterBill);
+
+    /*
+      Determine customer's effective import tariff.
+      Prefer explicit bill rates.
+    */
+
+    const importRate = firstNumber(
+      getRate(summerBill,"import_rate_cents"),
+      getRate(winterBill,"import_rate_cents"),
+      getRate(summerBill,"peak_rate_cents"),
+      getRate(winterBill,"peak_rate_cents"),
+      0.30
+    );
+
+    /*
+      Export credit.
+      Prefer customer's actual tariff.
+      Conservative fallback = 12c/kWh.
+    */
+
+    const exportRate = firstNumber(
+      getRate(summerBill,"export_rate_cents"),
+      getRate(winterBill,"export_rate_cents"),
+      0.12
+    );
+
+    /*
+      Fixed daily charge.
+    */
+
+    const fixedDaily = firstNumber(
+      getRate(summerBill,"daily_fixed_charge_cents"),
+      getRate(winterBill,"daily_fixed_charge_cents"),
+      0
+    );
+
+    const fixedMonthly = fixedDaily * 30.4375;
+
+    /*
+      If actual bill costs exist, use them to create
+      the current-bill seasonal curve.
+
+      Otherwise calculate from demand.
+    */
+
+    if(summerCost === null){
+      summerCost =
+        summerKwh * importRate +
+        fixedMonthly;
+    }
+
+    if(winterCost === null){
+      winterCost =
+        winterKwh * importRate +
+        fixedMonthly;
+    }
+
+    const currentCost =
+      interpolateMonthly(summerCost,winterCost);
+
+    const solarOnlyCost = [];
+    const batteryCost = [];
+
+    const flows = [];
+
+    for(let m=0;m<12;m++){
+
+      const load = demand[m];
+      const pv = solarGeneration[m];
+
+      /*
+        SOLAR ONLY
+
+        Self-consumption changes seasonally.
+
+        In summer there is more surplus solar and
+        therefore proportionally more export.
+
+        In winter more generation is consumed directly.
+      */
+
+      const solarFractionOfLoad =
+        Math.min(1,pv / Math.max(load,1));
+
+      let selfConsumptionFraction;
+
+      if(solarFractionOfLoad > 0.9){
+        selfConsumptionFraction = 0.42;
+      }else if(solarFractionOfLoad > 0.6){
+        selfConsumptionFraction = 0.52;
+      }else{
+        selfConsumptionFraction = 0.65;
+      }
+
+      let directSolar =
+        Math.min(
+          load,
+          pv * selfConsumptionFraction
+        );
+
+      let exportSolar =
+        Math.max(0,pv - directSolar);
+
+      let gridImport =
+        Math.max(0,load - directSolar);
+
+      let solarBill =
+        fixedMonthly +
+        (gridImport * importRate) -
+        (exportSolar * exportRate);
+
+      solarOnlyCost.push(solarBill);
+
+      /*
+        BATTERY MODEL
+
+        Nominal ~5 kWh usable storage.
+
+        Battery captures solar that would otherwise
+        be exported and shifts it into evening/night.
+
+        Monthly cycling is limited by:
+        - surplus PV
+        - remaining household demand
+        - nominal daily battery capacity
+        - round-trip efficiency
+      */
+
+      const days =
+        new Date(2026,m+1,0).getDate();
+
+      const batteryUsable = 5;
+      const roundTripEfficiency = 0.90;
+
+      const maximumMonthlyShift =
+        batteryUsable *
+        days *
+        roundTripEfficiency;
+
+      const remainingDemand =
+        Math.max(0,load - directSolar);
+
+      const availableSurplus =
+        Math.max(0,exportSolar);
+
+      const shiftedEnergy =
+        Math.min(
+          maximumMonthlyShift,
+          remainingDemand,
+          availableSurplus * roundTripEfficiency
+        );
+
+      const batteryGridImport =
+        Math.max(
+          0,
+          gridImport - shiftedEnergy
+        );
+
+      /*
+        Energy put into battery requires slightly more
+        PV than energy delivered because of losses.
+      */
+
+      const solarUsedForBattery =
+        shiftedEnergy /
+        roundTripEfficiency;
+
+      const batteryExport =
+        Math.max(
+          0,
+          exportSolar - solarUsedForBattery
+        );
+
+      const withBatteryBill =
+        fixedMonthly +
+        (batteryGridImport * importRate) -
+        (batteryExport * exportRate);
+
+      batteryCost.push(withBatteryBill);
+
+      flows.push({
+        load,
+        pv,
+        directSolar,
+        gridImport,
+        exportSolar,
+        shiftedEnergy,
+        batteryGridImport,
+        batteryExport
+      });
+    }
+
+    return {
+      demand,
+      currentCost,
+      solarOnlyCost,
+      batteryCost,
+      flows,
+      importRate,
+      exportRate,
+      fixedMonthly
+    };
+  }
+
+  function annualTotal(arr){
+    return arr.reduce((a,b)=>a+b,0);
+  }
+
+  function createReportContainer(){
+
+    let existing =
+      document.getElementById("solarSavingsReport");
+
+    if(existing) return existing;
+
+    const report = document.createElement("div");
+
+    report.id = "solarSavingsReport";
+
+    /*
+      Try to place report inside the final result screen.
+    */
+
+    const resultScreen =
+      document.querySelector(
+        '[data-stage="your result"]'
+      );
+
+    if(resultScreen){
+      resultScreen.appendChild(report);
+    }else{
+      document.body.appendChild(report);
+    }
+
+    return report;
+  }
+
+  function renderSolarReport(){
+
+    const model = buildSolarModel();
+
+    if(!model) return;
+
+    const report = createReportContainer();
+
+    const currentAnnual =
+      annualTotal(model.currentCost);
+
+    const solarAnnual =
+      annualTotal(model.solarOnlyCost);
+
+    const batteryAnnual =
+      annualTotal(model.batteryCost);
+
+    const solarSaving =
+      currentAnnual - solarAnnual;
+
+    const batterySaving =
+      currentAnnual - batteryAnnual;
+
+    const extraBatterySaving =
+      solarAnnual - batteryAnnual;
+
+    report.innerHTML = `
+      <h2>Your estimated solar savings</h2>
+
+      <p class="solar-report-intro">
+        Based on the electricity information you supplied,
+        here's an indicative picture of how a
+        <strong>5 kW solar system</strong> could change
+        your electricity costs through the year.
+        We've also shown the potential effect of adding
+        approximately <strong>5 kWh of usable battery storage</strong>.
+      </p>
+
+      <div class="solar-summary-grid">
+
+        <div class="solar-summary-card">
+          <span class="solar-summary-label">
+            Current estimated annual bill
+          </span>
+          <strong>${money(currentAnnual)}</strong>
+        </div>
+
+        <div class="solar-summary-card">
+          <span class="solar-summary-label">
+            5 kW solar
+          </span>
+          <strong>${money(solarAnnual)}</strong>
+          <small>
+            Approx. ${money(solarSaving)} annual reduction
+          </small>
+        </div>
+
+        <div class="solar-summary-card">
+          <span class="solar-summary-label">
+            5 kW solar + battery
+          </span>
+          <strong>${money(batteryAnnual)}</strong>
+          <small>
+            Approx. ${money(batterySaving)} annual reduction
+          </small>
+        </div>
+
+      </div>
+
+      <h3>How your electricity costs could change</h3>
+
+      <p class="solar-report-intro">
+        The seasonal shape matters. Solar generation is
+        strongest in summer, when you may export surplus
+        electricity back to the grid. In winter, generation
+        falls while household demand often rises.
+      </p>
+
+      <div class="solar-chart-wrap">
+        <svg
+          id="solarSavingsChart"
+          viewBox="0 0 760 360"
+          role="img"
+          aria-label="Estimated monthly electricity costs"
+        ></svg>
+      </div>
+
+      <div class="solar-legend">
+        <span class="solar-key">
+          <span class="solar-dot solar-current"></span>
+          Current bill
+        </span>
+
+        <span class="solar-key">
+          <span class="solar-dot solar-only"></span>
+          5 kW solar
+        </span>
+
+        <span class="solar-key">
+          <span class="solar-dot solar-battery"></span>
+          5 kW solar + battery
+        </span>
+      </div>
+
+      <div class="solar-flow">
+        <strong>What the battery changes</strong><br>
+        Solar without a battery supplies the home first and
+        sends surplus generation to the grid. A battery can
+        capture some of that surplus during the day and use
+        it later in the evening, reducing the amount of
+        electricity bought back from the grid.
+        In this estimate, that energy shifting is worth about
+        <strong>${money(extraBatterySaving)} per year</strong>
+        beyond solar alone.
+      </div>
+
+      <div class="solar-note">
+        <strong>This is an indicative home-energy estimate,
+        not a quote.</strong><br>
+        It uses the bill information supplied, an indicative
+        5 kW solar-generation profile for the Auckland/Waiheke
+        area, estimated self-consumption, your available
+        electricity tariff information, export credits,
+        fixed charges and a nominal 5 kWh usable battery.
+        Actual performance depends on roof orientation,
+        shading, household behaviour, tariff changes,
+        inverter/system design and the battery selected.
+        A Solectrics site assessment allows us to model your
+        home more accurately.
+      </div>
+    `;
+
+    drawChart(model);
+  }
+
+  function drawChart(model){
+
+    const svg =
+      document.getElementById("solarSavingsChart");
+
+    if(!svg) return;
+
+    const width = 760;
+    const height = 360;
+
+    const left = 58;
+    const right = 20;
+    const top = 25;
+    const bottom = 48;
+
+    const plotWidth =
+      width-left-right;
+
+    const plotHeight =
+      height-top-bottom;
+
+    const allValues = [
+      ...model.currentCost,
+      ...model.solarOnlyCost,
+      ...model.batteryCost
+    ];
+
+    /*
+      Allow negative summer bills.
+      This means export credits can visibly push
+      the graph below $0.
+    */
+
+    let minValue =
+      Math.min(0,...allValues);
+
+    let maxValue =
+      Math.max(...allValues);
+
+    const range =
+      Math.max(50,maxValue-minValue);
+
+    minValue -= range*0.10;
+    maxValue += range*0.10;
+
+    function x(i){
+      return left +
+        (i/(monthNames.length-1))*plotWidth;
+    }
+
+    function y(value){
+      return top +
+        ((maxValue-value)/(maxValue-minValue))
+        *plotHeight;
+    }
+
+    function linePath(values){
+      return values.map((v,i)=>
+        `${i===0?"M":"L"} ${x(i)} ${y(v)}`
+      ).join(" ");
+    }
+
+    let html = "";
+
+    /*
+      Horizontal grid lines
+    */
+
+    const gridCount = 5;
+
+    for(let i=0;i<=gridCount;i++){
+
+      const value =
+        minValue +
+        ((maxValue-minValue)/gridCount)*i;
+
+      const yy = y(value);
+
+      html += `
+        <line
+          x1="${left}"
+          y1="${yy}"
+          x2="${width-right}"
+          y2="${yy}"
+          stroke="#e4e0dc"
+          stroke-width="1"
+        />
+
+        <text
+          x="${left-10}"
+          y="${yy+4}"
+          text-anchor="end"
+          font-size="11"
+          fill="#777"
+        >
+          ${money(value)}
+        </text>
+      `;
+    }
+
+    /*
+      Zero line — important where summer bill
+      becomes a credit.
+    */
+
+    if(minValue < 0 && maxValue > 0){
+
+      const zeroY = y(0);
+
+      html += `
+        <line
+          x1="${left}"
+          y1="${zeroY}"
+          x2="${width-right}"
+          y2="${zeroY}"
+          stroke="#999"
+          stroke-width="1.5"
+          stroke-dasharray="5 5"
+        />
+      `;
+    }
+
+    /*
+      Month labels
+    */
+
+    monthNames.forEach((month,i)=>{
+
+      html += `
+        <text
+          x="${x(i)}"
+          y="${height-18}"
+          text-anchor="middle"
+          font-size="11"
+          fill="#666"
+        >
+          ${month}
+        </text>
+      `;
+    });
+
+    /*
+      Current bill
+    */
+
+    html += `
+      <path
+        d="${linePath(model.currentCost)}"
+        fill="none"
+        stroke="#444"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    `;
+
+    /*
+      Solar only
+    */
+
+    html += `
+      <path
+        d="${linePath(model.solarOnlyCost)}"
+        fill="none"
+        stroke="#e86f35"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    `;
+
+    /*
+      Solar + battery
+    */
+
+    html += `
+      <path
+        d="${linePath(model.batteryCost)}"
+        fill="none"
+        stroke="#777"
+        stroke-width="3"
+        stroke-dasharray="8 5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    `;
+
+    svg.innerHTML = html;
+  }
+
+  /*
+    Hook into the existing Solectrics showResult()
+    without replacing it.
+  */
+
+  const originalShowResult =
+    window.showResult;
+
+  if(typeof originalShowResult === "function"){
+
+    window.showResult = function(){
+
+      const result =
+        originalShowResult.apply(this,arguments);
+
+      setTimeout(renderSolarReport,50);
+
+      return result;
+    };
+
+  }else{
+
+    /*
+      Fallback if showResult isn't globally available.
+    */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function(){
+        setTimeout(renderSolarReport,200);
+      }
+    );
+  }
+
+})();
+</script>
 </body>
 </html>
