@@ -38,11 +38,20 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 <header class="top"><div class="top-inner"><div class="brand">solectrics</div><div class="stage" id="stage">your home</div><div class="progress"><div class="progress-fill" id="progress"></div></div></div></header>
 
 <section class="screen active" data-stage="your home">
-<div class="eyebrow">smart solar home check</div>
-<h1>New to solar?<br>You’re in the right place.</h1>
-<p>Tell us a little about your home and how you use electricity.</p>
-<p class="muted">We’ll help you understand where solar could make the biggest difference — without expecting you to know anything about solar.</p>
-<button class="btn primary" onclick="next()">START MY HOME CHECK →</button>
+  <div class="eyebrow">my home solar check</div>
+
+  <h1>A simple starting point for your home.</h1>
+
+  <p>
+    Tell us a little about your household, how you use electricity
+    and what you'd like solar to do for you.
+  </p>
+
+  <p class="muted">
+    It only takes a few minutes.
+  </p>
+
+  <button class="btn primary" onclick="next()">LET'S START →</button>
 </section>
 
 <section class="screen" data-stage="your home"><div class="eyebrow">your household</div><h2>How many people live here?</h2><div class="grid five"><button class="choice" onclick="single('people','1',this);next()">1</button><button class="choice" onclick="single('people','2',this);next()">2</button><button class="choice" onclick="single('people','3',this);next()">3</button><button class="choice" onclick="single('people','4',this);next()">4</button><button class="choice" onclick="single('people','5+',this);next()">5+</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
