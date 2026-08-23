@@ -552,1547 +552,1239 @@ function bookVisit(){const subject=encodeURIComponent('Free Solectrics home sola
 render();
 </script>
 <!-- =========================================================
-SOLECTRICS — BILL-DRIVEN 5kW SOLAR + BATTERY REPORT
-Paste AFTER the original </script>
-and BEFORE </body>
+SOLECTRICS — SMART SOLAR HOME REPORT
+Paste immediately AFTER the original </script>
+and immediately BEFORE </body>
 ========================================================= -->
 
 <style>
-
-#solarSavingsReport{
-  margin-top:36px;
-  padding:26px;
-  background:#faf8f5;
-  border-radius:18px;
-  border:1px solid #eee7e1;
-}
-
-#solarSavingsReport h2{
-  margin:0 0 10px;
-  font-size:28px;
-}
-
-#solarSavingsReport h3{
-  margin:28px 0 8px;
-}
-
-.solar-report-intro{
-  color:#666;
-  line-height:1.55;
-}
-
-.solar-summary-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  margin:24px 0;
-}
-
-.solar-summary-card{
-  background:white;
-  border:1px solid #e8e1db;
-  border-radius:14px;
-  padding:18px;
-}
-
-.solar-summary-label{
-  display:block;
-  color:#777;
-  font-size:12px;
-  line-height:1.4;
-  margin-bottom:8px;
-}
-
-.solar-summary-card strong{
-  display:block;
-  font-size:24px;
-}
-
-.solar-summary-card small{
-  display:block;
-  margin-top:6px;
-  color:#666;
-  line-height:1.4;
-}
-
-.solar-chart-wrap{
-  width:100%;
-  overflow-x:auto;
-  margin-top:20px;
-}
-
-#solarSavingsChart{
-  display:block;
-  width:100%;
-  min-width:620px;
-  height:auto;
-}
-
-.solar-legend{
-  display:flex;
-  flex-wrap:wrap;
-  gap:18px;
-  margin-top:14px;
-  font-size:13px;
-}
-
-.solar-key{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.solar-line{
-  width:25px;
-  height:4px;
-  display:inline-block;
-  border-radius:4px;
-}
-
-.line-current{
-  background:#444;
-}
-
-.line-solar{
-  background:#e86f35;
-}
-
-.line-battery{
-  background:#777;
-}
-
-.solar-flow{
-  margin-top:24px;
-  padding:18px;
-  background:white;
-  border-left:3px solid #e86f35;
-  line-height:1.55;
-}
-
-.solar-note{
-  margin-top:18px;
-  color:#777;
-  font-size:12px;
-  line-height:1.55;
-}
-
-@media(max-width:700px){
-
-  .solar-summary-grid{
-    grid-template-columns:1fr;
+  #smartSolarReport{
+    margin-top:34px;
+    color:#24342f;
   }
 
-  #solarSavingsReport{
-    padding:18px;
+  #smartSolarReport *{
+    box-sizing:border-box;
   }
 
-}
+  #smartSolarReport .ssr-kicker{
+    color:#e98245;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-size:13px;
+    font-weight:800;
+    margin-bottom:8px;
+  }
 
+  #smartSolarReport h2{
+    font-size:30px;
+    line-height:1.12;
+    margin:0 0 12px;
+    color:#24342f;
+  }
+
+  #smartSolarReport h3{
+    font-size:22px;
+    line-height:1.2;
+    margin:30px 0 10px;
+    color:#24342f;
+  }
+
+  #smartSolarReport p{
+    line-height:1.55;
+  }
+
+  #smartSolarReport .ssr-intro{
+    color:#68736f;
+    margin:0 0 22px;
+  }
+
+  #smartSolarReport .ssr-panel{
+    background:#fff;
+    border:1px solid #eee7e1;
+    border-radius:20px;
+    padding:24px;
+    margin-top:18px;
+  }
+
+  #smartSolarReport .ssr-four{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+    margin-top:20px;
+  }
+
+  #smartSolarReport .ssr-option{
+    background:#fff;
+    border:1px solid #e9dfd7;
+    border-radius:18px;
+    padding:20px 17px;
+    min-height:190px;
+  }
+
+  #smartSolarReport .ssr-option.smart{
+    border:2px solid #ef8245;
+  }
+
+  #smartSolarReport .ssr-option.battery{
+    background:#fffaf7;
+  }
+
+  #smartSolarReport .ssr-number{
+    font-size:12px;
+    color:#e76f2e;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:800;
+    margin-bottom:10px;
+  }
+
+  #smartSolarReport .ssr-option h4{
+    margin:0 0 14px;
+    font-size:18px;
+    line-height:1.2;
+  }
+
+  #smartSolarReport .ssr-cost{
+    font-size:28px;
+    line-height:1;
+    font-weight:800;
+    margin:12px 0 7px;
+  }
+
+  #smartSolarReport .ssr-saving{
+    font-size:14px;
+    color:#68736f;
+    line-height:1.4;
+  }
+
+  #smartSolarReport .ssr-explain{
+    font-size:14px;
+    line-height:1.45;
+    margin-top:13px;
+  }
+
+  #smartSolarReport .ssr-flow{
+    margin:22px 0 6px;
+    padding:17px 18px;
+    background:#fffaf7;
+    border-left:3px solid #ef8245;
+    border-radius:0 14px 14px 0;
+    font-weight:700;
+    line-height:1.55;
+  }
+
+  #smartSolarReport .ssr-smartbox{
+    background:#fffaf7;
+    border-left:3px solid #ef8245;
+    padding:20px;
+    margin-top:18px;
+    border-radius:0 16px 16px 0;
+  }
+
+  #smartSolarReport .ssr-smartbox h4{
+    margin:0 0 8px;
+    font-size:19px;
+  }
+
+  #smartSolarReport .ssr-smartbox p:last-child{
+    margin-bottom:0;
+  }
+
+  #smartSolarReport .ssr-chart-wrap{
+    width:100%;
+    overflow:hidden;
+    margin-top:20px;
+  }
+
+  #smartSolarReport .ssr-chart{
+    width:100%;
+    height:auto;
+    display:block;
+  }
+
+  #smartSolarReport .ssr-legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    margin-top:12px;
+    font-size:13px;
+    color:#4e5a56;
+  }
+
+  #smartSolarReport .ssr-legend span{
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+
+  #smartSolarReport .ssr-line{
+    width:25px;
+    height:4px;
+    border-radius:5px;
+    display:inline-block;
+    background:#444;
+  }
+
+  #smartSolarReport .ssr-line.solar{
+    background:#ef6d2f;
+  }
+
+  #smartSolarReport .ssr-line.smart{
+    background:#a78e7e;
+  }
+
+  #smartSolarReport .ssr-line.batt{
+    background:#777;
+    border-top:1px dashed #777;
+  }
+
+  #smartSolarReport .ssr-battery{
+    margin-top:26px;
+    background:#fff;
+    border-left:3px solid #ef8245;
+    padding:22px;
+  }
+
+  #smartSolarReport .ssr-battery h3{
+    margin-top:0;
+  }
+
+  #smartSolarReport .ssr-battery-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-top:18px;
+  }
+
+  #smartSolarReport .ssr-benefit{
+    background:#faf8f5;
+    border-radius:15px;
+    padding:17px;
+  }
+
+  #smartSolarReport .ssr-benefit strong{
+    display:block;
+    margin-bottom:6px;
+  }
+
+  #smartSolarReport .ssr-note{
+    color:#747b78;
+    font-size:13px;
+    line-height:1.5;
+    margin-top:22px;
+  }
+
+  #smartSolarReport .ssr-highlight{
+    color:#e76f2e;
+    font-weight:800;
+  }
+
+  @media(max-width:800px){
+    #smartSolarReport .ssr-four{
+      grid-template-columns:1fr 1fr;
+    }
+
+    #smartSolarReport .ssr-battery-grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media(max-width:540px){
+    #smartSolarReport .ssr-four{
+      grid-template-columns:1fr;
+    }
+
+    #smartSolarReport .ssr-panel{
+      padding:18px;
+    }
+
+    #smartSolarReport h2{
+      font-size:27px;
+    }
+  }
 </style>
 
 <script>
-
 (function(){
 
-  const SOLAR_SIZE_KW = 5;
-  const BATTERY_SIZE_KWH = 5;
+  /* ---------------------------------------------------------
+     HELPERS
+  --------------------------------------------------------- */
 
-  const DEFAULT_IMPORT_RATE = 0.30;
-  const DEFAULT_EXPORT_RATE = 0.12;
-
-  const BATTERY_EFFICIENCY = 0.90;
-
-  const monthNames = [
-    "Jan","Feb","Mar","Apr",
-    "May","Jun","Jul","Aug",
-    "Sep","Oct","Nov","Dec"
-  ];
-
-  /*
-    Indicative monthly generation for a 5 kW
-    Auckland / Waiheke system.
-
-    These can later be replaced with roof-specific
-    generation estimates.
-  */
-
-  const solarGeneration = [
-    650,
-    590,
-    520,
-    410,
-    320,
-    260,
-    290,
-    360,
-    440,
-    520,
-    590,
-    640
-  ];
-
-
-  function num(value){
-
-    const n = Number(value);
-
-    return Number.isFinite(n)
-      ? n
-      : null;
-
+  function n(value, fallback){
+    var x = parseFloat(
+      String(value == null ? "" : value)
+        .replace(/[$,%\s,]/g,"")
+    );
+    return Number.isFinite(x) ? x : (fallback || 0);
   }
-
 
   function money(value){
-
-    const rounded =
-      Math.round(value || 0);
-
-    if(rounded < 0){
-
-      return "-$" +
-        Math.abs(rounded)
-          .toLocaleString("en-NZ");
-
-    }
-
-    return "$" +
-      rounded.toLocaleString("en-NZ");
-
+    return "$" + Math.round(Math.max(0,value)).toLocaleString("en-NZ");
   }
 
-
-  function getBill(which){
-
-    if(
-      typeof answers === "undefined" ||
-      !answers.bills
-    ){
-      return null;
-    }
-
-    return answers.bills[which] || null;
-
+  function clamp(value,min,max){
+    return Math.max(min,Math.min(max,value));
   }
 
+  function getBill(season){
+    if(!window.answers) return {};
 
-  function billValue(bill,key){
+    var b = answers.bills || {};
 
-    if(!bill) return null;
-
-    return num(bill[key]);
-
+    return b[season] ||
+           b[season + "Bill"] ||
+           answers[season + "Bill"] ||
+           {};
   }
 
+  function field(obj,names){
+    if(!obj) return 0;
 
-  function monthlyImportedKwh(bill){
-
-    if(!bill) return null;
-
-    const imported =
-      billValue(
-        bill,
-        "total_import_kwh"
-      );
-
-    const days =
-      billValue(
-        bill,
-        "billing_days"
-      );
-
-
-    if(
-      imported !== null &&
-      days &&
-      days > 0
-    ){
-
-      return (
-        imported /
-        days
-      ) * 30.4375;
-
-    }
-
-
-    const daily =
-      billValue(
-        bill,
-        "average_daily_kwh"
-      );
-
-
-    if(daily !== null){
-
-      return daily * 30.4375;
-
-    }
-
-
-    return null;
-
-  }
-
-
-  function monthlyActualBill(bill){
-
-    if(!bill) return null;
-
-    const total =
-      billValue(
-        bill,
-        "total_bill_nzd"
-      );
-
-    const days =
-      billValue(
-        bill,
-        "billing_days"
-      );
-
-
-    if(
-      total !== null &&
-      days &&
-      days > 0
-    ){
-
-      return (
-        total /
-        days
-      ) * 30.4375;
-
-    }
-
-
-    return total;
-
-  }
-
-
-  function centsToDollars(bill,key){
-
-    const value =
-      billValue(
-        bill,
-        key
-      );
-
-    if(value === null){
-      return null;
-    }
-
-    return value / 100;
-
-  }
-
-
-  function firstUseful(){
-
-    for(
-      let i=0;
-      i<arguments.length;
-      i++
-    ){
-
-      const value =
-        arguments[i];
-
-      if(
-        value !== null &&
-        value !== undefined &&
-        Number.isFinite(value)
-      ){
-        return value;
+    for(var i=0;i<names.length;i++){
+      if(obj[names[i]] !== undefined &&
+         obj[names[i]] !== null &&
+         obj[names[i]] !== ""){
+        return n(obj[names[i]],0);
       }
-
     }
 
-    return null;
-
+    return 0;
   }
 
+  function textField(obj,names){
+    if(!obj) return "";
 
-  function averageUseful(a,b,fallback){
-
-    const values = [];
-
-    if(Number.isFinite(a)){
-      values.push(a);
-    }
-
-    if(Number.isFinite(b)){
-      values.push(b);
-    }
-
-    if(!values.length){
-      return fallback;
-    }
-
-    return values.reduce(
-      function(x,y){
-        return x+y;
-      },
-      0
-    ) / values.length;
-
-  }
-
-
-  function seasonalProfile(
-    summer,
-    winter
-  ){
-
-    const winterWeight = [
-      0.00,
-      0.05,
-      0.18,
-      0.40,
-      0.68,
-      0.90,
-      1.00,
-      0.88,
-      0.62,
-      0.36,
-      0.15,
-      0.03
-    ];
-
-
-    return winterWeight.map(
-      function(weight){
-
-        return summer +
-          (
-            winter -
-            summer
-          ) * weight;
-
+    for(var i=0;i<names.length;i++){
+      if(obj[names[i]]){
+        return String(obj[names[i]]);
       }
-    );
+    }
 
+    return "";
   }
 
+  function daysInBill(bill){
+    var days = field(bill,[
+      "billing_days",
+      "billingDays",
+      "days"
+    ]);
 
-  function buildModel(){
+    return days || 30;
+  }
 
-    const summerBill =
-      getBill("summer");
+  function billKwh(bill){
+    var total = field(bill,[
+      "total_import_kwh",
+      "import_kwh",
+      "total_kwh",
+      "kwh",
+      "usage_kwh"
+    ]);
 
-    const winterBill =
-      getBill("winter");
+    if(total) return total;
 
+    var daily = field(bill,[
+      "average_daily_kwh",
+      "daily_kwh",
+      "averageDailyKwh"
+    ]);
 
-    let summerUse =
-      monthlyImportedKwh(
-        summerBill
-      );
+    return daily * daysInBill(bill);
+  }
 
+  function billCost(bill){
+    return field(bill,[
+      "total_bill_nzd",
+      "total_bill",
+      "bill_total",
+      "amount",
+      "cost"
+    ]);
+  }
 
-    let winterUse =
-      monthlyImportedKwh(
-        winterBill
-      );
+  function dailyKwh(bill){
+    var direct = field(bill,[
+      "average_daily_kwh",
+      "daily_kwh",
+      "averageDailyKwh"
+    ]);
 
+    if(direct) return direct;
 
-    if(
-      summerUse === null &&
-      winterUse === null
-    ){
-      return null;
+    return billKwh(bill) / daysInBill(bill);
+  }
+
+  function getImportRate(){
+    var summer = getBill("summer");
+    var winter = getBill("winter");
+
+    var explicitRates = [
+      field(summer,["import_rate","unit_rate","usage_rate"]),
+      field(winter,["import_rate","unit_rate","usage_rate"])
+    ].filter(function(x){ return x > 0; });
+
+    if(explicitRates.length){
+      var r = explicitRates.reduce(function(a,b){return a+b;},0) /
+              explicitRates.length;
+
+      if(r > 2) r = r / 100;
+
+      return clamp(r,.20,.60);
     }
 
+    return .33;
+  }
 
-    if(summerUse === null){
+  function getExportRate(){
+    var summer = getBill("summer");
+    var winter = getBill("winter");
 
-      summerUse =
-        winterUse * 0.65;
+    var rates = [
+      field(summer,["export_rate","buyback_rate","solar_export_rate"]),
+      field(winter,["export_rate","buyback_rate","solar_export_rate"])
+    ].filter(function(x){return x > 0;});
 
+    if(rates.length){
+      var r = rates.reduce(function(a,b){return a+b;},0) / rates.length;
+
+      if(r > 2) r = r / 100;
+
+      return clamp(r,.05,.30);
     }
 
+    return .12;
+  }
 
-    if(winterUse === null){
+  function estimateAnnualUse(){
+    var summer = dailyKwh(getBill("summer"));
+    var winter = dailyKwh(getBill("winter"));
 
-      winterUse =
-        summerUse * 1.55;
-
-    }
-
-
-    const monthlyUse =
-      seasonalProfile(
-        summerUse,
-        winterUse
-      );
-
-
-    /*
-      Import rate.
-
-      Prefer explicit main import rate.
-      If unavailable, use peak/off-peak information.
-    */
-
-    const summerImportRate =
-      firstUseful(
-
-        centsToDollars(
-          summerBill,
-          "import_rate_cents"
-        ),
-
-        centsToDollars(
-          summerBill,
-          "peak_rate_cents"
-        ),
-
-        centsToDollars(
-          summerBill,
-          "offpeak_rate_cents"
-        )
-
-      );
-
-
-    const winterImportRate =
-      firstUseful(
-
-        centsToDollars(
-          winterBill,
-          "import_rate_cents"
-        ),
-
-        centsToDollars(
-          winterBill,
-          "peak_rate_cents"
-        ),
-
-        centsToDollars(
-          winterBill,
-          "offpeak_rate_cents"
-        )
-
-      );
-
-
-    const importRate =
-      averageUseful(
-        summerImportRate,
-        winterImportRate,
-        DEFAULT_IMPORT_RATE
-      );
-
-
-    /*
-      Export rate.
-    */
-
-    const exportRate =
-      averageUseful(
-
-        centsToDollars(
-          summerBill,
-          "export_rate_cents"
-        ),
-
-        centsToDollars(
-          winterBill,
-          "export_rate_cents"
-        ),
-
-        DEFAULT_EXPORT_RATE
-
-      );
-
-
-    /*
-      Fixed daily charge.
-    */
-
-    const summerFixed =
-      centsToDollars(
-        summerBill,
-        "daily_fixed_charge_cents"
-      );
-
-
-    const winterFixed =
-      centsToDollars(
-        winterBill,
-        "daily_fixed_charge_cents"
-      );
-
-
-    const fixedDaily =
-      averageUseful(
-        summerFixed,
-        winterFixed,
-        0
-      );
-
-
-    const fixedMonthly =
-      fixedDaily *
-      30.4375;
-
-
-    /*
-      Actual current bill anchors.
-    */
-
-    let summerCost =
-      monthlyActualBill(
-        summerBill
-      );
-
-
-    let winterCost =
-      monthlyActualBill(
-        winterBill
-      );
-
-
-    if(summerCost === null){
-
-      summerCost =
-        summerUse *
-        importRate +
-        fixedMonthly;
-
-    }
-
-
-    if(winterCost === null){
-
-      winterCost =
-        winterUse *
-        importRate +
-        fixedMonthly;
-
-    }
-
-
-    const currentCost =
-      seasonalProfile(
-        summerCost,
-        winterCost
-      );
-
-
-    const solarOnlyCost = [];
-
-    const batteryCost = [];
-
-    const flow = [];
-
-
-    for(
-      let month=0;
-      month<12;
-      month++
-    ){
-
-      const load =
-        monthlyUse[month];
-
-
-      const generation =
-        solarGeneration[month];
-
-
+    if(summer && winter){
       /*
-        Estimate direct solar use.
-
-        When solar generation is high relative
-        to household demand, a larger proportion
-        becomes export.
-
-        When generation is low, more of it is
-        consumed directly.
+        Smooth seasonal interpolation between the two real
+        household observations.
       */
+      return ((summer + winter) / 2) * 365;
+    }
 
-      const solarLoadRatio =
-        generation /
-        Math.max(load,1);
+    if(summer) return summer * 365;
+    if(winter) return winter * 365;
 
+    return 7000;
+  }
 
-      let directUseFraction;
+  function estimateAnnualCost(annualUse,importRate){
+    var summer = getBill("summer");
+    var winter = getBill("winter");
 
+    var sCost = billCost(summer);
+    var wCost = billCost(winter);
 
-      if(solarLoadRatio >= 1.2){
+    if(sCost && wCost){
+      var sDaily = sCost / daysInBill(summer);
+      var wDaily = wCost / daysInBill(winter);
 
-        directUseFraction = 0.38;
+      return ((sDaily + wDaily) / 2) * 365;
+    }
 
-      }else if(
-        solarLoadRatio >= 0.8
-      ){
-
-        directUseFraction = 0.48;
-
-      }else if(
-        solarLoadRatio >= 0.5
-      ){
-
-        directUseFraction = 0.58;
-
-      }else{
-
-        directUseFraction = 0.68;
-
-      }
+    return annualUse * importRate + 700;
+  }
 
 
-      const directSolar =
-        Math.min(
-          load,
-          generation *
-          directUseFraction
-        );
+  /* ---------------------------------------------------------
+     HOUSE / ROOF FACTORS
+  --------------------------------------------------------- */
+
+  function roofFactor(){
+    if(!window.answers) return 1;
+
+    var direction =
+      String(
+        answers.direction ||
+        answers.roofDirection ||
+        ""
+      ).toLowerCase();
+
+    var factor = 1;
+
+    if(direction.indexOf("north") !== -1) factor = 1.00;
+    else if(direction.indexOf("east") !== -1) factor = .91;
+    else if(direction.indexOf("west") !== -1) factor = .91;
+    else if(direction.indexOf("several") !== -1) factor = .95;
+    else if(direction.indexOf("south") !== -1) factor = .76;
+
+    var shade =
+      String(
+        answers.shade ||
+        answers.shading ||
+        ""
+      ).toLowerCase();
+
+    if(shade.indexOf("some") !== -1) factor *= .93;
+    if(shade.indexOf("lot") !== -1) factor *= .82;
+
+    return factor;
+  }
 
 
-      const importAfterSolar =
-        Math.max(
-          load -
-          directSolar,
-          0
-        );
+  /* ---------------------------------------------------------
+     SMART-SOLAR POTENTIAL
+  --------------------------------------------------------- */
 
+  function smartPotential(){
 
-      const exportAfterSolar =
-        Math.max(
-          generation -
-          directSolar,
-          0
-        );
+    if(!window.answers) return .10;
 
+    var score = 0;
 
-      const solarBill =
-        fixedMonthly +
-        (
-          importAfterSolar *
-          importRate
-        ) -
-        (
-          exportAfterSolar *
-          exportRate
-        );
+    var dayHome = String(answers.dayHome || "").toLowerCase();
 
+    if(dayHome.indexOf("often") !== -1) score += 2;
+    if(dayHome.indexOf("sometimes") !== -1) score += 1;
 
-      solarOnlyCost.push(
-        solarBill
-      );
+    var loads = answers.loads || [];
 
-
-      /*
-        Battery scenario.
-
-        The battery can capture some solar that
-        would otherwise be exported and use it
-        later when the house needs power.
-      */
-
-      const daysInMonth =
-        new Date(
-          2026,
-          month+1,
-          0
-        ).getDate();
-
-
-      const maximumBatteryOutput =
-        BATTERY_SIZE_KWH *
-        daysInMonth *
-        BATTERY_EFFICIENCY;
-
-
-      const remainingDemand =
-        importAfterSolar;
-
-
-      const availableSolarSurplus =
-        exportAfterSolar;
-
-
-      const usableBatteryEnergy =
-        Math.min(
-
-          maximumBatteryOutput,
-
-          remainingDemand,
-
-          availableSolarSurplus *
-          BATTERY_EFFICIENCY
-
-        );
-
-
-      const gridImportBattery =
-        Math.max(
-          remainingDemand -
-          usableBatteryEnergy,
-          0
-        );
-
-
-      const solarUsedToChargeBattery =
-        usableBatteryEnergy /
-        BATTERY_EFFICIENCY;
-
-
-      const exportWithBattery =
-        Math.max(
-          availableSolarSurplus -
-          solarUsedToChargeBattery,
-          0
-        );
-
-
-      const batteryBill =
-        fixedMonthly +
-        (
-          gridImportBattery *
-          importRate
-        ) -
-        (
-          exportWithBattery *
-          exportRate
-        );
-
-
-      batteryCost.push(
-        batteryBill
-      );
-
-
-      flow.push({
-
-        load:
-          load,
-
-        generation:
-          generation,
-
-        directSolar:
-          directSolar,
-
-        exportSolar:
-          exportAfterSolar,
-
-        importSolar:
-          importAfterSolar,
-
-        batteryEnergy:
-          usableBatteryEnergy,
-
-        importBattery:
-          gridImportBattery,
-
-        exportBattery:
-          exportWithBattery
-
+    if(!Array.isArray(loads)){
+      loads = Object.keys(loads).filter(function(k){
+        return loads[k];
       });
-
     }
 
+    var loadText = loads.join(" ").toLowerCase();
+
+    [
+      "washing",
+      "dishwasher",
+      "hot water",
+      "water heating",
+      "ev",
+      "electric vehicle",
+      "dryer",
+      "pool",
+      "heat pump"
+    ].forEach(function(item){
+      if(loadText.indexOf(item) !== -1) score++;
+    });
+
+    /*
+      Smart timing uplift represents greater solar
+      self-consumption — not extra solar generation.
+    */
+
+    return clamp(.07 + score * .012,.07,.18);
+  }
+
+
+  /* ---------------------------------------------------------
+     CORE ENERGY MODEL
+  --------------------------------------------------------- */
+
+  function calculateModel(){
+
+    var importRate = getImportRate();
+    var exportRate = getExportRate();
+
+    var annualUse = estimateAnnualUse();
+    var currentCost = estimateAnnualCost(annualUse,importRate);
+
+    /*
+      5 kW benchmark solar system.
+
+      Approximate Auckland/Waiheke annual generation:
+      ~6,200 kWh before household-specific roof adjustment.
+    */
+
+    var annualSolar = 6200 * roofFactor();
+
+    /*
+      Scenario 2:
+      Solar installed, household behaviour unchanged.
+
+      Self-consumption adjusts gently with household demand.
+    */
+
+    var demandFactor = clamp(annualUse / 7000,.75,1.25);
+
+    var sameHabitSelfConsumption =
+      clamp(.34 * demandFactor,.27,.48);
+
+    var sameHabitSolarUsed =
+      Math.min(
+        annualUse,
+        annualSolar * sameHabitSelfConsumption
+      );
+
+    var sameHabitExport =
+      Math.max(0,annualSolar - sameHabitSolarUsed);
+
+    var sameHabitSaving =
+      sameHabitSolarUsed * importRate +
+      sameHabitExport * exportRate;
+
+    /*
+      Scenario 3:
+      Same 5 kW solar generation, but flexible household
+      loads are shifted toward solar-production hours.
+
+      IMPORTANT:
+      No extra generation is credited here.
+      The improvement comes only from using more solar
+      directly instead of exporting it cheaply and later
+      buying electricity back from the grid.
+    */
+
+    var smartLift = smartPotential();
+
+    var smartSelfConsumption =
+      clamp(
+        sameHabitSelfConsumption + smartLift,
+        sameHabitSelfConsumption,
+        .68
+      );
+
+    var smartSolarUsed =
+      Math.min(
+        annualUse,
+        annualSolar * smartSelfConsumption
+      );
+
+    var smartExport =
+      Math.max(0,annualSolar - smartSolarUsed);
+
+    var smartSaving =
+      smartSolarUsed * importRate +
+      smartExport * exportRate;
+
+    /*
+      Scenario 4:
+      5 kWh usable battery benchmark.
+
+      Battery captures a portion of remaining exported
+      solar and returns it later at ~90% round-trip
+      efficiency.
+
+      This is deliberately conservative.
+    */
+
+    var remainingSurplus = smartExport;
+
+    var batteryInput =
+      Math.min(
+        remainingSurplus * .42,
+        5 * 300
+      );
+
+    var batteryDelivered = batteryInput * .90;
+
+    var batteryValue =
+      batteryDelivered * importRate -
+      batteryInput * exportRate;
+
+    batteryValue = Math.max(0,batteryValue);
+
+    var batterySaving =
+      smartSaving + batteryValue;
 
     return {
+      annualUse:annualUse,
+      annualSolar:annualSolar,
 
-      currentCost:
-        currentCost,
+      currentCost:currentCost,
 
-      solarOnlyCost:
-        solarOnlyCost,
+      sameHabitSaving:sameHabitSaving,
+      sameHabitCost:Math.max(0,currentCost-sameHabitSaving),
 
-      batteryCost:
-        batteryCost,
+      smartSaving:smartSaving,
+      smartCost:Math.max(0,currentCost-smartSaving),
 
-      monthlyUse:
-        monthlyUse,
+      batteryExtra:batteryValue,
+      batterySaving:batterySaving,
+      batteryCost:Math.max(0,currentCost-batterySaving),
 
-      flow:
-        flow,
+      sameHabitSolarUsed:sameHabitSolarUsed,
+      smartSolarUsed:smartSolarUsed,
 
-      importRate:
-        importRate,
-
-      exportRate:
-        exportRate,
-
-      fixedMonthly:
-        fixedMonthly
-
+      importRate:importRate,
+      exportRate:exportRate
     };
-
   }
 
 
-  function annualTotal(array){
+  /* ---------------------------------------------------------
+     12-MONTH GRAPH
+  --------------------------------------------------------- */
 
-    return array.reduce(
-      function(a,b){
-        return a+b;
-      },
-      0
-    );
+  function monthlySeries(model){
 
+    /*
+      Southern Hemisphere seasonal profile.
+      All 12 months are always displayed.
+    */
+
+    var season = [
+      .78,.75,.78,.88,1.02,1.12,
+      1.16,1.12,1.02,.91,.82,.78
+    ];
+
+    var current = [];
+    var same = [];
+    var smart = [];
+    var battery = [];
+
+    for(var i=0;i<12;i++){
+
+      var base =
+        (model.currentCost / 12) * season[i];
+
+      var solarSeason =
+        [
+          1.28,1.20,1.05,.84,.64,.52,
+          .48,.57,.76,.96,1.14,1.28
+        ][i];
+
+      var sameMonthlySaving =
+        (model.sameHabitSaving / 12) * solarSeason;
+
+      var smartExtraAnnual =
+        model.smartSaving-model.sameHabitSaving;
+
+      var smartMonthlyExtra =
+        (smartExtraAnnual / 12) * solarSeason;
+
+      var batteryMonthlyExtra =
+        (model.batteryExtra / 12) *
+        (.80 + .20*solarSeason);
+
+      current.push(Math.max(0,base));
+
+      same.push(
+        Math.max(0,base-sameMonthlySaving)
+      );
+
+      smart.push(
+        Math.max(
+          0,
+          base-sameMonthlySaving-smartMonthlyExtra
+        )
+      );
+
+      battery.push(
+        Math.max(
+          0,
+          base-sameMonthlySaving-smartMonthlyExtra-batteryMonthlyExtra
+        )
+      );
+    }
+
+    return {
+      current:current,
+      same:same,
+      smart:smart,
+      battery:battery
+    };
   }
 
 
-  /*
-    IMPORTANT FIX:
+  function svgPath(values,max,width,height,left,top){
 
-    Find the ACTUAL final result screen using resultTitle.
+    var usableW = width-left-18;
+    var usableH = height-top-42;
 
-    Your page has more than one screen labelled
-    "your result", so querySelector alone can attach
-    the report to the wrong hidden screen.
-  */
+    return values.map(function(v,i){
 
-  function createReportContainer(){
+      var x =
+        left + (usableW * i/(values.length-1));
 
-    let report =
-      document.getElementById(
-        "solarSavingsReport"
-      );
+      var y =
+        top + usableH -
+        ((v/max) * usableH);
 
+      return (i===0 ? "M" : "L") +
+             x.toFixed(1) + " " +
+             y.toFixed(1);
 
-    if(report){
-      return report;
-    }
-
-
-    report =
-      document.createElement(
-        "div"
-      );
-
-
-    report.id =
-      "solarSavingsReport";
-
-
-    const resultTitle =
-      document.getElementById(
-        "resultTitle"
-      );
-
-
-    const finalResultScreen =
-      resultTitle
-        ? resultTitle.closest(".screen")
-        : null;
-
-
-    if(finalResultScreen){
-
-      /*
-        Place report at bottom of the actual
-        customer result screen.
-      */
-
-      finalResultScreen.appendChild(
-        report
-      );
-
-    }else{
-
-      document.body.appendChild(
-        report
-      );
-
-    }
-
-
-    return report;
-
+    }).join(" ");
   }
 
 
-  function renderSolarReport(){
+  function buildChart(model){
 
-    const model =
-      buildModel();
+    var series = monthlySeries(model);
 
+    var width = 760;
+    var height = 330;
+    var left = 54;
+    var top = 20;
 
-    if(!model){
-      return;
+    var all =
+      series.current
+      .concat(series.same)
+      .concat(series.smart)
+      .concat(series.battery);
+
+    var max = Math.max.apply(null,all) * 1.12;
+
+    var months = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+
+    var grid = "";
+
+    for(var g=0;g<=4;g++){
+
+      var y =
+        top + ((height-top-42) * g/4);
+
+      var value =
+        max * (1-g/4);
+
+      grid +=
+        '<line x1="'+left+'" y1="'+y+
+        '" x2="'+(width-18)+'" y2="'+y+
+        '" stroke="#e7e2dd" stroke-width="1"/>' +
+
+        '<text x="'+(left-9)+'" y="'+(y+4)+
+        '" text-anchor="end" font-size="11" fill="#777">$'+
+        Math.round(value)+'</text>';
     }
 
+    var labels = "";
 
-    const report =
-      createReportContainer();
+    months.forEach(function(month,i){
+
+      var x =
+        left +
+        ((width-left-18) * i/11);
+
+      labels +=
+        '<text x="'+x+'" y="'+(height-10)+
+        '" text-anchor="middle" font-size="11" fill="#777">'+
+        month+
+        '</text>';
+    });
+
+    return '' +
+      '<div class="ssr-chart-wrap">' +
+      '<svg class="ssr-chart" viewBox="0 0 '+width+' '+height+'" ' +
+      'role="img" aria-label="Estimated monthly electricity costs">' +
+
+      grid +
+
+      '<path d="'+
+      svgPath(series.current,max,width,height,left,top)+
+      '" fill="none" stroke="#444" stroke-width="4" stroke-linecap="round"/>' +
+
+      '<path d="'+
+      svgPath(series.same,max,width,height,left,top)+
+      '" fill="none" stroke="#ef6d2f" stroke-width="4" stroke-linecap="round"/>' +
+
+      '<path d="'+
+      svgPath(series.smart,max,width,height,left,top)+
+      '" fill="none" stroke="#a78e7e" stroke-width="4" stroke-linecap="round"/>' +
+
+      '<path d="'+
+      svgPath(series.battery,max,width,height,left,top)+
+      '" fill="none" stroke="#777" stroke-width="4" stroke-dasharray="8 7" stroke-linecap="round"/>' +
+
+      labels +
+
+      '</svg>' +
+      '</div>' +
+
+      '<div class="ssr-legend">' +
+        '<span><i class="ssr-line"></i>Your home now</span>' +
+        '<span><i class="ssr-line solar"></i>Solar, same habits</span>' +
+        '<span><i class="ssr-line smart"></i>Solar + smarter timing</span>' +
+        '<span><i class="ssr-line batt"></i>Solar + smarter timing + battery</span>' +
+      '</div>';
+  }
 
 
-    const currentAnnual =
-      annualTotal(
-        model.currentCost
-      );
+  /* ---------------------------------------------------------
+     SMART SOLAR WORDING
+  --------------------------------------------------------- */
 
+  function smartText(){
 
-    const solarAnnual =
-      annualTotal(
-        model.solarOnlyCost
-      );
+    var loads =
+      window.answers && answers.loads
+      ? answers.loads
+      : [];
 
+    if(!Array.isArray(loads)){
+      loads = Object.keys(loads).filter(function(k){
+        return loads[k];
+      });
+    }
 
-    const batteryAnnual =
-      annualTotal(
-        model.batteryCost
-      );
+    var text = loads.join(" ").toLowerCase();
 
+    var examples = [];
 
-    const solarSaving =
-      currentAnnual -
-      solarAnnual;
+    if(text.indexOf("washing") !== -1)
+      examples.push("washing machine");
 
-
-    const batterySaving =
-      currentAnnual -
-      batteryAnnual;
-
-
-    const extraBatterySaving =
-      solarAnnual -
-      batteryAnnual;
-
-
-    let batteryMessage;
-
+    if(text.indexOf("dishwasher") !== -1)
+      examples.push("dishwasher");
 
     if(
-      extraBatterySaving <
-      300
-    ){
+      text.indexOf("hot water") !== -1 ||
+      text.indexOf("water heating") !== -1
+    )
+      examples.push("hot-water heating");
 
-      batteryMessage = `
-        On electricity savings alone, adding a battery
-        appears to provide a relatively modest additional
-        saving for this household. Backup power,
-        resilience or future electricity use may still
-        make storage worthwhile.
-      `;
+    if(
+      text.indexOf("ev") !== -1 ||
+      text.indexOf("electric vehicle") !== -1
+    )
+      examples.push("EV charging");
 
-    }else{
+    if(text.indexOf("pool") !== -1)
+      examples.push("pool equipment");
 
-      batteryMessage = `
-        Your estimated electricity pattern suggests
-        battery storage could materially increase the
-        amount of your own solar energy used at home.
-      `;
+    if(text.indexOf("dryer") !== -1)
+      examples.push("dryer");
 
+    if(!examples.length){
+      return "flexible loads such as hot water, washing, dishwashing or EV charging";
     }
 
+    return examples.slice(0,4).join(", ");
+  }
+
+
+  /* ---------------------------------------------------------
+     RENDER REPORT
+  --------------------------------------------------------- */
+
+  function renderSmartSolarReport(){
+
+    var title = document.getElementById("resultTitle");
+
+    if(!title) return;
+
+    var resultScreen =
+      title.closest(".screen");
+
+    if(!resultScreen) return;
+
+    var old =
+      document.getElementById("smartSolarReport");
+
+    if(old) old.remove();
+
+    var model = calculateModel();
+
+    var sameSaving =
+      model.sameHabitSaving;
+
+    var smartExtra =
+      Math.max(
+        0,
+        model.smartSaving-model.sameHabitSaving
+      );
+
+    var batteryExtra =
+      model.batteryExtra;
+
+    var smartExamples =
+      smartText();
+
+    var report =
+      document.createElement("div");
+
+    report.id = "smartSolarReport";
 
     report.innerHTML = `
 
-      <div class="eyebrow">
-        your estimated solar savings
+      <div class="ssr-kicker">
+        Your estimated solar savings
       </div>
-
 
       <h2>
-        What could 5 kW solar change?
+        What could 5 kW solar change for your home?
       </h2>
 
-
-      <p class="solar-report-intro">
-
-        Using the electricity information from your
-        summer and winter bills, we've estimated how
-        your electricity costs could change through
-        the year with a 5 kW solar system — and what
-        adding battery storage could change.
-
+      <p class="ssr-intro">
+        Now that we have your electricity bills, household energy use,
+        appliances and basic roof information, we can make a more useful
+        first estimate. Rather than showing just “solar” and “battery”,
+        we’ve separated the effect of the technology from the effect of
+        using your solar more intelligently.
       </p>
 
+      <div class="ssr-flow">
+        Your home now &nbsp;→&nbsp;
+        Solar, same habits &nbsp;→&nbsp;
+        Solar + smarter timing &nbsp;→&nbsp;
+        Solar + smarter timing + battery
+      </div>
 
-      <div class="solar-summary-grid">
 
+      <div class="ssr-four">
 
-        <div class="solar-summary-card">
+        <div class="ssr-option">
 
-          <span class="solar-summary-label">
-            Estimated annual cost now
-          </span>
+          <div class="ssr-number">1 — YOUR HOME NOW</div>
 
-          <strong>
-            ${money(currentAnnual)}
-          </strong>
+          <h4>Current electricity pattern</h4>
+
+          <div class="ssr-cost">
+            ${money(model.currentCost)}
+          </div>
+
+          <div class="ssr-saving">
+            estimated annual electricity cost
+          </div>
+
+          <div class="ssr-explain">
+            This gives us the starting point against which the solar
+            options are compared.
+          </div>
 
         </div>
 
 
-        <div class="solar-summary-card">
+        <div class="ssr-option">
 
-          <span class="solar-summary-label">
-            With 5 kW solar
-          </span>
+          <div class="ssr-number">2 — SOLAR, SAME HABITS</div>
 
-          <strong>
-            ${money(solarAnnual)}
-          </strong>
+          <h4>Add 5 kW solar</h4>
 
-          <small>
-            About ${money(solarSaving)}
+          <div class="ssr-cost">
+            ${money(model.sameHabitCost)}
+          </div>
+
+          <div class="ssr-saving">
+            about <strong>${money(sameSaving)}</strong> less per year
+          </div>
+
+          <div class="ssr-explain">
+            This assumes you install solar but largely continue using
+            electricity at the same times you do now.
+          </div>
+
+        </div>
+
+
+        <div class="ssr-option smart">
+
+          <div class="ssr-number">
+            3 — SOLAR + SMARTER TIMING
+          </div>
+
+          <h4>Use more solar directly</h4>
+
+          <div class="ssr-cost">
+            ${money(model.smartCost)}
+          </div>
+
+          <div class="ssr-saving">
+            about <strong>${money(model.smartSaving)}</strong>
             less per year
-          </small>
+          </div>
+
+          <div class="ssr-explain">
+            Around <strong>${money(smartExtra)}</strong> of the estimated
+            improvement comes from smarter timing — using more electricity
+            while your panels are producing it.
+          </div>
 
         </div>
 
 
-        <div class="solar-summary-card">
+        <div class="ssr-option battery">
 
-          <span class="solar-summary-label">
-            With 5 kW solar + ${BATTERY_SIZE_KWH} kWh battery
-          </span>
+          <div class="ssr-number">
+            4 — SMARTER TIMING + BATTERY
+          </div>
 
-          <strong>
-            ${money(batteryAnnual)}
-          </strong>
+          <h4>Store solar for later</h4>
 
-          <small>
-            About ${money(batterySaving)}
+          <div class="ssr-cost">
+            ${money(model.batteryCost)}
+          </div>
+
+          <div class="ssr-saving">
+            about <strong>${money(model.batterySaving)}</strong>
             less per year
-          </small>
+          </div>
+
+          <div class="ssr-explain">
+            A 5 kWh usable battery benchmark adds approximately
+            <strong>${money(batteryExtra)}</strong> of estimated
+            electricity-bill saving beyond the smarter-solar case.
+          </div>
 
         </div>
 
+      </div>
+
+
+      <div class="ssr-smartbox">
+
+        <h4>
+          The important difference: solar-smart behaviour
+        </h4>
+
+        <p>
+          Solar panels generate the same electricity whether or not you
+          change your habits. What changes is <strong>how much of that
+          electricity you use yourself</strong>.
+        </p>
+
+        <p>
+          Where practical, timers, smart controls or simple household
+          routines can move flexible loads — such as
+          <strong>${smartExamples}</strong> — into the middle of the day.
+        </p>
+
+        <p>
+          That means less solar is exported at the lower buy-back rate
+          and less electricity needs to be bought back from the grid later.
+          <strong>The smarter-timing saving shown above comes from this
+          change in self-consumption — not from assuming the panels somehow
+          generate more electricity.</strong>
+        </p>
 
       </div>
 
 
-      <h3>
-        How your electricity costs could change
-      </h3>
+      <div class="ssr-panel">
 
+        <h3>How your electricity costs could change</h3>
 
-      <p class="solar-report-intro">
+        <p>
+          Solar production and household demand change significantly through
+          the year. Summer usually provides much more solar energy, while
+          winter generally brings lower solar production and higher household
+          demand.
+        </p>
 
-        Solar production changes significantly through
-        the year. Summer can produce substantial surplus
-        electricity for export, while winter usually has
-        lower solar production and higher household demand.
-
-      </p>
-
-
-      <div class="solar-chart-wrap">
-
-        <svg
-          id="solarSavingsChart"
-          viewBox="0 0 760 370"
-          role="img"
-          aria-label="Estimated monthly electricity costs"
-        ></svg>
+        ${buildChart(model)}
 
       </div>
 
 
-      <div class="solar-legend">
+      <div class="ssr-battery">
 
-        <span class="solar-key">
-          <i class="solar-line line-current"></i>
-          Current
-        </span>
+        <h3>What does the battery change?</h3>
 
-        <span class="solar-key">
-          <i class="solar-line line-solar"></i>
-          5 kW solar
-        </span>
+        <p>
+          Without a battery, solar electricity that you are not using during
+          the day is exported to the grid. A battery can capture some of that
+          surplus and make it available later.
+        </p>
 
-        <span class="solar-key">
-          <i class="solar-line line-battery"></i>
-          Solar + battery
-        </span>
+        <div class="ssr-battery-grid">
+
+          <div class="ssr-benefit">
+
+            <strong>Use more of your own solar</strong>
+
+            Instead of exporting as much surplus electricity during the day,
+            a battery can store some of it for your household to use later.
+
+          </div>
+
+
+          <div class="ssr-benefit">
+
+            <strong>Extend your solar day after sunset</strong>
+
+            Your panels stop producing as daylight fades, but stored solar
+            energy can continue supplying part of your evening electricity
+            demand. In practical terms, the battery can extend the useful
+            solar day beyond the hours when the sun is shining.
+
+          </div>
+
+
+          <div class="ssr-benefit">
+
+            <strong>Comfort and resilience during outages</strong>
+
+            Where the battery system is specifically designed and installed
+            with backup capability, selected essential circuits can continue
+            operating when the grid goes down. That might include things such
+            as refrigeration, lighting, internet, water pumps or other agreed
+            essentials, subject to the system design and available battery
+            energy.
+
+          </div>
+
+        </div>
+
+        <p>
+          In this initial estimate, a 5 kWh usable battery provides
+          approximately <strong>${money(batteryExtra)}</strong> of additional
+          annual electricity-bill saving compared with the solar +
+          smarter-timing scenario.
+        </p>
+
+        <p>
+          But <strong>electricity-bill saving is not the whole value of a
+          battery</strong>. For some households, being able to use more of
+          their own clean energy, extending their solar use into the evening,
+          and having selected essentials available during a grid outage may
+          be just as important as the financial return.
+        </p>
 
       </div>
 
 
-      <div class="solar-flow">
+      <p class="ssr-note">
 
         <strong>
-          What does the battery change?
+          This is an indicative home-energy estimate, not a formal solar quote.
         </strong>
 
-        <br><br>
-
-        Without a battery, surplus daytime solar is
-        exported to the grid.
-
-        A battery can store some of that electricity
-        and use it later in the evening instead of
-        buying electricity back from the grid.
-
-        <br><br>
-
-        In this initial estimate, battery storage
-        provides approximately
-        <strong>
-          ${money(extraBatterySaving)}
-        </strong>
-        of additional annual electricity-bill saving
-        compared with solar alone.
-
-        <br><br>
-
-        ${batteryMessage}
-
-      </div>
-
-
-      <p class="solar-note">
-
-        <strong>
-          This is an indicative home-energy estimate,
-          not a formal solar quote.
-        </strong>
-
-        Actual performance depends on roof orientation,
-        tilt and shading, system design, actual household
-        usage, weather, import and export tariffs,
-        battery configuration and future electricity use.
-
-        A Solectrics site assessment allows us to refine
-        the system size and expected performance for
-        your home.
+        It uses a 5 kW solar benchmark and a 5 kWh usable battery benchmark,
+        together with the household information supplied in this check.
+        Actual generation, savings and backup performance depend on detailed
+        roof orientation and pitch, shading, usable roof area, system design,
+        actual half-hourly household demand, weather, electricity tariffs,
+        battery configuration, export arrangements and future electricity use.
+        A Solectrics site assessment and detailed system design would refine
+        these estimates.
 
       </p>
 
     `;
 
-
-    drawChart(
-      model
-    );
-
+    resultScreen.appendChild(report);
   }
 
 
-  function drawChart(model){
+  /* ---------------------------------------------------------
+     CONNECT REPORT TO EXISTING SURVEY
 
-    const svg =
-      document.getElementById(
-        "solarSavingsChart"
-      );
+     We leave your original showResult() intact.
+     This wrapper simply waits until the original results screen
+     has rendered, then adds the new report.
+  --------------------------------------------------------- */
 
+  if(typeof window.showResult === "function"){
 
-    if(!svg){
-      return;
-    }
-
-
-    const width = 760;
-    const height = 370;
-
-    const left = 62;
-    const right = 22;
-    const top = 28;
-    const bottom = 50;
-
-    const plotWidth =
-      width -
-      left -
-      right;
-
-    const plotHeight =
-      height -
-      top -
-      bottom;
-
-
-    const allValues = [
-
-      ...model.currentCost,
-
-      ...model.solarOnlyCost,
-
-      ...model.batteryCost
-
-    ];
-
-
-    let minValue =
-      Math.min(
-        0,
-        ...allValues
-      );
-
-
-    let maxValue =
-      Math.max(
-        0,
-        ...allValues
-      );
-
-
-    const range =
-      Math.max(
-        maxValue -
-        minValue,
-        50
-      );
-
-
-    minValue -=
-      range * 0.08;
-
-
-    maxValue +=
-      range * 0.10;
-
-
-    function x(index){
-
-      return left +
-        (
-          index /
-          11
-        ) *
-        plotWidth;
-
-    }
-
-
-    function y(value){
-
-      return top +
-        (
-          (
-            maxValue -
-            value
-          ) /
-          (
-            maxValue -
-            minValue
-          )
-        ) *
-        plotHeight;
-
-    }
-
-
-    function path(values){
-
-      return values.map(
-        function(value,index){
-
-          return (
-            index === 0
-              ? "M "
-              : "L "
-          ) +
-          x(index) +
-          " " +
-          y(value);
-
-        }
-      ).join(" ");
-
-    }
-
-
-    let html = "";
-
-
-    /*
-      Grid
-    */
-
-    for(
-      let i=0;
-      i<=5;
-      i++
-    ){
-
-      const value =
-        minValue +
-        (
-          (
-            maxValue -
-            minValue
-          ) / 5
-        ) * i;
-
-
-      const yy =
-        y(value);
-
-
-      html += `
-
-        <line
-          x1="${left}"
-          y1="${yy}"
-          x2="${width-right}"
-          y2="${yy}"
-          stroke="#e5e1dd"
-          stroke-width="1"
-        />
-
-        <text
-          x="${left-10}"
-          y="${yy+4}"
-          text-anchor="end"
-          font-size="11"
-          fill="#777"
-        >
-          ${money(value)}
-        </text>
-
-      `;
-
-    }
-
-
-    /*
-      Zero line if summer becomes a credit.
-    */
-
-    if(
-      minValue < 0 &&
-      maxValue > 0
-    ){
-
-      const zeroY =
-        y(0);
-
-
-      html += `
-
-        <line
-          x1="${left}"
-          y1="${zeroY}"
-          x2="${width-right}"
-          y2="${zeroY}"
-          stroke="#aaa"
-          stroke-width="1.5"
-          stroke-dasharray="5 5"
-        />
-
-      `;
-
-    }
-
-
-    /*
-      Months
-    */
-
-    monthNames.forEach(
-      function(month,index){
-
-        html += `
-
-          <text
-            x="${x(index)}"
-            y="${height-18}"
-            text-anchor="middle"
-            font-size="11"
-            fill="#666"
-          >
-            ${month}
-          </text>
-
-        `;
-
-      }
-    );
-
-
-    /*
-      Current line
-    */
-
-    html += `
-
-      <path
-        d="${path(model.currentCost)}"
-        fill="none"
-        stroke="#444"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    /*
-      Solar line
-    */
-
-    html += `
-
-      <path
-        d="${path(model.solarOnlyCost)}"
-        fill="none"
-        stroke="#e86f35"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    /*
-      Solar + battery line
-    */
-
-    html += `
-
-      <path
-        d="${path(model.batteryCost)}"
-        fill="none"
-        stroke="#777"
-        stroke-width="3"
-        stroke-dasharray="8 5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    svg.innerHTML =
-      html;
-
-  }
-
-
-  /*
-    Attach to existing final-result function.
-  */
-
-  const originalShowResult =
-    window.showResult;
-
-
-  if(
-    typeof originalShowResult ===
-    "function"
-  ){
+    var originalShowResult =
+      window.showResult;
 
     window.showResult =
       function(){
 
-        const result =
-          originalShowResult.apply(
-            this,
-            arguments
-          );
-
+        var result =
+          originalShowResult.apply(this,arguments);
 
         setTimeout(
-          renderSolarReport,
+          renderSmartSolarReport,
           100
         );
 
-
         return result;
-
       };
 
   }
@@ -2100,2708 +1792,27 @@ and BEFORE </body>
 
   /*
     Additional safety:
-
-    If the page has already moved onto the final
-    results screen, attempt to render again.
+    if the results screen is already active, render the report.
   */
 
-  setTimeout(
-    function(){
+  setTimeout(function(){
 
-      const resultTitle =
-        document.getElementById(
-          "resultTitle"
-        );
+    var resultTitle =
+      document.getElementById("resultTitle");
 
-      if(
-        resultTitle &&
-        resultTitle.closest(
-          ".screen.active"
-        )
-      ){
+    if(
+      resultTitle &&
+      resultTitle.closest(".screen.active")
+    ){
+      renderSmartSolarReport();
+    }
 
-        renderSolarReport();
-
-      }
-
-    },
-    500
-  );
+  },500);
 
 
 })();
-
 </script>
 
-<!-- END SOLECTRICS SOLAR SAVINGS REPORT -->
-  <!-- =========================================================
-SOLECTRICS — FINAL SMART SOLAR HOME REPORT
-
-Uses:
-• summer + winter electricity bills
-• actual household seasonal demand
-• household routine
-• high-power appliances
-• exact roof direction choices from this survey
-• shading
-• 5 kW solar benchmark
-• 5 kWh usable battery benchmark
-• solar self-consumption
-• solar export
-• battery shifting
-• grid import
-• estimated electricity cost
-
-This is an indicative comparison — not a quote.
-========================================================= -->
-
-
-<style>
-
-#solarSavingsReport{
-  margin-top:38px;
-  padding:26px;
-  background:#faf8f5;
-  border:1px solid #eee7e1;
-  border-radius:18px;
-}
-
-#solarSavingsReport h2{
-  margin:0 0 10px;
-  font-size:28px;
-  line-height:1.15;
-}
-
-#solarSavingsReport h3{
-  margin:30px 0 10px;
-  font-size:21px;
-}
-
-.smart-report-intro{
-  color:#606560;
-  line-height:1.6;
-  margin-bottom:22px;
-}
-
-.smart-summary-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  margin:22px 0 28px;
-}
-
-.smart-summary-card{
-  background:#fff;
-  border:1px solid #e8e1db;
-  border-radius:14px;
-  padding:18px;
-}
-
-.smart-summary-card span{
-  display:block;
-  color:#777;
-  font-size:12px;
-  line-height:1.4;
-  margin-bottom:7px;
-}
-
-.smart-summary-card strong{
-  display:block;
-  font-size:23px;
-}
-
-.smart-summary-card small{
-  display:block;
-  margin-top:7px;
-  color:#666;
-  line-height:1.4;
-}
-
-.energy-flow-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-  margin:20px 0;
-}
-
-.energy-flow-card{
-  background:#fff;
-  border:1px solid #e8e1db;
-  border-radius:14px;
-  padding:18px;
-}
-
-.energy-flow-card h4{
-  margin:0 0 14px;
-  font-size:17px;
-}
-
-.energy-flow-row{
-  display:flex;
-  justify-content:space-between;
-  gap:14px;
-  padding:8px 0;
-  border-bottom:1px solid #f0ece8;
-  font-size:13px;
-}
-
-.energy-flow-row:last-child{
-  border-bottom:none;
-}
-
-.energy-flow-row strong{
-  text-align:right;
-}
-
-.solar-smart-box{
-  margin-top:24px;
-  padding:20px;
-  background:#fff;
-  border-left:4px solid #ee8042;
-  border-radius:0 12px 12px 0;
-  line-height:1.6;
-}
-
-.solar-smart-rating{
-  display:inline-block;
-  margin:9px 0 13px;
-  padding:5px 11px;
-  border:1px solid #ee8042;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:700;
-  letter-spacing:.05em;
-}
-
-.solar-chart-wrap{
-  width:100%;
-  overflow-x:auto;
-  margin-top:22px;
-}
-
-#solarSavingsChart{
-  display:block;
-  width:100%;
-  min-width:620px;
-  height:auto;
-}
-
-.solar-legend{
-  display:flex;
-  flex-wrap:wrap;
-  gap:18px;
-  margin-top:14px;
-  font-size:13px;
-}
-
-.solar-key{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.solar-line{
-  width:25px;
-  height:4px;
-  border-radius:4px;
-  display:inline-block;
-}
-
-.line-current{
-  background:#444;
-}
-
-.line-solar{
-  background:#ee8042;
-}
-
-.line-battery{
-  background:#777;
-}
-
-.existing-solar-warning{
-  margin:20px 0;
-  padding:16px;
-  background:#fff;
-  border-left:4px solid #999;
-  line-height:1.55;
-  font-size:13px;
-}
-
-.model-note{
-  margin-top:22px;
-  font-size:12px;
-  line-height:1.6;
-  color:#777;
-}
-
-@media(max-width:700px){
-
-  .smart-summary-grid,
-  .energy-flow-grid{
-    grid-template-columns:1fr;
-  }
-
-  #solarSavingsReport{
-    padding:18px;
-  }
-
-}
-
-</style>
-
-
-<script>
-
-(function(){
-
-  /* ======================================================
-     BENCHMARK SETTINGS
-  ====================================================== */
-
-  const SOLAR_SIZE_KW = 5;
-
-  const BATTERY_SIZE_KWH = 5;
-
-  const BATTERY_EFFICIENCY = 0.90;
-
-  const DEFAULT_IMPORT_RATE = 0.30;
-
-  const DEFAULT_EXPORT_RATE = 0.12;
-
-
-  const MONTHS = [
-    "Jan","Feb","Mar","Apr",
-    "May","Jun","Jul","Aug",
-    "Sep","Oct","Nov","Dec"
-  ];
-
-
-  /*
-    Indicative annual generation benchmark:
-
-    5 kW × approximately 1,250 kWh/kW/year
-    = approximately 6,250 kWh/year before
-    roof orientation and shading adjustments.
-
-    The monthly shares create the NZ seasonal curve.
-  */
-
-  const BASE_ANNUAL_SOLAR_KWH = 6250;
-
-
-  const MONTHLY_SOLAR_SHARE = [
-
-    0.115,  // Jan
-    0.105,  // Feb
-    0.095,  // Mar
-    0.072,  // Apr
-    0.055,  // May
-    0.043,  // Jun
-    0.047,  // Jul
-    0.060,  // Aug
-    0.080,  // Sep
-    0.100,  // Oct
-    0.108,  // Nov
-    0.120   // Dec
-
-  ];
-
-
-  /* ======================================================
-     ADD SOUTH TO EXISTING ROOF QUESTION
-  ====================================================== */
-
-  function ensureSouthRoofOption(){
-
-    const direction =
-      document.getElementById(
-        "direction"
-      );
-
-
-    if(!direction){
-      return;
-    }
-
-
-    const existingOptions =
-      Array.from(
-        direction.options
-      )
-      .map(
-        function(option){
-          return option.textContent
-            .trim()
-            .toLowerCase();
-        }
-      );
-
-
-    if(
-      existingOptions.includes(
-        "south"
-      )
-    ){
-      return;
-    }
-
-
-    const south =
-      document.createElement(
-        "option"
-      );
-
-
-    south.textContent =
-      "South";
-
-
-    /*
-      Insert South before
-      "Several directions".
-    */
-
-    const several =
-      Array.from(
-        direction.options
-      )
-      .find(
-        function(option){
-
-          return option.textContent
-            .trim()
-            .toLowerCase()
-            .includes(
-              "several directions"
-            );
-
-        }
-      );
-
-
-    if(several){
-
-      direction.insertBefore(
-        south,
-        several
-      );
-
-    }else{
-
-      direction.appendChild(
-        south
-      );
-
-    }
-
-  }
-
-
-  ensureSouthRoofOption();
-
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    ensureSouthRoofOption
-  );
-
-
-  /* ======================================================
-     GENERAL HELPERS
-  ====================================================== */
-
-  function num(value){
-
-    const n =
-      Number(value);
-
-    return Number.isFinite(n)
-      ? n
-      : null;
-
-  }
-
-
-  function money(value){
-
-    const rounded =
-      Math.round(
-        value || 0
-      );
-
-
-    if(rounded < 0){
-
-      return "-$" +
-        Math.abs(rounded)
-          .toLocaleString(
-            "en-NZ"
-          );
-
-    }
-
-
-    return "$" +
-      rounded.toLocaleString(
-        "en-NZ"
-      );
-
-  }
-
-
-  function kwh(value){
-
-    return Math.round(
-      value || 0
-    )
-    .toLocaleString(
-      "en-NZ"
-    ) +
-    " kWh";
-
-  }
-
-
-  function getBill(which){
-
-    if(
-      typeof answers === "undefined" ||
-      !answers.bills
-    ){
-
-      return null;
-
-    }
-
-
-    return answers.bills[which]
-      || null;
-
-  }
-
-
-  function billValue(
-    bill,
-    key
-  ){
-
-    if(!bill){
-      return null;
-    }
-
-
-    return num(
-      bill[key]
-    );
-
-  }
-
-
-  function firstUseful(){
-
-    for(
-      let i=0;
-      i<arguments.length;
-      i++
-    ){
-
-      const value =
-        arguments[i];
-
-
-      if(
-        value !== null &&
-        value !== undefined &&
-        Number.isFinite(
-          value
-        )
-      ){
-
-        return value;
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  function averageUseful(
-    a,
-    b,
-    fallback
-  ){
-
-    const values = [];
-
-
-    if(Number.isFinite(a)){
-      values.push(a);
-    }
-
-
-    if(Number.isFinite(b)){
-      values.push(b);
-    }
-
-
-    if(!values.length){
-      return fallback;
-    }
-
-
-    return values.reduce(
-      function(x,y){
-        return x+y;
-      },
-      0
-    ) /
-    values.length;
-
-  }
-
-
-  function centsToDollars(
-    bill,
-    key
-  ){
-
-    const value =
-      billValue(
-        bill,
-        key
-      );
-
-
-    if(value === null){
-      return null;
-    }
-
-
-    return value / 100;
-
-  }
-
-
-  /* ======================================================
-     BILL ENERGY
-  ====================================================== */
-
-  function monthlyImportedKwh(
-    bill
-  ){
-
-    if(!bill){
-      return null;
-    }
-
-
-    const imported =
-      billValue(
-        bill,
-        "total_import_kwh"
-      );
-
-
-    const days =
-      billValue(
-        bill,
-        "billing_days"
-      );
-
-
-    if(
-      imported !== null &&
-      days &&
-      days > 0
-    ){
-
-      return (
-        imported /
-        days
-      ) *
-      30.4375;
-
-    }
-
-
-    const daily =
-      billValue(
-        bill,
-        "average_daily_kwh"
-      );
-
-
-    if(daily !== null){
-
-      return daily *
-        30.4375;
-
-    }
-
-
-    return null;
-
-  }
-
-
-  function monthlyActualBill(
-    bill
-  ){
-
-    if(!bill){
-      return null;
-    }
-
-
-    const total =
-      billValue(
-        bill,
-        "total_bill_nzd"
-      );
-
-
-    const days =
-      billValue(
-        bill,
-        "billing_days"
-      );
-
-
-    if(
-      total !== null &&
-      days &&
-      days > 0
-    ){
-
-      return (
-        total /
-        days
-      ) *
-      30.4375;
-
-    }
-
-
-    return total;
-
-  }
-
-
-  /* ======================================================
-     EFFECTIVE IMPORT RATE
-
-     Prefer the bill's explicit main import rate.
-
-     If that isn't available, derive an effective
-     rate from the customer's real bill rather than
-     assuming that fields such as "peak" or "off-peak"
-     necessarily represent the complete retail tariff.
-  ====================================================== */
-
-  function effectiveImportRate(
-    bill
-  ){
-
-    if(!bill){
-      return null;
-    }
-
-
-    const explicit =
-      billValue(
-        bill,
-        "import_rate_cents"
-      );
-
-
-    if(
-      explicit !== null &&
-      explicit > 0 &&
-      explicit < 100
-    ){
-
-      return explicit / 100;
-
-    }
-
-
-    const totalBill =
-      billValue(
-        bill,
-        "total_bill_nzd"
-      );
-
-
-    const imported =
-      billValue(
-        bill,
-        "total_import_kwh"
-      );
-
-
-    const days =
-      billValue(
-        bill,
-        "billing_days"
-      );
-
-
-    const fixedCents =
-      billValue(
-        bill,
-        "daily_fixed_charge_cents"
-      );
-
-
-    if(
-      totalBill !== null &&
-      imported !== null &&
-      imported > 0
-    ){
-
-      let fixedCost = 0;
-
-
-      if(
-        fixedCents !== null &&
-        days !== null
-      ){
-
-        fixedCost =
-          (
-            fixedCents /
-            100
-          ) *
-          days;
-
-      }
-
-
-      const variableCost =
-        Math.max(
-          totalBill -
-          fixedCost,
-          0
-        );
-
-
-      if(variableCost > 0){
-
-        return variableCost /
-          imported;
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /* ======================================================
-     SEASONAL HOUSEHOLD DEMAND
-
-     Summer + winter bills are the real anchors.
-
-     Months between them are interpolated.
-  ====================================================== */
-
-  function seasonalProfile(
-    summer,
-    winter
-  ){
-
-    const winterWeight = [
-
-      0.00,
-      0.05,
-      0.18,
-      0.40,
-      0.68,
-      0.90,
-      1.00,
-      0.88,
-      0.62,
-      0.36,
-      0.15,
-      0.03
-
-    ];
-
-
-    return winterWeight.map(
-      function(weight){
-
-        return summer +
-          (
-            winter -
-            summer
-          ) *
-          weight;
-
-      }
-    );
-
-  }
-
-
-  /* ======================================================
-     EXACT ROOF CHOICES FROM THIS SURVEY
-
-     North
-     East
-     West
-     South
-     Several directions
-     I don't know
-  ====================================================== */
-
-  function getRoofOrientationFactor(){
-
-    if(
-      typeof answers === "undefined"
-    ){
-
-      return 0.90;
-
-    }
-
-
-    const direction =
-      String(
-        answers.direction || ""
-      )
-      .trim()
-      .toLowerCase();
-
-
-    if(direction === "north"){
-
-      return 1.00;
-
-    }
-
-
-    if(
-      direction === "east" ||
-      direction === "west"
-    ){
-
-      return 0.86;
-
-    }
-
-
-    if(direction === "south"){
-
-      return 0.68;
-
-    }
-
-
-    if(
-      direction.includes(
-        "several directions"
-      )
-    ){
-
-      return 0.92;
-
-    }
-
-
-    /*
-      I don't know.
-    */
-
-    return 0.90;
-
-  }
-
-
-  /* ======================================================
-     EXACT SHADE CHOICES FROM THIS SURVEY
-
-     Very little
-     Some
-     A lot
-     I don't know
-  ====================================================== */
-
-  function getShadeFactor(){
-
-    if(
-      typeof answers === "undefined"
-    ){
-
-      return 0.90;
-
-    }
-
-
-    const shade =
-      String(
-        answers.shade || ""
-      )
-      .trim()
-      .toLowerCase();
-
-
-    if(
-      shade.includes(
-        "very little"
-      )
-    ){
-
-      return 1.00;
-
-    }
-
-
-    if(shade === "some"){
-
-      return 0.90;
-
-    }
-
-
-    if(
-      shade.includes(
-        "a lot"
-      )
-    ){
-
-      return 0.70;
-
-    }
-
-
-    return 0.90;
-
-  }
-
-
-  /* ======================================================
-     SOLAR GENERATION
-  ====================================================== */
-
-  function buildSolarGeneration(){
-
-    const roofFactor =
-      getRoofOrientationFactor();
-
-
-    const shadeFactor =
-      getShadeFactor();
-
-
-    return MONTHLY_SOLAR_SHARE.map(
-      function(share){
-
-        return (
-          BASE_ANNUAL_SOLAR_KWH *
-          share *
-          roofFactor *
-          shadeFactor
-        );
-
-      }
-    );
-
-  }
-
-
-  /* ======================================================
-     APPLIANCES / HOUSEHOLD BEHAVIOUR
-  ====================================================== */
-
-  function selectedLoads(){
-
-    if(
-      typeof answers === "undefined" ||
-      !Array.isArray(
-        answers.loads
-      )
-    ){
-
-      return [];
-
-    }
-
-
-    return answers.loads.map(
-      function(load){
-
-        return String(load)
-          .trim()
-          .toLowerCase();
-
-      }
-    );
-
-  }
-
-
-  function hasLoad(text){
-
-    return selectedLoads().some(
-      function(load){
-
-        return load.includes(
-          text.toLowerCase()
-        );
-
-      }
-    );
-
-  }
-
-
-  /* ======================================================
-     SOLAR-SMART OPPORTUNITY
-
-     This does NOT pretend the electricity bill
-     reveals appliance-by-appliance time-of-use.
-
-     It combines the customer's actual demand with
-     what they have told us about household routine
-     and flexible appliances.
-  ====================================================== */
-
-  function calculateSolarSmartScore(){
-
-    let score = 0;
-
-    const reasons = [];
-
-
-    const dayHome =
-      typeof answers !==
-      "undefined"
-        ? String(
-            answers.dayHome || ""
-          )
-          .trim()
-          .toLowerCase()
-        : "";
-
-
-    if(
-      dayHome.includes(
-        "often"
-      )
-    ){
-
-      score += 3;
-
-      reasons.push(
-        "someone is often home during solar-producing hours"
-      );
-
-    }else if(
-      dayHome.includes(
-        "sometimes"
-      )
-    ){
-
-      score += 2;
-
-      reasons.push(
-        "someone is sometimes home during the day"
-      );
-
-    }
-
-
-    if(hasLoad("ev")){
-
-      score += 2;
-
-      reasons.push(
-        "EV charging may be able to move into daytime solar hours"
-      );
-
-    }
-
-
-    if(
-      hasLoad(
-        "washing machine"
-      )
-    ){
-
-      score += 1;
-
-      reasons.push(
-        "washing-machine use is flexible"
-      );
-
-    }
-
-
-    if(
-      hasLoad(
-        "dishwasher"
-      )
-    ){
-
-      score += 1;
-
-      reasons.push(
-        "dishwasher use can often be timed"
-      );
-
-    }
-
-
-    if(
-      hasLoad(
-        "clothes dryer"
-      )
-    ){
-
-      score += 1;
-
-      reasons.push(
-        "some dryer use may be moved into solar hours"
-      );
-
-    }
-
-
-    if(hasLoad("pool")){
-
-      score += 2;
-
-      reasons.push(
-        "pool pumping is particularly suitable for daytime solar"
-      );
-
-    }
-
-
-    if(hasLoad("spa")){
-
-      score += 1;
-
-      reasons.push(
-        "some spa demand can potentially be scheduled"
-      );
-
-    }
-
-
-    if(
-      hasLoad(
-        "water pump"
-      )
-    ){
-
-      score += 1;
-
-    }
-
-
-    if(
-      hasLoad(
-        "heat pump"
-      )
-    ){
-
-      score += 1;
-
-    }
-
-
-    let rating;
-
-    let directSolarFraction;
-
-
-    if(score >= 7){
-
-      rating =
-        "HIGH";
-
-      directSolarFraction =
-        0.66;
-
-    }else if(score >= 4){
-
-      rating =
-        "GOOD";
-
-      directSolarFraction =
-        0.56;
-
-    }else{
-
-      rating =
-        "MODERATE";
-
-      directSolarFraction =
-        0.46;
-
-    }
-
-
-    return {
-
-      score,
-
-      rating,
-
-      directSolarFraction,
-
-      reasons
-
-    };
-
-  }
-
-
-  /* ======================================================
-     EXISTING SOLAR DETECTION
-
-     Survey 1 is designed primarily for homes
-     considering solar.
-
-     If a bill already shows exports, warn that the
-     benchmark is not directly comparable.
-  ====================================================== */
-
-  function billShowsSolarExport(
-    bill
-  ){
-
-    const exported =
-      billValue(
-        bill,
-        "total_export_kwh"
-      );
-
-
-    return (
-      exported !== null &&
-      exported > 1
-    );
-
-  }
-
-
-  /* ======================================================
-     COMPLETE ENERGY-FLOW MODEL
-  ====================================================== */
-
-  function buildSmartSolarModel(){
-
-    const summerBill =
-      getBill(
-        "summer"
-      );
-
-
-    const winterBill =
-      getBill(
-        "winter"
-      );
-
-
-    let summerUse =
-      monthlyImportedKwh(
-        summerBill
-      );
-
-
-    let winterUse =
-      monthlyImportedKwh(
-        winterBill
-      );
-
-
-    if(
-      summerUse === null &&
-      winterUse === null
-    ){
-
-      return null;
-
-    }
-
-
-    if(summerUse === null){
-
-      summerUse =
-        winterUse *
-        0.65;
-
-    }
-
-
-    if(winterUse === null){
-
-      winterUse =
-        summerUse *
-        1.55;
-
-    }
-
-
-    const monthlyUse =
-      seasonalProfile(
-        summerUse,
-        winterUse
-      );
-
-
-    /* --------------------------------------------------
-       IMPORT TARIFF
-    -------------------------------------------------- */
-
-    const importRate =
-      averageUseful(
-
-        effectiveImportRate(
-          summerBill
-        ),
-
-        effectiveImportRate(
-          winterBill
-        ),
-
-        DEFAULT_IMPORT_RATE
-
-      );
-
-
-    /* --------------------------------------------------
-       EXPORT TARIFF
-    -------------------------------------------------- */
-
-    const exportRate =
-      averageUseful(
-
-        centsToDollars(
-          summerBill,
-          "export_rate_cents"
-        ),
-
-        centsToDollars(
-          winterBill,
-          "export_rate_cents"
-        ),
-
-        DEFAULT_EXPORT_RATE
-
-      );
-
-
-    /* --------------------------------------------------
-       FIXED CHARGES
-    -------------------------------------------------- */
-
-    const summerFixed =
-      centsToDollars(
-        summerBill,
-        "daily_fixed_charge_cents"
-      );
-
-
-    const winterFixed =
-      centsToDollars(
-        winterBill,
-        "daily_fixed_charge_cents"
-      );
-
-
-    const fixedDaily =
-      averageUseful(
-        summerFixed,
-        winterFixed,
-        0
-      );
-
-
-    const fixedMonthly =
-      fixedDaily *
-      30.4375;
-
-
-    /* --------------------------------------------------
-       CURRENT BILL CURVE
-
-       Use customer's actual bill cost wherever possible.
-    -------------------------------------------------- */
-
-    let summerCost =
-      monthlyActualBill(
-        summerBill
-      );
-
-
-    let winterCost =
-      monthlyActualBill(
-        winterBill
-      );
-
-
-    if(summerCost === null){
-
-      summerCost =
-        (
-          summerUse *
-          importRate
-        ) +
-        fixedMonthly;
-
-    }
-
-
-    if(winterCost === null){
-
-      winterCost =
-        (
-          winterUse *
-          importRate
-        ) +
-        fixedMonthly;
-
-    }
-
-
-    const currentCost =
-      seasonalProfile(
-        summerCost,
-        winterCost
-      );
-
-
-    /* --------------------------------------------------
-       SOLAR PRODUCTION
-    -------------------------------------------------- */
-
-    const generation =
-      buildSolarGeneration();
-
-
-    /* --------------------------------------------------
-       HOUSEHOLD BEHAVIOUR
-    -------------------------------------------------- */
-
-    const smart =
-      calculateSolarSmartScore();
-
-
-    const solarOnlyCost = [];
-
-    const batteryCost = [];
-
-
-    let annualDirectSolar = 0;
-
-    let annualSolarExport = 0;
-
-    let annualGridImportSolar = 0;
-
-    let annualBatteryShift = 0;
-
-    let annualBatteryExport = 0;
-
-    let annualGridImportBattery = 0;
-
-
-    for(
-      let month=0;
-      month<12;
-      month++
-    ){
-
-      const load =
-        monthlyUse[month];
-
-
-      const solar =
-        generation[month];
-
-
-      /*
-        Direct solar usage.
-
-        This is influenced by the customer's
-        household routine and flexible loads.
-      */
-
-      const directSolar =
-        Math.min(
-
-          load,
-
-          solar *
-          smart.directSolarFraction
-
-        );
-
-
-      const gridImportSolar =
-        Math.max(
-
-          load -
-          directSolar,
-
-          0
-
-        );
-
-
-      const solarExport =
-        Math.max(
-
-          solar -
-          directSolar,
-
-          0
-
-        );
-
-
-      const solarBill =
-        fixedMonthly +
-        (
-          gridImportSolar *
-          importRate
-        ) -
-        (
-          solarExport *
-          exportRate
-        );
-
-
-      solarOnlyCost.push(
-        solarBill
-      );
-
-
-      annualDirectSolar +=
-        directSolar;
-
-
-      annualSolarExport +=
-        solarExport;
-
-
-      annualGridImportSolar +=
-        gridImportSolar;
-
-
-      /* ------------------------------------------------
-         BATTERY SHIFTING
-      ------------------------------------------------ */
-
-      const days =
-        new Date(
-          2026,
-          month+1,
-          0
-        ).getDate();
-
-
-      const maximumBatteryOutput =
-        BATTERY_SIZE_KWH *
-        days *
-        BATTERY_EFFICIENCY;
-
-
-      const batteryShift =
-        Math.min(
-
-          maximumBatteryOutput,
-
-          gridImportSolar,
-
-          solarExport *
-          BATTERY_EFFICIENCY
-
-        );
-
-
-      const gridImportBattery =
-        Math.max(
-
-          gridImportSolar -
-          batteryShift,
-
-          0
-
-        );
-
-
-      const solarRequiredForBattery =
-        batteryShift /
-        BATTERY_EFFICIENCY;
-
-
-      const batteryExport =
-        Math.max(
-
-          solarExport -
-          solarRequiredForBattery,
-
-          0
-
-        );
-
-
-      const batteryBill =
-        fixedMonthly +
-        (
-          gridImportBattery *
-          importRate
-        ) -
-        (
-          batteryExport *
-          exportRate
-        );
-
-
-      batteryCost.push(
-        batteryBill
-      );
-
-
-      annualBatteryShift +=
-        batteryShift;
-
-
-      annualBatteryExport +=
-        batteryExport;
-
-
-      annualGridImportBattery +=
-        gridImportBattery;
-
-    }
-
-
-    const annualUse =
-      monthlyUse.reduce(
-        function(a,b){
-          return a+b;
-        },
-        0
-      );
-
-
-    const annualGeneration =
-      generation.reduce(
-        function(a,b){
-          return a+b;
-        },
-        0
-      );
-
-
-    return {
-
-      currentCost,
-
-      solarOnlyCost,
-
-      batteryCost,
-
-      monthlyUse,
-
-      generation,
-
-      annualUse,
-
-      annualGeneration,
-
-      annualDirectSolar,
-
-      annualSolarExport,
-
-      annualGridImportSolar,
-
-      annualBatteryShift,
-
-      annualBatteryExport,
-
-      annualGridImportBattery,
-
-      importRate,
-
-      exportRate,
-
-      fixedMonthly,
-
-      smart,
-
-      roofFactor:
-        getRoofOrientationFactor(),
-
-      shadeFactor:
-        getShadeFactor(),
-
-      existingSolar:
-        (
-          billShowsSolarExport(
-            summerBill
-          ) ||
-          billShowsSolarExport(
-            winterBill
-          )
-        )
-
-    };
-
-  }
-
-
-  function annualTotal(
-    array
-  ){
-
-    return array.reduce(
-      function(a,b){
-        return a+b;
-      },
-      0
-    );
-
-  }
-
-
-  /* ======================================================
-     FINAL REPORT CONTAINER
-  ====================================================== */
-
-  function createSolarReportContainer(){
-
-    let report =
-      document.getElementById(
-        "solarSavingsReport"
-      );
-
-
-    if(report){
-      return report;
-    }
-
-
-    report =
-      document.createElement(
-        "div"
-      );
-
-
-    report.id =
-      "solarSavingsReport";
-
-
-    const resultTitle =
-      document.getElementById(
-        "resultTitle"
-      );
-
-
-    const finalScreen =
-      resultTitle
-        ? resultTitle.closest(
-            ".screen"
-          )
-        : null;
-
-
-    if(finalScreen){
-
-      /*
-        It appears only at the END of
-        the completed survey.
-      */
-
-      finalScreen.appendChild(
-        report
-      );
-
-    }else{
-
-      document.body.appendChild(
-        report
-      );
-
-    }
-
-
-    return report;
-
-  }
-
-
-  /* ======================================================
-     FINAL CUSTOMER RESULT
-  ====================================================== */
-
-  function renderSmartSolarReport(){
-
-    const model =
-      buildSmartSolarModel();
-
-
-    if(!model){
-      return;
-    }
-
-
-    const report =
-      createSolarReportContainer();
-
-
-    const currentAnnual =
-      annualTotal(
-        model.currentCost
-      );
-
-
-    const solarAnnual =
-      annualTotal(
-        model.solarOnlyCost
-      );
-
-
-    const batteryAnnual =
-      annualTotal(
-        model.batteryCost
-      );
-
-
-    const solarSaving =
-      currentAnnual -
-      solarAnnual;
-
-
-    const batterySaving =
-      currentAnnual -
-      batteryAnnual;
-
-
-    const extraBatterySaving =
-      solarAnnual -
-      batteryAnnual;
-
-
-    const reasons =
-      model.smart.reasons
-        .slice(
-          0,
-          4
-        );
-
-
-    let smartExplanation;
-
-
-    if(
-      model.smart.rating ===
-      "HIGH"
-    ){
-
-      smartExplanation =
-        "Your household appears particularly well suited to using more solar directly during the day. Smart timing of flexible loads could substantially reduce the amount of electricity you need to buy back from the grid.";
-
-    }else if(
-      model.smart.rating ===
-      "GOOD"
-    ){
-
-      smartExplanation =
-        "Your household has good potential to move some electricity use into solar-producing hours. That can improve solar self-consumption before increasing system or battery size.";
-
-    }else{
-
-      smartExplanation =
-        "There are still opportunities to use solar directly, although a larger share of your electricity appears likely to fall outside the strongest solar-producing hours.";
-
-    }
-
-
-    const existingSolarWarning =
-      model.existingSolar
-
-      ? `
-
-        <div class="existing-solar-warning">
-
-          <strong>
-            Your bill appears to include solar export.
-          </strong>
-
-          <br>
-
-          This first survey is designed primarily
-          as a benchmark for homes considering new solar.
-          If you already have solar, the existing-system
-          assessment will give a more meaningful comparison.
-
-        </div>
-
-      `
-
-      : "";
-
-
-    report.innerHTML = `
-
-      <div class="eyebrow">
-        your smart solar home
-      </div>
-
-
-      <h2>
-        What could 5 kW solar do for your home?
-      </h2>
-
-
-      <p class="smart-report-intro">
-
-        We’ve now combined your summer and winter
-        electricity use with what you’ve told us
-        about your household, larger electrical loads,
-        roof direction and shading.
-
-        This gives us a more useful first picture of
-        how solar could work in your home.
-
-      </p>
-
-
-      ${existingSolarWarning}
-
-
-      <div class="smart-summary-grid">
-
-
-        <div class="smart-summary-card">
-
-          <span>
-            Estimated annual electricity cost now
-          </span>
-
-          <strong>
-            ${money(currentAnnual)}
-          </strong>
-
-        </div>
-
-
-        <div class="smart-summary-card">
-
-          <span>
-            Estimated with 5 kW solar
-          </span>
-
-          <strong>
-            ${money(solarAnnual)}
-          </strong>
-
-          <small>
-            About ${money(solarSaving)}
-            less per year
-          </small>
-
-        </div>
-
-
-        <div class="smart-summary-card">
-
-          <span>
-            Estimated with 5 kW solar +
-            ${BATTERY_SIZE_KWH} kWh battery
-          </span>
-
-          <strong>
-            ${money(batteryAnnual)}
-          </strong>
-
-          <small>
-            About ${money(batterySaving)}
-            less per year
-          </small>
-
-        </div>
-
-
-      </div>
-
-
-      <h3>
-        Your estimated home-energy flow
-      </h3>
-
-
-      <div class="energy-flow-grid">
-
-
-        <div class="energy-flow-card">
-
-          <h4>
-            5 kW solar
-          </h4>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Household electricity use
-            </span>
-
-            <strong>
-              ${kwh(model.annualUse)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Estimated solar generation
-            </span>
-
-            <strong>
-              ${kwh(model.annualGeneration)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Solar used directly at home
-            </span>
-
-            <strong>
-              ${kwh(model.annualDirectSolar)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Solar exported
-            </span>
-
-            <strong>
-              ${kwh(model.annualSolarExport)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Electricity still bought from grid
-            </span>
-
-            <strong>
-              ${kwh(model.annualGridImportSolar)}
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div class="energy-flow-card">
-
-          <h4>
-            Solar + battery
-          </h4>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Solar shifted through battery
-            </span>
-
-            <strong>
-              ${kwh(model.annualBatteryShift)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Remaining solar export
-            </span>
-
-            <strong>
-              ${kwh(model.annualBatteryExport)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Remaining grid electricity
-            </span>
-
-            <strong>
-              ${kwh(model.annualGridImportBattery)}
-            </strong>
-
-          </div>
-
-
-          <div class="energy-flow-row">
-
-            <span>
-              Extra annual saving from battery
-            </span>
-
-            <strong>
-              ${money(extraBatterySaving)}
-            </strong>
-
-          </div>
-
-        </div>
-
-
-      </div>
-
-
-      <div class="solar-smart-box">
-
-        <strong>
-          Your solar-smart opportunity
-        </strong>
-
-        <br>
-
-        <span class="solar-smart-rating">
-          ${model.smart.rating}
-        </span>
-
-        <br>
-
-        ${smartExplanation}
-
-
-        ${
-          reasons.length
-
-          ? `
-
-            <br><br>
-
-            <strong>
-              Some opportunities we noticed:
-            </strong>
-
-            <br>
-
-            ${reasons.map(
-              function(reason){
-
-                return "• " +
-                  reason;
-
-              }
-            ).join("<br>")}
-
-          `
-
-          : ""
-        }
-
-      </div>
-
-
-      <h3>
-        How your electricity costs could change
-      </h3>
-
-
-      <p class="smart-report-intro">
-
-        Your summer and winter bills establish the
-        seasonal electricity-demand pattern.
-
-        The 5 kW solar estimate then allows for the
-        roof direction and shading information you
-        supplied, as well as likely daytime use of
-        solar in your household.
-
-      </p>
-
-
-      <div class="solar-chart-wrap">
-
-        <svg
-          id="solarSavingsChart"
-          viewBox="0 0 760 370"
-          role="img"
-          aria-label="Estimated monthly electricity costs"
-        ></svg>
-
-      </div>
-
-
-      <div class="solar-legend">
-
-        <span class="solar-key">
-
-          <i class="solar-line line-current"></i>
-
-          Current
-
-        </span>
-
-
-        <span class="solar-key">
-
-          <i class="solar-line line-solar"></i>
-
-          5 kW solar
-
-        </span>
-
-
-        <span class="solar-key">
-
-          <i class="solar-line line-battery"></i>
-
-          Solar + battery
-
-        </span>
-
-      </div>
-
-
-      <p class="model-note">
-
-        <strong>
-          This is an indicative home-energy estimate,
-          not a solar quote.
-        </strong>
-
-        The 5 kW system is a consistent comparison
-        benchmark — not yet our recommendation.
-
-        Actual generation and savings depend on detailed
-        roof dimensions and pitch, orientation, shading,
-        system design, household electricity behaviour,
-        import and export tariffs, weather and the
-        battery selected.
-
-        Roof material is collected for installation
-        planning but is not being used here to artificially
-        increase or reduce solar generation.
-
-        A Solectrics home assessment lets us refine the
-        appropriate system size and expected performance
-        for your particular home.
-
-      </p>
-
-    `;
-
-
-    drawSolarChart(
-      model
-    );
-
-  }
-
-
-  /* ======================================================
-     GRAPH
-  ====================================================== */
-
-  function drawSolarChart(
-    model
-  ){
-
-    const svg =
-      document.getElementById(
-        "solarSavingsChart"
-      );
-
-
-    if(!svg){
-      return;
-    }
-
-
-    const width = 760;
-
-    const height = 370;
-
-    const left = 62;
-
-    const right = 22;
-
-    const top = 28;
-
-    const bottom = 50;
-
-
-    const plotWidth =
-      width -
-      left -
-      right;
-
-
-    const plotHeight =
-      height -
-      top -
-      bottom;
-
-
-    const allValues = [
-
-      ...model.currentCost,
-
-      ...model.solarOnlyCost,
-
-      ...model.batteryCost
-
-    ];
-
-
-    let minValue =
-      Math.min(
-        0,
-        ...allValues
-      );
-
-
-    let maxValue =
-      Math.max(
-        0,
-        ...allValues
-      );
-
-
-    const range =
-      Math.max(
-        maxValue -
-        minValue,
-        50
-      );
-
-
-    minValue -=
-      range *
-      0.08;
-
-
-    maxValue +=
-      range *
-      0.10;
-
-
-    function x(index){
-
-      return left +
-        (
-          index /
-          11
-        ) *
-        plotWidth;
-
-    }
-
-
-    function y(value){
-
-      return top +
-        (
-          (
-            maxValue -
-            value
-          ) /
-          (
-            maxValue -
-            minValue
-          )
-        ) *
-        plotHeight;
-
-    }
-
-
-    function path(values){
-
-      return values.map(
-        function(
-          value,
-          index
-        ){
-
-          return (
-            index === 0
-              ? "M "
-              : "L "
-          ) +
-          x(index) +
-          " " +
-          y(value);
-
-        }
-      ).join(" ");
-
-    }
-
-
-    let html = "";
-
-
-    /* grid */
-
-    for(
-      let i=0;
-      i<=5;
-      i++
-    ){
-
-      const value =
-        minValue +
-        (
-          (
-            maxValue -
-            minValue
-          ) /
-          5
-        ) *
-        i;
-
-
-      const yy =
-        y(value);
-
-
-      html += `
-
-        <line
-          x1="${left}"
-          y1="${yy}"
-          x2="${width-right}"
-          y2="${yy}"
-          stroke="#e5e1dd"
-          stroke-width="1"
-        />
-
-        <text
-          x="${left-10}"
-          y="${yy+4}"
-          text-anchor="end"
-          font-size="11"
-          fill="#777"
-        >
-          ${money(value)}
-        </text>
-
-      `;
-
-    }
-
-
-    /* zero line */
-
-    if(
-      minValue < 0 &&
-      maxValue > 0
-    ){
-
-      const zeroY =
-        y(0);
-
-
-      html += `
-
-        <line
-          x1="${left}"
-          y1="${zeroY}"
-          x2="${width-right}"
-          y2="${zeroY}"
-          stroke="#aaa"
-          stroke-width="1.5"
-          stroke-dasharray="5 5"
-        />
-
-      `;
-
-    }
-
-
-    /* months */
-
-    MONTHS.forEach(
-      function(
-        month,
-        index
-      ){
-
-        html += `
-
-          <text
-            x="${x(index)}"
-            y="${height-18}"
-            text-anchor="middle"
-            font-size="11"
-            fill="#666"
-          >
-            ${month}
-          </text>
-
-        `;
-
-      }
-    );
-
-
-    /* current */
-
-    html += `
-
-      <path
-        d="${path(model.currentCost)}"
-        fill="none"
-        stroke="#444"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    /* solar */
-
-    html += `
-
-      <path
-        d="${path(model.solarOnlyCost)}"
-        fill="none"
-        stroke="#ee8042"
-        stroke-width="3"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    /* solar + battery */
-
-    html += `
-
-      <path
-        d="${path(model.batteryCost)}"
-        fill="none"
-        stroke="#777"
-        stroke-width="3"
-        stroke-dasharray="8 5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-
-    `;
-
-
-    svg.innerHTML =
-      html;
-
-  }
-
-
-  /* ======================================================
-     RUN ONLY AT FINAL RESULT
-  ====================================================== */
-
-  const originalShowResult =
-    window.showResult;
-
-
-  if(
-    typeof originalShowResult ===
-    "function"
-  ){
-
-    window.showResult =
-      function(){
-
-        const result =
-          originalShowResult.apply(
-            this,
-            arguments
-          );
-
-
-        setTimeout(
-          renderSmartSolarReport,
-          100
-        );
-
-
-        return result;
-
-      };
-
-  }
-
-
-  /*
-    Safety check in case results were
-    already rendered when this code ran.
-  */
-
-  setTimeout(
-    function(){
-
-      const resultTitle =
-        document.getElementById(
-          "resultTitle"
-        );
-
-
-      if(
-        resultTitle &&
-        resultTitle.closest(
-          ".screen.active"
-        )
-      ){
-
-        renderSmartSolarReport();
-
-      }
-
-    },
-    500
-  );
-
-
-})();
-
-</script>
-
-<!-- END SOLECTRICS SOLAR SAVINGS REPORT -->
+<!-- END SOLECTRICS SMART SOLAR HOME REPORT -->
 </body>
 </html>
