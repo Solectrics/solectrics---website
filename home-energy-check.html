@@ -246,8 +246,7 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
   <div id="insights"></div>
 </div>
 
-<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveBillEdits();next()">CONTINUE →</button></div>
-</section>
+<button class="btn primary" onclick="saveBillEdits();showResult()">SEE MY SOLAR REPORT →</button></section>
 
 
 <section class="screen" data-stage="your energy"><div class="eyebrow">hot water</div><h2>How do you heat your water?</h2><button class="choice" onclick="single('hotWater','Electric hot-water cylinder',this);next()">Electric hot-water cylinder</button><button class="choice" onclick="single('hotWater','Heat-pump hot water',this);next()">Heat-pump hot water</button><button class="choice" onclick="single('hotWater','Solar hot water',this);next()">Solar hot water</button><button class="choice" onclick="single('hotWater','Gas',this);next()">Gas</button><button class="choice" onclick="single('hotWater','Other / not sure',this);next()">Other / I’m not sure</button><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
