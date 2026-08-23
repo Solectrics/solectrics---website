@@ -67,31 +67,178 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 <p>Upload one summer bill and one winter bill. We’ll pull out the useful information and show it back to you in plain English.</p>
 
 <div class="upload">
+
   <label>☀️ Summer power bill</label>
-  <span class="muted">January or February is ideal.</span><br><br>
-  <input type="file" id="summerBill" accept="image/*,.pdf">
-  <button class="btn primary" id="readSummer" onclick="readBill('summer')" style="margin-top:14px">READ MY SUMMER BILL →</button>
-  <div id="summerStatus" class="bill-status"></div>
+
+  <span class="muted">
+    January or February is ideal.
+  </span>
+
+  <br><br>
+
+  <input
+    type="file"
+    id="summerBill"
+    accept="image/*,.pdf"
+  >
+
+  <div
+    id="summerStatus"
+    class="bill-status">
+  </div>
+
 </div>
 
-<div id="summerReview" class="card bill-review hidden">
-  <h3>We found this</h3>
-  <p class="muted">Please check it. You can correct anything we’ve misread.</p>
-  <div class="bill-fields" id="summerFields"></div>
-</div>
 
 <div class="upload">
+
   <label>❄️ Winter power bill</label>
-  <span class="muted">July or August is ideal.</span><br><br>
-  <input type="file" id="winterBill" accept="image/*,.pdf">
-  <button class="btn primary" id="readWinter" onclick="readBill('winter')" style="margin-top:14px">READ MY WINTER BILL →</button>
-  <div id="winterStatus" class="bill-status"></div>
+
+  <span class="muted">
+    July or August is ideal.
+  </span>
+
+  <br><br>
+
+  <input
+    type="file"
+    id="winterBill"
+    accept="image/*,.pdf"
+  >
+
+  <div
+    id="winterStatus"
+    class="bill-status">
+  </div>
+
 </div>
 
-<div id="winterReview" class="card bill-review hidden">
-  <h3>We found this</h3>
-  <p class="muted">Please check it. You can correct anything we’ve misread.</p>
-  <div class="bill-fields" id="winterFields"></div>
+
+<!-- Keep these hidden because the existing readBill()
+     code may refer to these button IDs -->
+
+<button
+  id="readSummer"
+  type="button"
+  style="display:none">
+</button>
+
+<button
+  id="readWinter"
+  type="button"
+  style="display:none">
+</button>
+
+
+<button
+  class="btn primary"
+  id="readBothBills"
+  type="button"
+  style="margin-top:18px"
+  onclick="
+    (async () => {
+
+      const summer =
+        document.getElementById('summerBill').files[0];
+
+      const winter =
+        document.getElementById('winterBill').files[0];
+
+      const summerStatus =
+        document.getElementById('summerStatus');
+
+      const winterStatus =
+        document.getElementById('winterStatus');
+
+      const button =
+        document.getElementById('readBothBills');
+
+
+      summerStatus.textContent = '';
+      winterStatus.textContent = '';
+
+
+      if (!summer || !winter) {
+
+        if (!summer) {
+          summerStatus.textContent =
+            'Please choose a summer bill.';
+        }
+
+        if (!winter) {
+          winterStatus.textContent =
+            'Please choose a winter bill.';
+        }
+
+        return;
+      }
+
+
+      button.disabled = true;
+      button.textContent = 'READING YOUR BILLS…';
+
+
+      try {
+
+        await readBill('summer');
+
+        await readBill('winter');
+
+        button.textContent = 'BILLS READ ✓';
+
+      } catch (error) {
+
+        console.error(error);
+
+        button.textContent =
+          'TRY READING MY BILLS AGAIN';
+
+      } finally {
+
+        button.disabled = false;
+
+      }
+
+    })();
+  "
+>
+  READ MY SUMMER &amp; WINTER BILLS →
+</button>
+
+
+<div
+  id="summerReview"
+  class="card bill-review hidden">
+
+  <h3>Summer bill</h3>
+
+  <p class="muted">
+    Please check it. You can correct anything we’ve misread.
+  </p>
+
+  <div
+    class="bill-fields"
+    id="summerFields">
+  </div>
+
+</div>
+
+
+<div
+  id="winterReview"
+  class="card bill-review hidden">
+
+  <h3>Winter bill</h3>
+
+  <p class="muted">
+    Please check it. You can correct anything we’ve misread.
+  </p>
+
+  <div
+    class="bill-fields"
+    id="winterFields">
+  </div>
+
 </div>
 
 <div id="billInsights" class="hidden">
