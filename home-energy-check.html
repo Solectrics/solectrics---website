@@ -949,6 +949,103 @@ This is an indicative assessment — not a formal quote.
 }
 
 
+
+/* WINTER COMPARISON + READ MORE */
+
+.ss-winter-section{
+  margin:30px 0;
+  padding:22px;
+  background:#fffaf7;
+  border-radius:16px;
+}
+
+.ss-winter-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:18px 0;
+}
+
+.ss-winter-column{
+  background:#fff;
+  border:1px solid #e8e1db;
+  border-radius:15px;
+  padding:18px;
+}
+
+.ss-winter-column h4{
+  color:#e97838;
+  font-size:13px !important;
+  letter-spacing:.05em;
+  margin-bottom:12px !important;
+}
+
+.ss-winter-row{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  padding:11px 0;
+  border-bottom:1px solid #efebe7;
+  line-height:1.35;
+}
+
+.ss-winter-row strong{
+  white-space:nowrap;
+}
+
+.ss-winter-row.highlight{
+  margin-top:4px;
+  padding:12px;
+  background:#fff6ef;
+  border-radius:10px;
+  border-bottom:none;
+}
+
+.ss-winter-note{
+  margin-top:12px;
+  color:#68716e;
+  font-size:12px;
+  line-height:1.5;
+}
+
+.ss-heating-teaser{
+  margin:26px 0;
+  padding:20px;
+  background:#fffaf7;
+  border-left:4px solid #e97838;
+  border-radius:0 14px 14px 0;
+}
+
+.ss-read-more{
+  margin-top:14px;
+  border-top:1px solid #eadfd7;
+  padding-top:12px;
+}
+
+.ss-read-more summary{
+  cursor:pointer;
+  color:#e97838;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.04em;
+  list-style:none;
+}
+
+.ss-read-more summary::-webkit-details-marker{
+  display:none;
+}
+
+.ss-read-more > div{
+  padding-top:14px;
+}
+
+@media(max-width:700px){
+  .ss-winter-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+
 /* BATTERY */
 
 .ss-battery-section{
@@ -2780,6 +2877,8 @@ function buildModel(){
 
   const passiveCost = [];
 
+  const passiveBatteryCost = [];
+
   const smartCost = [];
 
   const batteryCost = [];
@@ -2877,6 +2976,62 @@ function buildModel(){
 
     passiveGrid +=
       gridPassive;
+
+
+    /* -----------------------------------------
+       2B — SOLAR, SAME HABITS + 5 kWh STORAGE
+       Used for the winter side-by-side comparison.
+    ----------------------------------------- */
+
+    const passiveDays =
+      new Date(
+        2026,
+        month+1,
+        0
+      ).getDate();
+
+    const passiveBatteryMaximumOutput =
+      BATTERY_SIZE_KWH *
+      passiveDays *
+      BATTERY_EFFICIENCY;
+
+    const passiveShifted =
+      Math.min(
+        passiveBatteryMaximumOutput,
+        gridPassive,
+        exportPassive *
+        BATTERY_EFFICIENCY
+      );
+
+    const passiveGridAfterBattery =
+      Math.max(
+        gridPassive -
+        passiveShifted,
+        0
+      );
+
+    const passiveSolarIntoBattery =
+      passiveShifted /
+      BATTERY_EFFICIENCY;
+
+    const passiveExportAfterBattery =
+      Math.max(
+        exportPassive -
+        passiveSolarIntoBattery,
+        0
+      );
+
+    passiveBatteryCost.push(
+      fixedMonthly +
+      (
+        passiveGridAfterBattery *
+        importRate
+      ) -
+      (
+        passiveExportAfterBattery *
+        exportRate
+      )
+    );
 
 
     /* -----------------------------------------
@@ -3021,6 +3176,9 @@ function buildModel(){
     passiveCost:
       passiveCost,
 
+    passiveBatteryCost:
+      passiveBatteryCost,
+
     smartCost:
       smartCost,
 
@@ -3077,6 +3235,15 @@ function buildModel(){
     smart:
       smart,
 
+    importRate:
+      importRate,
+
+    exportRate:
+      exportRate,
+
+    fixedMonthly:
+      fixedMonthly,
+
     estimateSource:
       estimateSource,
 
@@ -3107,6 +3274,168 @@ function annual(
     },
     0
   );
+
+}
+
+
+
+/* =========================================================
+   WINTER COMPARISON
+========================================================= */
+
+function winterAverage(values){
+
+  const winterValues =
+    [
+      values[5],
+      values[6],
+      values[7]
+    ].filter(
+      function(value){
+        return Number.isFinite(value);
+      }
+    );
+
+  if(!winterValues.length){
+    return 0;
+  }
+
+  return winterValues.reduce(
+    function(a,b){
+      return a+b;
+    },
+    0
+  ) / winterValues.length;
+
+}
+
+
+function estimatedHotWaterHeatPumpSaving(model){
+
+  const hotWater =
+    String(
+      answers && answers.hotWater
+        ? answers.hotWater
+        : ""
+    ).toLowerCase();
+
+  if(!hotWater.includes("electric hot-water")){
+    return 0;
+  }
+
+  const people =
+    householdPeopleCount();
+
+  const annualResistanceHotWaterKwh =
+    1800 +
+    (
+      people *
+      450
+    );
+
+  const electricityReduction =
+    annualResistanceHotWaterKwh *
+    0.65;
+
+  const blendedEnergyValue =
+    (
+      model.importRate *
+      0.70
+    ) +
+    (
+      model.exportRate *
+      0.30
+    );
+
+  return electricityReduction *
+    blendedEnergyValue;
+
+}
+
+
+function winterMoney(value){
+
+  if(value < 0){
+    return money(
+      Math.abs(value)
+    ) + " credit";
+  }
+
+  return money(value);
+
+}
+
+
+function winterComparison(model){
+
+  const hotWater =
+    String(
+      answers && answers.hotWater
+        ? answers.hotWater
+        : ""
+    ).toLowerCase();
+
+  const canCompareHwhp =
+    hotWater.includes(
+      "electric hot-water"
+    );
+
+  const alreadyHwhp =
+    hotWater.includes(
+      "heat-pump hot water"
+    );
+
+  const annualHwhpSaving =
+    estimatedHotWaterHeatPumpSaving(
+      model
+    );
+
+  const winterMonthlyHwhpSaving =
+    (
+      annualHwhpSaving /
+      12
+    ) *
+    1.15;
+
+  const sameNoBattery =
+    winterAverage(
+      model.passiveCost
+    );
+
+  const sameWithBattery =
+    winterAverage(
+      model.passiveBatteryCost
+    );
+
+  const smartNoBattery =
+    winterAverage(
+      model.smartCost
+    );
+
+  const smartWithBattery =
+    winterAverage(
+      model.batteryCost
+    );
+
+  return {
+    canCompareHwhp,
+    alreadyHwhp,
+    annualHwhpSaving,
+    sameNoBattery,
+    sameWithBattery,
+    smartNoBattery,
+    smartWithBattery,
+    smartHwhpNoBattery:
+      canCompareHwhp
+        ? smartNoBattery -
+          winterMonthlyHwhpSaving
+        : smartNoBattery,
+    smartHwhpWithBattery:
+      canCompareHwhp
+        ? smartWithBattery -
+          winterMonthlyHwhpSaving
+        : smartWithBattery
+  };
 
 }
 
@@ -4133,6 +4462,211 @@ function renderFinalSmartSolarReport(){
     </div>
 
 
+
+    <div class="ss-winter-section">
+
+      <div class="ss-kicker">
+        winter focus
+      </div>
+
+      <h3>
+        What could an average winter month look like?
+      </h3>
+
+      <p class="ss-intro">
+        This compares the estimated average June–August electricity bill
+        with and without 5 kWh of battery storage.
+      </p>
+
+      ${
+        (function(){
+
+          const winter =
+            winterComparison(
+              model
+            );
+
+          return `
+
+            <div class="ss-winter-grid">
+
+              <div class="ss-winter-column">
+                <h4>WITHOUT BATTERY</h4>
+
+                <div class="ss-winter-row">
+                  <span>Solar — same habits</span>
+                  <strong>${winterMoney(winter.sameNoBattery)}</strong>
+                </div>
+
+                <div class="ss-winter-row">
+                  <span>Solar Smart</span>
+                  <strong>${winterMoney(winter.smartNoBattery)}</strong>
+                </div>
+
+                ${
+                  winter.canCompareHwhp
+                    ? `
+                      <div class="ss-winter-row highlight">
+                        <span>Solar Smart + hot-water heat pump</span>
+                        <strong>${winterMoney(winter.smartHwhpNoBattery)}</strong>
+                      </div>
+                    `
+                    : ""
+                }
+
+                ${
+                  winter.alreadyHwhp
+                    ? `
+                      <div class="ss-winter-note">
+                        Your hot-water heat pump is already reflected in
+                        the household estimate.
+                      </div>
+                    `
+                    : ""
+                }
+
+              </div>
+
+
+              <div class="ss-winter-column">
+                <h4>WITH 5 kWh STORAGE</h4>
+
+                <div class="ss-winter-row">
+                  <span>Solar — same habits</span>
+                  <strong>${winterMoney(winter.sameWithBattery)}</strong>
+                </div>
+
+                <div class="ss-winter-row">
+                  <span>Solar Smart</span>
+                  <strong>${winterMoney(winter.smartWithBattery)}</strong>
+                </div>
+
+                ${
+                  winter.canCompareHwhp
+                    ? `
+                      <div class="ss-winter-row highlight">
+                        <span>Solar Smart + hot-water heat pump</span>
+                        <strong>${winterMoney(winter.smartHwhpWithBattery)}</strong>
+                      </div>
+                    `
+                    : ""
+                }
+
+                ${
+                  winter.alreadyHwhp
+                    ? `
+                      <div class="ss-winter-note">
+                        Your hot-water heat pump is already reflected in
+                        the household estimate.
+                      </div>
+                    `
+                    : ""
+                }
+
+              </div>
+
+            </div>
+
+            ${
+              winter.canCompareHwhp
+                ? `
+                  <p class="ss-small">
+                    The hot-water heat-pump row includes an illustrative
+                    efficiency saving of about
+                    <strong>${money(winter.annualHwhpSaving)} per year</strong>.
+                    It is not included in the other rows.
+                  </p>
+                `
+                : ""
+            }
+
+            <p class="ss-small">
+              These are indicative average winter-month figures, not a quote.
+              Battery savings depend on surplus solar being available to charge
+              the battery. Solar Smart savings depend on how much suitable
+              demand can actually be shifted into daytime solar hours.
+            </p>
+
+          `;
+
+        })()
+      }
+
+    </div>
+
+    ${
+      hasLoad("heat pump") || hasLoad("electric heating")
+      ? `
+        <div class="ss-heating-teaser">
+          <div class="ss-kicker">winter heating</div>
+
+          <h3>
+            Heat your home while the sun is working
+          </h3>
+
+          <p>
+            If you use a heat pump, some winter heating can potentially be moved
+            into the strongest solar hours — warming the home while your panels
+            are producing and reducing evening grid purchases.
+          </p>
+
+          <p>
+            <strong>
+              Illustrative timing opportunity:
+              about ${money(
+                3 *
+                120 *
+                Math.max(
+                  model.importRate -
+                  model.exportRate,
+                  0
+                )
+              )}–${money(
+                5 *
+                120 *
+                Math.max(
+                  model.importRate -
+                  model.exportRate,
+                  0
+                )
+              )} per heating season
+            </strong>
+          </p>
+
+          <details class="ss-read-more">
+            <summary>READ MORE ABOUT SOLAR-SMART WINTER HEATING →</summary>
+            <div>
+              <p>
+                A heat pump can be scheduled to do more of its work from late
+                morning through mid-afternoon, when solar production is stronger.
+                The home then holds some of that heat into the evening.
+              </p>
+
+              <p>
+                The example above assumes roughly 3–5 kWh of heat-pump
+                electricity can be shifted into solar hours on suitable days
+                across an indicative 120-day heating season.
+              </p>
+
+              <p>
+                The value of each shifted kWh is approximately the difference
+                between the grid import price and the export credit you would
+                otherwise receive for that solar.
+              </p>
+
+              <p>
+                Insulation, draughts, thermal mass, comfort settings and weather
+                all matter. Solectrics can assess whether built-in scheduling,
+                timers or smart controls are worthwhile for your home.
+              </p>
+            </div>
+          </details>
+
+        </div>
+      `
+      : ""
+    }
+
     <h3>
       How your electricity costs could change
     </h3>
@@ -4194,87 +4728,6 @@ function renderFinalSmartSolarReport(){
     
     ${
       (
-        String(answers && answers.hotWater ? answers.hotWater : "")
-          .toLowerCase()
-          .includes("electric hot-water")
-      )
-      ? `
-        <div class="ss-battery-section ss-hotwater-opportunity">
-
-          <div class="ss-kicker">
-            another smart-energy opportunity
-          </div>
-
-          <h3>
-            Your hot water may be another place to save
-          </h3>
-
-          <p>
-            You told us your home uses a standard electric hot-water cylinder.
-            Before spending more on battery storage, it may be worth comparing
-            what an efficient hot-water heat pump could do for your household.
-          </p>
-
-          <div class="ss-context">
-
-            <strong>
-              Indicative hot-water saving:
-              about ${money(
-                Math.max(
-                  250,
-                  Math.min(
-                    900,
-                    (
-                      900 +
-                      householdPeopleCount() * 350
-                    ) *
-                    0.65 *
-                    model.importRate
-                  )
-                )
-              )} per year
-            </strong>
-
-            <br><br>
-
-            This is a household benchmark estimate, not a quote.
-            A hot-water heat pump can typically use substantially less
-            electricity to produce the same hot water. With solar, it can
-            also be scheduled to do much of its heating during daylight hours.
-
-          </div>
-
-          <p>
-            <strong>A useful comparison:</strong>
-            a battery stores solar electricity for later, while your hot-water
-            cylinder already stores energy as heat. In some homes, improving
-            hot-water efficiency and timing can deliver better bill savings
-            per dollar than adding storage straight away.
-          </p>
-
-          <p>
-            At your Solectrics home assessment we can compare
-            <strong>solar-smart hot-water control, a hot-water heat pump,
-            and battery storage</strong> so you can see where the next part
-            of your budget is likely to do the most.
-          </p>
-
-          <button
-            type="button"
-            class="btn primary"
-            onclick="compareHotWaterBattery()"
-          >
-            COMPARE HOT WATER + BATTERY OPTIONS
-          </button>
-
-        </div>
-      `
-      : ""
-    }
-
-    
-    ${
-      (
         !String(answers && answers.hotWater ? answers.hotWater : "")
           .toLowerCase()
           .includes("heat-pump hot water")
@@ -4291,53 +4744,62 @@ function renderFinalSmartSolarReport(){
           </h3>
 
           <p>
-            Hot water can be one of the larger electricity loads in a home.
-            Before spending more on battery storage, it can be worth looking at
-            how much electricity your hot-water system needs in the first place.
+            A hot-water heat pump can substantially reduce the electricity
+            needed to heat water — and with solar, it can be timed to do much
+            of that work during solar-producing hours.
           </p>
 
           <p>
-            A hot-water heat pump uses electricity to move heat from the
-            surrounding air into your water, rather than creating all of that
-            heat directly with an electric element. That can substantially
-            reduce the electricity needed for water heating.
+            <strong>
+              Before spending on a battery, it can be worth comparing which
+              investment is likely to reduce your bill more.
+            </strong>
           </p>
 
-          <div class="ss-context">
-            <strong>Example of the opportunity</strong>
-            <br><br>
-            If a standard electric cylinder uses around <strong>3,000 kWh a year</strong>
-            for hot water, and a heat-pump system uses roughly a third of that,
-            the reduction could be around <strong>2,000 kWh a year</strong>.
-            At an illustrative electricity price of 30¢/kWh, that is about
-            <strong>$600 a year</strong> less electricity purchased.
-            <br><br>
-            This is an example only. Your actual saving depends on household
-            hot-water use, your existing system, electricity tariff, heat-pump
-            performance and how the system is controlled.
-          </div>
+          <details class="ss-read-more">
+            <summary>READ MORE ABOUT HOT-WATER HEAT PUMPS →</summary>
+            <div>
+              <p>
+                A hot-water heat pump moves heat from the surrounding air into
+                your water rather than creating all the heat directly with an
+                electric element. That can substantially reduce hot-water
+                electricity use.
+              </p>
 
-          <div class="ss-control-grid">
-            <div class="ss-control-item">
-              <strong>Hot-water heat pump</strong><br>
-              Reduce the load — use substantially less electricity to heat water.
-            </div>
-            <div class="ss-control-item">
-              <strong>Solar-smart hot water</strong><br>
-              Time the load — heat water preferentially while your panels are producing.
-            </div>
-            <div class="ss-control-item">
-              <strong>Battery storage</strong><br>
-              Store the surplus — keep daytime solar for evening and overnight use.
-            </div>
-          </div>
+              <div class="ss-context">
+                <strong>Illustrative example</strong><br><br>
+                If a standard electric cylinder uses around 3,000 kWh a year
+                for hot water and a heat-pump system uses roughly a third of
+                that, the reduction could be around 2,000 kWh a year.
+                At 30¢/kWh, that is about $600 a year less electricity purchased.
+                <br><br>
+                This is an example only, not a prediction for your home.
+              </div>
 
-          <p>
-            <strong>Which should you spend money on first?</strong><br>
-            At your home assessment, Solectrics can compare solar-smart hot-water
-            control, a hot-water heat pump and battery storage so you can see
-            where the next part of your budget is likely to do the most.
-          </p>
+              <p>
+                <strong>Reduce the load.</strong> A hot-water heat pump can use
+                much less electricity.<br><br>
+                <strong>Time the load.</strong> Solar-smart control can favour
+                daylight hours.<br><br>
+                <strong>Store the surplus.</strong> A battery can then be assessed
+                for remaining evening demand and backup needs.
+              </p>
+
+              <p>
+                <strong>Where could your next dollar work hardest?</strong><br>
+                Solectrics can compare hot-water efficiency, solar-smart control
+                and battery storage before you decide where to spend.
+              </p>
+
+              <button
+                type="button"
+                class="btn primary"
+                onclick="compareHotWaterBattery()"
+              >
+                COMPARE HOT WATER + BATTERY OPTIONS
+              </button>
+            </div>
+          </details>
 
         </div>
       `
