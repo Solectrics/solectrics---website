@@ -602,12 +602,29 @@ document.getElementById('waterScore').textContent=waterScore;
 
 document.getElementById('batteryScore').textContent=
   backupGoal ? 'BACKUP REQUESTED' :
-  storageGoal ? 'HIGH INTEREST' :
-  'WORTH EXPLORING';
+  storageGoal ? 'WORTH EXPLORING' :
+  'READY FOR LATER';
 const insights=makeInsights();document.getElementById('finalBillAnalysis').innerHTML=insights.length?'<h2>What we can already see from your bills</h2>'+insights.slice(0,4).map(x=>`<div class="insight">${escapeHtml(x)}</div>`).join(''):'';
 document.getElementById('summary').textContent='Your answers suggest good potential for a solar system designed around the way your household actually uses energy.';
 step=screens.length-1;render()}
 function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
+
+function compareHotWaterBattery(){
+  const subject=encodeURIComponent('Compare hot-water heat pump and battery options');
+  const body=encodeURIComponent(
+    'Hi Solectrics,\n\n' +
+    'I completed the Smart Solar Home Check and would like to compare the likely costs and savings of:\n\n' +
+    '• solar-smart hot-water control\n' +
+    '• a hot-water heat pump\n' +
+    '• battery storage\n\n' +
+    'Name: '+(answers.name||'')+'\n' +
+    'Phone: '+(answers.phone||'')+'\n' +
+    'Property: '+(answers.address||'')+'\n\n' +
+    'Thanks.'
+  );
+  window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body;
+}
+
 render();
 </script>
 
@@ -715,6 +732,63 @@ This is an indicative assessment — not a formal quote.
 
 .ss-priorities li:last-child{
   margin-bottom:0;
+}
+
+
+
+.ss-annual-label{
+  margin-top:-2px;
+  margin-bottom:8px;
+  font-size:12px;
+  font-weight:700;
+  color:#68716e;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.ss-opportunity-list{
+  margin:8px 0 18px;
+  padding-left:20px;
+}
+
+.ss-opportunity-list li{
+  margin-bottom:8px;
+  line-height:1.5;
+}
+
+.ss-controls-box,
+.ss-hotwater-upgrade,
+.ss-battery-ready{
+  margin:24px 0;
+  padding:20px;
+  background:#fffaf7;
+  border-left:4px solid #e97838;
+  border-radius:0 14px 14px 0;
+}
+
+.ss-control-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:16px 0;
+}
+
+.ss-control-item{
+  background:#fff;
+  border:1px solid #e8e1db;
+  border-radius:14px;
+  padding:15px;
+  line-height:1.5;
+}
+
+.ss-controls-tagline{
+  margin-top:16px;
+}
+
+@media(max-width:700px){
+  .ss-control-grid{
+    grid-template-columns:1fr;
+  }
 }
 
 
@@ -3683,7 +3757,7 @@ function renderFinalSmartSolarReport(){
 
 
     <h3>
-      Your four-step solar picture
+      Four ways your home could use energy
     </h3>
 
 
@@ -3707,6 +3781,8 @@ function renderFinalSmartSolarReport(){
         <div class="ss-cost">
           ${money(currentAnnual)}
         </div>
+
+        <div class="ss-annual-label">estimated annual bill</div>
 
         <div class="ss-small">
           ${
@@ -3735,6 +3811,8 @@ function renderFinalSmartSolarReport(){
           ${money(passiveAnnual)}
         </div>
 
+        <div class="ss-annual-label">estimated annual bill</div>
+
         <div class="ss-small">
           About ${money(solarSaving)}
           less per year.
@@ -3759,6 +3837,8 @@ function renderFinalSmartSolarReport(){
         <div class="ss-cost">
           ${money(smartAnnual)}
         </div>
+
+        <div class="ss-annual-label">estimated annual bill</div>
 
         <div class="ss-small">
 
@@ -3792,6 +3872,8 @@ function renderFinalSmartSolarReport(){
           ${money(batteryAnnual)}
         </div>
 
+        <div class="ss-annual-label">estimated annual bill</div>
+
         <div class="ss-small">
 
           About ${money(batteryTotal)}
@@ -3815,78 +3897,83 @@ function renderFinalSmartSolarReport(){
 
     <div class="ss-smart-box">
 
-      <h4>
+      <h3>
         Your solar-smart opportunity
-      </h4>
+      </h3>
 
-      <span class="ss-rating">
+      <div class="ss-rating">
         ${model.smart.rating}
-      </span>
+      </div>
 
       <p>
-
-        Solar panels do not generate more electricity
-        because you change your habits.
-
-        The opportunity comes from using more of the
-        solar they are already producing at the time
-        it is available.
-
+        <strong>Opportunities we noticed from your answers:</strong>
       </p>
 
+      <ul class="ss-opportunity-list">
+        ${opportunities.map(
+          function(item){
+            return `<li>${item}</li>`;
+          }
+        ).join("")}
+      </ul>
+
+      <div class="ss-controls-box">
+        <h4>
+          How Solectrics could help you use more solar directly
+        </h4>
+
+        <p>
+          You don’t necessarily need to organise your day around your solar panels.
+          Timers, scheduling and smart controls can automatically move suitable
+          high-energy loads into solar-producing hours.
+        </p>
+
+        <div class="ss-control-grid">
+
+          <div class="ss-control-item">
+            <strong>EV charging</strong><br>
+            Solar-aware charging or control can prioritise charging when your
+            panels are producing and the car is at home.
+          </div>
+
+          <div class="ss-control-item">
+            <strong>Hot water</strong><br>
+            Timers or smart controls can favour solar-producing hours. Where a
+            standard electric cylinder is installed, we can also compare the
+            benefit of a hot-water heat pump.
+          </div>
+
+          <div class="ss-control-item">
+            <strong>Washing + dishwashing</strong><br>
+            Built-in delay functions, timers or suitable controls can move some
+            cycles into daytime solar hours.
+          </div>
+
+          <div class="ss-control-item">
+            <strong>Heating + other larger loads</strong><br>
+            Where appropriate, selected flexible loads can be scheduled or
+            controlled to make better use of available solar.
+          </div>
+
+        </div>
+
+        <p class="ss-controls-tagline">
+          <strong>The aim isn’t to organise your life around your solar panels.
+          Good controls can do much of the timing for you.</strong>
+        </p>
+      </div>
+
       <p>
-
-        Timers, scheduling and smart controls can move
-        suitable flexible loads into solar-producing
-        hours.
-
-        Instead of exporting that electricity at the
-        buy-back rate and buying electricity back later,
-        more of your own generation is used directly
-        in the home.
-
-      </p>
-
-
-      ${
-        opportunities.length
-
-        ? `
-
-          <p>
-            <strong>
-              Opportunities we noticed from your answers:
-            </strong>
-
-            <br>
-
-            ${opportunities.map(
-              function(item){
-
-                return "• " +
-                  item;
-
-              }
-            ).join(
-              "<br>"
-            )}
-
-          </p>
-
-        `
-
-        : ""
-      }
-
-
-      <p>
-
         <strong>
-          Estimated additional annual saving through
-          smarter timing:
+          Estimated additional annual saving through smarter timing:
           ${money(smartExtra)}
         </strong>
+      </p>
 
+      <p class="ss-small">
+        This is a modelled estimate based on the information you supplied.
+        The actual opportunity — and which controls are worthwhile — would be
+        confirmed during your Solectrics home assessment.
       </p>
 
     </div>
@@ -3895,6 +3982,14 @@ function renderFinalSmartSolarReport(){
     <h3>
       Your estimated home-energy flow
     </h3>
+
+    <p class="ss-intro">
+      The comparison below shows the difference between installing solar and
+      carrying on as usual, versus using Solectrics Solar Smart controls to move
+      suitable loads into solar-producing hours. Depending on your home, that
+      could include hot-water control, EV charging, timers, scheduling and other
+      smart devices for larger flexible loads.
+    </p>
 
 
     <div class="ss-flow-grid">
@@ -4090,7 +4185,7 @@ function renderFinalSmartSolarReport(){
 
       <span class="ss-legend-item">
         <i class="ss-legend-line ss-battery"></i>
-        Solar + battery
+        Solar Smart + storage
       </span>
 
     </div>
@@ -4167,7 +4262,7 @@ function renderFinalSmartSolarReport(){
           <button
             type="button"
             class="btn primary"
-            onclick="document.getElementById('bookVisitBtn') ? document.getElementById('bookVisitBtn').click() : null"
+            onclick="compareHotWaterBattery()"
           >
             COMPARE HOT WATER + BATTERY OPTIONS
           </button>
@@ -4177,7 +4272,99 @@ function renderFinalSmartSolarReport(){
       : ""
     }
 
-    <div class="ss-battery-section">
+    
+    ${
+      (
+        !String(answers && answers.hotWater ? answers.hotWater : "")
+          .toLowerCase()
+          .includes("heat-pump hot water")
+      )
+      ? `
+        <div class="ss-hotwater-upgrade">
+
+          <div class="ss-kicker">
+            another smart-energy opportunity
+          </div>
+
+          <h3>
+            Get smarter with your hot water heating
+          </h3>
+
+          <p>
+            Hot water can be one of the larger electricity loads in a home.
+            Before spending more on battery storage, it can be worth looking at
+            how much electricity your hot-water system needs in the first place.
+          </p>
+
+          <p>
+            A hot-water heat pump uses electricity to move heat from the
+            surrounding air into your water, rather than creating all of that
+            heat directly with an electric element. That can substantially
+            reduce the electricity needed for water heating.
+          </p>
+
+          <div class="ss-context">
+            <strong>Example of the opportunity</strong>
+            <br><br>
+            If a standard electric cylinder uses around <strong>3,000 kWh a year</strong>
+            for hot water, and a heat-pump system uses roughly a third of that,
+            the reduction could be around <strong>2,000 kWh a year</strong>.
+            At an illustrative electricity price of 30¢/kWh, that is about
+            <strong>$600 a year</strong> less electricity purchased.
+            <br><br>
+            This is an example only. Your actual saving depends on household
+            hot-water use, your existing system, electricity tariff, heat-pump
+            performance and how the system is controlled.
+          </div>
+
+          <div class="ss-control-grid">
+            <div class="ss-control-item">
+              <strong>Hot-water heat pump</strong><br>
+              Reduce the load — use substantially less electricity to heat water.
+            </div>
+            <div class="ss-control-item">
+              <strong>Solar-smart hot water</strong><br>
+              Time the load — heat water preferentially while your panels are producing.
+            </div>
+            <div class="ss-control-item">
+              <strong>Battery storage</strong><br>
+              Store the surplus — keep daytime solar for evening and overnight use.
+            </div>
+          </div>
+
+          <p>
+            <strong>Which should you spend money on first?</strong><br>
+            At your home assessment, Solectrics can compare solar-smart hot-water
+            control, a hot-water heat pump and battery storage so you can see
+            where the next part of your budget is likely to do the most.
+          </p>
+
+        </div>
+      `
+      : ""
+    }
+
+
+    <div class="ss-battery-ready">
+      <h3>Not ready for a battery yet? That’s okay.</h3>
+      <p>
+        <strong>Your solar system can be designed battery ready from day one.</strong>
+      </p>
+      <p>
+        You can start by generating solar and using more of it directly through
+        smarter timing. If your needs change, storage can be added later.
+      </p>
+      <p>
+        When Solectrics designs your system, we’ll consider future battery
+        compatibility, inverter choice, suitable equipment locations and likely
+        storage needs — helping avoid unnecessary limitations later.
+      </p>
+      <p>
+        <strong>Solar now. Smarter use now. Storage when it makes sense.</strong>
+      </p>
+    </div>
+
+<div class="ss-battery-section">
 
       <h3>
         What does the battery change?
@@ -4318,9 +4505,11 @@ function renderFinalSmartSolarReport(){
         </h4>
 
         Start generating your own clean energy with
-        a well-designed solar system while keeping
-        sensible future battery and smart-energy
-        options open.
+        a well-designed solar system.
+
+        <br><br>
+        <strong>Battery ready:</strong> we’ll design the system with future
+        storage in mind, so you don’t need to decide on a battery today.
 
       </div>
 
@@ -4337,6 +4526,10 @@ function renderFinalSmartSolarReport(){
         uses electricity and use timers, scheduling and
         smart controls to increase the amount of your own
         clean energy used at home.
+
+        <br><br>
+        <strong>Battery ready:</strong> start with solar-smart living now and
+        add storage later if your evening use, backup needs or budget make it worthwhile.
 
       </div>
 
