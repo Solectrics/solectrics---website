@@ -32,6 +32,20 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:480px){.bill-fields{grid-template-columns:1fr}.bill-fields .full{grid-column:auto}}
 
+
+.ss-graph-intro{margin-top:26px}
+.ss-graph-intro h3{margin-bottom:4px!important}
+.ss-graph-intro p{margin-top:0;color:#68716e}
+.ss-pricing-section{margin:34px 0 26px}
+.ss-pricing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.ss-price-card{background:#fffaf7;border:1px solid #eadfd7;border-radius:16px;padding:20px}
+.ss-price-label{color:#e97838;font-size:12px;font-weight:800;letter-spacing:.06em;margin-bottom:8px}
+.ss-price-card h3{margin:0 0 8px!important}
+.ss-price{margin-top:16px;font-size:22px;font-weight:800;color:#273330}
+.ss-price-note,.ss-pricing-disclaimer{color:#68716e;font-size:12px;line-height:1.5}
+.ss-pricing-disclaimer{margin-top:16px}
+@media(max-width:700px){.ss-pricing-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -377,7 +391,66 @@ Prepare for future energy needs
       </p>
     </div>
 
-    <button class="btn primary" onclick="bookVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
+    
+<div class="ss-pricing-section">
+  <div class="ss-kicker">guide pricing</div>
+  <h2>What could your Smart Solar Home cost?</h2>
+  <p>You don’t have to do everything at once. Start where the savings make sense for your home, and build from there.</p>
+
+  <div class="ss-pricing-grid">
+    <div class="ss-price-card">
+      <div class="ss-price-label">SOLAR</div>
+      <h3>Generate your own power</h3>
+      <p>Approx. 5 kW solar panels + inverter, designed battery-ready.</p>
+      <div class="ss-price">FROM $8,500</div>
+    </div>
+
+    <div class="ss-price-card">
+      <div class="ss-price-label">SOLAR SMART</div>
+      <h3>Use more solar directly</h3>
+      <p>Timers, scheduling and smart energy controls for suitable loads.</p>
+      <div class="ss-price">FROM $200</div>
+      <details class="ss-read-more">
+        <summary>WHAT COULD BE INCLUDED? →</summary>
+        <div>
+          <p><strong>Smart timing:</strong> from around $200 installed.</p>
+          <p><strong>Smart hot-water control:</strong> from around $500 installed.</p>
+          <p><strong>Solar-surplus diverter:</strong> from around $1,000 installed.</p>
+          <p>We’ll recommend the simplest control likely to give you worthwhile savings.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="ss-price-card">
+      <div class="ss-price-label">SMART HOT WATER</div>
+      <h3>Reduce a major household load</h3>
+      <p>Hot-water heat pump + installation, with solar-smart control where appropriate.</p>
+      <div class="ss-price">AROUND $7,000</div>
+    </div>
+
+    <div class="ss-price-card">
+      <div class="ss-price-label">SOLAR + 5 kWh STORAGE</div>
+      <h3>Store some solar for later</h3>
+      <p>Approx. 5 kW solar + 5 kWh battery storage for lighter evening use.</p>
+      <div class="ss-price">INDICATIVE FROM $14,900</div>
+      <p class="ss-price-note">This is the storage size modelled in your Home Energy Check.</p>
+    </div>
+
+    <div class="ss-price-card">
+      <div class="ss-price-label">SOLAR + ~10 kWh STORAGE</div>
+      <h3>More energy after dark</h3>
+      <p>Approx. 5–6 kW solar + around 10 kWh storage for larger evening and overnight loads.</p>
+      <div class="ss-price">FROM $21,900</div>
+    </div>
+  </div>
+
+  <p class="ss-pricing-disclaimer">
+    Guide prices include GST and assume a straightforward installation.
+    Your home assessment confirms the right system design, installation requirements and final price.
+  </p>
+</div>
+
+<button class="btn primary" onclick="bookVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
   </div>
 </section>
 
@@ -4232,6 +4305,49 @@ function renderFinalSmartSolarReport(){
     </div>
 
 
+    <div class="ss-graph-intro">
+      <h3>See the difference across the year</h3>
+      <p>Your estimated monthly electricity costs under each approach.</p>
+    </div>
+
+    <div class="ss-chart-wrap">
+
+      <svg
+        id="smartSolarChart"
+        viewBox="0 0 760 385"
+        role="img"
+        aria-label="Estimated monthly electricity costs"
+      >
+        ${graph(model)}
+      </svg>
+
+    </div>
+
+
+    <div class="ss-legend">
+
+      <span class="ss-legend-item">
+        <i class="ss-legend-line ss-current"></i>
+        Your home now
+      </span>
+
+      <span class="ss-legend-item">
+        <i class="ss-legend-line ss-passive"></i>
+        Solar — same habits
+      </span>
+
+      <span class="ss-legend-item">
+        <i class="ss-legend-line ss-smart"></i>
+        Solar — smarter timing
+      </span>
+
+      <span class="ss-legend-item">
+        <i class="ss-legend-line ss-battery"></i>
+        Solar Smart + storage
+      </span>
+
+    </div>
+
     <div class="ss-smart-box">
 
       <h3>
@@ -4264,47 +4380,6 @@ function renderFinalSmartSolarReport(){
         <details class="ss-read-more">
           <summary>EXPLORE HOW SMARTER TIMING WORKS →</summary>
           <div>
-            <div class="ss-control-grid">
-              <div class="ss-control-item">
-                <strong>Hot water</strong><br>
-                Timers or smart controls can favour solar-producing hours.
-              </div>
-              <div class="ss-control-item">
-                <strong>Washing + dishwashing</strong><br>
-                Built-in delay functions, timers or suitable controls can move
-                suitable cycles into daytime solar hours.
-              </div>
-              <div class="ss-control-item">
-                <strong>EV charging</strong><br>
-                Where relevant, solar-aware charging can prioritise charging
-                when your panels are producing and the car is at home.
-              </div>
-              <div class="ss-control-item">
-                <strong>Heating + other larger loads</strong><br>
-                Suitable flexible loads can be scheduled or controlled to make
-                better use of available solar.
-              </div>
-            </div>
-          </div>
-        </details>
-      </div>
-
-      <p>
-        <strong>
-          Estimated additional annual saving through smarter timing:
-          ${money(smartExtra)}
-        </strong>
-      </p>
-
-      <p class="ss-small">
-        This is a modelled estimate based on the information you supplied.
-        The actual opportunity — and which controls are worthwhile — would be
-        confirmed during your Solectrics home assessment.
-      </p>
-
-    </div>
-
-
     <h3>
       Your estimated home-energy flow
     </h3>
@@ -4458,6 +4533,49 @@ function renderFinalSmartSolarReport(){
 
     </div>
 
+
+
+
+
+            <div class="ss-control-grid">
+              <div class="ss-control-item">
+                <strong>Hot water</strong><br>
+                Timers or smart controls can favour solar-producing hours.
+              </div>
+              <div class="ss-control-item">
+                <strong>Washing + dishwashing</strong><br>
+                Built-in delay functions, timers or suitable controls can move
+                suitable cycles into daytime solar hours.
+              </div>
+              <div class="ss-control-item">
+                <strong>EV charging</strong><br>
+                Where relevant, solar-aware charging can prioritise charging
+                when your panels are producing and the car is at home.
+              </div>
+              <div class="ss-control-item">
+                <strong>Heating + other larger loads</strong><br>
+                Suitable flexible loads can be scheduled or controlled to make
+                better use of available solar.
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <p>
+        <strong>
+          Estimated additional annual saving through smarter timing:
+          ${money(smartExtra)}
+        </strong>
+      </p>
+
+      <p class="ss-small">
+        This is a modelled estimate based on the information you supplied.
+        The actual opportunity — and which controls are worthwhile — would be
+        confirmed during your Solectrics home assessment.
+      </p>
+
+    </div>
 
 
     <div class="ss-winter-section">
@@ -4614,62 +4732,7 @@ function renderFinalSmartSolarReport(){
       : ""
     }
 
-    <h3>
-      How your electricity costs could change
-    </h3>
 
-
-    <p class="ss-intro">
-
-      This graph separates the effect of installing
-      solar from the additional effect of using that
-      solar more intelligently.
-
-      The battery calculation then begins from the
-      solar-smart household, so the battery is not
-      given credit for savings that may be achievable
-      simply by changing when flexible loads run.
-
-    </p>
-
-
-    <div class="ss-chart-wrap">
-
-      <svg
-        id="smartSolarChart"
-        viewBox="0 0 760 385"
-        role="img"
-        aria-label="Estimated monthly electricity costs"
-      >
-        ${graph(model)}
-      </svg>
-
-    </div>
-
-
-    <div class="ss-legend">
-
-      <span class="ss-legend-item">
-        <i class="ss-legend-line ss-current"></i>
-        Your home now
-      </span>
-
-      <span class="ss-legend-item">
-        <i class="ss-legend-line ss-passive"></i>
-        Solar — same habits
-      </span>
-
-      <span class="ss-legend-item">
-        <i class="ss-legend-line ss-smart"></i>
-        Solar — smarter timing
-      </span>
-
-      <span class="ss-legend-item">
-        <i class="ss-legend-line ss-battery"></i>
-        Solar Smart + storage
-      </span>
-
-    </div>
 
 
     
