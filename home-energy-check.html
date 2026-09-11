@@ -369,6 +369,14 @@ Prepare for future energy needs
   <div id="finalVisitCta" style="margin-top:30px">
     <h2>We’ve understood your energy.<br>Now we’d like to understand your home.</h2>
     <p>A short Solectrics home visit lets us confirm your roof, shading, switchboard, hot-water system, equipment locations and the right system design for your home.</p>
+    <div class="ss-next-step">
+      <h3>We’ve understood your energy. Now we’d like to understand your home.</h3>
+      <p>
+        A Solectrics home assessment lets us check the roof, switchboard,
+        hot water, heating and the smart-control opportunities behind these estimates.
+      </p>
+    </div>
+
     <button class="btn primary" onclick="bookVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
   </div>
 </section>
@@ -4247,49 +4255,38 @@ function renderFinalSmartSolarReport(){
       </ul>
 
       <div class="ss-controls-box">
-        <h4>
-          How Solectrics could help you use more solar directly
-        </h4>
-
         <p>
-          You don’t necessarily need to organise your day around your solar panels.
-          Timers, scheduling and smart controls can automatically move suitable
-          high-energy loads into solar-producing hours.
+          The aim isn’t to organise your life around your solar panels.
+          Solectrics can use timers, scheduling and smart controls to move
+          suitable loads into solar-producing hours automatically.
         </p>
 
-        <div class="ss-control-grid">
-
-          <div class="ss-control-item">
-            <strong>EV charging</strong><br>
-            Solar-aware charging or control can prioritise charging when your
-            panels are producing and the car is at home.
+        <details class="ss-read-more">
+          <summary>EXPLORE HOW SMARTER TIMING WORKS →</summary>
+          <div>
+            <div class="ss-control-grid">
+              <div class="ss-control-item">
+                <strong>Hot water</strong><br>
+                Timers or smart controls can favour solar-producing hours.
+              </div>
+              <div class="ss-control-item">
+                <strong>Washing + dishwashing</strong><br>
+                Built-in delay functions, timers or suitable controls can move
+                suitable cycles into daytime solar hours.
+              </div>
+              <div class="ss-control-item">
+                <strong>EV charging</strong><br>
+                Where relevant, solar-aware charging can prioritise charging
+                when your panels are producing and the car is at home.
+              </div>
+              <div class="ss-control-item">
+                <strong>Heating + other larger loads</strong><br>
+                Suitable flexible loads can be scheduled or controlled to make
+                better use of available solar.
+              </div>
+            </div>
           </div>
-
-          <div class="ss-control-item">
-            <strong>Hot water</strong><br>
-            Timers or smart controls can favour solar-producing hours. Where a
-            standard electric cylinder is installed, we can also compare the
-            benefit of a hot-water heat pump.
-          </div>
-
-          <div class="ss-control-item">
-            <strong>Washing + dishwashing</strong><br>
-            Built-in delay functions, timers or suitable controls can move some
-            cycles into daytime solar hours.
-          </div>
-
-          <div class="ss-control-item">
-            <strong>Heating + other larger loads</strong><br>
-            Where appropriate, selected flexible loads can be scheduled or
-            controlled to make better use of available solar.
-          </div>
-
-        </div>
-
-        <p class="ss-controls-tagline">
-          <strong>The aim isn’t to organise your life around your solar panels.
-          Good controls can do much of the timing for you.</strong>
-        </p>
+        </details>
       </div>
 
       <p>
@@ -4464,6 +4461,18 @@ function renderFinalSmartSolarReport(){
 
 
     <div class="ss-winter-section">
+      <div class="ss-kicker">winter energy</div>
+      <h3>Use your solar to help heat your home</h3>
+      <p>
+        In winter, heating can be one of your home’s larger electricity loads.
+        Using more heating during daytime solar hours can reduce the amount of
+        electricity you buy from the grid.
+      </p>
+
+      <details class="ss-read-more">
+        <summary>SEE MY WINTER ENERGY COMPARISON →</summary>
+        <div>
+
 
       <div class="ss-kicker">
         winter focus
@@ -4592,77 +4601,15 @@ function renderFinalSmartSolarReport(){
         })()
       }
 
+    
+        </div>
+      </details>
     </div>
 
     ${
       hasLoad("heat pump") || hasLoad("electric heating")
       ? `
-        <div class="ss-heating-teaser">
-          <div class="ss-kicker">winter heating</div>
-
-          <h3>
-            Heat your home while the sun is working
-          </h3>
-
-          <p>
-            If you use a heat pump, some winter heating can potentially be moved
-            into the strongest solar hours — warming the home while your panels
-            are producing and reducing evening grid purchases.
-          </p>
-
-          <p>
-            <strong>
-              Illustrative timing opportunity:
-              about ${money(
-                3 *
-                120 *
-                Math.max(
-                  model.importRate -
-                  model.exportRate,
-                  0
-                )
-              )}–${money(
-                5 *
-                120 *
-                Math.max(
-                  model.importRate -
-                  model.exportRate,
-                  0
-                )
-              )} per heating season
-            </strong>
-          </p>
-
-          <details class="ss-read-more">
-            <summary>READ MORE ABOUT SOLAR-SMART WINTER HEATING →</summary>
-            <div>
-              <p>
-                A heat pump can be scheduled to do more of its work from late
-                morning through mid-afternoon, when solar production is stronger.
-                The home then holds some of that heat into the evening.
-              </p>
-
-              <p>
-                The example above assumes roughly 3–5 kWh of heat-pump
-                electricity can be shifted into solar hours on suitable days
-                across an indicative 120-day heating season.
-              </p>
-
-              <p>
-                The value of each shifted kWh is approximately the difference
-                between the grid import price and the export credit you would
-                otherwise receive for that solar.
-              </p>
-
-              <p>
-                Insulation, draughts, thermal mass, comfort settings and weather
-                all matter. Solectrics can assess whether built-in scheduling,
-                timers or smart controls are worthwhile for your home.
-              </p>
-            </div>
-          </details>
-
-        </div>
+        
       `
       : ""
     }
@@ -4734,40 +4681,27 @@ function renderFinalSmartSolarReport(){
       )
       ? `
         <div class="ss-hotwater-upgrade">
-
-          <div class="ss-kicker">
-            another smart-energy opportunity
-          </div>
-
-          <h3>
-            Get smarter with your hot water heating
-          </h3>
+          <div class="ss-kicker">smarter hot water</div>
+          <h3>Get smarter with your hot water</h3>
 
           <p>
-            A hot-water heat pump can substantially reduce the electricity
-            needed to heat water — and with solar, it can be timed to do much
-            of that work during solar-producing hours.
-          </p>
-
-          <p>
-            <strong>
-              Before spending on a battery, it can be worth comparing which
-              investment is likely to reduce your bill more.
-            </strong>
+            Hot water can be one of your home’s biggest electricity loads.
+            Before spending more on battery storage, it may be worth improving
+            how — and when — you heat your water.
           </p>
 
           <details class="ss-read-more">
-            <summary>READ MORE ABOUT HOT-WATER HEAT PUMPS →</summary>
+            <summary>EXPLORE SMARTER HOT WATER →</summary>
             <div>
               <p>
-                A hot-water heat pump moves heat from the surrounding air into
-                your water rather than creating all the heat directly with an
-                electric element. That can substantially reduce hot-water
-                electricity use.
+                A hot-water heat pump can substantially reduce the electricity
+                needed to heat water. With solar, it can also be timed to do
+                much of that work during solar-producing hours.
               </p>
 
               <div class="ss-context">
-                <strong>Illustrative example</strong><br><br>
+                <strong>Illustrative example — not included in your estimated bill above</strong>
+                <br><br>
                 If a standard electric cylinder uses around 3,000 kWh a year
                 for hot water and a heat-pump system uses roughly a third of
                 that, the reduction could be around 2,000 kWh a year.
@@ -4781,8 +4715,8 @@ function renderFinalSmartSolarReport(){
                 much less electricity.<br><br>
                 <strong>Time the load.</strong> Solar-smart control can favour
                 daylight hours.<br><br>
-                <strong>Store the surplus.</strong> A battery can then be assessed
-                for remaining evening demand and backup needs.
+                <strong>Store the surplus.</strong> Battery storage can then be
+                assessed for remaining evening demand and backup needs.
               </p>
 
               <p>
@@ -4791,16 +4725,12 @@ function renderFinalSmartSolarReport(){
                 and battery storage before you decide where to spend.
               </p>
 
-              <button
-                type="button"
-                class="btn primary"
-                onclick="compareHotWaterBattery()"
-              >
+              <button type="button" class="btn primary"
+                onclick="compareHotWaterBattery()">
                 COMPARE HOT WATER + BATTERY OPTIONS
               </button>
             </div>
           </details>
-
         </div>
       `
       : ""
@@ -4808,22 +4738,29 @@ function renderFinalSmartSolarReport(){
 
 
     <div class="ss-battery-ready">
-      <h3>Not ready for a battery yet? That’s okay.</h3>
+      <h3>Not ready for a battery? That’s okay.</h3>
+
       <p>
-        <strong>Your solar system can be designed battery ready from day one.</strong>
+        <strong>Your Solectrics solar system can be designed battery-ready from day one.</strong>
+        Start with solar and smarter energy use now, then add storage later if it makes sense.
       </p>
-      <p>
-        You can start by generating solar and using more of it directly through
-        smarter timing. If your needs change, storage can be added later.
-      </p>
-      <p>
-        When Solectrics designs your system, we’ll consider future battery
-        compatibility, inverter choice, suitable equipment locations and likely
-        storage needs — helping avoid unnecessary limitations later.
-      </p>
-      <p>
-        <strong>Solar now. Smarter use now. Storage when it makes sense.</strong>
-      </p>
+
+      <details class="ss-read-more">
+        <summary>WHEN DOES A BATTERY MAKE SENSE? →</summary>
+        <div>
+          <p>
+            Battery storage can be useful when you have daytime solar surplus
+            that would otherwise be exported, significant evening or overnight
+            demand, or a specific need for backup during outages.
+          </p>
+          <p>
+            Solectrics can design the initial solar system with future storage
+            in mind — including inverter choice, compatibility and equipment
+            location — so you don’t have to make the battery decision today.
+          </p>
+          <p><strong>Solar now. Smarter use now. Storage when it makes sense.</strong></p>
+        </div>
+      </details>
     </div>
 
 <div class="ss-battery-section">
