@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Solar Prices | Solectrics</title>
+  <meta name="description" content="Guide prices for Solectrics solar, smart controls, hot-water heat pumps and battery storage on Waiheke Island.">
+  <style>
+    :root{
+      --green:#24342f;
+      --green-soft:#44665b;
+      --orange:#e97838;
+      --cream:#fffaf7;
+      --line:#e9e1db;
+      --muted:#6b7671;
+      --white:#ffffff;
+      --shadow:0 12px 32px rgba(36,52,47,.08);
+    }
+
+    *{box-sizing:border-box}
+
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--green);
+      background:#fff;
+      line-height:1.55;
+    }
+
+    a{color:inherit}
+
+    .wrap{
+      width:min(1120px, calc(100% - 40px));
+      margin:0 auto;
+    }
+
+    header{
+      padding:28px 0 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.96);
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(8px);
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .brand{
+      text-decoration:none;
+      font-weight:800;
+      font-size:22px;
+      letter-spacing:.05em;
+    }
+
+    .brand .e{color:var(--orange)}
+
+    .nav-links{
+      display:flex;
+      align-items:center;
+      gap:22px;
+      font-size:14px;
+    }
+
+    .nav-links a{
+      text-decoration:none;
+      color:var(--green);
+    }
+
+    .hero{
+      padding:72px 0 54px;
+      background:
+        linear-gradient(180deg,#fff 0%,#fffaf7 100%);
+    }
+
+    .eyebrow{
+      text-transform:uppercase;
+      letter-spacing:.13em;
+      color:var(--green-soft);
+      font-weight:800;
+      font-size:12px;
+      margin-bottom:14px;
+    }
+
+    h1{
+      font-size:clamp(44px,7vw,78px);
+      line-height:.98;
+      margin:0 0 24px;
+      letter-spacing:-.045em;
+      max-width:850px;
+    }
+
+    h1 span{color:var(--orange)}
+
+    .hero p{
+      font-size:clamp(19px,2vw,24px);
+      max-width:780px;
+      margin:0;
+      color:#4d5b56;
+    }
+
+    .prices{
+      padding:58px 0 64px;
+    }
+
+    .section-head{
+      max-width:760px;
+      margin-bottom:30px;
+    }
+
+    h2{
+      font-size:clamp(31px,4vw,48px);
+      line-height:1.08;
+      margin:0 0 14px;
+      letter-spacing:-.025em;
+    }
+
+    .section-head p{
+      color:var(--muted);
+      font-size:18px;
+      margin:0;
+    }
+
+    .price-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+    }
+
+    .price-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:26px;
+      background:var(--white);
+      box-shadow:var(--shadow);
+      min-height:245px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .price-card.featured{
+      background:var(--cream);
+      border:2px solid var(--orange);
+    }
+
+    .tag{
+      text-transform:uppercase;
+      color:var(--orange);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.1em;
+      margin-bottom:10px;
+    }
+
+    .price-card h3{
+      margin:0 0 8px;
+      font-size:25px;
+      line-height:1.15;
+    }
+
+    .price-card p{
+      margin:0 0 16px;
+      color:var(--muted);
+    }
+
+    .price{
+      margin-top:auto;
+      font-weight:800;
+      font-size:27px;
+      color:var(--green);
+    }
+
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:7px;
+    }
+
+    details{
+      margin-top:14px;
+      border-top:1px solid var(--line);
+      padding-top:13px;
+    }
+
+    summary{
+      cursor:pointer;
+      list-style:none;
+      color:var(--orange);
+      font-weight:800;
+      font-size:12px;
+      letter-spacing:.05em;
+    }
+
+    summary::-webkit-details-marker{display:none}
+
+    .details-body{
+      padding-top:14px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .details-body p{margin:0 0 10px}
+
+    .note{
+      margin-top:22px;
+      padding:16px 18px;
+      border-left:4px solid var(--orange);
+      background:var(--cream);
+      border-radius:0 14px 14px 0;
+      font-size:13px;
+      color:#59645f;
+    }
+
+    .philosophy{
+      padding:70px 0;
+      background:var(--green);
+      color:white;
+    }
+
+    .philosophy h2{color:white;max-width:780px}
+    .philosophy .intro{max-width:720px;color:#d8dfdc;font-size:18px}
+
+    .steps{
+      margin-top:34px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .step{
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:18px;
+      padding:22px;
+    }
+
+    .step-num{
+      color:#f3a36e;
+      font-weight:800;
+      font-size:12px;
+      letter-spacing:.1em;
+      margin-bottom:8px;
+    }
+
+    .step h3{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+
+    .step p{
+      margin:0;
+      color:#d8dfdc;
+      font-size:15px;
+    }
+
+    .battery-ready{
+      margin-top:28px;
+      padding:24px;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      max-width:800px;
+    }
+
+    .battery-ready strong{
+      color:white;
+      font-size:19px;
+    }
+
+    .cta{
+      padding:70px 0 80px;
+      text-align:center;
+      background:#fff;
+    }
+
+    .cta h2{
+      max-width:760px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .cta p{
+      max-width:700px;
+      margin:0 auto 26px;
+      color:var(--muted);
+      font-size:17px;
+    }
+
+    .buttons{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .button{
+      display:inline-block;
+      text-decoration:none;
+      border-radius:999px;
+      padding:15px 22px;
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.02em;
+      background:var(--green);
+      color:white;
+      border:2px solid var(--green);
+    }
+
+    .button.secondary{
+      background:white;
+      color:var(--green);
+    }
+
+    footer{
+      padding:24px 0 34px;
+      border-top:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      text-align:center;
+    }
+
+    @media(max-width:760px){
+      .nav-links{display:none}
+      .hero{padding:52px 0 38px}
+      .prices{padding-top:42px}
+      .price-grid,
+      .steps{grid-template-columns:1fr}
+      .wrap{width:min(100% - 28px,1120px)}
+      .price-card{min-height:0}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/">sol<span class="e">e</span>ctrics</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home-energy-check.html">Home Solar Check</a>
+      <a href="#prices">Prices</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Waiheke Island • New Zealand</div>
+    <h1>Smart Solar <span>Prices.</span></h1>
+    <p>
+      Start with solar. Make your home smarter. Add storage when it makes sense.
+      You don’t have to do everything at once.
+    </p>
+  </div>
+</section>
+
+<section class="prices" id="prices">
+  <div class="wrap">
+
+    <div class="section-head">
+      <h2>What could your Smart Solar Home cost?</h2>
+      <p>
+        Guide prices to help you understand the scale of each option before we
+        look at your home in detail.
+      </p>
+    </div>
+
+    <div class="price-grid">
+
+      <article class="price-card">
+        <div class="tag">Solar</div>
+        <h3>Generate your own power</h3>
+        <p>Approx. 5 kW solar panels + inverter, designed battery-ready from day one.</p>
+        <div class="price">FROM $8,500</div>
+      </article>
+
+      <article class="price-card featured">
+        <div class="tag">Solar Smart</div>
+        <h3>Use more solar directly</h3>
+        <p>
+          Timers, scheduling and smart controls can move suitable household loads
+          into solar-producing hours automatically.
+        </p>
+        <div class="price">FROM $200</div>
+
+        <details>
+          <summary>WHAT COULD BE INCLUDED? →</summary>
+          <div class="details-body">
+            <p><strong>Smart timing:</strong> from around $200 installed.</p>
+            <p><strong>Smart hot-water control:</strong> from around $500 installed.</p>
+            <p><strong>Solar-surplus diverter:</strong> from around $1,000 installed.</p>
+            <p>We’ll recommend the simplest control likely to give you worthwhile savings.</p>
+          </div>
+        </details>
+      </article>
+
+      <article class="price-card">
+        <div class="tag">Smart Hot Water</div>
+        <h3>Reduce a major energy load</h3>
+        <p>
+          Hot-water heat pump + installation, with solar-smart control where appropriate.
+        </p>
+        <div class="price">AROUND $7,000</div>
+      </article>
+
+      <article class="price-card">
+        <div class="tag">Solar + 5 kWh Storage</div>
+        <h3>Store some solar for later</h3>
+        <p>
+          Approx. 5 kW solar + 5 kWh battery storage for lighter evening use
+          and selected backup needs.
+        </p>
+        <div class="price">INDICATIVE FROM $14,900</div>
+        <div class="small">This is the storage size used in the Home Solar Check modelling.</div>
+      </article>
+
+      <article class="price-card">
+        <div class="tag">Solar + ~10 kWh Storage</div>
+        <h3>More energy after dark</h3>
+        <p>
+          Approx. 5–6 kW solar + around 10 kWh battery storage for larger evening
+          and overnight loads, or greater backup capacity.
+        </p>
+        <div class="price">FROM $21,900</div>
+      </article>
+
+    </div>
+
+    <div class="note">
+      Guide prices include GST and assume a straightforward installation.
+      Your home assessment confirms the right system design, installation requirements
+      and final price.
+    </div>
+
+  </div>
+</section>
+
+<section class="philosophy">
+  <div class="wrap">
+    <div class="eyebrow" style="color:#f3a36e">The Solectrics approach</div>
+    <h2>You may not need to buy everything.</h2>
+    <p class="intro">
+      We look for the smartest place to spend your money first — not simply the
+      biggest system we can sell you.
+    </p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01 — USE IT</div>
+        <h3>Use solar directly</h3>
+        <p>
+          Run suitable high-load appliances while your panels are producing.
+        </p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02 — CONTROL IT</div>
+        <h3>Make timing automatic</h3>
+        <p>
+          Timers, smart hot-water controls and solar-aware devices can put more
+          daytime solar to work.
+        </p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03 — STORE IT</div>
+        <h3>Add storage when it helps</h3>
+        <p>
+          If you still have useful surplus — or you want backup — add a battery
+          sized around your actual needs.
+        </p>
+      </div>
+    </div>
+
+    <div class="battery-ready">
+      <strong>Not ready for a battery? No problem.</strong>
+      <p>
+        We can design your solar system battery-ready from day one, so you can
+        start with solar and smarter energy use now and add storage later.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="contact">
+  <div class="wrap">
+    <h2>Start with your home.</h2>
+    <p>
+      The Home Solar Check gives you a personalised view of solar, smarter timing,
+      hot water and storage. Or book a home visit and we’ll look at the opportunities
+      with you.
+    </p>
+
+    <div class="buttons">
+      <a class="button" href="/home-energy-check.html">MY HOME SOLAR CHECK →</a>
+      <a class="button secondary"
+         href="mailto:jane@solectrics.co.nz?subject=Solectrics%20home%20solar%20visit">
+         BOOK A FREE HOME VISIT →
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Solectrics • Waiheke Island • Smart Solar Living
+  </div>
+</footer>
+
+</body>
+</html>
