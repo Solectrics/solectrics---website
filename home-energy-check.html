@@ -702,7 +702,22 @@ async function submitHomeEnergyCheck(){
 
 }
 function showResult(){
-saveBillEditsNoLoop();answers.name=document.getElementById('name').value.trim();answers.email=document.getElementById('email').value.trim();answers.phone=document.getElementById('phone').value.trim();answers.address=document.getElementById('address').value.trim();
+saveBillEditsNoLoop();
+const summerBillData = answers.bills && answers.bills.summer;
+const winterBillData = answers.bills && answers.bills.winter;
+
+if (
+  summerBillData &&
+  winterBillData &&
+  summerBillData.billing_period_start === winterBillData.billing_period_start &&
+  summerBillData.billing_period_end === winterBillData.billing_period_end &&
+  summerBillData.total_import_kwh === winterBillData.total_import_kwh
+) {
+  alert(
+    'These appear to be the same electricity bill. For a more useful annual estimate, please upload one summer bill and one winter bill.'
+  );
+}
+answers.name=document.getElementById('name').value.trim();answers.email=document.getElementById('email').value.trim();answers.phone=document.getElementById('phone').value.trim();answers.address=document.getElementById('address').value.trim();
 document.getElementById('resultTitle').textContent=(answers.name?answers.name+', h':'H')+"ere’s what we’ve learned.";
 const hotWaterType=(answers.hotWater||'');
 const electricCylinder=hotWaterType==='Electric hot-water cylinder';
@@ -4237,7 +4252,7 @@ function renderFinalSmartSolarReport(){
           ${money(currentAnnual)}
         </div>
 
-        <div class="ss-annual-label">estimated annual bill</div>
+        <div class="ss-annual-label">ESTIMATED NET ANNUAL ELECTRICITY COST</div>
 
         <div class="ss-small">
           ${
@@ -4266,7 +4281,7 @@ function renderFinalSmartSolarReport(){
           ${money(passiveAnnual)}
         </div>
 
-        <div class="ss-annual-label">estimated annual bill</div>
+        <div class="ss-annual-label">Estimated net annual electricity cost</div>
 
         <div class="ss-small">
           About ${money(solarSaving)}
@@ -4293,7 +4308,7 @@ function renderFinalSmartSolarReport(){
           ${money(smartAnnual)}
         </div>
 
-        <div class="ss-annual-label">estimated annual bill</div>
+        <div class="ss-annual-label">Estimated net annual electricity cost</div>
 
         <div class="ss-small">
 
@@ -4327,8 +4342,7 @@ function renderFinalSmartSolarReport(){
           ${money(batteryAnnual)}
         </div>
 
-        <div class="ss-annual-label">estimated annual bill</div>
-
+<div class="ss-annual-label">Estimated net annual electricity cost</div>
         <div class="ss-small">
 
           About ${money(batteryTotal)}
@@ -4348,7 +4362,17 @@ function renderFinalSmartSolarReport(){
 
 
     </div>
-
+${
+  model.fixedMonthly > 0
+    ? `
+      <div class="ss-small" style="margin-top:16px;">
+        Your grid connection costs about
+        <strong>${money(model.fixedMonthly * 12)}</strong> a year.
+        Solar export credits can help offset some of this cost.
+      </div>
+    `
+    : ""
+}
 
     <div class="ss-graph-intro">
       <h3>See the difference across the year</h3>
