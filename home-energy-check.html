@@ -191,14 +191,46 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
       button.disabled = true;
       button.textContent = 'READING YOUR BILLS…';
 
+try {
 
-      try {
+  const summerInput = document.getElementById('summerBill');
+  const winterInput = document.getElementById('winterBill');
 
-        await readBill('summer');
+  const hasSummer = summerInput && summerInput.files.length > 0;
+  const hasWinter = winterInput && winterInput.files.length > 0;
 
-        await readBill('winter');
+  if (!hasSummer && !hasWinter) {
+    alert('Please choose at least one electricity bill.');
+    return;
+  }
 
-        button.textContent = 'BILLS READ ✓';
+  if (hasSummer && hasWinter) {
+    const summerFile = summerInput.files[0];
+    const winterFile = winterInput.files[0];
+
+    if (
+      summerFile.name === winterFile.name &&
+      summerFile.size === winterFile.size
+    ) {
+      alert(
+        'These appear to be the same electricity bill. One bill is enough to continue, or upload a different summer or winter bill for a better annual estimate.'
+      );
+      return;
+    }
+  }
+
+  if (hasSummer) {
+    await readBill('summer');
+  }
+
+  if (hasWinter) {
+    await readBill('winter');
+  }
+
+  button.textContent =
+    hasSummer && hasWinter
+      ? 'BILLS READ ✓'
+      : 'BILL READ ✓';
 
       } catch (error) {
 
