@@ -172,20 +172,11 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
       winterStatus.textContent = '';
 
 
-      if (!summer || !winter) {
-
-        if (!summer) {
-          summerStatus.textContent =
-            'Please choose a summer bill.';
-        }
-
-        if (!winter) {
-          winterStatus.textContent =
-            'Please choose a winter bill.';
-        }
-
-        return;
-      }
+     if (!summer && !winter) {
+  summerStatus.textContent = 'Please choose at least one electricity bill.';
+  winterStatus.textContent = '';
+  return;
+}
 
 
       button.disabled = true;
