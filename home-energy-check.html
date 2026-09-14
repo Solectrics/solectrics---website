@@ -983,12 +983,16 @@ This is an indicative assessment — not a formal quote.
   display:block;
   text-transform:uppercase;
   letter-spacing:.07em;
-  font-size:11px;
+  font-size:16px;
   font-weight:800;
   color:#e97838;
   margin-bottom:8px;
 }
-
+.ss-stage h4{
+  font-size:14px;
+  line-height:1.25;
+  margin:0 0 8px;
+}
 .ss-cost{
   font-size:27px;
   font-weight:800;
@@ -4251,7 +4255,10 @@ function renderFinalSmartSolarReport(){
     <h3>
       Four ways your home could use energy
     </h3>
-
+    
+<p class="ss-intro">
+  Your home uses your solar power first. Any extra can be sent to the grid for credit or stored in a battery for later.
+</p>
 
     <div class="ss-stages">
 
@@ -4263,12 +4270,8 @@ function renderFinalSmartSolarReport(){
         </span>
 
         <h4>
-          ${
-            model.estimateSource === "household-benchmark"
-              ? "Indicative household electricity benchmark"
-              : "Your current electricity pattern"
-          }
-        </h4>
+  Buying electricity from the grid
+</h4>
 
         <div class="ss-cost">
           ${money(currentAnnual)}
@@ -4292,12 +4295,12 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage">
 
         <span class="ss-stage-label">
-          2 — ADD 5 kW SOLAR — SAME HABITS
+          2 — SOLAR
         </span>
 
-        <h4>
-          Add solar, change nothing else
-        </h4>
+       <h4>
+  Use your solar first. Send the extra to the grid
+</h4>
 
         <div class="ss-cost">
           ${money(passiveAnnual)}
@@ -4319,7 +4322,7 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage smart">
 
         <span class="ss-stage-label">
-          3 — SOLAR + SMARTER TIMING
+          3 — SOLAR + SMART TIMING
         </span>
 
         <h4>
@@ -4353,12 +4356,12 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage battery">
 
         <span class="ss-stage-label">
-          4 — SOLAR SMART + STORAGE
+        4 — SOLAR + SMART TIMING + BATTERY STORAGE
         </span>
 
-        <h4>
-          Use more solar direct + storage for evenings
-        </h4>
+       <h4>
+  Store extra solar for later. Send what’s left to the grid
+</h4>
 
         <div class="ss-cost">
           ${money(batteryAnnual)}
