@@ -657,7 +657,50 @@ function escapeHtml(s){
     "'":'&#39;'
   }[m]));
 }
+async function submitHomeEnergyCheck(){
 
+  try {
+
+    const formData = new FormData();
+
+    formData.append(
+      'answers',
+      JSON.stringify(answers)
+    );
+
+    const response = await fetch(
+      'https://withered-sky-68b1.janeeswan1.workers.dev/',
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || 'Could not save enquiry'
+      );
+    }
+
+    console.log(
+      'Solectrics enquiry saved:',
+      data.enquiryRef
+    );
+
+    answers.enquiryRef = data.enquiryRef;
+
+  } catch (error) {
+
+    console.error(
+      'Solectrics enquiry capture failed:',
+      error
+    );
+
+  }
+
+}
 function showResult(){
 saveBillEditsNoLoop();answers.name=document.getElementById('name').value.trim();answers.email=document.getElementById('email').value.trim();answers.phone=document.getElementById('phone').value.trim();answers.address=document.getElementById('address').value.trim();
 document.getElementById('resultTitle').textContent=(answers.name?answers.name+', h':'H')+"ere’s what we’ve learned.";
@@ -687,8 +730,10 @@ document.getElementById('batteryScore').textContent=
   'READY FOR LATER';
 const insights=makeInsights();document.getElementById('finalBillAnalysis').innerHTML=insights.length?'<h2>What we can already see from your bills</h2>'+insights.slice(0,4).map(x=>`<div class="insight">${escapeHtml(x)}</div>`).join(''):'';
 document.getElementById('summary').textContent='Your answers suggest good potential for a solar system designed around the way your household actually uses energy.';
-step=screens.length-1;render()}
-function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
+submitHomeEnergyCheck();
+step=screens.length-1;
+render();
+}function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
 
 function compareHotWaterBattery(){
   const subject=encodeURIComponent('Compare hot-water heat pump and battery options');
