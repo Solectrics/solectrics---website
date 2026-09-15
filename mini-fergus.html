@@ -197,32 +197,11 @@
       <h2>Jobs</h2>
     </div>
 
-    <!-- TEST JOB CARD -->
-    <div class="job-card">
-
-      <div class="job-top">
-
-        <div>
-          <div class="job-name">Janee Swan</div>
-          <div class="address">7 Matapana Road</div>
-        </div>
-
-        <div>
-          <span class="status">New enquiry</span>
-        </div>
-
-      </div>
-
-      <div class="next">
-        <div class="next-label">Next action</div>
-        <div class="next-action">Review Home Energy Check</div>
-      </div>
-
-      <a class="open-job" href="#">
-        OPEN JOB →
-      </a>
-
-    </div>
+   <div id="jobs-container">
+  <div class="job-card">
+    <div class="job-name">Loading jobs…</div>
+  </div>
+</div>
 
     <div class="coming">
       <strong>Next:</strong> we'll connect this dashboard to the
@@ -231,7 +210,75 @@
     </div>
 
   </main>
+<script>
+async function loadJobs() {
+  const container = document.getElementById("jobs-container");
 
+  try {
+    const response = await fetch("/api/jobs");
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || "Could not load jobs");
+    }
+
+    if (!data.jobs || data.jobs.length === 0) {
+      container.innerHTML = `
+        <div class="job-card">
+          <div class="job-name">No jobs yet</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = data.jobs.map(job => `
+      <div class="job-card">
+
+        <div class="job-top">
+          <div>
+            <div class="job-name">${job.customer_name || "Unnamed customer"}</div>
+            <div class="address">${job.address || ""}</div>
+          </div>
+
+          <div>
+            <span class="status">${formatStatus(job.job_status)}</span>
+          </div>
+        </div>
+
+        <div class="next">
+          <div class="next-label">Next action</div>
+          <div class="next-action">${job.next_action || "Review job"}</div>
+        </div>
+
+        <a class="open-job" href="#">
+          OPEN JOB →
+        </a>
+
+      </div>
+    `).join("");
+
+  } catch (error) {
+    console.error(error);
+
+    container.innerHTML = `
+      <div class="job-card">
+        <div class="job-name">Jobs couldn't be loaded</div>
+        <div class="address">Please refresh the page.</div>
+      </div>
+    `;
+  }
+}
+
+function formatStatus(status) {
+  if (!status) return "New enquiry";
+
+  return status
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+loadJobs();
+</script>
 </body>
 </html>
 
