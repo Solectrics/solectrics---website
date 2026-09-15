@@ -62,46 +62,90 @@ export async function onRequestPost(context) {
     await db.prepare(`
       INSERT INTO assessments (
         job_id,
-        solar_kw,
+        panel_wattage,
         panel_count,
+        solar_kw,
+        roof_orientation,
         inverter,
         estimated_generation_kwh,
+
         hot_water_strategy,
         smart_controls,
+
         battery_option,
         battery_kwh,
-        tariff_recommendation,
+        battery_reason,
+
+        current_retailer,
+        import_rate,
+        export_rate,
+        controlled_hot_water,
+        recommended_tariff,
+        tariff_notes,
+
         site_notes,
         recommendation,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      VALUES (
+        ?, ?, ?, ?, ?, ?, ?,
+        ?, ?,
+        ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?,
+        CURRENT_TIMESTAMP
+      )
 
       ON CONFLICT(job_id) DO UPDATE SET
-        solar_kw = excluded.solar_kw,
+        panel_wattage = excluded.panel_wattage,
         panel_count = excluded.panel_count,
+        solar_kw = excluded.solar_kw,
+        roof_orientation = excluded.roof_orientation,
         inverter = excluded.inverter,
         estimated_generation_kwh = excluded.estimated_generation_kwh,
+
         hot_water_strategy = excluded.hot_water_strategy,
         smart_controls = excluded.smart_controls,
+
         battery_option = excluded.battery_option,
         battery_kwh = excluded.battery_kwh,
-        tariff_recommendation = excluded.tariff_recommendation,
+        battery_reason = excluded.battery_reason,
+
+        current_retailer = excluded.current_retailer,
+        import_rate = excluded.import_rate,
+        export_rate = excluded.export_rate,
+        controlled_hot_water = excluded.controlled_hot_water,
+        recommended_tariff = excluded.recommended_tariff,
+        tariff_notes = excluded.tariff_notes,
+
         site_notes = excluded.site_notes,
         recommendation = excluded.recommendation,
         updated_at = CURRENT_TIMESTAMP
     `)
       .bind(
         jobId,
-        data.solar_kw || null,
+
+        data.panel_wattage || 445,
         data.panel_count || null,
+        data.solar_kw || null,
+        data.roof_orientation || null,
         data.inverter || null,
         data.estimated_generation_kwh || null,
+
         data.hot_water_strategy || null,
         data.smart_controls || null,
+
         data.battery_option || null,
         data.battery_kwh || null,
-        data.tariff_recommendation || null,
+        data.battery_reason || null,
+
+        data.current_retailer || null,
+        data.import_rate || null,
+        data.export_rate || null,
+        data.controlled_hot_water || null,
+        data.recommended_tariff || null,
+        data.tariff_notes || null,
+
         data.site_notes || null,
         data.recommendation || null
       )
@@ -116,7 +160,10 @@ export async function onRequestPost(context) {
     console.error("Assessment POST error:", error);
 
     return Response.json(
-      { error: "Unable to save assessment" },
+      {
+        error: "Unable to save assessment",
+        detail: error.message
+      },
       { status: 500 }
     );
   }
