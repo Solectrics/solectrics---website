@@ -1086,6 +1086,31 @@ const orientation = orientationField ? orientationField.value : "";
   }
 
   recommendation.value = paragraphs.join("\n\n");
+  // Populate Quote section from Assessment & Design
+const quoteSolarSystem = document.getElementById("quote_solar_system");
+const quoteInverter = document.getElementById("quote_inverter");
+const quoteBattery = document.getElementById("quote_battery");
+const quoteSmartEnergy = document.getElementById("quote_smart_energy");
+
+if (quoteSolarSystem) {
+  quoteSolarSystem.value =
+    `${solarKw} kWp solar — ${panelCount} × ${document.getElementById("panel_wattage")?.value || ""} W panels`;
+}
+
+if (quoteInverter) {
+  quoteInverter.value =
+    document.getElementById("inverter")?.value || "";
+}
+
+if (quoteBattery) {
+  quoteBattery.value = battery || "";
+}
+
+if (quoteSmartEnergy) {
+  quoteSmartEnergy.value = [hotWater, smartControls]
+    .filter(Boolean)
+    .join(" ");
+}
 }
 
 
