@@ -285,8 +285,11 @@ async function loadJob() {
 
         const job = data.job;
         currentAnswers = parseAnswers(job.answers_json);
+        
 const answers = currentAnswers;
-
+        
+window.currentAnswers = answers;
+        
         const loads = answers.loads || [];
         const home = {
           "People": answers.people,
@@ -559,6 +562,15 @@ const answers = currentAnswers;
             </div>
           </section>
         `;
+        const roofOrientationField = document.getElementById("roof_orientation");
+
+if (
+  roofOrientationField &&
+  !roofOrientationField.value &&
+  answers.direction
+) {
+  roofOrientationField.value = answers.direction;
+}
 
       } catch (error) {
         console.error(error);
