@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini Fergus Job | Solectrics</title>
 
-  <style>
+  <stylFe>
     * { box-sizing: border-box; }
 
     body {
@@ -379,27 +379,35 @@ async function loadJob() {
   <form id="assessmentForm">
 
     <h3>Solar design</h3>
-    <div class="grid">
-      <div>
-        <label>Solar size (kW)</label>
-        <input type="number" step="0.1" id="solar_kw">
-      </div>
 
-      <div>
-        <label>Number of panels</label>
-        <input type="number" id="panel_count">
-      </div>
+<div class="grid">
 
-      <div>
-        <label>Inverter</label>
-        <input type="text" id="inverter">
-      </div>
+  <div>
+    <label>Panel wattage (W)</label>
+    <input type="number" id="panel_wattage" value="445">
+  </div>
 
-      <div>
-        <label>Estimated annual generation (kWh)</label>
-        <input type="number" id="estimated_generation_kwh">
-      </div>
-    </div>
+  <div>
+    <label>Number of panels</label>
+    <input type="number" id="panel_count">
+  </div>
+
+  <div>
+    <label>Solar array size (kWp)</label>
+    <input type="number" step="0.01" id="solar_kw" readonly>
+  </div>
+
+  <div>
+    <label>Inverter</label>
+    <input type="text" id="inverter">
+  </div>
+
+  <div>
+    <label>Estimated annual generation (kWh)</label>
+    <input type="number" id="estimated_generation_kwh">
+  </div>
+
+</div>
 
     <h3>Smart energy use</h3>
     <label>Hot-water strategy</label>
@@ -558,13 +566,45 @@ async function saveAssessment() {
 }
 
 
+function calculateSolarSize() {
+  const panelWattage = Number(
+    document.getElementById("panel_wattage")?.value || 0
+  );
+
+  const panelCount = Number(
+    document.getElementById("panel_count")?.value || 0
+  );
+
+  const solarSize = document.getElementById("solar_kw");
+
+  if (!solarSize) return;
+
+  if (panelWattage > 0 && panelCount > 0) {
+    solarSize.value = ((panelWattage * panelCount) / 1000).toFixed(2);
+  } else {
+    solarSize.value = "";
+  }
+}
+
+document.addEventListener("input", function(event) {
+  if (
+    event.target &&
+    (event.target.id === "panel_wattage" ||
+     event.target.id === "panel_count")
+  ) {
+    calculateSolarSize();
+  }
+});
+
 document.addEventListener("click", function(event) {
   if (event.target && event.target.id === "saveAssessment") {
     saveAssessment();
   }
 });
 
-loadJob().then(() => loadAssessment());
+loadJob().then(() => {
+  loadAssessment().then(() => calculateSolarSize());
+});
   </script>
 </body>
 </html>
