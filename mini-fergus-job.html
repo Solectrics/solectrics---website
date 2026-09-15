@@ -581,21 +581,40 @@ async function loadJob() {
 
     const a = data.assessment;
 
-    document.getElementById("solar_kw").value = a.solar_kw ?? "";
-    document.getElementById("panel_count").value = a.panel_count ?? "";
-    document.getElementById("inverter").value = a.inverter ?? "";
+    document.getElementById("panel_wattage").value =
+      a.panel_wattage ?? 445;
+    document.getElementById("panel_count").value =
+      a.panel_count ?? "";
+    document.getElementById("solar_kw").value =
+      a.solar_kw ?? "";
+    document.getElementById("roof_orientation").value =
+      a.roof_orientation ?? "";
+    document.getElementById("inverter").value =
+      a.inverter ?? "";
     document.getElementById("estimated_generation_kwh").value =
       a.estimated_generation_kwh ?? "";
+
     document.getElementById("hot_water_strategy").value =
       a.hot_water_strategy ?? "";
     document.getElementById("smart_controls").value =
       a.smart_controls ?? "";
+
     document.getElementById("battery_option").value =
       a.battery_option ?? "";
     document.getElementById("battery_kwh").value =
       a.battery_kwh ?? "";
+    document.getElementById("battery_reason").value =
+      a.battery_reason ?? "";
+
+    document.getElementById("current_retailer").value =
+      a.current_retailer ?? "";
+    document.getElementById("import_rate").value =
+      a.import_rate ?? "";
+    document.getElementById("export_rate").value =
+      a.export_rate ?? "";
     document.getElementById("tariff_recommendation").value =
       a.tariff_recommendation ?? "";
+
     document.getElementById("site_notes").value =
       a.site_notes ?? "";
     document.getElementById("recommendation").value =
@@ -607,30 +626,271 @@ async function loadJob() {
 }
 
 
+function calculateSolarSize() {
+  const panelWattage = Number(
+    document.getElementById("panel_wattage")?.value || 0
+  );
+
+  const panelCount = Number(
+    document.getElementById("panel_count")?.value || 0
+  );
+
+  const solarSize = document.getElementById("solar_kw");
+
+  if (!solarSize) return;
+
+  if (panelWattage > 0 && panelCount > 0) {
+    solarSize.value =
+      ((panelWattage * panelCount) / 1000).toFixed(2);
+  } else {
+    solarSize.value = "";
+  }
+}
+
+
+function calculateEstimatedGeneration() {
+  const solarKw = Number(
+    document.getElementById("solar_kw")?.value || 0
+  );
+
+  const orientation =
+    document.getElementById("roof_orientation")?.value || "";
+
+  const generationField =
+    document.getElementById("estimated_generation_kwh");
+
+  if (!generationField || !solarKw) return;
+
+  const orientationFactors = {
+    "North": 1.00,
+    "North-East": 0.95,
+    "North-West": 0.95,
+    "East": 0.88,
+    "West": 0.88,
+    "South-East": 0.78,
+    "South-West": 0.78,
+    "South": 0.65,
+    "Mixed": 0.90
+  };
+
+  const factor = orientationFactors[orientation] ?? 0.90;
+
+  // Practical first-pass Auckland/Waiheke estimate.
+  // This remains editable and can later be replaced by OpenSolar data.
+  const annualGeneration =
+    Math.round(solarKw * 1250 * factor);
+
+  generationField.value = annualGeneration;
+}
+
+
+function suggestSmartEnergyUse() {
+  const hotWaterField =
+    document.getElementById("hot_water_strategy");
+
+  const controlsField =
+    document.getElementById("smart_controls");
+
+  if (!hotWaterField || !controlsField) return;
+
+  // These are starter recommendations.
+  // They remain fully editable after generation.
+
+  if (!hotWaterField.value.trim()) {
+    hotWaterField.value =
+      "Where suitable, shift electric hot-water heating into solar-rich daytime hours, while retaining any required ripple-control or network control.";
+  }
+
+  if (!controlsField.value.trim()) {
+    controlsField.value =
+      "Prioritise direct solar use and automatically shift flexible loads such as hot water, EV charging, heating and suitable appliances into solar-rich hours.";
+  }
+}
+
+
+function suggestBattery() {
+  const batteryOption =
+    document.getElementById("battery_option");
+
+  const batteryReason =
+    document.getElementById("battery_reason");
+
+  if (!batteryOption || !batteryReason) return;
+
+  const solarKw = Number(
+    document.getElementById("solar_kw")?.value || 0
+  );
+
+  /*
+    This is deliberately conservative for now.
+    Later we can use actual bill/load information from the
+    Home Energy Check to make this recommendation smarter.
+  */
+
+  if (solarKw > 0 && solarKw < 5) {
+    batteryOption.value = "Start without battery";
+    batteryReason.value =
+      "Start by using solar directly and shifting flexible loads into daylight hours. Keep the system battery-ready so storage can be added later if evening grid use remains high.";
+  } else if (solarKw >= 5) {
+    batteryOption.value = "Battery ready";
+    batteryReason.value =
+      "This array may create useful daytime surplus. Design the system battery-ready, then assess whether enough genuine surplus remains after smart load shifting to justify storage.";
+  } else {
+    batteryOption.value = "";
+    batteryReason.value = "";
+  }
+}
+
+
+function generateRecommendation() {
+  const solarKw =
+    document.getElementById("solar_kw")?.value || "";
+
+  const panelCount =
+    document.getElementById("panel_count")?.value || "";
+
+  const orientation =
+    document.getElementById("roof_orientation")?.value || "";
+
+  const generation =
+    document.getElementById("estimated_generation_kwh")?.value || "";
+
+  const hotWater =
+    document.getElementById("hot_water_strategy")?.value.trim() || "";
+
+  const smartControls =
+    document.getElementById("smart_controls")?.value.trim() || "";
+
+  const battery =
+    document.getElementById("battery_option")?.value || "";
+
+  const batteryReason =
+    document.getElementById("battery_reason")?.value.trim() || "";
+
+  const retailer =
+    document.getElementById("current_retailer")?.value.trim() || "";
+
+  const importRate =
+    document.getElementById("import_rate")?.value || "";
+
+  const exportRate =
+    document.getElementById("export_rate")?.value || "";
+
+  const recommendation =
+    document.getElementById("recommendation");
+
+  const paragraphs = [];
+
+  if (solarKw && panelCount) {
+    let solarText =
+      `We recommend approximately ${solarKw} kWp of solar (${panelCount} panels)`;
+
+    if (orientation) {
+      solarText += ` using the ${orientation.toLowerCase()} roof area`;
+    }
+
+    solarText += ".";
+
+    if (generation) {
+      solarText +=
+        ` Estimated annual generation is approximately ${Number(generation).toLocaleString()} kWh.`;
+    }
+
+    paragraphs.push(solarText);
+  }
+
+  if (hotWater) {
+    paragraphs.push(hotWater);
+  }
+
+  if (smartControls) {
+    paragraphs.push(smartControls);
+  }
+
+  if (battery) {
+    let batteryText = `Battery approach: ${battery}.`;
+
+    if (batteryReason) {
+      batteryText += ` ${batteryReason}`;
+    }
+
+    paragraphs.push(batteryText);
+  }
+
+  if (retailer || importRate || exportRate) {
+    let tariffText = "Tariff review:";
+
+    if (retailer) tariffText += ` current retailer ${retailer}.`;
+    if (importRate) tariffText += ` Import rate ${importRate} c/kWh.`;
+    if (exportRate) tariffText += ` Export rate ${exportRate} c/kWh.`;
+
+    tariffText +=
+      " We will check that the electricity plan suits the proposed solar system.";
+
+    paragraphs.push(tariffText);
+  }
+
+  recommendation.value = paragraphs.join("\n\n");
+}
+
+
 async function saveAssessment() {
-  const message = document.getElementById("assessmentMessage");
+  const message =
+    document.getElementById("assessmentMessage");
 
   message.textContent = " Saving...";
 
   const assessment = {
     job_id: jobId,
-    solar_kw: document.getElementById("solar_kw").value,
-    panel_count: document.getElementById("panel_count").value,
-    inverter: document.getElementById("inverter").value,
+
+    panel_wattage:
+      document.getElementById("panel_wattage").value,
+
+    panel_count:
+      document.getElementById("panel_count").value,
+
+    solar_kw:
+      document.getElementById("solar_kw").value,
+
+    roof_orientation:
+      document.getElementById("roof_orientation").value,
+
+    inverter:
+      document.getElementById("inverter").value,
+
     estimated_generation_kwh:
       document.getElementById("estimated_generation_kwh").value,
+
     hot_water_strategy:
       document.getElementById("hot_water_strategy").value,
+
     smart_controls:
       document.getElementById("smart_controls").value,
+
     battery_option:
       document.getElementById("battery_option").value,
+
     battery_kwh:
       document.getElementById("battery_kwh").value,
+
+    battery_reason:
+      document.getElementById("battery_reason").value,
+
+    current_retailer:
+      document.getElementById("current_retailer").value,
+
+    import_rate:
+      document.getElementById("import_rate").value,
+
+    export_rate:
+      document.getElementById("export_rate").value,
+
     tariff_recommendation:
       document.getElementById("tariff_recommendation").value,
+
     site_notes:
       document.getElementById("site_notes").value,
+
     recommendation:
       document.getElementById("recommendation").value
   };
@@ -659,44 +919,61 @@ async function saveAssessment() {
 }
 
 
-function calculateSolarSize() {
-  const panelWattage = Number(
-    document.getElementById("panel_wattage")?.value || 0
-  );
-
-  const panelCount = Number(
-    document.getElementById("panel_count")?.value || 0
-  );
-
-  const solarSize = document.getElementById("solar_kw");
-
-  if (!solarSize) return;
-
-  if (panelWattage > 0 && panelCount > 0) {
-    solarSize.value = ((panelWattage * panelCount) / 1000).toFixed(2);
-  } else {
-    solarSize.value = "";
-  }
+function updateDesignSuggestions() {
+  calculateSolarSize();
+  calculateEstimatedGeneration();
 }
+
 
 document.addEventListener("input", function(event) {
   if (
     event.target &&
-    (event.target.id === "panel_wattage" ||
-     event.target.id === "panel_count")
+    (
+      event.target.id === "panel_wattage" ||
+      event.target.id === "panel_count"
+    )
   ) {
-    calculateSolarSize();
+    updateDesignSuggestions();
   }
 });
 
+
+document.addEventListener("change", function(event) {
+  if (
+    event.target &&
+    event.target.id === "roof_orientation"
+  ) {
+    calculateEstimatedGeneration();
+  }
+});
+
+
 document.addEventListener("click", function(event) {
-  if (event.target && event.target.id === "saveAssessment") {
+  if (!event.target) return;
+
+  if (event.target.id === "generateSmartSuggestions") {
+    suggestSmartEnergyUse();
+    suggestBattery();
+  }
+
+  if (event.target.id === "generateAssessment") {
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+    suggestSmartEnergyUse();
+    suggestBattery();
+    generateRecommendation();
+  }
+
+  if (event.target.id === "saveAssessment") {
     saveAssessment();
   }
 });
 
+
 loadJob().then(() => {
-  loadAssessment().then(() => calculateSolarSize());
+  loadAssessment().then(() => {
+    calculateSolarSize();
+  });
 });
   </script>
 </body>
