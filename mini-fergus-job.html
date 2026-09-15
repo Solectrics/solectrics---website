@@ -261,7 +261,7 @@ if (typeof value === "object" && value !== null) {
     }
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
-  
+  let currentAnswers = {};
 
 async function loadJob() {
   const page = document.getElementById("page");
@@ -284,7 +284,8 @@ async function loadJob() {
         }
 
         const job = data.job;
-        const answers = parseAnswers(job.answers_json);
+        currentAnswers = parseAnswers(job.answers_json);
+const answers = currentAnswers;
 
         const loads = answers.loads || [];
         const home = {
@@ -685,25 +686,62 @@ function calculateEstimatedGeneration() {
 
 
 function suggestSmartEnergyUse() {
-  const hotWaterField =
-    document.getElementById("hot_water_strategy");
-
-  const controlsField =
-    document.getElementById("smart_controls");
+  const hotWaterField = document.getElementById("hot_water_strategy");
+  const controlsField = document.getElementById("smart_controls");
 
   if (!hotWaterField || !controlsField) return;
 
-  // These are starter recommendations.
-  // They remain fully editable after generation.
+  const loads = Array.isArray(currentAnswers?.loads)
+    ? currentAnswers.loads
+    : [];
 
-  if (!hotWaterField.value.trim()) {
+  const hotWater = String(currentAnswers?.hotWater || "").toLowerCase();
+  const dayHome = String(currentAnswers?.dayHome || "").toLowerCase();
+
+  const hasLoad = (text) =>
+    loads.some(load =>
+      String(load).toLowerCase().includes(text.toLowerCase())
+    );
+
+  // HOT WATER
+  if (hotWater.includes("electric")) {
     hotWaterField.value =
-      "Where suitable, shift electric hot-water heating into solar-rich daytime hours, while retaining any required ripple-control or network control.";
+      "Shift electric hot-water heating into solar-rich daytime hours, ideally around 10am–3pm where practical. Check the existing meter, ripple-control and cylinder arrangement before selecting the final control strategy.";
+  } else {
+    hotWaterField.value =
+      "No electric hot-water load identified for solar shifting.";
   }
 
-  if (!controlsField.value.trim()) {
+  // SMART LOAD SHIFTING
+  const suggestions = [];
+
+  if (hasLoad("washing machine")) {
+    suggestions.push("washing machine");
+  }
+
+  if (hasLoad("dishwasher")) {
+    suggestions.push("dishwasher");
+  }
+
+  if (hasLoad("heat pump") || hasLoad("electric heating")) {
+    suggestions.push("heat pump / electric heating");
+  }
+
+  if (hasLoad("EV")) {
+    suggestions.push("EV charging");
+  }
+
+  if (suggestions.length) {
     controlsField.value =
-      "Prioritise direct solar use and automatically shift flexible loads such as hot water, EV charging, heating and suitable appliances into solar-rich hours.";
+      "Prioritise direct solar use and shift " +
+      suggestions.join(", ") +
+      " into solar-rich daytime hours where practical" +
+      (dayHome.includes("usually") || dayHome.includes("someone")
+        ? ". Daytime occupancy should make direct use of solar easier."
+        : ".");
+  } else {
+    controlsField.value =
+      "Prioritise direct use of solar during the day and consider automatic load shifting where suitable.";
   }
 }
 
