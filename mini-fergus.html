@@ -250,9 +250,9 @@ async function loadJobs() {
           <div class="next-action">${job.next_action || "Review job"}</div>
         </div>
 
-        <a class="open-job" href="#">
-          OPEN JOB →
-        </a>
+        <a class="open-job" href="/mini-fergus-job?id=${job.job_id}">
+  OPEN JOB →
+</a>
 
       </div>
     `).join("");
