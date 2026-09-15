@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job | Mini Fergus | Solectrics</title>
+  <title>Mini Fergus Job | Solectrics</title>
 
   <style>
     * { box-sizing: border-box; }
@@ -24,101 +24,144 @@
     .brand {
       font-size: 28px;
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .eyebrow {
       color: #e97838;
       font-size: 13px;
       font-weight: 800;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      margin-bottom: 28px;
     }
 
     .back {
       display: inline-block;
+      margin: 34px 0;
       color: #e97838;
-      text-decoration: none;
       font-weight: 700;
-      margin-bottom: 28px;
+      text-decoration: none;
     }
 
     h1 {
-      font-size: 42px;
-      margin: 0 0 6px;
+      font-size: 48px;
+      margin: 5px 0 8px;
     }
 
     .address {
-      color: #68736f;
-      font-size: 19px;
-      margin-bottom: 24px;
+      font-size: 21px;
+      color: #68746f;
+      margin-bottom: 28px;
     }
 
     .status {
       display: inline-block;
-      padding: 9px 14px;
+      padding: 10px 16px;
       border-radius: 999px;
       background: #fff0e7;
-      color: #df682c;
+      color: #e76625;
       font-size: 13px;
       font-weight: 800;
       text-transform: uppercase;
-      margin-bottom: 28px;
+      margin-bottom: 22px;
     }
 
     .card {
       background: white;
-      border: 1px solid #dedbd2;
-      border-radius: 22px;
-      padding: 28px;
-      margin-bottom: 20px;
+      border: 1px solid #ddd8cf;
+      border-radius: 24px;
+      padding: 32px 36px;
+      margin: 24px 0;
     }
 
-    .card h2 {
-      margin: 0 0 20px;
-      font-size: 22px;
+    h2 {
+      margin: 0 0 25px;
+      font-size: 25px;
+    }
+
+    h3 {
+      margin: 28px 0 14px;
+      font-size: 18px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
+      gap: 24px 40px;
     }
 
     .label {
-      color: #68736f;
-      text-transform: uppercase;
+      color: #68746f;
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 1px;
-      margin-bottom: 5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
     }
 
     .value {
       font-size: 17px;
-      font-weight: 600;
-      word-break: break-word;
+      font-weight: 700;
+      overflow-wrap: anywhere;
     }
 
-    .next-action {
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .placeholder {
-      color: #68736f;
+    .answer-box {
+      background: #faf9f5;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 14px;
       line-height: 1.6;
     }
 
-    .error {
-      color: #a53c2e;
+    .answers-list {
+      margin: 0;
+      padding-left: 20px;
     }
 
-    @media (max-width: 650px) {
-      .grid { grid-template-columns: 1fr; }
-      h1 { font-size: 34px; }
-      .wrap { padding: 28px 18px 60px; }
+    .answers-list li {
+      margin: 7px 0;
+    }
+
+    .placeholder {
+      color: #68746f;
+      line-height: 1.6;
+    }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .quote-box {
+      border: 1px solid #ddd8cf;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .quote-box strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .error {
+      color: #a12d2d;
+    }
+
+    @media (max-width: 700px) {
+      .grid,
+      .quote-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      .card {
+        padding: 25px 22px;
+      }
     }
   </style>
 </head>
@@ -131,8 +174,8 @@
 
     <a class="back" href="/mini-fergus">← Back to Mini Fergus</a>
 
-    <div id="job-page">
-      <div class="card">Loading job…</div>
+    <div id="page">
+      Loading job...
     </div>
 
   </main>
@@ -142,49 +185,117 @@
       if (!status) return "New enquiry";
 
       return status
-        .replaceAll("_", " ")
+        .replace(/_/g, " ")
         .replace(/\b\w/g, letter => letter.toUpperCase());
     }
 
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return "";
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function prettyLabel(key) {
+      return key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/_/g, " ")
+        .replace(/^./, char => char.toUpperCase());
+    }
+
+    function prettyValue(value) {
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      if (value === null || value === undefined || value === "") return "Not provided";
+
+      return String(value);
+    }
+
+    function renderObject(obj) {
+      if (!obj || typeof obj !== "object") {
+        return `<div class="placeholder">No information provided.</div>`;
+      }
+
+      const entries = Object.entries(obj);
+
+      if (!entries.length) {
+        return `<div class="placeholder">No information provided.</div>`;
+      }
+
+      return `
+        <div class="grid">
+          ${entries.map(([key, value]) => `
+            <div>
+              <div class="label">${escapeHtml(prettyLabel(key))}</div>
+              <div class="value">${escapeHtml(prettyValue(value))}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function parseAnswers(raw) {
+      if (!raw) return {};
+
+      if (typeof raw === "object") {
+        return raw;
+      }
+
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return { answers: raw };
+      }
+    }
+
     async function loadJob() {
-      const page = document.getElementById("job-page");
+      const page = document.getElementById("page");
       const params = new URLSearchParams(window.location.search);
       const jobId = params.get("id");
 
       if (!jobId) {
         page.innerHTML = `
-          <div class="card error">
-            No job was selected.
-          </div>
+          <section class="card error">
+            No job ID was supplied.
+          </section>
         `;
         return;
       }
 
       try {
-        const response = await fetch("/api/jobs");
+        const response = await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);
         const data = await response.json();
 
-        if (!data.ok) {
-          throw new Error(data.error || "Could not load jobs");
+        if (!response.ok || !data.ok || !data.job) {
+          throw new Error(data.error || "Job could not be loaded");
         }
 
-        const job = data.jobs.find(
-          item => String(item.job_id) === String(jobId)
-        );
+        const job = data.job;
+        const answers = parseAnswers(job.answers_json);
 
-        if (!job) {
-          page.innerHTML = `
-            <div class="card error">
-              Job not found.
-            </div>
-          `;
-          return;
-        }
+        const loads = answers.loads || [];
+        const home = {
+          "People": answers.people,
+          "Home type": answers.homeType,
+          "Daytime use": answers.dayHome,
+          "Hot water": answers.hotWater,
+          "Meter": answers.meter,
+          "Shade": answers.shade
+        };
 
         page.innerHTML = `
-          <h1>${job.customer_name || "Unnamed customer"}</h1>
-          <div class="address">${job.address || ""}</div>
-          <div class="status">${formatStatus(job.job_status)}</div>
+          <h1>${escapeHtml(job.customer_name || "Customer")}</h1>
+          <div class="address">${escapeHtml(job.address || "")}</div>
+
+          <div class="status">${escapeHtml(formatStatus(job.job_status))}</div>
 
           <section class="card">
             <h2>Customer</h2>
@@ -192,54 +303,104 @@
             <div class="grid">
               <div>
                 <div class="label">Email</div>
-                <div class="value">${job.email || "—"}</div>
+                <div class="value">${escapeHtml(job.email || "Not provided")}</div>
               </div>
 
               <div>
                 <div class="label">Phone</div>
-                <div class="value">${job.phone || "—"}</div>
+                <div class="value">${escapeHtml(job.phone || "Not provided")}</div>
               </div>
 
               <div>
                 <div class="label">Address</div>
-                <div class="value">${job.address || "—"}</div>
+                <div class="value">${escapeHtml(job.address || "Not provided")}</div>
               </div>
 
               <div>
                 <div class="label">Enquiry reference</div>
-                <div class="value">${job.enquiry_ref || "—"}</div>
+                <div class="value">${escapeHtml(job.enquiry_ref || "Not provided")}</div>
               </div>
             </div>
           </section>
 
           <section class="card">
             <h2>Next action</h2>
-            <div class="next-action">
-              ${job.next_action || "Review job"}
+            <div class="value">
+              ${escapeHtml(job.next_action || "Review Home Energy Check")}
             </div>
           </section>
 
           <section class="card">
             <h2>Home Energy Check</h2>
-            <div class="placeholder">
-              Next we'll bring the customer's Home Energy Check answers,
-              electricity information and uploaded bill into this job.
+
+            <h3>Home & energy use</h3>
+
+            <div class="grid">
+              ${Object.entries(home).map(([key, value]) => `
+                <div>
+                  <div class="label">${escapeHtml(key)}</div>
+                  <div class="value">${escapeHtml(prettyValue(value))}</div>
+                </div>
+              `).join("")}
+            </div>
+
+            <h3>Electrical loads</h3>
+
+            <div class="answer-box">
+              ${
+                loads.length
+                  ? `<ul class="answers-list">
+                      ${loads.map(load => `<li>${escapeHtml(load)}</li>`).join("")}
+                    </ul>`
+                  : "No loads provided."
+              }
+            </div>
+
+            <h3>All Home Energy Check answers</h3>
+
+            <div class="answer-box">
+              ${renderObject(answers)}
             </div>
           </section>
 
           <section class="card">
             <h2>Assessment & design</h2>
+
             <div class="placeholder">
-              Site assessment, solar design, tariff review and recommendations
-              will live here.
+              Review the Home Energy Check and develop the recommended
+              solar-smart solution.
+            </div>
+
+            <div class="quote-grid">
+              <div class="quote-box">
+                <strong>Solar design</strong>
+                Panels, inverter and expected generation.
+              </div>
+
+              <div class="quote-box">
+                <strong>Smart energy use</strong>
+                Hot water, EV, heating and other loads that can be shifted
+                into solar hours.
+              </div>
+
+              <div class="quote-box">
+                <strong>Battery</strong>
+                Decide whether storage adds enough value for this household.
+              </div>
+
+              <div class="quote-box">
+                <strong>Tariff review</strong>
+                Check import pricing, export rate and retailer options.
+              </div>
             </div>
           </section>
 
           <section class="card">
-            <h2>Quote & installation</h2>
+            <h2>Quote</h2>
+
             <div class="placeholder">
-              Quote, acceptance, deposit, network/retailer steps, installation
-              checklist and certification will live here.
+              Next we'll add the recommended system, price and a simple
+              “Quote sent” action here.
             </div>
           </section>
         `;
@@ -248,9 +409,9 @@
         console.error(error);
 
         page.innerHTML = `
-          <div class="card error">
+          <section class="card error">
             This job couldn't be loaded. Please return to Mini Fergus and try again.
-          </div>
+          </section>
         `;
       }
     }
