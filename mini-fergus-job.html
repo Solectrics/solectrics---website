@@ -259,12 +259,14 @@ if (typeof value === "object" && value !== null) {
         return { answers: raw };
       }
     }
+const params = new URLSearchParams(window.location.search);
+const jobId = params.get("id");
+  
 
-    async function loadJob() {
-      const page = document.getElementById("page");
-      const params = new URLSearchParams(window.location.search);
-      const jobId = params.get("id");
+async function loadJob() {
+  const page = document.getElementById("page");
 
+  if (!jobId) {
       if (!jobId) {
         page.innerHTML = `
           <section class="card error">
