@@ -787,8 +787,8 @@ function generateRecommendation() {
   const panelCount =
     document.getElementById("panel_count")?.value || "";
 
-  const orientation =
-    document.getElementById("roof_orientation")?.value || "";
+  const orientationField = document.getElementById("roof_orientation");
+const orientation = orientationField ? orientationField.value : "";
 
   const generation =
     document.getElementById("estimated_generation_kwh")?.value || "";
