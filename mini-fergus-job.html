@@ -805,6 +805,9 @@ function generateRecommendation() {
   const batteryReason =
     document.getElementById("battery_reason")?.value.trim() || "";
 
+  const batteryKwh =
+    document.getElementById("battery_kwh")?.value || "";
+
   const retailer =
     document.getElementById("current_retailer")?.value.trim() || "";
 
@@ -814,17 +817,22 @@ function generateRecommendation() {
   const exportRate =
     document.getElementById("export_rate")?.value || "";
 
+  const recommendedTariff =
+    document.getElementById("recommended_tariff")?.value.trim() || "";
+
   const recommendation =
     document.getElementById("recommendation");
 
   const paragraphs = [];
 
+  // SOLAR DESIGN
   if (solarKw && panelCount) {
     let solarText =
       `We recommend approximately ${solarKw} kWp of solar (${panelCount} panels)`;
 
     if (orientation) {
-      solarText += ` using the ${orientation.toLowerCase()} roof area`;
+      solarText +=
+        `, using the ${orientation.toLowerCase()}-facing roof area`;
     }
 
     solarText += ".";
@@ -837,16 +845,23 @@ function generateRecommendation() {
     paragraphs.push(solarText);
   }
 
+  // HOT WATER
   if (hotWater) {
     paragraphs.push(hotWater);
   }
 
+  // SMART SOLAR USE
   if (smartControls) {
     paragraphs.push(smartControls);
   }
 
+  // BATTERY
   if (battery) {
-    let batteryText = `Battery approach: ${battery}.`;
+    let batteryText = `Battery: ${battery}.`;
+
+    if (batteryKwh) {
+      batteryText += ` Indicative battery size: ${batteryKwh} kWh.`;
+    }
 
     if (batteryReason) {
       batteryText += ` ${batteryReason}`;
@@ -855,15 +870,33 @@ function generateRecommendation() {
     paragraphs.push(batteryText);
   }
 
-  if (retailer || importRate || exportRate) {
-    let tariffText = "Tariff review:";
+  // TARIFF
+  if (
+    retailer ||
+    importRate ||
+    exportRate ||
+    recommendedTariff
+  ) {
+    let tariffText = "Electricity tariff review:";
 
-    if (retailer) tariffText += ` current retailer ${retailer}.`;
-    if (importRate) tariffText += ` Import rate ${importRate} c/kWh.`;
-    if (exportRate) tariffText += ` Export rate ${exportRate} c/kWh.`;
+    if (retailer) {
+      tariffText += ` Current retailer: ${retailer}.`;
+    }
 
-    tariffText +=
-      " We will check that the electricity plan suits the proposed solar system.";
+    if (importRate) {
+      tariffText += ` Import rate: ${importRate} c/kWh.`;
+    }
+
+    if (exportRate) {
+      tariffText += ` Solar buy-back rate: ${exportRate} c/kWh.`;
+    }
+
+    if (recommendedTariff) {
+      tariffText += ` Recommended retailer / tariff: ${recommendedTariff}.`;
+    } else {
+      tariffText +=
+        " Check that the electricity plan suits the proposed solar system and expected import/export pattern.";
+    }
 
     paragraphs.push(tariffText);
   }
