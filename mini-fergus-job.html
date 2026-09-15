@@ -747,35 +747,61 @@ function suggestSmartEnergyUse() {
 
 
 function suggestBattery() {
-  const batteryOption =
-    document.getElementById("battery_option");
-
-  const batteryReason =
-    document.getElementById("battery_reason");
+  const batteryOption = document.getElementById("battery_option");
+  const batteryReason = document.getElementById("battery_reason");
 
   if (!batteryOption || !batteryReason) return;
 
-  const solarKw = Number(
-    document.getElementById("solar_kw")?.value || 0
-  );
+  const answers = currentAnswers || {};
+  const loads = Array.isArray(answers.loads) ? answers.loads : [];
 
-  /*
-    This is deliberately conservative for now.
-    Later we can use actual bill/load information from the
-    Home Energy Check to make this recommendation smarter.
-  */
+  const goalsText = String(answers.goals || "").toLowerCase();
+  const dayHomeText = String(answers.dayHome || "").toLowerCase();
+  const hotWaterText = String(answers.hotWater || "").toLowerCase();
 
-  if (solarKw > 0 && solarKw < 5) {
+  const hasDaytimeOccupancy =
+    dayHomeText.includes("usually someone home") ||
+    dayHomeText.includes("someone home");
+
+  const hasElectricHotWater =
+    hotWaterText.includes("electric");
+
+  const hasShiftableLoads = loads.some(load => {
+    const text = String(load).toLowerCase();
+    return (
+      text.includes("washing") ||
+      text.includes("dishwasher") ||
+      text.includes("heat pump") ||
+      text.includes("electric heating") ||
+      text.includes("ev")
+    );
+  });
+
+  const wantsBackup =
+    goalsText.includes("backup") ||
+    goalsText.includes("power cut") ||
+    goalsText.includes("resilience");
+
+  const billsKnown =
+    answers.bills &&
+    String(answers.bills).toLowerCase().includes("not provided") === false;
+
+  if (wantsBackup) {
+    batteryOption.value = "Battery likely worthwhile";
+    batteryReason.value =
+      "A battery is worth investigating because backup or energy resilience is an important goal for this home. Final battery size should be based on essential backup loads and expected solar surplus.";
+  } else if (hasDaytimeOccupancy || hasElectricHotWater || hasShiftableLoads) {
     batteryOption.value = "Start without battery";
     batteryReason.value =
-      "Start by using solar directly and shifting flexible loads into daylight hours. Keep the system battery-ready so storage can be added later if evening grid use remains high.";
-  } else if (solarKw >= 5) {
+      "This home has good opportunities to use solar directly during the day, particularly through hot water, appliances and heating. Design the system battery-ready and review actual solar export and evening grid use after installation before deciding whether storage provides worthwhile additional value.";
+  } else if (!billsKnown) {
     batteryOption.value = "Battery ready";
     batteryReason.value =
-      "This array may create useful daytime surplus. Design the system battery-ready, then assess whether enough genuine surplus remains after smart load shifting to justify storage.";
+      "There is not yet enough consumption information to justify a battery on savings alone. Design the system battery-ready and review electricity bills or actual solar export and evening grid use before selecting storage.";
   } else {
-    batteryOption.value = "";
-    batteryReason.value = "";
+    batteryOption.value = "Battery ready";
+    batteryReason.value =
+      "This home may have useful solar surplus available for evening use. Design the system battery-ready, then confirm the value and appropriate battery size from consumption patterns and expected export.";
   }
 }
 
