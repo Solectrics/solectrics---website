@@ -368,36 +368,84 @@ if (typeof value === "object" && value !== null) {
           </section>
 
           <section class="card">
-            <h2>Assessment & design</h2>
+  <h2>Assessment & design</h2>
 
-            <div class="placeholder">
-              Review the Home Energy Check and develop the recommended
-              solar-smart solution.
-            </div>
+  <div class="placeholder">
+    Review the Home Energy Check and develop the recommended
+    solar-smart solution.
+  </div>
 
-            <div class="quote-grid">
-              <div class="quote-box">
-                <strong>Solar design</strong>
-                Panels, inverter and expected generation.
-              </div>
+  <form id="assessmentForm">
 
-              <div class="quote-box">
-                <strong>Smart energy use</strong>
-                Hot water, EV, heating and other loads that can be shifted
-                into solar hours.
-              </div>
+    <h3>Solar design</h3>
+    <div class="grid">
+      <div>
+        <label>Solar size (kW)</label>
+        <input type="number" step="0.1" id="solar_kw">
+      </div>
 
-              <div class="quote-box">
-                <strong>Battery</strong>
-                Decide whether storage adds enough value for this household.
-              </div>
+      <div>
+        <label>Number of panels</label>
+        <input type="number" id="panel_count">
+      </div>
 
-              <div class="quote-box">
-                <strong>Tariff review</strong>
-                Check import pricing, export rate and retailer options.
-              </div>
-            </div>
-          </section>
+      <div>
+        <label>Inverter</label>
+        <input type="text" id="inverter">
+      </div>
+
+      <div>
+        <label>Estimated annual generation (kWh)</label>
+        <input type="number" id="estimated_generation_kwh">
+      </div>
+    </div>
+
+    <h3>Smart energy use</h3>
+    <label>Hot-water strategy</label>
+    <textarea id="hot_water_strategy"></textarea>
+
+    <label>Smart controls / load shifting</label>
+    <textarea id="smart_controls"></textarea>
+
+    <h3>Battery</h3>
+    <div class="grid">
+      <div>
+        <label>Battery recommendation</label>
+        <select id="battery_option">
+          <option value="">Select...</option>
+          <option value="No battery">No battery</option>
+          <option value="Battery ready">Battery ready</option>
+          <option value="Battery recommended">Battery recommended</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Battery size (kWh)</label>
+        <input type="number" step="0.1" id="battery_kwh">
+      </div>
+    </div>
+
+    <h3>Tariff review</h3>
+    <textarea id="tariff_recommendation"
+      placeholder="Import pricing, export rate and retailer recommendation"></textarea>
+
+    <h3>Site notes</h3>
+    <textarea id="site_notes"
+      placeholder="Roof, meter, switchboard, shading or anything to check on site"></textarea>
+
+    <h3>Overall recommendation</h3>
+    <textarea id="recommendation"
+      placeholder="Recommended Solectrics solution"></textarea>
+
+    <br>
+    <button type="button" id="saveAssessment">
+      SAVE ASSESSMENT
+    </button>
+
+    <span id="assessmentMessage"></span>
+
+  </form>
+</section>
 
           <section class="card">
             <h2>Quote</h2>
@@ -420,7 +468,102 @@ if (typeof value === "object" && value !== null) {
       }
     }
 
-    loadJob();
+
+
+    async function loadAssessment() {
+  try {
+    const response = await fetch(`/api/assessment?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!data.ok || !data.assessment) return;
+
+    const a = data.assessment;
+
+    document.getElementById("solar_kw").value = a.solar_kw ?? "";
+    document.getElementById("panel_count").value = a.panel_count ?? "";
+    document.getElementById("inverter").value = a.inverter ?? "";
+    document.getElementById("estimated_generation_kwh").value =
+      a.estimated_generation_kwh ?? "";
+    document.getElementById("hot_water_strategy").value =
+      a.hot_water_strategy ?? "";
+    document.getElementById("smart_controls").value =
+      a.smart_controls ?? "";
+    document.getElementById("battery_option").value =
+      a.battery_option ?? "";
+    document.getElementById("battery_kwh").value =
+      a.battery_kwh ?? "";
+    document.getElementById("tariff_recommendation").value =
+      a.tariff_recommendation ?? "";
+    document.getElementById("site_notes").value =
+      a.site_notes ?? "";
+    document.getElementById("recommendation").value =
+      a.recommendation ?? "";
+
+  } catch (error) {
+    console.error("Could not load assessment:", error);
+  }
+}
+
+
+async function saveAssessment() {
+  const message = document.getElementById("assessmentMessage");
+
+  message.textContent = " Saving...";
+
+  const assessment = {
+    job_id: jobId,
+    solar_kw: document.getElementById("solar_kw").value,
+    panel_count: document.getElementById("panel_count").value,
+    inverter: document.getElementById("inverter").value,
+    estimated_generation_kwh:
+      document.getElementById("estimated_generation_kwh").value,
+    hot_water_strategy:
+      document.getElementById("hot_water_strategy").value,
+    smart_controls:
+      document.getElementById("smart_controls").value,
+    battery_option:
+      document.getElementById("battery_option").value,
+    battery_kwh:
+      document.getElementById("battery_kwh").value,
+    tariff_recommendation:
+      document.getElementById("tariff_recommendation").value,
+    site_notes:
+      document.getElementById("site_notes").value,
+    recommendation:
+      document.getElementById("recommendation").value
+  };
+
+  try {
+    const response = await fetch("/api/assessment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(assessment)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Save failed");
+    }
+
+    message.textContent = " ✓ Assessment saved";
+
+  } catch (error) {
+    console.error(error);
+    message.textContent = " Could not save assessment";
+  }
+}
+
+
+document.addEventListener("click", function(event) {
+  if (event.target && event.target.id === "saveAssessment") {
+    saveAssessment();
+  }
+});
+
+loadJob().then(() => loadAssessment());
   </script>
 </body>
 </html>
