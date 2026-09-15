@@ -817,7 +817,63 @@ function suggestBattery() {
   }
 }
 
+function suggestTariff() {
+  const retailer =
+    document.getElementById("current_retailer")?.value.trim() || "";
 
+  const importRate =
+    document.getElementById("import_rate")?.value || "";
+
+  const exportRate =
+    document.getElementById("export_rate")?.value || "";
+
+  const controlledHotWater =
+    document.getElementById("controlled_hot_water")?.value || "";
+
+  const recommendedTariff =
+    document.getElementById("recommended_tariff");
+
+  const tariffNotes =
+    document.getElementById("tariff_recommendation");
+
+  if (!recommendedTariff || !tariffNotes) return;
+
+  let notes = [];
+
+  if (retailer) {
+    notes.push(`Current retailer: ${retailer}.`);
+  }
+
+  if (importRate) {
+    notes.push(`Current import rate: ${importRate} c/kWh.`);
+  }
+
+  if (exportRate) {
+    notes.push(`Current solar buy-back rate: ${exportRate} c/kWh.`);
+  }
+
+  if (controlledHotWater === "Yes") {
+    notes.push(
+      "Hot water is on a controlled supply. Check the retailer and network arrangement before changing hot-water timing."
+    );
+  }
+
+  if (!importRate || !exportRate) {
+    notes.push(
+      "Check current import and solar buy-back rates before finalising the quote."
+    );
+  }
+
+  notes.push(
+    "Compare the overall electricity plan, not just the solar buy-back rate. A higher export rate is not necessarily better if import charges or daily charges are also higher."
+  );
+
+  if (!recommendedTariff.value.trim()) {
+    recommendedTariff.value = "Review current plan against suitable solar tariffs";
+  }
+
+  tariffNotes.value = notes.join(" ");
+}
 function generateRecommendation() {
   const solarKw =
     document.getElementById("solar_kw")?.value || "";
@@ -1070,6 +1126,7 @@ document.addEventListener("click", function(event) {
     calculateEstimatedGeneration();
     suggestSmartEnergyUse();
     suggestBattery();
+    suggestTariff();
     generateRecommendation();
   }
 
@@ -1081,7 +1138,20 @@ document.addEventListener("click", function(event) {
 
 loadJob().then(() => {
   loadAssessment().then(() => {
+
+    const roofOrientationField =
+      document.getElementById("roof_orientation");
+
+    if (
+      roofOrientationField &&
+      !roofOrientationField.value &&
+      window.currentAnswers?.direction
+    ) {
+      roofOrientationField.value = window.currentAnswers.direction;
+    }
+
     calculateSolarSize();
+    calculateEstimatedGeneration();
   });
 });
   </script>
