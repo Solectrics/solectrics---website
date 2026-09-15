@@ -266,7 +266,6 @@ const jobId = params.get("id");
 async function loadJob() {
   const page = document.getElementById("page");
 
-  if (!jobId) {
       if (!jobId) {
         page.innerHTML = `
           <section class="card error">
