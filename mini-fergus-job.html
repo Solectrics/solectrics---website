@@ -554,13 +554,103 @@ window.currentAnswers = answers;
 </section>
 
           <section class="card">
-            <h2>Quote</h2>
+  <h2>Quote</h2>
 
-            <div class="placeholder">
-              Next we'll add the recommended system, price and a simple
-              “Quote sent” action here.
-            </div>
-          </section>
+  <p class="placeholder">
+    Build the customer quote from the recommended solar-smart solution above.
+  </p>
+
+  <h3>Recommended system</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Solar system</label>
+      <input type="text" id="quote_solar_system"
+        placeholder="e.g. 6.67 kWp solar — 15 × 445 W panels">
+    </div>
+
+    <div>
+      <label>Inverter</label>
+      <input type="text" id="quote_inverter">
+    </div>
+
+    <div>
+      <label>Battery</label>
+      <input type="text" id="quote_battery"
+        placeholder="e.g. Start without battery — battery-ready">
+    </div>
+
+    <div>
+      <label>Smart energy additions</label>
+      <input type="text" id="quote_smart_energy"
+        placeholder="e.g. Solar-smart hot-water control">
+    </div>
+
+  </div>
+
+  <h3>Price build-up</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Materials cost — ex GST ($)</label>
+      <input type="number" step="0.01" id="quote_materials">
+    </div>
+
+    <div>
+      <label>Materials mark-up (%)</label>
+      <input type="number" step="0.1" id="quote_markup" value="30">
+    </div>
+
+    <div>
+      <label>Tom labour ($)</label>
+      <input type="number" step="0.01" id="quote_tom_labour">
+    </div>
+
+    <div>
+      <label>Helper labour ($)</label>
+      <input type="number" step="0.01" id="quote_helper_labour">
+    </div>
+
+    <div>
+      <label>Supervision / CoC ($)</label>
+      <input type="number" step="0.01" id="quote_supervision">
+    </div>
+
+    <div>
+      <label>Other costs ($)</label>
+      <input type="number" step="0.01" id="quote_other">
+    </div>
+
+  </div>
+
+  <h3>Customer price</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Price ex GST ($)</label>
+      <input type="number" step="0.01" id="quote_ex_gst" readonly>
+    </div>
+
+    <div>
+      <label>GST ($)</label>
+      <input type="number" step="0.01" id="quote_gst" readonly>
+    </div>
+
+    <div>
+      <label>Price incl GST ($)</label>
+      <input type="number" step="0.01" id="quote_total" readonly>
+    </div>
+
+  </div>
+
+  <button type="button" id="calculateQuote">
+    CALCULATE QUOTE
+  </button>
+
+</section>
         `;
         const roofOrientationField = document.getElementById("roof_orientation");
 
