@@ -471,7 +471,53 @@ Prepare for future energy needs
     Your home assessment confirms the right system design, installation requirements and final price.
   </p>
 </div>
+<div id="sendToSolectrics" class="card" style="margin-top:30px;border:1px solid #eadfd7">
 
+  <div class="eyebrow">send to solectrics</div>
+
+  <h2>Would you like us to review your Home Energy Check?</h2>
+
+  <p>
+    Send your completed Home Energy Check to Solectrics and we'll review
+    your results and use them as the starting point for your solar-smart
+    home assessment.
+  </p>
+
+  <p class="muted">
+    <strong>Privacy:</strong> By sending your Home Energy Check, you agree
+    that Solectrics may use the information you've provided to assess your
+    home energy needs, prepare recommendations or a quote, and contact you
+    about your enquiry. We won't sell your personal information to third
+    parties.
+  </p>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
+    <input
+      id="privacyConsent"
+      type="checkbox"
+      style="width:auto;margin-top:3px"
+    >
+    <span>
+      I'm happy for Solectrics to receive and use my Home Energy Check
+      information for this enquiry.
+    </span>
+  </label>
+
+  <button
+    class="btn primary"
+    id="sendCheckButton"
+    type="button"
+    onclick="sendHomeEnergyCheck()">
+    SEND MY HOME ENERGY CHECK TO SOLECTRICS →
+  </button>
+
+  <div
+    id="sendCheckStatus"
+    class="bill-status"
+    aria-live="polite">
+  </div>
+
+</div>
 <button class="btn primary" onclick="bookVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
   </div>
 </section>
@@ -719,9 +765,60 @@ async function submitHomeEnergyCheck(){
       'Solectrics enquiry capture failed:',
       error
     );
-
+throw error;
   }
 
+}
+  async function sendHomeEnergyCheck(){
+
+  const consent =
+    document.getElementById('privacyConsent');
+
+  const button =
+    document.getElementById('sendCheckButton');
+
+  const status =
+    document.getElementById('sendCheckStatus');
+
+  if (!consent || !consent.checked) {
+    status.className = 'bill-status bad';
+    status.textContent =
+      'Please tick the privacy consent box before sending.';
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'SENDING…';
+
+  status.className = 'bill-status';
+  status.textContent =
+    'Sending your Home Energy Check to Solectrics…';
+
+  try {
+
+    await submitHomeEnergyCheck();
+
+    status.className = 'bill-status good';
+    status.textContent =
+      'Sent ✓ Solectrics has received your Home Energy Check.';
+
+    button.textContent =
+      'HOME ENERGY CHECK SENT ✓';
+
+    consent.disabled = true;
+
+  } catch (error) {
+
+    console.error(error);
+
+    status.className = 'bill-status bad';
+    status.textContent =
+      'We couldn’t send your Home Energy Check. Please try again.';
+
+    button.disabled = false;
+    button.textContent =
+      'TRY SENDING AGAIN →';
+  }
 }
 function showResult(){
 saveBillEditsNoLoop();
@@ -767,7 +864,7 @@ document.getElementById('batteryScore').textContent=
   'READY FOR LATER';
 const insights=makeInsights();document.getElementById('finalBillAnalysis').innerHTML=insights.length?'<h2>What we can already see from your bills</h2>'+insights.slice(0,4).map(x=>`<div class="insight">${escapeHtml(x)}</div>`).join(''):'';
 document.getElementById('summary').textContent='Your answers suggest good potential for a solar system designed around the way your household actually uses energy.';
-submitHomeEnergyCheck();
+
 step=screens.length-1;
 render();
 }function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
