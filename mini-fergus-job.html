@@ -378,7 +378,7 @@ async function loadJob() {
 
   <form id="assessmentForm">
 
-    <h3>Solar design</h3>
+<h3>Solar design</h3>
 
 <div class="grid">
 
@@ -398,6 +398,22 @@ async function loadJob() {
   </div>
 
   <div>
+    <label>Roof / panel orientation</label>
+    <select id="roof_orientation">
+      <option value="">Select...</option>
+      <option value="North">North</option>
+      <option value="North-east">North-east</option>
+      <option value="North-west">North-west</option>
+      <option value="East">East</option>
+      <option value="West">West</option>
+      <option value="South-east">South-east</option>
+      <option value="South-west">South-west</option>
+      <option value="South">South</option>
+      <option value="Mixed">Mixed orientations</option>
+    </select>
+  </div>
+
+  <div>
     <label>Inverter</label>
     <input type="text" id="inverter">
   </div>
@@ -405,53 +421,130 @@ async function loadJob() {
   <div>
     <label>Estimated annual generation (kWh)</label>
     <input type="number" id="estimated_generation_kwh">
+    <div class="placeholder">
+      Preliminary estimate — editable if a detailed solar design gives a better figure.
+    </div>
   </div>
 
 </div>
 
-    <h3>Smart energy use</h3>
+
+<h3>Smart energy use</h3>
+
+<div class="placeholder">
+  Mini Fergus can suggest how this home could use more of its own solar based on the Home Energy Check.
+</div>
+
+<div class="grid">
+
+  <div>
     <label>Hot-water strategy</label>
-    <textarea id="hot_water_strategy"></textarea>
+    <textarea id="hot_water_strategy"
+      placeholder="Suggested hot-water timing or control"></textarea>
+  </div>
 
+  <div>
     <label>Smart controls / load shifting</label>
-    <textarea id="smart_controls"></textarea>
+    <textarea id="smart_controls"
+      placeholder="Suggested loads to shift into solar-rich hours"></textarea>
+  </div>
 
-    <h3>Battery</h3>
-    <div class="grid">
-      <div>
-        <label>Battery recommendation</label>
-        <select id="battery_option">
-          <option value="">Select...</option>
-          <option value="No battery">No battery</option>
-          <option value="Battery ready">Battery ready</option>
-          <option value="Battery recommended">Battery recommended</option>
-        </select>
-      </div>
+</div>
 
-      <div>
-        <label>Battery size (kWh)</label>
-        <input type="number" step="0.1" id="battery_kwh">
-      </div>
-    </div>
 
-    <h3>Tariff review</h3>
-    <textarea id="tariff_recommendation"
-      placeholder="Import pricing, export rate and retailer recommendation"></textarea>
+<h3>Battery</h3>
 
-    <h3>Site notes</h3>
-    <textarea id="site_notes"
-      placeholder="Roof, meter, switchboard, shading or anything to check on site"></textarea>
+<div class="grid">
 
-    <h3>Overall recommendation</h3>
-    <textarea id="recommendation"
-      placeholder="Recommended Solectrics solution"></textarea>
+  <div>
+    <label>Battery recommendation</label>
+    <select id="battery_option">
+      <option value="">Select...</option>
+      <option value="Start without battery">Start without battery</option>
+      <option value="Battery-ready">Battery-ready</option>
+      <option value="Battery likely worthwhile">Battery likely worthwhile</option>
+    </select>
+  </div>
 
-    <br>
-    <button type="button" id="saveAssessment">
-      SAVE ASSESSMENT
-    </button>
+  <div>
+    <label>Battery size (kWh)</label>
+    <input type="number" step="0.1" id="battery_kwh">
+  </div>
 
-    <span id="assessmentMessage"></span>
+</div>
+
+<label>Why?</label>
+<textarea id="battery_reason"
+  placeholder="Why this battery approach suits this home"></textarea>
+
+
+<h3>Tariff review</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Current retailer</label>
+    <input type="text" id="current_retailer">
+  </div>
+
+  <div>
+    <label>Import rate (c/kWh)</label>
+    <input type="number" step="0.01" id="import_rate">
+  </div>
+
+  <div>
+    <label>Export / solar buy-back rate (c/kWh)</label>
+    <input type="number" step="0.01" id="export_rate">
+  </div>
+
+  <div>
+    <label>Controlled hot water</label>
+    <select id="controlled_hot_water">
+      <option value="">Unknown / not checked</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+      <option value="Not applicable">Not applicable</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Recommended retailer / tariff</label>
+    <input type="text" id="recommended_tariff">
+  </div>
+
+</div>
+
+<label>Tariff notes</label>
+<textarea id="tariff_notes"
+  placeholder="Import pricing, solar buy-back, controlled-load considerations or tariff notes"></textarea>
+
+
+<h3>Site notes</h3>
+
+<textarea id="site_notes"
+  placeholder="Roof, meter, switchboard, shading or anything to check on site"></textarea>
+
+
+<h3>Overall recommendation</h3>
+
+<div class="placeholder">
+  Mini Fergus will assemble a concise recommendation from the design above. You can edit it before saving.
+</div>
+
+<textarea id="recommendation"
+  placeholder="Recommended Solectrics solution"></textarea>
+
+<br>
+
+<button type="button" id="generateAssessment">
+  GENERATE RECOMMENDATION
+</button>
+
+<button type="button" id="saveAssessment">
+  SAVE ASSESSMENT
+</button>
+
+<span id="assessmentMessage"></span>
 
   </form>
 </section>
