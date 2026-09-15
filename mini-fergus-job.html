@@ -211,7 +211,11 @@
       if (Array.isArray(value)) {
         return value.join(", ");
       }
-
+if (typeof value === "object" && value !== null) {
+  return Object.entries(value)
+    .map(([key, val]) => `${prettyLabel(key)}: ${prettyValue(val)}`)
+    .join(" • ");
+}
       if (value === true) return "Yes";
       if (value === false) return "No";
       if (value === null || value === undefined || value === "") return "Not provided";
