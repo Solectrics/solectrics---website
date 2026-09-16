@@ -736,13 +736,6 @@ async function submitHomeEnergyCheck(){
       JSON.stringify(answers)
     );
 
-    const response = await fetch(
-      'https://withered-sky-68b1.janeeswan1.workers.dev/',
-      {
-        method: 'POST',
-        body: formData
-      }
-    );
 
     const response = await fetch(
   '/api/enquiry',
