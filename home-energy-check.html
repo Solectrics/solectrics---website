@@ -401,53 +401,7 @@ Prepare for future energy needs
   </div>
   <div id="finalBillAnalysis"></div>
   <p id="summary"></p>
-<div id="sendToSolectrics" class="card" style="margin-top:30px;border:1px solid #eadfd7">
 
-  <div class="eyebrow">send to solectrics</div>
-
-  <h2>Would you like us to review your Home Energy Check?</h2>
-
-  <p>
-    Send your completed Home Energy Check to Solectrics and we'll review
-    your results and use them as the starting point for your solar-smart
-    home assessment.
-  </p>
-
-  <p class="muted">
-    <strong>Privacy:</strong> By sending your Home Energy Check, you agree
-    that Solectrics may use the information you've provided to assess your
-    home energy needs, prepare recommendations or a quote, and contact you
-    about your enquiry. We won't sell your personal information to third
-    parties.
-  </p>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
-    <input
-      id="privacyConsent"
-      type="checkbox"
-      style="width:auto;margin-top:3px"
-    >
-    <span>
-      I'm happy for Solectrics to receive and use my Home Energy Check
-      information for this enquiry.
-    </span>
-  </label>
-
-  <button
-    class="btn primary"
-    id="sendCheckButton"
-    type="button"
-    onclick="sendHomeEnergyCheck()">
-    SEND MY HOME ENERGY CHECK TO SOLECTRICS →
-  </button>
-
-  <div
-    id="sendCheckStatus"
-    class="bill-status"
-    aria-live="polite">
-  </div>
-
-</div>
   
 
     
@@ -1024,6 +978,15 @@ This is an indicative assessment — not a formal quote.
   .ss-control-grid{
     grid-template-columns:1fr;
   }
+
+  .ss-stages{
+    grid-template-columns:1fr;
+  }
+
+  .ss-stages > .ss-stage:first-of-type,
+  .ss-improvement-heading{
+    grid-column:1;
+  }
 }
 
 
@@ -1031,9 +994,20 @@ This is an indicative assessment — not a formal quote.
 
 .ss-stages{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+  grid-template-columns:repeat(3,1fr);
   gap:14px;
   margin:22px 0;
+}
+
+.ss-stages > .ss-stage:first-of-type{
+  grid-column:1 / -1;
+}
+
+.ss-improvement-heading{
+  grid-column:1 / -1;
+  margin:10px 0 0;
+  font-size:20px;
+  line-height:1.25;
 }
 
 .ss-stage{
@@ -4338,7 +4312,7 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage">
 
         <span class="ss-stage-label">
-          1 — YOUR HOME NOW
+           YOUR HOME NOW
         </span>
 
         <h4>
@@ -4362,12 +4336,15 @@ function renderFinalSmartSolarReport(){
         </div>
 
       </div>
-
+      
+<h3 class="ss-improvement-heading">
+  Three ways your home energy system could improve
+</h3>
 
       <div class="ss-stage">
 
         <span class="ss-stage-label">
-          2 — SOLAR
+          1 — SOLAR
         </span>
 
        <h4>
@@ -4394,7 +4371,7 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage smart">
 
         <span class="ss-stage-label">
-          3 — SOLAR + SMART TIMING
+          2 — SOLAR + SMART TIMING
         </span>
 
         <h4>
@@ -4428,7 +4405,7 @@ function renderFinalSmartSolarReport(){
       <div class="ss-stage battery">
 
         <span class="ss-stage-label">
-        4 — SOLAR + SMART TIMING + BATTERY STORAGE
+        3 — SOLAR + SMART TIMING + BATTERY STORAGE
         </span>
 
        <h4>
@@ -4535,17 +4512,66 @@ ${
           }
         ).join("")}
       </ul>
+<div id="sendToSolectrics" class="card" style="margin-top:30px;border:1px solid #eadfd7">
 
+  <div class="eyebrow">send to solectrics</div>
+
+  <h2>Would you like us to review your Home Energy Check?</h2>
+
+  <p>
+    Send your completed Home Energy Check to Solectrics and we'll review
+    your results and use them as the starting point for your solar-smart
+    home assessment.
+  </p>
+
+  <p class="muted">
+    <strong>Privacy:</strong> By sending your Home Energy Check, you agree
+    that Solectrics may use the information you've provided to assess your
+    home energy needs, prepare recommendations or a quote, and contact you
+    about your enquiry. We won't sell your personal information to third
+    parties.
+  </p>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
+    <input
+      id="privacyConsent"
+      type="checkbox"
+      style="width:auto;margin-top:3px"
+    >
+    <span>
+      I'm happy for Solectrics to receive and use my Home Energy Check
+      information for this enquiry.
+    </span>
+  </label>
+
+  <button
+    class="btn primary"
+    id="sendCheckButton"
+    type="button"
+    onclick="sendHomeEnergyCheck()">
+    SEND MY HOME ENERGY CHECK TO SOLECTRICS →
+  </button>
+
+  <div
+    id="sendCheckStatus"
+    class="bill-status"
+    aria-live="polite">
+  </div>
+
+</div>
       <div class="ss-controls-box">
-        <p>
-          The aim isn’t to organise your life around your solar panels.
-          Solectrics can use timers, scheduling and smart controls to move
-          suitable loads into solar-producing hours automatically.
-        </p>
+       
 
         <details class="ss-read-more">
           <summary>EXPLORE HOW SMARTER TIMING WORKS →</summary>
           <div>
+
+           <p>
+          The aim isn’t to organise your life around your solar panels.
+          Solectrics can use timers, scheduling and smart controls to move
+          suitable loads into solar-producing hours automatically.
+        </p>
+        
     <h3>
       Your estimated home-energy flow
     </h3>
