@@ -736,38 +736,41 @@ async function submitHomeEnergyCheck(){
       JSON.stringify(answers)
     );
 
-
     const response = await fetch(
-  '/api/enquiry',
-  {
-    method: 'POST',
-    body: formData
-  }
-);
+      '/api/enquiry',
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(
+        data.error || 'Could not save enquiry'
+      );
+    }
 
     console.log(
       'Solectrics enquiry saved:',
       data.enquiryRef
     );
 
-const data = await response.json();
+    answers.enquiryRef = data.enquiryRef;
 
-if (!response.ok || !data.ok) {
-  throw new Error(data.error || 'Could not save enquiry');
-}
+    return data;
 
-answers.enquiryRef = data.enquiryRef;
   } catch (error) {
 
     console.error(
       'Solectrics enquiry capture failed:',
       error
     );
-throw error;
-  }
 
+    throw error;
+  }
 }
-  async function sendHomeEnergyCheck(){
 
   const consent =
     document.getElementById('privacyConsent');
