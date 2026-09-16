@@ -237,7 +237,8 @@ async function loadJobs() {
         <div class="job-top">
           <div>
             <div class="job-name">${job.customer_name || "Unnamed customer"}</div>
-            <div class="address">${job.address || ""}</div>
+<div class="address">${job.address || ""}</div>
+<div class="address">Received: ${formatReceivedDate(job.created_at)}</div>
           </div>
 
           <div>
@@ -268,7 +269,22 @@ async function loadJobs() {
     `;
   }
 }
+function formatReceivedDate(dateString) {
+  if (!dateString) return "Date unavailable";
 
+  const date = new Date(dateString);
+
+  return date.toLocaleString("en-NZ", {
+    timeZone: "Pacific/Auckland",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+
+                                                
 function formatStatus(status) {
   if (!status) return "New enquiry";
 
