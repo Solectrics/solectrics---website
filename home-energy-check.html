@@ -744,13 +744,13 @@ async function submitHomeEnergyCheck(){
       }
     );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || 'Could not save enquiry'
-      );
-    }
+    const response = await fetch(
+  '/api/enquiry',
+  {
+    method: 'POST',
+    body: formData
+  }
+);
 
     console.log(
       'Solectrics enquiry saved:',
