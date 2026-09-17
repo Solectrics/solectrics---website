@@ -2214,8 +2214,21 @@ document.addEventListener("input", function(event) {
     if (assessmentCount && designCount) {
       designCount.value = assessmentCount.value || "";
     }
-  }
+    
+const designArraySize =
+  document.getElementById("design_array_kw");
 
+if (designArraySize && designWattage && designCount) {
+  const wattage = Number(designWattage.value) || 0;
+  const panelCount = Number(designCount.value) || 0;
+
+  if (wattage > 0 && panelCount > 0) {
+    designArraySize.value =
+      ((wattage * panelCount) / 1000).toFixed(3);
+  } else {
+    designArraySize.value = "";
+  }
+}
 
   /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
 
