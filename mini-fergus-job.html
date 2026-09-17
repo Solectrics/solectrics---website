@@ -552,6 +552,843 @@ window.currentAnswers = answers;
 
   </form>
 </section>
+<!-- SYSTEM DESIGN -->
+
+<section class="card" id="systemDesignSection">
+
+  <h2>SYSTEM DESIGN</h2>
+
+  <div class="placeholder">
+    Build the installation design from the Home Energy Check, site survey
+    and Solectrics assessment. This information can then be used for the
+    J.A. Russell pricing request, single-line diagram and customer quote.
+  </div>
+
+
+  <!-- SITE & SUPPLY -->
+
+  <h3>1. Site & electrical supply</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Electrical connection</label>
+      <select id="design_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Main supply / main switch rating (A)</label>
+      <input type="number"
+             id="design_main_supply"
+             placeholder="e.g. 63">
+    </div>
+
+    <div>
+      <label>ICP</label>
+      <input type="text"
+             id="design_icp">
+    </div>
+
+    <div>
+      <label>Electricity retailer</label>
+      <input type="text"
+             id="design_retailer">
+    </div>
+
+    <div>
+      <label>Distribution network</label>
+      <input type="text"
+             id="design_network"
+             placeholder="e.g. Vector">
+    </div>
+
+    <div>
+      <label>Existing switchboard</label>
+      <select id="design_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>Switchboard / supply notes</label>
+    <textarea id="design_supply_notes"
+              rows="3"
+              placeholder="Meter arrangement, main switch, available ways, switchboard condition, controlled load, cable route observations, etc."></textarea>
+  </div>
+
+
+  <!-- ROOF & ARRAY -->
+
+  <h3>2. Roof & array survey</h3>
+
+  <div class="placeholder">
+    Record each roof face that may be used for solar.
+    Add another roof where the proposed array spans more than one roof face.
+  </div>
+
+  <div id="designRoofs">
+
+    <div class="design-roof" data-roof="1">
+
+      <h4>Roof 1</h4>
+
+      <div class="grid">
+
+        <div>
+          <label>Roof length (m)</label>
+          <input type="number"
+                 step="0.01"
+                 class="roof_length">
+        </div>
+
+        <div>
+          <label>Roof width (m)</label>
+          <input type="number"
+                 step="0.01"
+                 class="roof_width">
+        </div>
+
+        <div>
+          <label>Pitch (degrees)</label>
+          <input type="number"
+                 step="0.1"
+                 class="roof_pitch">
+        </div>
+
+        <div>
+          <label>Orientation</label>
+          <select class="roof_orientation_design">
+            <option value="">Select...</option>
+            <option>North</option>
+            <option>North-east</option>
+            <option>East</option>
+            <option>South-east</option>
+            <option>South</option>
+            <option>South-west</option>
+            <option>West</option>
+            <option>North-west</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Roof material / profile</label>
+          <input type="text"
+                 class="roof_material"
+                 placeholder="e.g. Corrugated steel">
+        </div>
+
+        <div>
+          <label>Proposed panels on this roof</label>
+          <input type="number"
+                 class="roof_panel_count">
+        </div>
+
+        <div>
+          <label>Proposed array layout</label>
+          <input type="text"
+                 class="roof_array_layout"
+                 placeholder="e.g. 2 rows × 8 panels">
+        </div>
+
+      </div>
+
+      <div style="margin-top:16px;">
+        <label>Shading / obstructions</label>
+        <textarea class="roof_shading"
+                  rows="2"
+                  placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label>Roof notes</label>
+        <textarea class="roof_notes"
+                  rows="2"
+                  placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+      </div>
+
+    </div>
+
+  </div>
+
+  <button type="button" id="addDesignRoof" style="margin-top:16px;">
+    + ADD ANOTHER ROOF
+  </button>
+
+
+  <!-- SITE ENVIRONMENT -->
+
+  <h3>3. Site environment</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="design_salt_spray">
+      Salt spray
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_high_wind">
+      High wind area
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_trees">
+      Trees / vegetation
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_chimneys">
+      Chimneys
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_buildings">
+      Nearby buildings
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_aerials">
+      TV aerials
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_vents">
+      Vent pipes
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_satellite">
+      Satellite dish
+    </label>
+
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Environmental / site notes</label>
+    <textarea id="design_environment_notes"
+              rows="3"></textarea>
+  </div>
+
+
+  <!-- EQUIPMENT -->
+
+  <h3>4. Proposed system</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Panel manufacturer / model</label>
+      <input type="text" id="design_panel_model">
+    </div>
+
+    <div>
+      <label>Panel wattage (W)</label>
+      <input type="number" id="design_panel_wattage">
+    </div>
+
+    <div>
+      <label>Total panel quantity</label>
+      <input type="number" id="design_panel_count">
+    </div>
+
+    <div>
+      <label>Total array size (kWp)</label>
+      <input type="number"
+             step="0.01"
+             id="design_array_kw"
+             readonly>
+    </div>
+
+    <div>
+      <label>Inverter manufacturer / model</label>
+      <input type="text" id="design_inverter_model">
+    </div>
+
+    <div>
+      <label>Inverter rating (kW)</label>
+      <input type="number"
+             step="0.1"
+             id="design_inverter_kw">
+    </div>
+
+    <div>
+      <label>Battery manufacturer / model</label>
+      <input type="text"
+             id="design_battery_model"
+             placeholder="Leave blank if no battery">
+    </div>
+
+    <div>
+      <label>Battery capacity (kWh)</label>
+      <input type="number"
+             step="0.1"
+             id="design_battery_kwh">
+    </div>
+
+    <div>
+      <label>Backup arrangement</label>
+      <select id="design_backup">
+        <option value="">Select...</option>
+        <option value="none">No backup</option>
+        <option value="essential">Essential loads</option>
+        <option value="whole_home">Whole-home backup</option>
+        <option value="tbc">To be confirmed</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <!-- ELECTRICAL DESIGN -->
+
+  <h3>5. Electrical design</h3>
+
+  <div class="placeholder">
+    Design information — complete and review as part of the electrical
+    design process before the installation is finalised.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Number of PV strings</label>
+      <input type="number" id="design_string_count">
+    </div>
+
+    <div>
+      <label>String / MPPT configuration</label>
+      <input type="text"
+             id="design_mppt"
+             placeholder="e.g. String 1 → MPPT 1">
+    </div>
+
+    <div>
+      <label>DC cable</label>
+      <input type="text"
+             id="design_dc_cable"
+             placeholder="Size / type">
+    </div>
+
+    <div>
+      <label>AC cable</label>
+      <input type="text"
+             id="design_ac_cable"
+             placeholder="Size / type">
+    </div>
+
+    <div>
+      <label>AC protection</label>
+      <input type="text" id="design_ac_protection">
+    </div>
+
+    <div>
+      <label>DC protection / isolation</label>
+      <input type="text" id="design_dc_protection">
+    </div>
+
+    <div>
+      <label>Export control / CT arrangement</label>
+      <input type="text" id="design_export_control">
+    </div>
+
+    <div>
+      <label>Earthing arrangement</label>
+      <input type="text" id="design_earthing">
+    </div>
+
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Electrical design notes</label>
+    <textarea id="design_electrical_notes"
+              rows="4"></textarea>
+  </div>
+
+
+  <!-- DESIGN DOCUMENTS -->
+
+  <h3>6. Design documents</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="design_roof_plan">
+      Roof plan / panel layout complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_sld">
+      Single-line diagram complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_calculations">
+      Design calculations complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_equipment_schedule">
+      Equipment schedule complete
+    </label>
+
+  </div>
+
+
+  <!-- DESIGN REVIEW -->
+
+  <h3>7. Design review</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Design reference</label>
+      <input type="text"
+             id="design_reference"
+             placeholder="e.g. SOL-2026-001-D01">
+    </div>
+
+    <div>
+      <label>Revision</label>
+      <input type="text"
+             id="design_revision"
+             value="1">
+    </div>
+
+    <div>
+      <label>Designer / reviewer</label>
+      <input type="text"
+             id="design_designer">
+    </div>
+
+    <div>
+      <label>Design date</label>
+      <input type="date"
+             id="design_date">
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>Standards / design basis</label>
+    <textarea id="design_standards"
+              rows="3"
+              placeholder="Record the standards and design basis relied upon for this installation."></textarea>
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>
+      <input type="checkbox" id="design_reviewed">
+      Design reviewed and ready for final approval
+    </label>
+  </div>
+
+
+  <div id="designReadiness"
+       style="
+         margin-top:24px;
+         padding:18px;
+         border-radius:12px;
+         background:#f5f5f5;
+         font-weight:700;
+       ">
+    SYSTEM DESIGN INCOMPLETE
+  </div>
+
+
+  <!-- OUTPUTS -->
+
+  <h3>8. Design outputs</h3>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+
+    <button type="button" id="generateJARRequest">
+      GENERATE J.A. RUSSELL PRICING REQUEST
+    </button>
+
+    <button type="button" id="generateSLD">
+      GENERATE SINGLE-LINE DIAGRAM
+    </button>
+
+    <button type="button" id="generateDesignPack">
+      GENERATE DESIGN PACK
+    </button>
+
+  </div>
+
+  <br>
+
+  <button type="button" id="saveSystemDesign">
+    SAVE SYSTEM DESIGN
+  </button>
+
+  <span id="systemDesignMessage"></span>
+
+</section>
+
+<!-- SUPPLIER PRICING -->
+
+<section class="card" id="supplierPricingSection">
+
+  <h2>SUPPLIER PRICING</h2>
+
+  <div class="placeholder">
+    Request and record supplier pricing for the approved Solectrics system
+    design. More than one supplier or pricing option can be compared before
+    selecting the materials package used in the customer quote.
+  </div>
+
+
+  <!-- PRICING REQUEST -->
+
+  <h3>1. Pricing request</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Supplier</label>
+      <select id="supplier_name">
+        <option value="">Select...</option>
+        <option value="ja_russell">J.A. Russell</option>
+        <option value="ideal">Ideal Electrical</option>
+        <option value="corys">Corys Electrical</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Other supplier</label>
+      <input type="text"
+             id="supplier_other"
+             placeholder="Supplier name">
+    </div>
+
+    <div>
+      <label>Supplier contact</label>
+      <input type="text"
+             id="supplier_contact"
+             placeholder="e.g. Fletcher">
+    </div>
+
+    <div>
+      <label>Date requested</label>
+      <input type="date"
+             id="supplier_request_date">
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
+
+    <button type="button" id="generateSupplierRequest">
+      GENERATE SUPPLIER PRICING REQUEST
+    </button>
+
+  </div>
+
+
+  <!-- RETURNED PRICING -->
+
+  <h3>2. Supplier response</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Supplier quote / reference</label>
+      <input type="text"
+             id="supplier_quote_reference">
+    </div>
+
+    <div>
+      <label>Option name</label>
+      <input type="text"
+             id="supplier_option_name"
+             placeholder="e.g. Option 1">
+    </div>
+
+    <div>
+      <label>Date received</label>
+      <input type="date"
+             id="supplier_received_date">
+    </div>
+
+    <div>
+      <label>Valid until</label>
+      <input type="date"
+             id="supplier_valid_until">
+    </div>
+
+  </div>
+
+
+  <!-- SYSTEM PRICED -->
+
+  <h3>3. System priced</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Solar system</label>
+      <input type="text"
+             id="supplier_solar_system"
+             placeholder="e.g. 8.55 kWp — 18 × 475 W">
+    </div>
+
+    <div>
+      <label>Panel make / model</label>
+      <input type="text"
+             id="supplier_panel_model">
+    </div>
+
+    <div>
+      <label>Inverter / controller</label>
+      <input type="text"
+             id="supplier_inverter">
+    </div>
+
+    <div>
+      <label>Battery</label>
+      <input type="text"
+             id="supplier_battery"
+             placeholder="Leave blank if none">
+    </div>
+
+    <div>
+      <label>Gateway / backup equipment</label>
+      <input type="text"
+             id="supplier_gateway">
+    </div>
+
+  </div>
+
+
+  <!-- SUPPLIER COST BREAKDOWN -->
+
+  <h3>4. Supplier cost breakdown</h3>
+
+  <div class="placeholder">
+    Record the supplier's ex-GST costs. This lets Solectrics distinguish
+    supplied equipment from materials that still need to be allowed for.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Panels ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_panels">
+    </div>
+
+    <div>
+      <label>Inverter / controller ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_inverter">
+    </div>
+
+    <div>
+      <label>Battery ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_battery">
+    </div>
+
+    <div>
+      <label>Gateway / backup ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_gateway">
+    </div>
+
+    <div>
+      <label>Mounting hardware ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_mounting">
+    </div>
+
+    <div>
+      <label>Solar miscellaneous ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_misc">
+    </div>
+
+    <div>
+      <label>Freight ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_freight">
+    </div>
+
+    <div>
+      <label>Other supplier cost ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_other">
+    </div>
+
+  </div>
+
+
+  <!-- SUPPLIER TOTAL -->
+
+  <div style="margin-top:20px;">
+
+    <label>Supplier subtotal ($ ex GST)</label>
+
+    <input type="number"
+           step="0.01"
+           id="supplier_subtotal"
+           readonly>
+
+  </div>
+
+
+  <!-- EXCLUSIONS -->
+
+  <h3>5. What's not included?</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_cable">
+      Cable not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_conduit">
+      Conduit not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_switchgear">
+      AC switchgear not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_mounting_confirm">
+      Mounting / quantities require site confirmation
+    </label>
+
+  </div>
+
+  <div style="margin-top:16px;">
+
+    <label>Other exclusions / supplier notes</label>
+
+    <textarea id="supplier_notes"
+              rows="4"
+              placeholder="Record exclusions, assumptions, substitutions, roof/fixing notes or supplier comments."></textarea>
+
+  </div>
+
+
+  <!-- SOLECTRICS ADDITIONAL MATERIALS -->
+
+  <h3>6. Solectrics additional materials</h3>
+
+  <div class="placeholder">
+    Add materials required for the installation that are not included
+    in the supplier quotation.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Cable allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_cable_cost">
+    </div>
+
+    <div>
+      <label>Conduit allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_conduit_cost">
+    </div>
+
+    <div>
+      <label>AC switchgear allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_switchgear_cost">
+    </div>
+
+    <div>
+      <label>Other materials ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_other_materials">
+    </div>
+
+  </div>
+
+
+  <!-- TRUE MATERIALS COST -->
+
+  <div style="
+       margin-top:24px;
+       padding:18px;
+       border-radius:12px;
+       background:#fffaf7;
+       border-left:4px solid #e97838;
+       ">
+
+    <strong>TRUE MATERIALS COST — EX GST</strong>
+
+    <div style="font-size:26px;font-weight:800;margin-top:8px;">
+      $<span id="trueMaterialsCost">0.00</span>
+    </div>
+
+    <div style="margin-top:8px;font-size:14px;">
+      Supplier subtotal plus Solectrics additional materials.
+    </div>
+
+  </div>
+
+
+  <!-- OPTION STATUS -->
+
+  <h3>7. Pricing option</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Pricing status</label>
+      <select id="supplier_pricing_status">
+        <option value="">Select...</option>
+        <option value="requested">Requested</option>
+        <option value="received">Received</option>
+        <option value="reviewing">Under review</option>
+        <option value="selected">Selected for customer quote</option>
+        <option value="not_selected">Not selected</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <br>
+
+  <button type="button" id="saveSupplierPricing">
+    SAVE SUPPLIER PRICING
+  </button>
+
+  <span id="supplierPricingMessage"></span>
+
+</section>
 
           <section class="card">
   <h2>Quote</h2>
@@ -649,6 +1486,146 @@ window.currentAnswers = answers;
   <button type="button" id="calculateQuote">
     CALCULATE QUOTE
   </button>
+<!-- QUOTE & ACCEPTANCE -->
+
+<hr style="margin:32px 0;border:0;border-top:1px solid #ddd;">
+
+<h3>Quote & acceptance</h3>
+
+<div class="placeholder">
+  Track the quote from preparation through customer acceptance,
+  finance and deposit payment.
+</div>
+
+<div class="grid">
+
+  <div>
+    <label>Quote number</label>
+    <input type="text" id="quote_number"
+      placeholder="e.g. SOL-2026-001">
+  </div>
+
+  <div>
+    <label>Quote status</label>
+    <select id="quote_status">
+      <option value="">Select...</option>
+      <option value="draft">Draft</option>
+      <option value="sent">Sent</option>
+      <option value="accepted">Accepted</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Quote sent</label>
+    <input type="date" id="quote_sent_date">
+  </div>
+
+  <div>
+    <label>Quote expiry</label>
+    <input type="date" id="quote_expiry_date">
+  </div>
+
+</div>
+
+
+<h3>Customer acceptance</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Accepted date</label>
+    <input type="date" id="quote_accepted_date">
+  </div>
+
+  <div>
+    <label>Deposit required (%)</label>
+    <input type="number"
+      id="quote_deposit_percent"
+      min="0"
+      max="100"
+      step="1"
+      value="50">
+  </div>
+
+  <div>
+    <label>Deposit amount ($)</label>
+    <input type="number"
+      id="quote_deposit_amount"
+      step="0.01"
+      readonly>
+  </div>
+
+  <div>
+    <label>Deposit status</label>
+    <select id="quote_deposit_status">
+      <option value="">Select...</option>
+      <option value="not_required">Not required</option>
+      <option value="awaiting">Awaiting deposit</option>
+      <option value="received">Deposit received</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Deposit received date</label>
+    <input type="date" id="quote_deposit_received_date">
+  </div>
+
+</div>
+
+
+<h3>Payment & finance</h3>
+
+<div class="grid">
+
+  <div>
+    <label>How is the customer paying?</label>
+    <select id="quote_finance_type">
+      <option value="">Select...</option>
+      <option value="self_funded">Self-funded</option>
+      <option value="westpac">Westpac Green Loan</option>
+      <option value="asb">ASB</option>
+      <option value="anz">ANZ</option>
+      <option value="bnz">BNZ</option>
+      <option value="kiwibank">Kiwibank</option>
+      <option value="other_finance">Other finance</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Finance status</label>
+    <select id="quote_finance_status">
+      <option value="">Select...</option>
+      <option value="not_required">Not required</option>
+      <option value="customer_investigating">Customer investigating</option>
+      <option value="application_submitted">Application submitted</option>
+      <option value="approved">Approved</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+</div>
+
+
+<div style="margin-top:20px;">
+  <label>Quote / acceptance notes</label>
+  <textarea
+    id="quote_acceptance_notes"
+    rows="4"
+    placeholder="Variations, customer requests, finance notes or anything that needs following up."></textarea>
+</div>
+
+
+<div id="preinstallReadiness"
+     style="
+       margin-top:24px;
+       padding:18px;
+       border-radius:12px;
+       background:#f5f5f5;
+       font-weight:700;
+     ">
+  NOT READY FOR PRE-INSTALL
+</div>
 
 </section>
         `;
@@ -1206,14 +2183,125 @@ function updateDesignSuggestions() {
 
 
 document.addEventListener("input", function(event) {
+
+  if (!event.target) return;
+
+
+  /* ASSESSMENT & DESIGN */
+
   if (
-    event.target &&
-    (
-      event.target.id === "panel_wattage" ||
-      event.target.id === "panel_count"
-    )
+    event.target.id === "panel_wattage" ||
+    event.target.id === "panel_count"
   ) {
     updateDesignSuggestions();
+
+    const assessmentWattage =
+      document.getElementById("panel_wattage");
+
+    const assessmentCount =
+      document.getElementById("panel_count");
+
+    const designWattage =
+      document.getElementById("design_panel_wattage");
+
+    const designCount =
+      document.getElementById("design_panel_count");
+
+    if (assessmentWattage && designWattage) {
+      designWattage.value = assessmentWattage.value || "";
+    }
+
+    if (assessmentCount && designCount) {
+      designCount.value = assessmentCount.value || "";
+    }
+  }
+
+
+  /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
+
+  if (
+    event.target.id === "design_panel_wattage" ||
+    event.target.id === "design_panel_count" ||
+    event.target.classList.contains("roof_panel_count")
+  ) {
+
+    const wattage =
+      Number(document.getElementById("design_panel_wattage")?.value) || 0;
+
+    const panelCount =
+      Number(document.getElementById("design_panel_count")?.value) || 0;
+
+    const arraySize =
+      document.getElementById("design_array_kw");
+
+    if (arraySize) {
+
+      if (wattage > 0 && panelCount > 0) {
+        arraySize.value =
+          ((wattage * panelCount) / 1000).toFixed(3);
+      } else {
+        arraySize.value = "";
+      }
+
+    }
+
+  }
+  /* SUPPLIER PRICING — CALCULATE MATERIAL COSTS */
+
+  const supplierCostFields = [
+    "supplier_cost_panels",
+    "supplier_cost_inverter",
+    "supplier_cost_battery",
+    "supplier_cost_gateway",
+    "supplier_cost_mounting",
+    "supplier_cost_misc",
+    "supplier_cost_freight",
+    "supplier_cost_other"
+  ];
+
+  const solectricsMaterialFields = [
+    "solectrics_cable_cost",
+    "solectrics_conduit_cost",
+    "solectrics_switchgear_cost",
+    "solectrics_other_materials"
+  ];
+
+  if (
+    supplierCostFields.includes(event.target.id) ||
+    solectricsMaterialFields.includes(event.target.id)
+  ) {
+
+    const supplierSubtotal = supplierCostFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const supplierSubtotalField =
+      document.getElementById("supplier_subtotal");
+
+    if (supplierSubtotalField) {
+      supplierSubtotalField.value = supplierSubtotal.toFixed(2);
+    }
+
+
+    const additionalMaterials = solectricsMaterialFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const trueMaterialsCost =
+      supplierSubtotal + additionalMaterials;
+
+    const trueMaterialsDisplay =
+      document.getElementById("trueMaterialsCost");
+
+    if (trueMaterialsDisplay) {
+      trueMaterialsDisplay.textContent =
+        trueMaterialsCost.toFixed(2);
+    }
+
   }
 });
 
@@ -1247,7 +2335,135 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveAssessment") {
     saveAssessment();
+  }if (event.target.id === "saveAssessment") {
+  saveAssessment();
+}
+
+
+/* SYSTEM DESIGN — ADD ANOTHER ROOF */
+
+if (event.target.id === "addDesignRoof") {
+
+  const roofsContainer = document.getElementById("designRoofs");
+
+  if (!roofsContainer) return;
+
+  const existingRoofs =
+    roofsContainer.querySelectorAll(".design-roof");
+
+  const roofNumber = existingRoofs.length + 1;
+
+  const roof = document.createElement("div");
+
+  roof.className = "design-roof";
+  roof.dataset.roof = roofNumber;
+
+  roof.style.marginTop = "24px";
+  roof.style.paddingTop = "20px";
+  roof.style.borderTop = "1px solid #ddd";
+
+  roof.innerHTML = `
+
+    <h4>Roof ${roofNumber}</h4>
+
+    <div class="grid">
+
+      <div>
+        <label>Roof length (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_length">
+      </div>
+
+      <div>
+        <label>Roof width (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_width">
+      </div>
+
+      <div>
+        <label>Pitch (degrees)</label>
+        <input type="number"
+               step="0.1"
+               class="roof_pitch">
+      </div>
+
+      <div>
+        <label>Orientation</label>
+        <select class="roof_orientation_design">
+          <option value="">Select...</option>
+          <option>North</option>
+          <option>North-east</option>
+          <option>East</option>
+          <option>South-east</option>
+          <option>South</option>
+          <option>South-west</option>
+          <option>West</option>
+          <option>North-west</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Roof material / profile</label>
+        <input type="text"
+               class="roof_material"
+               placeholder="e.g. Corrugated steel">
+      </div>
+
+      <div>
+        <label>Proposed panels on this roof</label>
+        <input type="number"
+               class="roof_panel_count">
+      </div>
+
+      <div>
+        <label>Proposed array layout</label>
+        <input type="text"
+               class="roof_array_layout"
+               placeholder="e.g. 2 rows × 8 panels">
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Shading / obstructions</label>
+      <textarea class="roof_shading"
+                rows="2"
+                placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Roof notes</label>
+      <textarea class="roof_notes"
+                rows="2"
+                placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+    </div>
+
+    <button type="button"
+            class="removeDesignRoof"
+            style="margin-top:12px;">
+      REMOVE THIS ROOF
+    </button>
+
+  `;
+
+  roofsContainer.appendChild(roof);
+}
+
+
+/* SYSTEM DESIGN — REMOVE EXTRA ROOF */
+
+if (event.target.classList.contains("removeDesignRoof")) {
+
+  const roof = event.target.closest(".design-roof");
+
+  if (roof) {
+    roof.remove();
   }
+}
+
+});
 });
 
 
