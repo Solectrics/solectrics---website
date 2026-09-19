@@ -2186,6 +2186,147 @@ async function saveAssessment() {
 }
 
 
+const systemDesignFieldIds = [
+  "design_connection_type", "design_main_supply", "design_icp",
+  "design_retailer", "design_network", "design_switchboard",
+  "design_supply_notes", "design_environment_notes", "design_panel_model",
+  "design_panel_wattage", "design_panel_count", "design_array_kw",
+  "design_inverter_model", "design_inverter_kw", "design_battery_model",
+  "design_battery_kwh", "design_backup", "design_string_count",
+  "design_mppt", "design_dc_cable", "design_ac_cable",
+  "design_ac_protection", "design_dc_protection", "design_export_control",
+  "design_earthing", "design_electrical_notes", "design_reference",
+  "design_revision", "design_designer", "design_date", "design_standards"
+];
+
+const systemDesignCheckboxIds = [
+  "design_salt_spray", "design_high_wind", "design_trees",
+  "design_chimneys", "design_buildings", "design_aerials",
+  "design_vents", "design_satellite", "design_roof_plan", "design_sld",
+  "design_calculations", "design_equipment_schedule", "design_reviewed"
+];
+
+const roofFieldClasses = [
+  "roof_length", "roof_width", "roof_pitch", "roof_orientation_design",
+  "roof_material", "roof_panel_count", "roof_array_layout", "roof_shading",
+  "roof_notes"
+];
+
+function collectSystemDesign() {
+  const design = {};
+
+  systemDesignFieldIds.forEach(id => {
+    design[id] = document.getElementById(id)?.value ?? "";
+  });
+
+  systemDesignCheckboxIds.forEach(id => {
+    design[id] = Boolean(document.getElementById(id)?.checked);
+  });
+
+  design.roofs = Array.from(
+    document.querySelectorAll("#designRoofs .design-roof")
+  ).map(roof => {
+    const roofData = {};
+    roofFieldClasses.forEach(className => {
+      roofData[className] = roof.querySelector(`.${className}`)?.value ?? "";
+    });
+    return roofData;
+  });
+
+  return design;
+}
+
+function populateRoof(roof, roofData = {}) {
+  roofFieldClasses.forEach(className => {
+    const field = roof.querySelector(`.${className}`);
+    if (field) field.value = roofData[className] ?? "";
+  });
+}
+
+function updateSystemDesignReadiness() {
+  const readiness = document.getElementById("designReadiness");
+  const reviewed = document.getElementById("design_reviewed")?.checked;
+  if (!readiness) return;
+
+  readiness.textContent = reviewed
+    ? "SYSTEM DESIGN REVIEWED — READY FOR FINAL APPROVAL"
+    : "SYSTEM DESIGN INCOMPLETE";
+  readiness.style.background = reviewed ? "#eef7ed" : "#f5f5f5";
+}
+
+async function loadSystemDesign() {
+  try {
+    const response = await fetch(`/api/system-design?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    if (!data.system_design) return;
+    const design = data.system_design;
+
+    systemDesignFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = design[id] ?? "";
+    });
+
+    systemDesignCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(design[id]);
+    });
+
+    const roofsContainer = document.getElementById("designRoofs");
+    const roofs = Array.isArray(design.roofs) && design.roofs.length
+      ? design.roofs
+      : [{}];
+
+    while (roofsContainer.children.length > 1) {
+      roofsContainer.lastElementChild.remove();
+    }
+
+    populateRoof(roofsContainer.querySelector(".design-roof"), roofs[0]);
+    for (const roofData of roofs.slice(1)) {
+      document.getElementById("addDesignRoof").click();
+      populateRoof(roofsContainer.lastElementChild, roofData);
+    }
+
+    updateSystemDesignReadiness();
+  } catch (error) {
+    console.error("Could not load system design:", error);
+    const message = document.getElementById("systemDesignMessage");
+    if (message) message.textContent = " Could not load saved system design";
+  }
+}
+
+async function saveSystemDesign() {
+  const message = document.getElementById("systemDesignMessage");
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/system-design", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: jobId,
+        system_design: collectSystemDesign()
+      })
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Save failed");
+    }
+
+    message.textContent = " ✓ System design saved";
+    updateSystemDesignReadiness();
+  } catch (error) {
+    console.error("Could not save system design:", error);
+    message.textContent = " Could not save system design";
+  }
+}
+
+
 function updateDesignSuggestions() {
   calculateSolarSize();
   calculateEstimatedGeneration();
@@ -2339,6 +2480,10 @@ document.addEventListener("change", function(event) {
   ) {
     calculateEstimatedGeneration();
   }
+
+  if (event.target?.id === "design_reviewed") {
+    updateSystemDesignReadiness();
+  }
 });
 
 
@@ -2361,6 +2506,10 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveAssessment") {
     saveAssessment();
+  }
+
+  if (event.target.id === "saveSystemDesign") {
+    saveSystemDesign();
   }
 
 
@@ -2491,7 +2640,7 @@ if (event.target.classList.contains("removeDesignRoof")) {
 
 
 loadJob().then(() => {
-  loadAssessment().then(() => {
+  Promise.all([loadAssessment(), loadSystemDesign()]).then(() => {
 
     const roofOrientationField =
       document.getElementById("roof_orientation");
