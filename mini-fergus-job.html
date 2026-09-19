@@ -1692,8 +1692,12 @@ if (
       a.import_rate ?? "";
     document.getElementById("export_rate").value =
       a.export_rate ?? "";
-    document.getElementById("tariff_recommendation").value =
-      a.tariff_recommendation ?? "";
+    document.getElementById("controlled_hot_water").value =
+      a.controlled_hot_water ?? "";
+    document.getElementById("recommended_tariff").value =
+      a.recommended_tariff ?? "";
+    document.getElementById("tariff_notes").value =
+      a.tariff_notes ?? "";
 
     document.getElementById("site_notes").value =
       a.site_notes ?? "";
@@ -1874,11 +1878,11 @@ function suggestBattery() {
     batteryReason.value =
       "This home has good opportunities to use solar directly during the day, particularly through hot water, appliances and heating. Design the system battery-ready and review actual solar export and evening grid use after installation before deciding whether storage provides worthwhile additional value.";
   } else if (!billsKnown) {
-    batteryOption.value = "Battery ready";
+    batteryOption.value = "Battery-ready";
     batteryReason.value =
       "There is not yet enough consumption information to justify a battery on savings alone. Design the system battery-ready and review electricity bills or actual solar export and evening grid use before selecting storage.";
   } else {
-    batteryOption.value = "Battery ready";
+    batteryOption.value = "Battery-ready";
     batteryReason.value =
       "This home may have useful solar surplus available for evening use. Design the system battery-ready, then confirm the value and appropriate battery size from consumption patterns and expected export.";
   }
@@ -2142,8 +2146,14 @@ async function saveAssessment() {
     export_rate:
       document.getElementById("export_rate").value,
 
-    tariff_recommendation:
-      document.getElementById("tariff_recommendation").value,
+    controlled_hot_water:
+      document.getElementById("controlled_hot_water").value,
+
+    recommended_tariff:
+      document.getElementById("recommended_tariff").value,
+
+    tariff_notes:
+      document.getElementById("tariff_notes").value,
 
     site_notes:
       document.getElementById("site_notes").value,
@@ -2351,9 +2361,7 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveAssessment") {
     saveAssessment();
-  }if (event.target.id === "saveAssessment") {
-  saveAssessment();
-}
+  }
 
 
 /* SYSTEM DESIGN — ADD ANOTHER ROOF */
