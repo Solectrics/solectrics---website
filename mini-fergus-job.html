@@ -138,6 +138,24 @@
       min-height: 80px;
     }
 
+    .job-files input:not([type="file"]),
+    .job-files select,
+    .job-files textarea,
+    .job-files input[type="file"] {
+      width: 100%;
+      min-height: 40px;
+    }
+
+    .job-file-row {
+      border-top: 1px solid #e6e1d8;
+      padding: 14px 0;
+    }
+
+    .job-file-row a {
+      color: #e76625;
+      font-weight: 700;
+    }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -647,6 +665,49 @@ window.currentAnswers = answers;
   <br>
   <button type="button" id="saveSiteVisit">SAVE SITE VISIT</button>
   <span id="siteVisitMessage"></span>
+</section>
+
+<!-- JOB PHOTOS & DOCUMENTS -->
+
+<section class="card job-files" id="jobFilesSection">
+  <h2>Job Photos & Documents</h2>
+  <div class="placeholder">
+    Add site photos, switchboard and meter photos, drawings, supplier documents
+    and certificates. Each file stays attached to this Mini Fergus job.
+  </div>
+
+  <div class="grid" style="margin-top:20px;">
+    <div>
+      <label>File category</label>
+      <select id="jobFileCategory">
+        <option value="site_photo">General site photo</option>
+        <option value="switchboard">Switchboard</option>
+        <option value="meter">Meter / ICP</option>
+        <option value="roof">Roof</option>
+        <option value="equipment">Equipment location</option>
+        <option value="drawing">Drawing / design</option>
+        <option value="supplier">Supplier document</option>
+        <option value="certificate">Certificate / approval</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label>Choose photo or PDF</label>
+      <input type="file" id="jobFileInput" accept="image/*,.pdf" capture="environment">
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Caption / what this shows</label>
+    <input type="text" id="jobFileCaption" maxlength="500">
+  </div>
+
+  <br>
+  <button type="button" id="uploadJobFile">UPLOAD FILE</button>
+  <span id="jobFileMessage"></span>
+
+  <h3>Files on this job</h3>
+  <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
 </section>
 
 <!-- SYSTEM DESIGN -->
@@ -2440,6 +2501,98 @@ async function saveSiteVisit() {
 }
 
 
+const jobFileCategoryLabels = {
+  site_photo: "General site photo",
+  switchboard: "Switchboard",
+  meter: "Meter / ICP",
+  roof: "Roof",
+  equipment: "Equipment location",
+  drawing: "Drawing / design",
+  supplier: "Supplier document",
+  certificate: "Certificate / approval",
+  other: "Other"
+};
+
+function formatFileSize(bytes) {
+  const size = Number(bytes) || 0;
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function loadJobFiles() {
+  const list = document.getElementById("jobFilesList");
+  try {
+    const response = await fetch(`/api/job-files?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    if (!data.files.length) {
+      list.className = "placeholder";
+      list.textContent = "No files uploaded yet.";
+      return;
+    }
+
+    list.className = "";
+    list.innerHTML = data.files.map(file => `
+      <div class="job-file-row">
+        <a href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">
+          ${escapeHtml(file.original_name)}
+        </a>
+        <div class="placeholder">
+          ${escapeHtml(jobFileCategoryLabels[file.category] || "Other")}
+          · ${escapeHtml(formatFileSize(file.size_bytes))}
+          · ${escapeHtml(file.uploaded_at || "")}
+        </div>
+        ${file.caption ? `<div>${escapeHtml(file.caption)}</div>` : ""}
+      </div>
+    `).join("");
+  } catch (error) {
+    console.error("Could not load job files:", error);
+    list.className = "error";
+    list.textContent = "Could not load job files.";
+  }
+}
+
+async function uploadJobFile() {
+  const input = document.getElementById("jobFileInput");
+  const message = document.getElementById("jobFileMessage");
+  const file = input.files?.[0];
+
+  if (!file) {
+    message.textContent = " Choose a photo or PDF first";
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    message.textContent = " Please use a file under 12 MB";
+    return;
+  }
+
+  const form = new FormData();
+  form.append("job_id", jobId);
+  form.append("file", file);
+  form.append("category", document.getElementById("jobFileCategory").value);
+  form.append("caption", document.getElementById("jobFileCaption").value);
+  message.textContent = " Uploading...";
+
+  try {
+    const response = await fetch("/api/job-files", { method: "POST", body: form });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.detail || data.error || "Upload failed");
+    }
+
+    input.value = "";
+    document.getElementById("jobFileCaption").value = "";
+    message.textContent = " ✓ File uploaded";
+    await loadJobFiles();
+  } catch (error) {
+    console.error("Could not upload job file:", error);
+    message.textContent = ` Could not upload: ${error.message}`;
+  }
+}
+
+
 const systemDesignFieldIds = [
   "design_connection_type", "design_main_supply", "design_icp",
   "design_retailer", "design_network", "design_switchboard",
@@ -2768,6 +2921,10 @@ document.addEventListener("click", function(event) {
     saveSiteVisit();
   }
 
+  if (event.target.id === "uploadJobFile") {
+    uploadJobFile();
+  }
+
   if (event.target.id === "saveSystemDesign") {
     saveSystemDesign();
   }
@@ -2900,7 +3057,9 @@ if (event.target.classList.contains("removeDesignRoof")) {
 
 
 loadJob().then(() => {
-  Promise.all([loadAssessment(), loadSystemDesign(), loadSiteVisit()]).then(() => {
+  Promise.all([
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles()
+  ]).then(() => {
 
     const roofOrientationField =
       document.getElementById("roof_orientation");
