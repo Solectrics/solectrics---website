@@ -127,6 +127,17 @@
       line-height: 1.6;
     }
 
+    .site-visit input:not([type="checkbox"]),
+    .site-visit select,
+    .site-visit textarea {
+      width: 100%;
+      min-height: 40px;
+    }
+
+    .site-visit textarea {
+      min-height: 80px;
+    }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -552,6 +563,92 @@ window.currentAnswers = answers;
 
   </form>
 </section>
+
+<!-- TOM'S SITE VISIT -->
+
+<section class="card site-visit" id="siteVisitSection">
+  <h2>Tom's Site Visit</h2>
+  <div class="placeholder">
+    Record the onsite facts once. Saving this form also copies the matching
+    information into System Design. Phone dictation can be used in the notes fields.
+  </div>
+
+  <h3>1. Visit and electrical supply</h3>
+  <div class="grid">
+    <div><label>Visit date</label><input type="date" id="visit_date"></div>
+    <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
+    <div>
+      <label>Electrical connection</label>
+      <select id="visit_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
+    <div><label>ICP</label><input type="text" id="visit_icp"></div>
+    <div><label>Electricity retailer</label><input type="text" id="visit_retailer"></div>
+    <div><label>Distribution network</label><input type="text" id="visit_network"></div>
+    <div>
+      <label>Existing switchboard</label>
+      <select id="visit_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
+
+  <h3>2. Main roof face</h3>
+  <div class="grid">
+    <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
+    <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
+    <div><label>Pitch (degrees)</label><input type="number" step="0.1" id="visit_roof_pitch"></div>
+    <div>
+      <label>Orientation</label>
+      <select id="visit_roof_orientation">
+        <option value="">Select...</option><option>North</option><option>North-east</option>
+        <option>East</option><option>South-east</option><option>South</option>
+        <option>South-west</option><option>West</option><option>North-west</option>
+      </select>
+    </div>
+    <div><label>Roof material / profile</label><input type="text" id="visit_roof_material"></div>
+    <div><label>Panels likely to fit</label><input type="number" id="visit_roof_panel_count"></div>
+    <div><label>Possible array layout</label><input type="text" id="visit_roof_layout"></div>
+    <div><label>Roof access</label><input type="text" id="visit_roof_access"></div>
+  </div>
+  <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
+  <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
+
+  <h3>3. Site conditions</h3>
+  <div class="grid">
+    <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
+    <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
+    <label><input type="checkbox" id="visit_trees"> Trees / vegetation</label>
+    <label><input type="checkbox" id="visit_chimneys"> Chimneys</label>
+    <label><input type="checkbox" id="visit_buildings"> Nearby buildings</label>
+    <label><input type="checkbox" id="visit_aerials"> TV aerials</label>
+    <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
+    <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
+  </div>
+
+  <h3>4. Locations and dictated notes</h3>
+  <div class="grid">
+    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
+    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
+    <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
+  </div>
+  <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
+
+  <br>
+  <button type="button" id="saveSiteVisit">SAVE SITE VISIT</button>
+  <span id="siteVisitMessage"></span>
+</section>
+
 <!-- SYSTEM DESIGN -->
 
 <section class="card" id="systemDesignSection">
@@ -2186,6 +2283,163 @@ async function saveAssessment() {
 }
 
 
+const siteVisitFieldIds = [
+  "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
+  "visit_icp", "visit_retailer", "visit_network", "visit_switchboard",
+  "visit_supply_notes", "visit_roof_length", "visit_roof_width",
+  "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
+  "visit_roof_panel_count", "visit_roof_layout", "visit_roof_access",
+  "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
+  "visit_battery_location", "visit_cable_route", "visit_access_notes",
+  "visit_general_notes"
+];
+
+const siteVisitCheckboxIds = [
+  "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
+  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
+];
+
+function collectSiteVisit() {
+  const visit = {};
+  siteVisitFieldIds.forEach(id => {
+    visit[id] = document.getElementById(id)?.value ?? "";
+  });
+  siteVisitCheckboxIds.forEach(id => {
+    visit[id] = Boolean(document.getElementById(id)?.checked);
+  });
+  return visit;
+}
+
+function applySiteVisitToSystemDesign(visit) {
+  const fieldMap = {
+    visit_connection_type: "design_connection_type",
+    visit_main_supply: "design_main_supply",
+    visit_icp: "design_icp",
+    visit_retailer: "design_retailer",
+    visit_network: "design_network",
+    visit_switchboard: "design_switchboard",
+    visit_supply_notes: "design_supply_notes"
+  };
+
+  Object.entries(fieldMap).forEach(([sourceId, targetId]) => {
+    const target = document.getElementById(targetId);
+    if (target) target.value = visit[sourceId] ?? "";
+  });
+
+  const checkboxMap = {
+    visit_salt_spray: "design_salt_spray",
+    visit_high_wind: "design_high_wind",
+    visit_trees: "design_trees",
+    visit_chimneys: "design_chimneys",
+    visit_buildings: "design_buildings",
+    visit_aerials: "design_aerials",
+    visit_vents: "design_vents",
+    visit_satellite: "design_satellite"
+  };
+
+  Object.entries(checkboxMap).forEach(([sourceId, targetId]) => {
+    const target = document.getElementById(targetId);
+    if (target) target.checked = Boolean(visit[sourceId]);
+  });
+
+  const firstRoof = document.querySelector("#designRoofs .design-roof");
+  const roofMap = {
+    visit_roof_length: "roof_length",
+    visit_roof_width: "roof_width",
+    visit_roof_pitch: "roof_pitch",
+    visit_roof_orientation: "roof_orientation_design",
+    visit_roof_material: "roof_material",
+    visit_roof_panel_count: "roof_panel_count",
+    visit_roof_layout: "roof_array_layout",
+    visit_roof_shading: "roof_shading",
+    visit_roof_notes: "roof_notes"
+  };
+
+  Object.entries(roofMap).forEach(([sourceId, targetClass]) => {
+    const target = firstRoof?.querySelector(`.${targetClass}`);
+    if (target) target.value = visit[sourceId] ?? "";
+  });
+
+  const environmentNotes = [
+    visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
+    visit.visit_inverter_location && `Possible inverter location: ${visit.visit_inverter_location}`,
+    visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
+    visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
+    visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
+    visit.visit_general_notes
+  ].filter(Boolean).join("\n");
+
+  const environmentField = document.getElementById("design_environment_notes");
+  if (environmentField) environmentField.value = environmentNotes;
+
+  if (visit.visit_roof_panel_count) {
+    const panelCount = document.getElementById("design_panel_count");
+    if (panelCount) panelCount.value = visit.visit_roof_panel_count;
+  }
+
+  const wattage = Number(document.getElementById("design_panel_wattage")?.value) || 0;
+  const panelCount = Number(document.getElementById("design_panel_count")?.value) || 0;
+  const arraySize = document.getElementById("design_array_kw");
+  if (arraySize) {
+    arraySize.value = wattage > 0 && panelCount > 0
+      ? ((wattage * panelCount) / 1000).toFixed(3)
+      : "";
+  }
+}
+
+async function loadSiteVisit() {
+  try {
+    const response = await fetch(`/api/site-visit?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    if (!data.site_visit) {
+      const date = document.getElementById("visit_date");
+      if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
+      return;
+    }
+
+    siteVisitFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = data.site_visit[id] ?? "";
+    });
+    siteVisitCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(data.site_visit[id]);
+    });
+  } catch (error) {
+    console.error("Could not load site visit:", error);
+    const message = document.getElementById("siteVisitMessage");
+    if (message) message.textContent = " Could not load saved site visit";
+  }
+}
+
+async function saveSiteVisit() {
+  const message = document.getElementById("siteVisitMessage");
+  const siteVisit = collectSiteVisit();
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/site-visit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, site_visit: siteVisit })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
+
+    applySiteVisitToSystemDesign(siteVisit);
+    const designSaved = await saveSystemDesign();
+    message.textContent = designSaved
+      ? " ✓ Site visit saved and System Design updated"
+      : " Site visit saved, but System Design could not be updated";
+  } catch (error) {
+    console.error("Could not save site visit:", error);
+    message.textContent = " Could not save site visit";
+  }
+}
+
+
 const systemDesignFieldIds = [
   "design_connection_type", "design_main_supply", "design_icp",
   "design_retailer", "design_network", "design_switchboard",
@@ -2320,9 +2574,11 @@ async function saveSystemDesign() {
 
     message.textContent = " ✓ System design saved";
     updateSystemDesignReadiness();
+    return true;
   } catch (error) {
     console.error("Could not save system design:", error);
     message.textContent = " Could not save system design";
+    return false;
   }
 }
 
@@ -2508,6 +2764,10 @@ document.addEventListener("click", function(event) {
     saveAssessment();
   }
 
+  if (event.target.id === "saveSiteVisit") {
+    saveSiteVisit();
+  }
+
   if (event.target.id === "saveSystemDesign") {
     saveSystemDesign();
   }
@@ -2640,7 +2900,7 @@ if (event.target.classList.contains("removeDesignRoof")) {
 
 
 loadJob().then(() => {
-  Promise.all([loadAssessment(), loadSystemDesign()]).then(() => {
+  Promise.all([loadAssessment(), loadSystemDesign(), loadSiteVisit()]).then(() => {
 
     const roofOrientationField =
       document.getElementById("roof_orientation");
