@@ -1393,7 +1393,7 @@ window.currentAnswers = answers;
   <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
 
     <button type="button" id="generateSupplierRequest">
-      GENERATE SUPPLIER PRICING REQUEST
+      GENERATE FLETCHER SOLAR FORM
     </button>
 
   </div>
@@ -3260,6 +3260,12 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveWorkLog") {
     saveWorkLog();
+  }
+
+  if (event.target.id === "generateSupplierRequest") {
+    saveSystemDesign().then(saved => {
+      if (saved) window.location.href = `/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}`;
+    });
   }
 
   if (event.target.id === "saveSystemDesign") {

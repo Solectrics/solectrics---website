@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fletcher / J.A. Russell Solar Form | Solectrics</title>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    :root { --orange:#e97838; --ink:#18323a; --paper:#fff; --soft:#f4f1eb; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--soft); color:var(--ink); font-family:Arial,sans-serif; }
+    main { max-width:900px; margin:auto; padding:24px 16px 60px; }
+    a { color:var(--orange); }
+    .card { background:var(--paper); border-radius:14px; margin:16px 0; padding:22px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    label { display:block; font-size:13px; font-weight:700; margin-bottom:5px; }
+    input, select, textarea { border:1px solid #89969a; border-radius:5px; font:inherit; padding:10px; width:100%; }
+    textarea { min-height:120px; resize:vertical; }
+    .checks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .checks label { align-items:center; display:flex; gap:8px; margin:0; }
+    .checks input { width:auto; }
+    button { background:var(--orange); border:0; border-radius:6px; color:white; cursor:pointer; font-weight:700; padding:13px 18px; }
+    button:disabled { opacity:.55; }
+    .missing { background:#fff4dc; border-left:4px solid #d28a00; padding:12px; }
+    .ready { background:#edf8ef; border-left:4px solid #31814a; padding:12px; }
+    .hint { color:#65767b; font-size:13px; }
+    #status { font-weight:700; margin-left:8px; }
+    @media (max-width:650px) { .grid,.checks { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <a id="backLink" href="/mini-fergus.html">← Back to job</a>
+  <h1>Fletcher / J.A. Russell Solar Form</h1>
+  <p>Review the automatically filled details, correct anything needed, then download the completed official checklist.</p>
+
+  <div id="missingPanel" class="card">Loading saved job information…</div>
+
+  <section class="card">
+    <h2>Customer and site</h2>
+    <div class="grid">
+      <div><label>Installer account code (left blank)</label><input id="installerCode" value=""></div>
+      <div><label>Customer name</label><input id="customerName"></div>
+      <div><label>Site address</label><input id="siteAddress"></div>
+      <div><label>Suburb</label><input id="suburb"></div>
+      <div><label>City and postcode</label><input id="cityPostcode"></div>
+      <div>
+        <label>Electrical connection</label>
+        <select id="connectionType"><option value="">Select…</option><option value="single_phase">Single phase</option><option value="dual_phase">Dual phase</option><option value="three_phase">Three phase</option></select>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>System and roof</h2>
+    <div class="grid">
+      <div>
+        <label>Inverter type</label>
+        <select id="inverterType"><option value="">Select…</option><option value="grid_tied">Grid tied inverter</option><option value="hybrid_ready">Hybrid inverter (battery ready)</option><option value="hybrid_battery">Hybrid inverter with batteries</option><option value="off_grid">Off-grid</option><option value="unknown">Don't know</option></select>
+      </div>
+      <div>
+        <label>Roof type</label>
+        <select id="roofType"><option value="">Select…</option><option value="corrugated_steel">Corrugated steel</option><option value="concrete_tiles">Concrete tiles</option><option value="other">Other</option></select>
+      </div>
+      <div><label>Other roof type / profile</label><input id="roofOther"></div>
+      <div><label>Roof pitch</label><input id="roofPitch" placeholder="e.g. 20°"></div>
+      <div><label>Proposed array layout</label><input id="arrayLayout" placeholder="e.g. 10 panels main roof + 4 small roof"></div>
+      <div><label>Proposed system size (kW)</label><input id="systemSize"></div>
+    </div>
+    <div class="checks" style="margin-top:16px;">
+      <label><input type="checkbox" id="powerBillAttached"> Power bill attached</label>
+      <label><input type="checkbox" id="plansAttached"> Plans attached</label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Environment and shading</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="saltSpray"> Salt spray</label>
+      <label><input type="checkbox" id="snowIce"> Snow and ice</label>
+      <label><input type="checkbox" id="highWind"> High wind area</label>
+      <label><input type="checkbox" id="trees"> Trees and vegetation</label>
+      <label><input type="checkbox" id="chimneys"> Chimneys</label>
+      <label><input type="checkbox" id="buildings"> Buildings</label>
+      <label><input type="checkbox" id="aerials"> TV aerials</label>
+      <label><input type="checkbox" id="vents"> Vent pipes</label>
+      <label><input type="checkbox" id="satellite"> Satellite dish</label>
+      <label><input type="checkbox" id="noShading"> No shading issues</label>
+    </div>
+    <div style="margin-top:16px;"><label>Other environment / shading issue</label><input id="otherEnvironment"></div>
+  </section>
+
+  <section class="card">
+    <h2>Additional notes</h2>
+    <textarea id="additionalNotes"></textarea>
+    <p class="hint">Equipment models, panel quantities, stringing, battery option and design notes are assembled here automatically.</p>
+  </section>
+
+  <button type="button" id="downloadPdf">DOWNLOAD COMPLETED PDF</button>
+  <span id="status"></span>
+</main>
+
+<script>
+const jobId = new URLSearchParams(location.search).get("job_id");
+document.getElementById("backLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}`;
+const $ = id => document.getElementById(id);
+const setValue = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
+const setChecked = (id, value) => { if ($(id)) $(id).checked = Boolean(value); };
+
+function parseAnswers(raw) {
+  if (!raw) return {};
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return {}; }
+}
+
+function splitAddress(address) {
+  const parts = String(address || "").split(",").map(part => part.trim()).filter(Boolean);
+  if (parts.length >= 3) return { site:parts[0], suburb:parts[1], city:parts.slice(2).join(", ") };
+  if (parts.length === 2) return { site:parts[0], suburb:"", city:parts[1] };
+  return { site:address || "", suburb:"", city:"" };
+}
+
+function inferRoofType(material) {
+  const value = String(material || "").toLowerCase();
+  if (value.includes("steel") || value.includes("corrugat") || value.includes("metal")) return "corrugated_steel";
+  if (value.includes("concrete") || value.includes("tile")) return "concrete_tiles";
+  return value ? "other" : "";
+}
+
+function inferInverterType(design) {
+  if (design.design_battery_model || Number(design.design_battery_kwh)) return "hybrid_battery";
+  const text = String(design.design_inverter_model || "").toLowerCase();
+  if (text.includes("hybrid") || design.design_backup) return "hybrid_ready";
+  return text ? "grid_tied" : "";
+}
+
+function buildArrayLayout(roofs) {
+  return roofs.map((roof, index) => {
+    const count = roof.roof_panel_count;
+    const layout = roof.roof_array_layout;
+    if (!count && !layout) return "";
+    return `Roof ${index + 1}: ${layout || `${count} panels`}`;
+  }).filter(Boolean).join("; ");
+}
+
+function buildNotes(design) {
+  const items = [];
+  if (design.design_panel_count || design.design_panel_model) items.push(`${design.design_panel_count || ""} panels ${design.design_panel_model || ""}`.trim());
+  if (design.design_inverter_model || design.design_inverter_kw) items.push(`Inverter: ${design.design_inverter_model || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
+  if (design.design_battery_model || design.design_battery_kwh) items.push(`Battery: ${design.design_battery_model || ""}${design.design_battery_kwh ? ` (${design.design_battery_kwh} kWh)` : ""}`);
+  if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
+  if (design.design_environment_notes) items.push(design.design_environment_notes);
+  if (design.design_electrical_notes) items.push(design.design_electrical_notes);
+  return items.join("\n");
+}
+
+function updateMissing() {
+  const required = [
+    ["customerName", "Customer name"], ["siteAddress", "Site address"],
+    ["connectionType", "Electrical connection"], ["inverterType", "Inverter type"],
+    ["roofType", "Roof type"], ["roofPitch", "Roof pitch"],
+    ["arrayLayout", "Proposed array layout"], ["systemSize", "System size"]
+  ];
+  const missing = required.filter(([id]) => !$(id).value.trim()).map(([, label]) => label);
+  const panel = $("missingPanel");
+  panel.className = `card ${missing.length ? "missing" : "ready"}`;
+  panel.innerHTML = missing.length
+    ? `<strong>Please complete before downloading:</strong> ${missing.join(", ")}.`
+    : "<strong>Ready:</strong> the required Fletcher form details are complete.";
+  return missing;
+}
+
+async function loadData() {
+  if (!jobId) throw new Error("No job ID was supplied");
+  const urls = [`/api/job?id=${jobId}`, `/api/site-visit?job_id=${jobId}`, `/api/system-design?job_id=${jobId}`, `/api/job-files?job_id=${jobId}`];
+  const responses = await Promise.all(urls.map(url => fetch(url)));
+  const [jobData, visitData, designData, filesData] = await Promise.all(responses.map(response => response.json()));
+  if (!jobData.ok || !jobData.job) throw new Error(jobData.error || "Job could not be loaded");
+  const job = jobData.job;
+  const answers = parseAnswers(job.answers_json);
+  const visit = visitData.site_visit || {};
+  const design = designData.system_design || {};
+  const roofs = Array.isArray(design.roofs) ? design.roofs : [];
+  const mainRoof = roofs[0] || {};
+  const address = splitAddress(job.address);
+
+  setValue("customerName", job.customer_name);
+  setValue("siteAddress", address.site);
+  setValue("suburb", address.suburb);
+  setValue("cityPostcode", address.city);
+  setValue("connectionType", design.design_connection_type || visit.visit_connection_type);
+  setValue("inverterType", inferInverterType(design));
+  const material = mainRoof.roof_material || visit.visit_roof_material;
+  setValue("roofType", inferRoofType(material));
+  setValue("roofOther", inferRoofType(material) === "other" ? material : "");
+  setValue("roofPitch", mainRoof.roof_pitch || visit.visit_roof_pitch);
+  setValue("arrayLayout", buildArrayLayout(roofs) || visit.visit_roof_layout);
+  setValue("systemSize", design.design_array_kw);
+  setChecked("saltSpray", design.design_salt_spray || visit.visit_salt_spray);
+  setChecked("highWind", design.design_high_wind || visit.visit_high_wind);
+  setChecked("trees", design.design_trees || visit.visit_trees);
+  setChecked("chimneys", design.design_chimneys || visit.visit_chimneys);
+  setChecked("buildings", design.design_buildings || visit.visit_buildings);
+  setChecked("aerials", design.design_aerials || visit.visit_aerials);
+  setChecked("vents", design.design_vents || visit.visit_vents);
+  setChecked("satellite", design.design_satellite || visit.visit_satellite);
+  const hasShading = ["trees","chimneys","buildings","aerials","vents","satellite"].some(id => $(id).checked);
+  setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
+  const files = filesData.files || [];
+  setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || files.some(file => file.category === "drawing")));
+  setChecked("powerBillAttached", Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded));
+  setValue("additionalNotes", buildNotes(design));
+  updateMissing();
+}
+
+function drawTick(page, x, y, checked) {
+  if (!checked) return;
+  page.drawText("X", { x:x + 4, y:y + 3, size:12, color:PDFLib.rgb(0.82, 0.05, 0.08) });
+}
+
+function drawText(page, text, x, y, options = {}) {
+  const value = String(text || "").normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E\xA0-\xFF]/g, "-").trim();
+  if (!value) return;
+  const size = options.size || 10;
+  const maxWidth = options.maxWidth || 420;
+  const words = value.replace(/\r/g, "").split(/\s+/);
+  let line = "", lineY = y;
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length * size * 0.5 > maxWidth && line) {
+      page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
+      line = word; lineY -= size + 3;
+    } else line = candidate;
+  }
+  if (line) page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
+}
+
+async function downloadPdf() {
+  const missing = updateMissing();
+  if (missing.length) { $("status").textContent = "Please complete the missing details above."; return; }
+  const button = $("downloadPdf");
+  button.disabled = true; $("status").textContent = "Creating PDF…";
+  try {
+    if (!window.PDFLib) throw new Error("PDF generator did not load. Check the internet connection and refresh.");
+    const template = await fetch("/assets/fletcher-solar-site-checklist.pdf");
+    if (!template.ok) throw new Error("The Fletcher template could not be loaded");
+    const pdf = await PDFLib.PDFDocument.load(await template.arrayBuffer());
+    const [p1, p2] = pdf.getPages();
+
+    drawText(p1, $("customerName").value, 144, 661, { maxWidth:395 });
+    drawText(p1, $("siteAddress").value, 63, 626, { maxWidth:480 });
+    drawText(p1, $("suburb").value, 103, 591, { maxWidth:260 });
+    drawText(p1, $("cityPostcode").value, 461, 591, { maxWidth:90 });
+    const connection = $("connectionType").value;
+    drawTick(p1, 64, 494, connection === "single_phase"); drawTick(p1, 248, 494, connection === "dual_phase"); drawTick(p1, 432, 494, connection === "three_phase");
+    const inverter = $("inverterType").value;
+    drawTick(p1, 64, 388, inverter === "grid_tied"); drawTick(p1, 248, 388, inverter === "hybrid_ready"); drawTick(p1, 432, 388, inverter === "hybrid_battery"); drawTick(p1, 64, 335, inverter === "off_grid"); drawTick(p1, 248, 335, inverter === "unknown");
+    const roof = $("roofType").value;
+    drawTick(p1, 194, 262, roof === "corrugated_steel"); drawTick(p1, 358, 262, roof === "concrete_tiles"); drawTick(p1, 194, 227, roof === "other");
+    drawText(p1, $("roofOther").value, 254, 228, { maxWidth:290 });
+    drawText(p1, $("roofPitch").value, 154, 174, { maxWidth:390 });
+    drawText(p1, $("arrayLayout").value, 175, 126, { size:9, maxWidth:195 });
+    drawText(p1, $("systemSize").value, 509, 126, { maxWidth:40 });
+    drawTick(p1, 432, 92, $("powerBillAttached").checked);
+
+    drawTick(p2, 192, 681, $("saltSpray").checked); drawTick(p2, 358, 681, $("snowIce").checked); drawTick(p2, 192, 648, $("highWind").checked);
+    drawTick(p2, 192, 615, $("trees").checked); drawTick(p2, 358, 615, $("chimneys").checked); drawTick(p2, 192, 582, $("buildings").checked); drawTick(p2, 358, 582, $("aerials").checked);
+    drawTick(p2, 192, 549, $("vents").checked); drawTick(p2, 358, 549, $("satellite").checked); drawTick(p2, 358, 516, $("noShading").checked);
+    drawText(p2, $("otherEnvironment").value, 257, 517, { maxWidth:90 });
+    drawText(p2, $("additionalNotes").value, 63, 455, { size:9, maxWidth:480 });
+    drawTick(p2, 192, 253, $("plansAttached").checked);
+
+    const safeName = $("customerName").value.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+    const filename = `${safeName || "Customer"}_Fletcher_Solar_Site_Checklist.pdf`;
+    const bytes = await pdf.save();
+    const blob = new Blob([bytes], { type:"application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+    const form = new FormData();
+    form.append("job_id", jobId);
+    form.append("file", new File([bytes], filename, { type:"application/pdf" }));
+    form.append("category", "supplier");
+    form.append("caption", "Generated Fletcher / J.A. Russell Solar Site Checklist");
+    const saved = await fetch("/api/job-files", { method:"POST", body:form });
+    const savedData = await saved.json();
+    if (!saved.ok || !savedData.ok) throw new Error(savedData.detail || savedData.error || "PDF downloaded but could not be saved to the job");
+    $("status").textContent = "✓ PDF downloaded and saved to this job";
+  } catch (error) {
+    console.error(error); $("status").textContent = `Could not create PDF: ${error.message}`;
+  } finally { button.disabled = false; }
+}
+
+document.querySelectorAll("input,select,textarea").forEach(field => field.addEventListener("input", updateMissing));
+$("downloadPdf").addEventListener("click", downloadPdf);
+loadData().catch(error => { console.error(error); $("missingPanel").className = "card missing"; $("missingPanel").textContent = `Could not load job details: ${error.message}`; });
+</script>
+</body>
+</html>
