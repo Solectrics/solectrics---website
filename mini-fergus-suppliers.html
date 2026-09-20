@@ -415,8 +415,13 @@ async function loadProducts() {
     document.getElementById("productBody").innerHTML = data.products.map(product => `<tr><td>${escapeHtml(product.supplier_name)}</td><td><strong>${escapeHtml(product.supplier_sku)}</strong></td><td>${escapeHtml(product.description)}${product.brand ? `<br><span class="muted">${escapeHtml(product.brand)}</span>` : ""}</td><td><span class="pill">${escapeHtml(product.unit_code || "—")}</span></td><td class="money">${money(product.list_price)}</td><td class="money"><strong>${money(product.buy_price)}</strong></td><td>${new Date(product.last_imported_at).toLocaleDateString("en-NZ")}</td></tr>`).join("");
     const productNotice = document.getElementById("productNotice");
     productNotice.textContent = data.products.length ? `${data.products.length} product${data.products.length === 1 ? "" : "s"} shown` : "No matching products.";
-    const currentSupplier = document.getElementById("supplierFilter").value;
-    document.getElementById("supplierFilter").innerHTML = `<option value="">All suppliers</option>${data.suppliers.map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === currentSupplier ? "selected" : ""}>${escapeHtml(supplier.name)}</option>`).join("")}`;
+    const supplierFilter = document.getElementById("supplierFilter");
+    const currentSupplier = supplierFilter.value || data.default_supplier_id || "";
+    supplierFilter.innerHTML = `<option value="">All suppliers</option>${data.suppliers.map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === currentSupplier ? "selected" : ""}>${escapeHtml(supplier.name)}${supplier.id === data.default_supplier_id ? " — Default" : ""}</option>`).join("")}`;
+    if (!supplierFilter.dataset.initialised && currentSupplier) {
+      supplierFilter.dataset.initialised = "true";
+      if (!params.get("supplier_id")) return loadProducts();
+    }
     document.getElementById("history").innerHTML = data.imports.length ? data.imports.map(item => `<div><strong>${escapeHtml(item.supplier_name)}</strong> — ${new Date(item.imported_at).toLocaleString("en-NZ")} — ${item.created_count} new, ${item.updated_count} updated, ${item.skipped_count} skipped <span class="muted">(${escapeHtml(item.source_filename || "unnamed file")})</span></div>`).join("") : "No imports yet.";
   } catch (error) {
     notice(document.getElementById("productNotice"), error.message, "error");

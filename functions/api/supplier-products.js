@@ -39,9 +39,16 @@ export async function onRequestGet(context) {
       ORDER BY catalogue_imports.imported_at DESC
       LIMIT 10
     `).all();
-    const suppliers = await db.prepare("SELECT id, name FROM suppliers WHERE active = 1 ORDER BY name COLLATE NOCASE").all();
+    const suppliers = await db.prepare("SELECT id, name, is_default FROM suppliers WHERE active = 1 ORDER BY is_default DESC, name COLLATE NOCASE").all();
 
-    return Response.json({ ok: true, products: results || [], suppliers: suppliers.results || [], imports: imports.results || [] });
+    const supplierRows = suppliers.results || [];
+    return Response.json({
+      ok: true,
+      products: results || [],
+      suppliers: supplierRows,
+      default_supplier_id: supplierRows.find(supplier => Number(supplier.is_default) === 1)?.id || "",
+      imports: imports.results || []
+    });
   } catch (error) {
     console.error("Supplier product search error:", error);
     return Response.json({ ok: false, error: error.message || "Could not load supplier products" }, { status: 500 });

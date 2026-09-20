@@ -1816,8 +1816,10 @@ window.currentAnswers = answers;
 
   <h3>Add catalogue products</h3>
   <div class="costing-search">
-    <label for="costingProductSearch">Search product code, description or brand</label>
-    <input id="costingProductSearch" type="search" placeholder="e.g. solar cable, PDL, 10540100">
+    <div class="grid">
+      <div><label for="costingSupplierFilter">Supplier catalogue</label><select id="costingSupplierFilter"><option value="">All suppliers</option></select></div>
+      <div><label for="costingProductSearch">Search product code, description or brand</label><input id="costingProductSearch" type="search" placeholder="e.g. solar cable, PDL, 10540100"></div>
+    </div>
     <div id="costingSearchResults" class="costing-search-results" hidden></div>
   </div>
 
@@ -3816,12 +3818,26 @@ async function setCustomerQuoteStatus(quoteId, status) {
 }
 
 let costingSearchTimer;
+async function loadCostingSuppliers() {
+  const select = document.getElementById("costingSupplierFilter");
+  if (!select) return;
+  try {
+    const response = await fetch("/api/supplier-products?limit=1");
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load suppliers");
+    select.innerHTML = `<option value="">All suppliers</option>${(data.suppliers || []).map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === data.default_supplier_id ? "selected" : ""}>${escapeHtml(supplier.name)}${supplier.id === data.default_supplier_id ? " — Default" : ""}</option>`).join("")}`;
+  } catch (error) {
+    select.innerHTML = `<option value="">All suppliers</option>`;
+  }
+}
+
 async function searchCostingProducts() {
   const query = document.getElementById("costingProductSearch").value.trim();
+  const supplierId = document.getElementById("costingSupplierFilter")?.value || "";
   const results = document.getElementById("costingSearchResults");
   if (query.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
   try {
-    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&limit=30`);
+    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&supplier_id=${encodeURIComponent(supplierId)}&limit=30`);
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Search failed");
     costingState.catalogueResults = data.products || [];
@@ -3851,6 +3867,7 @@ document.addEventListener("input", function(event) {
 
 document.addEventListener("change", function(event) {
   if (event.target?.id === "costingOptionSelect") { selectCostingOption(event.target.value); return; }
+  if (event.target?.id === "costingSupplierFilter") { searchCostingProducts(); return; }
   const row = event.target?.closest?.(".costing-line");
   if (!row || !event.target.dataset.field) return;
   const line = costingState.lines.find(item => item.id === row.dataset.lineId);
@@ -3894,7 +3911,7 @@ if (workLogDateField) {
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
   ]).then(() => {
 
     const roofOrientationField =
