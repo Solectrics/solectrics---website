@@ -21,8 +21,8 @@ supplier.
 ## Database changes
 
 The SQL files in `migrations/` document the additive D1 changes. The runtime
-also checks for `jobs.job_type`, `job_files.document_role`, and the supplier
-catalogue tables before using them,
+also checks for `jobs.job_type`, `job_files.document_role`, the supplier
+catalogue tables, and the internal-costing tables before using them,
 which keeps an existing deployment working while the schema is upgraded.
 
 Never replace or recreate the production D1 database to apply these additions.
