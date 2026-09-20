@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplier Catalogue | Mini Fergus</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f7f5ef; color: #263a36; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; }
+    a { color: #e97838; font-weight: 700; }
+    h1 { margin: 22px 0 8px; font-size: 38px; }
+    .intro { color: #68716e; margin-bottom: 24px; }
+    .card { background: #fff; border: 1px solid #dedbd3; border-radius: 18px; padding: 22px; margin-bottom: 18px; }
+    h2 { margin-top: 0; }
+    label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 7px; }
+    input, select, button { font: inherit; }
+    input[type="text"], input[type="search"], input[type="file"], select { width: 100%; min-height: 44px; border: 1px solid #aeb7b4; border-radius: 7px; padding: 9px 11px; background: #fff; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    button { border: 0; border-radius: 8px; padding: 11px 16px; background: #e97838; color: #fff; font-weight: 800; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .secondary { background: #263a36; }
+    .actions { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+    .notice { margin-top: 14px; padding: 12px 14px; border-radius: 9px; background: #f2f4f3; }
+    .notice.error { background: #fff0ed; color: #9b2e1c; }
+    .notice.success { background: #ecf8f0; color: #24633b; }
+    .table-wrap { overflow-x: auto; margin-top: 16px; }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th, td { padding: 10px 9px; text-align: left; border-bottom: 1px solid #e7e4dc; font-size: 14px; vertical-align: top; }
+    th { color: #68716e; font-size: 12px; text-transform: uppercase; }
+    .money { text-align: right; white-space: nowrap; }
+    .muted { color: #68716e; }
+    .pill { display: inline-block; background: #fff3e9; color: #bd551c; border-radius: 20px; padding: 4px 8px; font-size: 12px; font-weight: 700; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 31px; } }
+  </style>
+</head>
+<body>
+<main>
+  <a href="/mini-fergus">← Back to Mini Fergus</a>
+  <h1>Supplier catalogue</h1>
+  <p class="intro">Import supplier prices once, then search and reuse them in job costing. All prices shown here are internal.</p>
+
+  <section class="card">
+    <h2>Import J.A. Russell My Catalogue</h2>
+    <p class="muted">Select the Excel export and review the preview before importing. A later export updates products with the same supplier product code instead of creating duplicates.</p>
+    <div class="grid">
+      <div>
+        <label for="supplierName">Supplier</label>
+        <input id="supplierName" type="text" value="J.A. Russell">
+      </div>
+      <div>
+        <label for="catalogueFile">Excel catalogue (.xlsx)</label>
+        <input id="catalogueFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </div>
+    </div>
+    <div class="actions">
+      <button id="previewButton" class="secondary" type="button">Preview catalogue</button>
+      <button id="importButton" type="button" disabled>Import approved preview</button>
+      <span id="fileSummary" class="muted"></span>
+    </div>
+    <div id="importNotice" hidden></div>
+    <div id="previewWrap" class="table-wrap" hidden>
+      <table>
+        <thead><tr><th>Product code</th><th>Description</th><th>Unit</th><th>Category</th><th class="money">List price</th><th class="money">Solectrics buy price</th></tr></thead>
+        <tbody id="previewBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Products</h2>
+    <div class="grid">
+      <div><label for="search">Search code, description or brand</label><input id="search" type="search" placeholder="e.g. cable, 203/06, PDL"></div>
+      <div><label for="supplierFilter">Supplier</label><select id="supplierFilter"><option value="">All suppliers</option></select></div>
+    </div>
+    <div id="productNotice" class="notice">Loading products…</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Supplier</th><th>Code</th><th>Description</th><th>Unit</th><th class="money">List (ex GST)</th><th class="money">Buy cost (ex GST)</th><th>Last updated</th></tr></thead>
+        <tbody id="productBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Recent imports</h2>
+    <div id="history" class="muted">No imports yet.</div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const JAR_MAPPING = {
+  supplier_sku: "B", description: "C", unit_code: "D", category_code: "E",
+  barcode: "F", list_price: "H", source_price_date: "I", brand: "J",
+  manufacturer_sku: "K", price_class: "L", buy_price: "N"
+};
+let previewProducts = [];
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
+}
+function money(value) { return value === null || value === undefined || value === "" ? "—" : new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value)); }
+function notice(element, message, type = "") { element.hidden = false; element.className = `notice ${type}`; element.textContent = message; }
+function columnFromReference(reference) { return (String(reference || "").match(/[A-Z]+/i) || [""])[0].toUpperCase(); }
+
+async function readSharedStrings(zip) {
+  const file = zip.file("xl/sharedStrings.xml");
+  if (!file) return [];
+  const xml = new DOMParser().parseFromString(await file.async("text"), "application/xml");
+  return [...xml.getElementsByTagName("si")].map(item => [...item.getElementsByTagName("t")].map(node => node.textContent || "").join(""));
+}
+
+function cellValue(cell, sharedStrings) {
+  const type = cell.getAttribute("t");
+  if (type === "inlineStr") return [...cell.getElementsByTagName("t")].map(node => node.textContent || "").join("");
+  const raw = cell.getElementsByTagName("v")[0]?.textContent ?? "";
+  if (type === "s") return sharedStrings[Number(raw)] ?? "";
+  return raw;
+}
+
+async function parseCatalogue(file) {
+  const zip = await JSZip.loadAsync(file);
+  const workbookFile = zip.file("xl/workbook.xml");
+  if (!workbookFile) throw new Error("This does not appear to be a valid Excel workbook.");
+  const sharedStrings = await readSharedStrings(zip);
+  const worksheet = zip.file("xl/worksheets/sheet1.xml");
+  if (!worksheet) throw new Error("The first worksheet could not be found.");
+  const xml = new DOMParser().parseFromString(await worksheet.async("text"), "application/xml");
+  if (xml.getElementsByTagName("parsererror").length) throw new Error("The worksheet XML could not be read.");
+
+  const rows = [...xml.getElementsByTagName("row")];
+  return rows.map(row => {
+    const values = {};
+    [...row.getElementsByTagName("c")].forEach(cell => { values[columnFromReference(cell.getAttribute("r"))] = cellValue(cell, sharedStrings).trim(); });
+    const product = {};
+    for (const [field, column] of Object.entries(JAR_MAPPING)) product[field] = values[column] || "";
+    return product;
+  }).filter(product => product.supplier_sku && product.description);
+}
+
+document.getElementById("previewButton").addEventListener("click", async () => {
+  const file = document.getElementById("catalogueFile").files[0];
+  if (!file) return notice(document.getElementById("importNotice"), "Choose the J.A. Russell Excel file first.", "error");
+  try {
+    notice(document.getElementById("importNotice"), "Reading catalogue…");
+    previewProducts = await parseCatalogue(file);
+    if (!previewProducts.length) throw new Error("No product rows were found in the expected J.A. Russell columns.");
+    document.getElementById("previewBody").innerHTML = previewProducts.slice(0, 10).map(product => `<tr><td>${escapeHtml(product.supplier_sku)}</td><td>${escapeHtml(product.description)}</td><td>${escapeHtml(product.unit_code)}</td><td>${escapeHtml(product.category_code)}</td><td class="money">${money(product.list_price)}</td><td class="money"><strong>${money(product.buy_price)}</strong></td></tr>`).join("");
+    document.getElementById("previewWrap").hidden = false;
+    document.getElementById("importButton").disabled = false;
+    document.getElementById("fileSummary").textContent = `${previewProducts.length} products found; first 10 shown`;
+    notice(document.getElementById("importNotice"), "Preview ready. Confirm the product codes, units and Solectrics buy prices before importing.", "success");
+  } catch (error) {
+    previewProducts = [];
+    document.getElementById("importButton").disabled = true;
+    notice(document.getElementById("importNotice"), error.message, "error");
+  }
+});
+
+document.getElementById("importButton").addEventListener("click", async () => {
+  const button = document.getElementById("importButton");
+  const file = document.getElementById("catalogueFile").files[0];
+  button.disabled = true;
+  try {
+    notice(document.getElementById("importNotice"), "Importing catalogue…");
+    const response = await fetch("/api/catalogue-import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ supplier_name: document.getElementById("supplierName").value, source_filename: file?.name || "", mapping: JAR_MAPPING, products: previewProducts }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "The catalogue could not be imported.");
+    const summary = data.summary;
+    notice(document.getElementById("importNotice"), `Import complete: ${summary.created} new, ${summary.updated} updated, ${summary.skipped} skipped.`, "success");
+    await loadProducts();
+  } catch (error) {
+    notice(document.getElementById("importNotice"), error.message, "error");
+  } finally { button.disabled = false; }
+});
+
+let searchTimer;
+document.getElementById("search").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadProducts, 250); });
+document.getElementById("supplierFilter").addEventListener("change", loadProducts);
+
+async function loadProducts() {
+  const params = new URLSearchParams({ query: document.getElementById("search").value, supplier_id: document.getElementById("supplierFilter").value, limit: "250" });
+  try {
+    const response = await fetch(`/api/supplier-products?${params}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load products.");
+    document.getElementById("productBody").innerHTML = data.products.map(product => `<tr><td>${escapeHtml(product.supplier_name)}</td><td><strong>${escapeHtml(product.supplier_sku)}</strong></td><td>${escapeHtml(product.description)}${product.brand ? `<br><span class="muted">${escapeHtml(product.brand)}</span>` : ""}</td><td><span class="pill">${escapeHtml(product.unit_code || "—")}</span></td><td class="money">${money(product.list_price)}</td><td class="money"><strong>${money(product.buy_price)}</strong></td><td>${new Date(product.last_imported_at).toLocaleDateString("en-NZ")}</td></tr>`).join("");
+    const productNotice = document.getElementById("productNotice");
+    productNotice.textContent = data.products.length ? `${data.products.length} product${data.products.length === 1 ? "" : "s"} shown` : "No matching products.";
+    const currentSupplier = document.getElementById("supplierFilter").value;
+    document.getElementById("supplierFilter").innerHTML = `<option value="">All suppliers</option>${data.suppliers.map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === currentSupplier ? "selected" : ""}>${escapeHtml(supplier.name)}</option>`).join("")}`;
+    document.getElementById("history").innerHTML = data.imports.length ? data.imports.map(item => `<div><strong>${escapeHtml(item.supplier_name)}</strong> — ${new Date(item.imported_at).toLocaleString("en-NZ")} — ${item.created_count} new, ${item.updated_count} updated, ${item.skipped_count} skipped <span class="muted">(${escapeHtml(item.source_filename || "unnamed file")})</span></div>`).join("") : "No imports yet.";
+  } catch (error) {
+    notice(document.getElementById("productNotice"), error.message, "error");
+  }
+}
+loadProducts();
+</script>
+</body>
+</html>
