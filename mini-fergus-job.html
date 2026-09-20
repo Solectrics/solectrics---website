@@ -156,6 +156,22 @@
       font-weight: 700;
     }
 
+    .job-file-selection {
+      border-top: 1px solid #e6e1d8;
+      margin-top: 16px;
+    }
+
+    .job-file-selection-row {
+      border-bottom: 1px solid #e6e1d8;
+      padding: 12px 0;
+    }
+
+    .job-file-selection-name {
+      font-weight: 700;
+      margin-bottom: 8px;
+      overflow-wrap: anywhere;
+    }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -692,18 +708,15 @@ window.currentAnswers = answers;
       </select>
     </div>
     <div>
-      <label>Choose photo or PDF</label>
-      <input type="file" id="jobFileInput" accept="image/*,.pdf" capture="environment">
+      <label>Choose photos or PDFs</label>
+      <input type="file" id="jobFileInput" accept="image/*,.pdf" capture="environment" multiple>
     </div>
   </div>
 
-  <div style="margin-top:16px;">
-    <label>Caption / what this shows</label>
-    <input type="text" id="jobFileCaption" maxlength="500">
-  </div>
+  <div id="jobFileSelection" class="job-file-selection" hidden></div>
 
   <br>
-  <button type="button" id="uploadJobFile">UPLOAD FILE</button>
+  <button type="button" id="uploadJobFile">UPLOAD ALL</button>
   <span id="jobFileMessage"></span>
 
   <h3>Files on this job</h3>
@@ -2520,6 +2533,30 @@ function formatFileSize(bytes) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function renderSelectedJobFiles() {
+  const input = document.getElementById("jobFileInput");
+  const selection = document.getElementById("jobFileSelection");
+  const files = Array.from(input.files || []);
+
+  if (!files.length) {
+    selection.hidden = true;
+    selection.replaceChildren();
+    return;
+  }
+
+  selection.hidden = false;
+  selection.innerHTML = files.map((file, index) => `
+    <div class="job-file-selection-row">
+      <div class="job-file-selection-name">
+        ${escapeHtml(file.name)} · ${escapeHtml(formatFileSize(file.size))}
+      </div>
+      <label for="jobFileCaption${index}">Caption / what this shows (optional)</label>
+      <input type="text" id="jobFileCaption${index}" data-job-file-caption="${index}"
+        maxlength="500" placeholder="Type or dictate a note for this photo">
+    </div>
+  `).join("");
+}
+
 async function loadJobFiles() {
   const list = document.getElementById("jobFilesList");
   try {
@@ -2557,38 +2594,52 @@ async function loadJobFiles() {
 async function uploadJobFile() {
   const input = document.getElementById("jobFileInput");
   const message = document.getElementById("jobFileMessage");
-  const file = input.files?.[0];
+  const files = Array.from(input.files || []);
 
-  if (!file) {
-    message.textContent = " Choose a photo or PDF first";
-    return;
-  }
-  if (file.size > 12 * 1024 * 1024) {
-    message.textContent = " Please use a file under 12 MB";
+  if (!files.length) {
+    message.textContent = " Choose one or more photos or PDFs first";
     return;
   }
 
-  const form = new FormData();
-  form.append("job_id", jobId);
-  form.append("file", file);
-  form.append("category", document.getElementById("jobFileCategory").value);
-  form.append("caption", document.getElementById("jobFileCaption").value);
-  message.textContent = " Uploading...";
+  const oversizedFile = files.find(file => file.size > 12 * 1024 * 1024);
+  if (oversizedFile) {
+    message.textContent = ` ${oversizedFile.name} is over the 12 MB limit`;
+    return;
+  }
+
+  const category = document.getElementById("jobFileCategory").value;
+  const uploadButton = document.getElementById("uploadJobFile");
+  uploadButton.disabled = true;
 
   try {
-    const response = await fetch("/api/job-files", { method: "POST", body: form });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.detail || data.error || "Upload failed");
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const caption = document.querySelector(
+        `[data-job-file-caption="${index}"]`
+      )?.value || "";
+      const form = new FormData();
+      form.append("job_id", jobId);
+      form.append("file", file);
+      form.append("category", category);
+      form.append("caption", caption);
+      message.textContent = ` Uploading ${index + 1} of ${files.length}...`;
+
+      const response = await fetch("/api/job-files", { method: "POST", body: form });
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        throw new Error(data.detail || data.error || `Could not upload ${file.name}`);
+      }
     }
 
     input.value = "";
-    document.getElementById("jobFileCaption").value = "";
-    message.textContent = " ✓ File uploaded";
+    renderSelectedJobFiles();
+    message.textContent = ` ✓ ${files.length} file${files.length === 1 ? "" : "s"} uploaded`;
     await loadJobFiles();
   } catch (error) {
     console.error("Could not upload job file:", error);
     message.textContent = ` Could not upload: ${error.message}`;
+  } finally {
+    uploadButton.disabled = false;
   }
 }
 
@@ -2883,6 +2934,10 @@ if (designArraySize && designWattage && designCount) {
 
 
 document.addEventListener("change", function(event) {
+  if (event.target?.id === "jobFileInput") {
+    renderSelectedJobFiles();
+  }
+
   if (
     event.target &&
     event.target.id === "roof_orientation"
