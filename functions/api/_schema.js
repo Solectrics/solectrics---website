@@ -120,3 +120,23 @@ export async function ensureInternalCostingSchema(db) {
     db.prepare("CREATE INDEX IF NOT EXISTS idx_costing_lines_job_option ON costing_lines(job_id, option_id, sort_order)")
   ]);
 }
+
+export async function ensureCustomerQuoteSchema(db) {
+  await db.batch([
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS customer_quote_versions (
+        id TEXT PRIMARY KEY,
+        job_id INTEGER NOT NULL,
+        version_number INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'draft',
+        snapshot_json TEXT NOT NULL,
+        source_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        issued_at TEXT,
+        accepted_at TEXT,
+        UNIQUE (job_id, version_number)
+      )
+    `),
+    db.prepare("CREATE INDEX IF NOT EXISTS idx_customer_quotes_job_version ON customer_quote_versions(job_id, version_number DESC)")
+  ]);
+}

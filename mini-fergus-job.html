@@ -287,6 +287,13 @@
     .costing-line-meta { color: #68746f; font-size: 12px; margin-top: 4px; }
     .costing-remove { background: #fff0ed; color: #a12d2d; }
 
+    .customer-quote-tools { border-top: 1px solid #e6e1d8; margin-top: 22px; padding-top: 20px; }
+    .quote-warning { background: #fff4df; border-left: 4px solid #d88b00; border-radius: 8px; margin: 12px 0; padding: 11px 13px; }
+    .quote-history { display: grid; gap: 9px; margin-top: 14px; }
+    .quote-history-row { align-items: center; background: #f8f6f1; border-radius: 9px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 11px 13px; }
+    .quote-history-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .quote-history-actions a { background: #173f3f; border-radius: 4px; color: #fff; padding: 8px 12px; text-decoration: none; }
+
     .costing-summary {
       display: grid;
       gap: 12px;
@@ -320,6 +327,21 @@
       .costing-summary {
         grid-template-columns: 1fr;
       }
+    }
+
+    @media (min-width: 701px) and (max-width: 1100px) {
+      .costing-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 1100px) {
+      .costing-table { min-width: 0; }
+      .costing-table thead { display: none; }
+      .costing-table, .costing-table tbody, .costing-table tr, .costing-table td { display: block; width: 100%; }
+      .costing-table tr { border: 1px solid #ddd8cf; border-radius: 11px; margin-bottom: 14px; padding: 10px; }
+      .costing-table td { border: 0; display: grid; gap: 10px; grid-template-columns: 145px minmax(0, 1fr); padding: 6px; }
+      .costing-table td::before { color: #68746f; content: attr(data-label); font-size: 11px; font-weight: 700; padding-top: 11px; text-transform: uppercase; }
+      .costing-description, .costing-number, .costing-display { min-width: 0; }
+      .costing-table td:last-child { display: block; padding-left: 151px; }
     }
   </style>
 </head>
@@ -1831,6 +1853,15 @@ window.currentAnswers = answers;
   <div style="margin-top:20px;">
     <button type="button" id="saveInternalCosting">SAVE INTERNAL COSTING</button>
     <span id="costingMessage"></span>
+  </div>
+
+  <div class="customer-quote-tools">
+    <h3>Customer quote</h3>
+    <p class="placeholder">Approve and save the costing options you want to offer, then generate one customer-safe quote. Internal costs, mark-up and profit are never included.</p>
+    <button type="button" id="generateCustomerQuote">GENERATE CUSTOMER QUOTE</button>
+    <span id="customerQuoteMessage"></span>
+    <div id="customerQuoteWarning" class="quote-warning" hidden></div>
+    <div id="customerQuoteHistory" class="quote-history"></div>
   </div>
 </section>
 
@@ -3671,16 +3702,16 @@ function renderCostingLines() {
   if (!body) return;
   body.innerHTML = costingState.lines.map(line => `
     <tr class="costing-line" data-line-id="${escapeHtml(line.id)}">
-      <td class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
-      <td>${costingSelect("category", line.category)}</td>
-      <td>${costingSelect("scope", line.scope)}</td>
-      <td class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
-      <td class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
-      <td class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
-      <td class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
-      <td class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
-      <td class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
-      <td><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
+      <td data-label="Description / supplier" class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
+      <td data-label="Category">${costingSelect("category", line.category)}</td>
+      <td data-label="Used by">${costingSelect("scope", line.scope)}</td>
+      <td data-label="Quantity" class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
+      <td data-label="Unit" class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
+      <td data-label="Unit cost" class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
+      <td data-label="Mark-up %" class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
+      <td data-label="Customer unit price" class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
+      <td data-label="Customer display" class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
+      <td data-label=""><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
     </tr>
   `).join("");
   document.getElementById("costingEmpty").style.display = costingState.lines.length ? "none" : "block";
@@ -3744,6 +3775,46 @@ async function saveInternalCosting() {
   } catch (error) { message.textContent = error.message; message.className = "error"; }
 }
 
+async function loadCustomerQuotes() {
+  const history = document.getElementById("customerQuoteHistory");
+  const warning = document.getElementById("customerQuoteWarning");
+  try {
+    const response = await fetch(`/api/customer-quotes?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer quote history");
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "Internal costing has changed since an issued or accepted quote. The saved quote has not been altered. Generate a new version if the customer price should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => `
+      <div class="quote-history-row"><div><strong>Quote v${Number(version.version_number)}</strong> · ${escapeHtml(version.status).toUpperCase()}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${Number(version.option_count)} option${Number(version.option_count) === 1 ? "" : "s"}</div></div>
+      <div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-quote?quote_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${version.status === "draft" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status !== "accepted" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="accepted">MARK ACCEPTED</button>` : ""}</div></div>`).join("") : `<div class="placeholder">No customer quote versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerQuote() {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    message.textContent = "Generating…"; message.className = "";
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"generate", job_id:Number(jobId) }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer quote");
+    message.textContent = `Quote v${data.version_number} generated.`;
+    await loadCustomerQuotes();
+    window.open(`/mini-fergus-customer-quote?quote_id=${encodeURIComponent(data.quote_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerQuoteStatus(quoteId, status) {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"set_status", quote_id:quoteId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update quote status");
+    message.textContent = status === "accepted" ? "Quote marked accepted." : "Quote marked issued.";
+    message.className = "";
+    await loadCustomerQuotes();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
 let costingSearchTimer;
 async function searchCostingProducts() {
   const query = document.getElementById("costingProductSearch").value.trim();
@@ -3794,6 +3865,8 @@ document.addEventListener("change", function(event) {
 document.addEventListener("click", function(event) {
   if (event.target?.id === "newCostingOption") createCostingOption();
   if (event.target?.id === "saveInternalCosting") saveInternalCosting();
+  if (event.target?.id === "generateCustomerQuote") generateCustomerQuote();
+  if (event.target?.classList?.contains("setCustomerQuoteStatus")) setCustomerQuoteStatus(event.target.dataset.quoteId, event.target.dataset.status);
   if (event.target?.classList?.contains("addCostingLine")) {
     costingState.lines.push(newCostingLine(event.target.dataset.category));
     renderCostingLines();
@@ -3821,7 +3894,7 @@ if (workLogDateField) {
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes()
   ]).then(() => {
 
     const roofOrientationField =
