@@ -2841,6 +2841,7 @@ function formatWorkLogHours(hours) {
 async function loadWorkLogs() {
   const list = document.getElementById("workLogList");
   const summary = document.getElementById("workLogSummary");
+  if (!list || !summary) return;
 
   try {
     const response = await fetch(`/api/job-work-logs?job_id=${jobId}`);
@@ -3397,11 +3398,14 @@ if (event.target.classList.contains("removeDesignRoof")) {
 
 
 const workLogToday = new Date();
-document.getElementById("workLogDate").value = [
-  workLogToday.getFullYear(),
-  String(workLogToday.getMonth() + 1).padStart(2, "0"),
-  String(workLogToday.getDate()).padStart(2, "0")
-].join("-");
+const workLogDateField = document.getElementById("workLogDate");
+if (workLogDateField) {
+  workLogDateField.value = [
+    workLogToday.getFullYear(),
+    String(workLogToday.getMonth() + 1).padStart(2, "0"),
+    String(workLogToday.getDate()).padStart(2, "0")
+  ].join("-");
+}
 
 loadJob().then(() => {
   Promise.all([
