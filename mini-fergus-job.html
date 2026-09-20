@@ -172,6 +172,30 @@
       overflow-wrap: anywhere;
     }
 
+    .photo-checklist {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .photo-checklist-row {
+      align-items: center;
+      background: #f8f6f1;
+      border-radius: 6px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      padding: 10px 12px;
+    }
+
+    .photo-checklist-status {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .photo-checklist-status.complete { color: #287a45; }
+    .photo-checklist-status.missing { color: #8a5a00; }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -696,14 +720,20 @@ window.currentAnswers = answers;
     <div>
       <label>File category</label>
       <select id="jobFileCategory">
-        <option value="site_photo">General site photo</option>
+        <option value="site_photo">Before work / site overview</option>
         <option value="switchboard">Switchboard</option>
         <option value="meter">Meter / ICP</option>
         <option value="roof">Roof</option>
+        <option value="cable_route">Cable route</option>
+        <option value="fixings">Mounting / fixings</option>
         <option value="equipment">Equipment location</option>
+        <option value="wiring">Wiring before covers</option>
+        <option value="labels">Equipment labels / serial numbers</option>
+        <option value="testing">Testing / test results</option>
+        <option value="completed">Completed installation</option>
         <option value="drawing">Drawing / design</option>
         <option value="supplier">Supplier document</option>
-        <option value="certificate">Certificate / approval</option>
+        <option value="certificate">Ben approval / CoC</option>
         <option value="other">Other</option>
       </select>
     </div>
@@ -718,6 +748,10 @@ window.currentAnswers = answers;
   <br>
   <button type="button" id="uploadJobFile">UPLOAD ALL</button>
   <span id="jobFileMessage"></span>
+
+  <h3>Photo evidence checklist</h3>
+  <div class="placeholder">This updates automatically when files are uploaded.</div>
+  <div id="jobPhotoChecklist" class="photo-checklist"></div>
 
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
@@ -2515,16 +2549,47 @@ async function saveSiteVisit() {
 
 
 const jobFileCategoryLabels = {
-  site_photo: "General site photo",
+  site_photo: "Before work / site overview",
   switchboard: "Switchboard",
   meter: "Meter / ICP",
   roof: "Roof",
+  cable_route: "Cable route",
+  fixings: "Mounting / fixings",
   equipment: "Equipment location",
+  wiring: "Wiring before covers",
+  labels: "Equipment labels / serial numbers",
+  testing: "Testing / test results",
+  completed: "Completed installation",
   drawing: "Drawing / design",
   supplier: "Supplier document",
-  certificate: "Certificate / approval",
+  certificate: "Ben approval / CoC",
   other: "Other"
 };
+
+const jobPhotoChecklistItems = [
+  "site_photo", "switchboard", "meter", "cable_route", "fixings",
+  "equipment", "wiring", "labels", "testing", "completed", "certificate"
+];
+
+function renderJobPhotoChecklist(files) {
+  const checklist = document.getElementById("jobPhotoChecklist");
+  const counts = files.reduce((totals, file) => {
+    totals[file.category] = (totals[file.category] || 0) + 1;
+    return totals;
+  }, {});
+
+  checklist.innerHTML = jobPhotoChecklistItems.map(category => {
+    const count = counts[category] || 0;
+    return `
+      <div class="photo-checklist-row">
+        <span>${escapeHtml(jobFileCategoryLabels[category])}</span>
+        <span class="photo-checklist-status ${count ? "complete" : "missing"}">
+          ${count ? `✓ Uploaded (${count})` : "○ Missing"}
+        </span>
+      </div>
+    `;
+  }).join("");
+}
 
 function formatFileSize(bytes) {
   const size = Number(bytes) || 0;
@@ -2564,6 +2629,8 @@ async function loadJobFiles() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    renderJobPhotoChecklist(data.files);
+
     if (!data.files.length) {
       list.className = "placeholder";
       list.textContent = "No files uploaded yet.";
@@ -2586,6 +2653,8 @@ async function loadJobFiles() {
     `).join("");
   } catch (error) {
     console.error("Could not load job files:", error);
+    document.getElementById("jobPhotoChecklist").innerHTML =
+      '<div class="error">Could not load the photo checklist.</div>';
     list.className = "error";
     list.textContent = "Could not load job files.";
   }
