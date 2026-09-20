@@ -32,7 +32,7 @@
 <main>
   <a id="backLink" href="/mini-fergus.html">← Back to job</a>
   <h1>Fletcher / J.A. Russell Solar Form</h1>
-  <p>Review the automatically filled details, correct anything needed, then download the completed official checklist.</p>
+  <p>Review the automatically filled details, then download the checklist or email the complete package to Jane for checking.</p>
 
   <div id="missingPanel" class="card">Loading saved job information…</div>
 
@@ -44,6 +44,7 @@
       <div><label>Site address</label><input id="siteAddress"></div>
       <div><label>Suburb</label><input id="suburb"></div>
       <div><label>City and postcode</label><input id="cityPostcode"></div>
+      <div><label>ICP</label><input id="icp"></div>
       <div>
         <label>Electrical connection</label>
         <select id="connectionType"><option value="">Select…</option><option value="single_phase">Single phase</option><option value="dual_phase">Dual phase</option><option value="three_phase">Three phase</option></select>
@@ -96,7 +97,14 @@
     <p class="hint">Equipment models, panel quantities, stringing, battery option and design notes are assembled here automatically.</p>
   </section>
 
+  <section class="card">
+    <h2>Package documents</h2>
+    <p class="hint">Mini Fergus will reuse the latest SLD, roof layout and power bill already attached to this job. Missing optional documents will be listed but will not stop the email.</p>
+    <div id="packageDocuments">Checking job documents…</div>
+  </section>
+
   <button type="button" id="downloadPdf">DOWNLOAD COMPLETED PDF</button>
+  <button type="button" id="emailPackage">EMAIL PACKAGE TO JANE</button>
   <span id="status"></span>
 </main>
 
@@ -146,6 +154,31 @@ function calculateSystemSize(design, assessment) {
   return panelCount && panelWattage ? (panelCount * panelWattage / 1000).toFixed(2) : "";
 }
 
+function inferredDocumentRole(file) {
+  if (file.document_role && file.document_role !== "general") return file.document_role;
+  const text = `${file.original_name || ""} ${file.caption || ""}`.toLowerCase();
+  if (/\bsld\b|single[- ]line/.test(text)) return "sld";
+  if (/roof.*(layout|plan)|panel.*layout/.test(text)) return "roof_layout";
+  if (/(power|electricity).*bill|bill.*(power|electricity)/.test(text)) return "power_bill";
+  return "general";
+}
+
+function renderPackageDocuments(files, answers) {
+  const roles = new Set(files.map(inferredDocumentRole));
+  const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
+  const items = [
+    ["sld", "Single-line diagram (SLD)", roles.has("sld")],
+    ["roof_layout", "Roof / panel layout", roles.has("roof_layout")],
+    ["power_bill", "Customer power bill", roles.has("power_bill")]
+  ];
+  $("packageDocuments").innerHTML = items.map(([role, label, present]) => {
+    const note = role === "power_bill" && !present && hasBillData
+      ? " — bill information exists, but the original file is not stored"
+      : "";
+    return `<div>${present ? "✓" : "○"} ${label}${note}</div>`;
+  }).join("");
+}
+
 function buildArrayLayout(roofs) {
   return roofs.map((roof, index) => {
     const count = roof.roof_panel_count;
@@ -155,11 +188,18 @@ function buildArrayLayout(roofs) {
   }).filter(Boolean).join("; ");
 }
 
-function buildNotes(design) {
+function buildNotes(design, assessment, icp) {
   const items = [];
-  if (design.design_panel_count || design.design_panel_model) items.push(`${design.design_panel_count || ""} panels ${design.design_panel_model || ""}`.trim());
-  if (design.design_inverter_model || design.design_inverter_kw) items.push(`Inverter: ${design.design_inverter_model || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
-  if (design.design_battery_model || design.design_battery_kwh) items.push(`Battery: ${design.design_battery_model || ""}${design.design_battery_kwh ? ` (${design.design_battery_kwh} kWh)` : ""}`);
+  const panelCount = firstValue(design.design_panel_count, assessment.panel_count);
+  const panelWattage = firstValue(design.design_panel_wattage, assessment.panel_wattage);
+  const inverterModel = firstValue(design.design_inverter_model, assessment.inverter);
+  const batteryCapacity = firstValue(design.design_battery_kwh, assessment.battery_kwh);
+  if (icp) items.push(`ICP: ${icp}`);
+  if (panelCount || design.design_panel_model) {
+    items.push(`${panelCount || ""} panels ${design.design_panel_model || ""}${panelWattage ? ` (${panelWattage} W each)` : ""}`.trim());
+  }
+  if (inverterModel || design.design_inverter_kw) items.push(`Inverter: ${inverterModel || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
+  if (design.design_battery_model || batteryCapacity || assessment.battery_option) items.push(`Battery: ${design.design_battery_model || assessment.battery_option || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
   if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
   if (design.design_environment_notes) items.push(design.design_environment_notes);
   if (design.design_electrical_notes) items.push(design.design_electrical_notes);
@@ -201,6 +241,8 @@ async function loadData() {
   setValue("siteAddress", address.site);
   setValue("suburb", address.suburb);
   setValue("cityPostcode", address.city);
+  const icp = firstValue(design.design_icp, visit.visit_icp, answers.icp, answers.ICP);
+  setValue("icp", icp);
   setValue("connectionType", design.design_connection_type || visit.visit_connection_type);
   const inverterDesign = {
     ...design,
@@ -211,7 +253,8 @@ async function loadData() {
   setValue("roofType", inferRoofType(material));
   setValue("roofOther", inferRoofType(material) === "other" ? material : "");
   setValue("roofPitch", firstValue(mainRoof.roof_pitch, visit.visit_roof_pitch, answers.roof_pitch, answers.pitch));
-  setValue("arrayLayout", buildArrayLayout(roofs) || visit.visit_roof_layout);
+  const panelCount = firstValue(design.design_panel_count, assessment.panel_count);
+  setValue("arrayLayout", buildArrayLayout(roofs) || visit.visit_roof_layout || (panelCount ? `${panelCount} panels` : ""));
   setValue("systemSize", calculateSystemSize(design, assessment));
   setChecked("saltSpray", design.design_salt_spray || visit.visit_salt_spray);
   setChecked("highWind", design.design_high_wind || visit.visit_high_wind);
@@ -224,9 +267,11 @@ async function loadData() {
   const hasShading = ["trees","chimneys","buildings","aerials","vents","satellite"].some(id => $(id).checked);
   setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
   const files = filesData.files || [];
-  setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || files.some(file => file.category === "drawing")));
-  setChecked("powerBillAttached", Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded));
-  setValue("additionalNotes", buildNotes(design));
+  const roles = new Set(files.map(inferredDocumentRole));
+  setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || roles.has("sld") || roles.has("roof_layout")));
+  setChecked("powerBillAttached", Boolean(roles.has("power_bill") || answers.billFileName || answers.bill_filename || answers.billUploaded));
+  setValue("additionalNotes", buildNotes(design, assessment, icp));
+  renderPackageDocuments(files, answers);
   updateMissing();
 }
 
@@ -253,10 +298,10 @@ function drawText(page, text, x, y, options = {}) {
   if (line) page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
 }
 
-async function downloadPdf() {
+async function createAndSavePdf(download = true) {
   const missing = updateMissing();
   if (missing.length) { $("status").textContent = "Please complete the missing details above."; return; }
-  const button = $("downloadPdf");
+  const button = download ? $("downloadPdf") : $("emailPackage");
   button.disabled = true; $("status").textContent = "Creating PDF…";
   try {
     if (!window.PDFLib) throw new Error("PDF generator did not load. Check the internet connection and refresh.");
@@ -292,28 +337,59 @@ async function downloadPdf() {
     const filename = `${safeName || "Customer"}_Fletcher_Solar_Site_Checklist.pdf`;
     const bytes = await pdf.save();
     const blob = new Blob([bytes], { type:"application/pdf" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    if (download) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
 
     const form = new FormData();
     form.append("job_id", jobId);
     form.append("file", new File([bytes], filename, { type:"application/pdf" }));
     form.append("category", "supplier");
     form.append("caption", "Generated Fletcher / J.A. Russell Solar Site Checklist");
+    form.append("document_role", "fletcher_assessment");
     const saved = await fetch("/api/job-files", { method:"POST", body:form });
     const savedData = await saved.json();
     if (!saved.ok || !savedData.ok) throw new Error(savedData.detail || savedData.error || "PDF downloaded but could not be saved to the job");
-    $("status").textContent = "✓ PDF downloaded and saved to this job";
+    $("status").textContent = download
+      ? "✓ PDF downloaded and saved to this job"
+      : "✓ Completed form prepared and saved";
+    return savedData;
   } catch (error) {
     console.error(error); $("status").textContent = `Could not create PDF: ${error.message}`;
   } finally { button.disabled = false; }
 }
 
+async function emailPackage() {
+  const button = $("emailPackage");
+  button.disabled = true;
+  try {
+    const saved = await createAndSavePdf(false);
+    if (!saved) return;
+    $("status").textContent = "Emailing the package to Jane…";
+    const response = await fetch("/api/fletcher-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId) })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Email failed");
+    const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
+    $("status").textContent = `✓ Package emailed to ${data.recipient}.${missing}`;
+  } catch (error) {
+    console.error(error);
+    $("status").textContent = `Could not email package: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 document.querySelectorAll("input,select,textarea").forEach(field => field.addEventListener("input", updateMissing));
-$("downloadPdf").addEventListener("click", downloadPdf);
+$("downloadPdf").addEventListener("click", () => createAndSavePdf(true));
+$("emailPackage").addEventListener("click", emailPackage);
 loadData().catch(error => { console.error(error); $("missingPanel").className = "card missing"; $("missingPanel").textContent = `Could not load job details: ${error.message}`; });
 </script>
 </body>

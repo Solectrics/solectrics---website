@@ -435,6 +435,17 @@ window.currentAnswers = answers;
           </section>
 
           <section class="card">
+            <h2>Job type</h2>
+            <p class="placeholder">General electrical jobs do not require the solar assessment or design sections.</p>
+            <select id="jobType">
+              <option value="solar" ${job.job_type !== "general_electrical" ? "selected" : ""}>Solar</option>
+              <option value="general_electrical" ${job.job_type === "general_electrical" ? "selected" : ""}>General electrical</option>
+            </select>
+            <button type="button" id="saveJobType" style="margin-top:12px;">SAVE JOB TYPE</button>
+            <span id="jobTypeMessage"></span>
+          </section>
+
+<section class="card">
             <h2>Home Energy Check</h2>
 
             <h3>Home & energy use</h3>
@@ -467,7 +478,7 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card">
+          <section class="card solar-only">
   <h2>Assessment & design</h2>
 
   <div class="placeholder">
@@ -650,7 +661,7 @@ window.currentAnswers = answers;
 
 <!-- TOM'S SITE VISIT -->
 
-<section class="card site-visit" id="siteVisitSection">
+<section class="card site-visit solar-only" id="siteVisitSection">
   <h2>Tom's Site Visit</h2>
   <div class="placeholder">
     Record the onsite facts once. Saving this form also copies the matching
@@ -767,6 +778,18 @@ window.currentAnswers = answers;
       <label>Choose photos or PDFs</label>
       <input type="file" id="jobFileInput" accept="image/*,.pdf" capture="environment" multiple>
     </div>
+    <div>
+      <label>Document use</label>
+      <select id="jobFileRole">
+        <option value="general">General job photo/document</option>
+        <option value="power_bill">Customer power bill</option>
+        <option value="sld">Single-line diagram (SLD)</option>
+        <option value="roof_layout">Roof / panel layout</option>
+        <option value="supplier_quote">Supplier quote</option>
+        <option value="supplier_invoice">Supplier invoice</option>
+        <option value="certificate">Certificate / Ben approval</option>
+      </select>
+    </div>
   </div>
 
   <div id="jobFileSelection" class="job-file-selection" hidden></div>
@@ -857,7 +880,7 @@ window.currentAnswers = answers;
 
 <!-- SYSTEM DESIGN -->
 
-<section class="card" id="systemDesignSection">
+<section class="card solar-only" id="systemDesignSection">
 
   <h2>SYSTEM DESIGN</h2>
 
@@ -1340,7 +1363,7 @@ window.currentAnswers = answers;
 
 <!-- SUPPLIER PRICING -->
 
-<section class="card" id="supplierPricingSection">
+<section class="card solar-only" id="supplierPricingSection">
 
   <h2>SUPPLIER PRICING</h2>
 
@@ -1693,7 +1716,7 @@ window.currentAnswers = answers;
 
 </section>
 
-          <section class="card">
+          <section class="card solar-only">
   <h2>Quote</h2>
 
   <p class="placeholder">
@@ -1942,6 +1965,8 @@ if (
   roofOrientationField.value = answers.direction;
 }
 
+applyJobTypeVisibility(job.job_type || "solar");
+
       } catch (error) {
         console.error(error);
 
@@ -1954,6 +1979,34 @@ if (
     }
 
 
+
+function applyJobTypeVisibility(jobType) {
+  const isSolar = jobType !== "general_electrical";
+  document.querySelectorAll(".solar-only").forEach(section => {
+    section.hidden = !isSolar;
+  });
+}
+
+async function saveJobType() {
+  const field = document.getElementById("jobType");
+  const message = document.getElementById("jobTypeMessage");
+  if (!field || !message) return;
+  message.textContent = " Saving...";
+  try {
+    const response = await fetch("/api/job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId), job_type: field.value })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+    applyJobTypeVisibility(data.job_type);
+    message.textContent = " ✓ Job type saved";
+  } catch (error) {
+    console.error("Could not save job type:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  }
+}
 
     async function loadAssessment() {
   try {
@@ -2664,6 +2717,17 @@ const jobFileCategoryLabels = {
   other: "Other"
 };
 
+const jobFileRoleLabels = {
+  general: "General",
+  power_bill: "Power bill",
+  sld: "Single-line diagram",
+  roof_layout: "Roof / panel layout",
+  supplier_quote: "Supplier quote",
+  supplier_invoice: "Supplier invoice",
+  certificate: "Certificate / Ben approval",
+  fletcher_assessment: "Fletcher site assessment"
+};
+
 const jobPhotoChecklistItems = [
   "site_photo", "switchboard", "meter", "cable_route", "fixings",
   "equipment", "wiring", "labels", "testing", "completed", "certificate"
@@ -2743,6 +2807,7 @@ async function loadJobFiles() {
         </a>
         <div class="placeholder">
           ${escapeHtml(jobFileCategoryLabels[file.category] || "Other")}
+          · ${escapeHtml(jobFileRoleLabels[file.document_role] || "General")}
           · ${escapeHtml(formatFileSize(file.size_bytes))}
           · ${escapeHtml(file.uploaded_at || "")}
         </div>
@@ -2775,6 +2840,7 @@ async function uploadJobFile() {
   }
 
   const category = document.getElementById("jobFileCategory").value;
+  const documentRole = document.getElementById("jobFileRole").value;
   const uploadButton = document.getElementById("uploadJobFile");
   uploadButton.disabled = true;
 
@@ -2789,6 +2855,7 @@ async function uploadJobFile() {
       form.append("file", file);
       form.append("category", category);
       form.append("caption", caption);
+      form.append("document_role", documentRole);
       message.textContent = ` Uploading ${index + 1} of ${files.length}...`;
 
       const response = await fetch("/api/job-files", { method: "POST", body: form });
@@ -3260,6 +3327,10 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveWorkLog") {
     saveWorkLog();
+  }
+
+  if (event.target.id === "saveJobType") {
+    saveJobType();
   }
 
   if (event.target.id === "generateSupplierRequest") {
