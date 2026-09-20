@@ -27,6 +27,13 @@ which keeps an existing deployment working while the schema is upgraded.
 
 Never replace or recreate the production D1 database to apply these additions.
 
+## Canonical hostname protection
+
+`functions/_middleware.js` prevents the default `*.pages.dev` hostname from
+bypassing the Cloudflare Access rules on `solectrics.co.nz`. Browser requests
+are redirected to the custom domain. Non-read requests to a Pages hostname are
+rejected instead of forwarding their request bodies.
+
 ## Resend
 
 Before testing email:
