@@ -196,6 +196,32 @@
     .photo-checklist-status.complete { color: #287a45; }
     .photo-checklist-status.missing { color: #8a5a00; }
 
+    .work-log-summary {
+      background: #f8f6f1;
+      border-radius: 6px;
+      font-weight: 700;
+      margin: 16px 0;
+      padding: 12px;
+    }
+
+    .work-log-row {
+      border-top: 1px solid #e6e1d8;
+      padding: 14px 0;
+    }
+
+    .work-log-heading {
+      display: flex;
+      flex-wrap: wrap;
+      font-weight: 700;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .work-log-detail {
+      margin-top: 7px;
+      white-space: pre-wrap;
+    }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -755,6 +781,82 @@ window.currentAnswers = answers;
 
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
+</section>
+
+<!-- DAILY WORK & EWRB RECORD -->
+
+<section class="card" id="workLogSection">
+  <h2>Daily Work & EWRB Record</h2>
+  <div class="placeholder">
+    Record Tom's work, supervision and competency evidence each day. On a phone,
+    use the keyboard microphone to dictate into the notes fields.
+  </div>
+
+  <div class="grid" style="margin-top:20px;">
+    <div>
+      <label>Date worked</label>
+      <input type="date" id="workLogDate">
+    </div>
+    <div>
+      <label>Hours worked</label>
+      <input type="number" id="workLogHours" min="0.1" max="24" step="0.25" placeholder="e.g. 7.5">
+    </div>
+    <div>
+      <label>Supervisor</label>
+      <input type="text" id="workLogSupervisor" maxlength="120" placeholder="e.g. Ben">
+    </div>
+    <div>
+      <label>Supervision</label>
+      <select id="workLogSupervisionType">
+        <option value="on_site">On-site</option>
+        <option value="remote">Remote</option>
+        <option value="evidence_review">Photos / evidence reviewed</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label>EWRB competency</label>
+      <select id="workLogCompetency">
+        <option value="health_safety">Health and safety</option>
+        <option value="planning">Planning and preparation</option>
+        <option value="cable_installation">Cable installation</option>
+        <option value="switchboards">Switchboards and protection</option>
+        <option value="testing">Testing and verification</option>
+        <option value="solar_pv">Solar PV installation</option>
+        <option value="fault_finding">Fault finding</option>
+        <option value="documentation">Certification and documentation</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Work completed</label>
+    <textarea id="workLogCompleted" rows="3" maxlength="3000"
+      placeholder="Describe or dictate what was completed today"></textarea>
+  </div>
+  <div class="grid" style="margin-top:16px;">
+    <div>
+      <label>Tests performed and results</label>
+      <textarea id="workLogTests" rows="3" maxlength="2000"></textarea>
+    </div>
+    <div>
+      <label>Problems, changes or safety notes</label>
+      <textarea id="workLogIssues" rows="3" maxlength="2000"></textarea>
+    </div>
+  </div>
+  <div style="margin-top:16px;">
+    <label>Questions / notes for Ben</label>
+    <textarea id="workLogSupervisorNotes" rows="2" maxlength="2000"></textarea>
+  </div>
+
+  <br>
+  <button type="button" id="saveWorkLog">SAVE DAILY RECORD</button>
+  <span id="workLogMessage"></span>
+
+  <div id="workLogSummary" class="work-log-summary">Total recorded hours: 0</div>
+  <h3>Daily record history</h3>
+  <div id="workLogList" class="placeholder">No daily records yet.</div>
 </section>
 
 <!-- SYSTEM DESIGN -->
@@ -2712,6 +2814,116 @@ async function uploadJobFile() {
   }
 }
 
+const workLogSupervisionLabels = {
+  on_site: "On-site",
+  remote: "Remote",
+  evidence_review: "Photos / evidence reviewed",
+  other: "Other"
+};
+
+const workLogCompetencyLabels = {
+  health_safety: "Health and safety",
+  planning: "Planning and preparation",
+  cable_installation: "Cable installation",
+  switchboards: "Switchboards and protection",
+  testing: "Testing and verification",
+  solar_pv: "Solar PV installation",
+  fault_finding: "Fault finding",
+  documentation: "Certification and documentation",
+  other: "Other"
+};
+
+function formatWorkLogHours(hours) {
+  const value = Number(hours) || 0;
+  return `${value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")} hours`;
+}
+
+async function loadWorkLogs() {
+  const list = document.getElementById("workLogList");
+  const summary = document.getElementById("workLogSummary");
+
+  try {
+    const response = await fetch(`/api/job-work-logs?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    summary.textContent = `Total recorded hours: ${formatWorkLogHours(data.total_hours)}`;
+
+    if (!data.logs.length) {
+      list.className = "placeholder";
+      list.textContent = "No daily records yet.";
+      return;
+    }
+
+    list.className = "";
+    list.innerHTML = data.logs.map(log => `
+      <div class="work-log-row">
+        <div class="work-log-heading">
+          <span>${escapeHtml(log.work_date)} · ${escapeHtml(formatWorkLogHours(log.hours))}</span>
+          <span>${escapeHtml(workLogCompetencyLabels[log.competency] || "Other")}</span>
+        </div>
+        <div class="placeholder">
+          Supervisor: ${escapeHtml(log.supervisor || "Not recorded")}
+          · ${escapeHtml(workLogSupervisionLabels[log.supervision_type] || "Other")}
+        </div>
+        <div class="work-log-detail"><strong>Work completed:</strong> ${escapeHtml(log.work_completed)}</div>
+        ${log.tests_results ? `<div class="work-log-detail"><strong>Tests/results:</strong> ${escapeHtml(log.tests_results)}</div>` : ""}
+        ${log.issues_notes ? `<div class="work-log-detail"><strong>Problems/changes:</strong> ${escapeHtml(log.issues_notes)}</div>` : ""}
+        ${log.supervisor_notes ? `<div class="work-log-detail"><strong>For Ben:</strong> ${escapeHtml(log.supervisor_notes)}</div>` : ""}
+      </div>
+    `).join("");
+  } catch (error) {
+    console.error("Could not load work logs:", error);
+    list.className = "error";
+    list.textContent = "Could not load daily records.";
+  }
+}
+
+async function saveWorkLog() {
+  const message = document.getElementById("workLogMessage");
+  const button = document.getElementById("saveWorkLog");
+  const payload = {
+    job_id: jobId,
+    work_date: document.getElementById("workLogDate").value,
+    hours: document.getElementById("workLogHours").value,
+    supervisor: document.getElementById("workLogSupervisor").value,
+    supervision_type: document.getElementById("workLogSupervisionType").value,
+    competency: document.getElementById("workLogCompetency").value,
+    work_completed: document.getElementById("workLogCompleted").value,
+    tests_results: document.getElementById("workLogTests").value,
+    issues_notes: document.getElementById("workLogIssues").value,
+    supervisor_notes: document.getElementById("workLogSupervisorNotes").value
+  };
+
+  if (!payload.work_date || !payload.hours || !payload.work_completed.trim()) {
+    message.textContent = " Date, hours and work completed are required";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/job-work-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+
+    ["workLogHours", "workLogCompleted", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
+      .forEach(id => { document.getElementById(id).value = ""; });
+    message.textContent = " ✓ Daily record saved";
+    await loadWorkLogs();
+  } catch (error) {
+    console.error("Could not save work log:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 
 const systemDesignFieldIds = [
   "design_connection_type", "design_main_supply", "design_icp",
@@ -3049,6 +3261,10 @@ document.addEventListener("click", function(event) {
     uploadJobFile();
   }
 
+  if (event.target.id === "saveWorkLog") {
+    saveWorkLog();
+  }
+
   if (event.target.id === "saveSystemDesign") {
     saveSystemDesign();
   }
@@ -3180,9 +3396,16 @@ if (event.target.classList.contains("removeDesignRoof")) {
 });
 
 
+const workLogToday = new Date();
+document.getElementById("workLogDate").value = [
+  workLogToday.getFullYear(),
+  String(workLogToday.getMonth() + 1).padStart(2, "0"),
+  String(workLogToday.getDate()).padStart(2, "0")
+].join("-");
+
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs()
   ]).then(() => {
 
     const roofOrientationField =
