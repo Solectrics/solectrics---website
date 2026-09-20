@@ -802,10 +802,6 @@ window.currentAnswers = answers;
       <input type="number" id="workLogHours" min="0.1" max="24" step="0.25" placeholder="e.g. 7.5">
     </div>
     <div>
-      <label>Supervisor</label>
-      <input type="text" id="workLogSupervisor" maxlength="120" placeholder="e.g. Ben">
-    </div>
-    <div>
       <label>Supervision</label>
       <select id="workLogSupervisionType">
         <option value="on_site">On-site</option>
@@ -2887,7 +2883,7 @@ async function saveWorkLog() {
     job_id: jobId,
     work_date: document.getElementById("workLogDate").value,
     hours: document.getElementById("workLogHours").value,
-    supervisor: document.getElementById("workLogSupervisor").value,
+    supervisor: "Ben",
     supervision_type: document.getElementById("workLogSupervisionType").value,
     competency: document.getElementById("workLogCompetency").value,
     work_completed: document.getElementById("workLogCompleted").value,
