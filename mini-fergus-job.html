@@ -711,8 +711,6 @@ window.currentAnswers = answers;
       </select>
     </div>
     <div><label>Roof material / profile</label><input type="text" id="visit_roof_material"></div>
-    <div><label>Panels likely to fit</label><input type="number" id="visit_roof_panel_count"></div>
-    <div><label>Possible array layout</label><input type="text" id="visit_roof_layout"></div>
     <div><label>Roof access</label><input type="text" id="visit_roof_access"></div>
   </div>
   <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
@@ -2547,11 +2545,13 @@ const siteVisitFieldIds = [
   "visit_icp", "visit_retailer", "visit_network", "visit_switchboard",
   "visit_supply_notes", "visit_roof_length", "visit_roof_width",
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
-  "visit_roof_panel_count", "visit_roof_layout", "visit_roof_access",
+  "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
   "visit_battery_location", "visit_cable_route", "visit_access_notes",
   "visit_general_notes"
 ];
+
+let loadedSiteVisit = {};
 
 const siteVisitCheckboxIds = [
   "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
@@ -2559,7 +2559,9 @@ const siteVisitCheckboxIds = [
 ];
 
 function collectSiteVisit() {
-  const visit = {};
+  // Retain legacy fields that are no longer shown, without asking Tom to
+  // enter them again or wiping them from an older saved site visit.
+  const visit = { ...loadedSiteVisit };
   siteVisitFieldIds.forEach(id => {
     visit[id] = document.getElementById(id)?.value ?? "";
   });
@@ -2608,8 +2610,6 @@ function applySiteVisitToSystemDesign(visit) {
     visit_roof_pitch: "roof_pitch",
     visit_roof_orientation: "roof_orientation_design",
     visit_roof_material: "roof_material",
-    visit_roof_panel_count: "roof_panel_count",
-    visit_roof_layout: "roof_array_layout",
     visit_roof_shading: "roof_shading",
     visit_roof_notes: "roof_notes"
   };
@@ -2630,11 +2630,6 @@ function applySiteVisitToSystemDesign(visit) {
 
   const environmentField = document.getElementById("design_environment_notes");
   if (environmentField) environmentField.value = environmentNotes;
-
-  if (visit.visit_roof_panel_count) {
-    const panelCount = document.getElementById("design_panel_count");
-    if (panelCount) panelCount.value = visit.visit_roof_panel_count;
-  }
 
   const wattage = Number(document.getElementById("design_panel_wattage")?.value) || 0;
   const panelCount = Number(document.getElementById("design_panel_count")?.value) || 0;
@@ -2658,6 +2653,7 @@ async function loadSiteVisit() {
       return;
     }
 
+    loadedSiteVisit = { ...data.site_visit };
     siteVisitFieldIds.forEach(id => {
       const field = document.getElementById(id);
       if (field) field.value = data.site_visit[id] ?? "";
@@ -2687,6 +2683,7 @@ async function saveSiteVisit() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
+    loadedSiteVisit = { ...siteVisit };
     applySiteVisitToSystemDesign(siteVisit);
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
