@@ -31,7 +31,13 @@
     .money { text-align: right; white-space: nowrap; }
     .muted { color: #68716e; }
     .pill { display: inline-block; background: #fff3e9; color: #bd551c; border-radius: 20px; padding: 4px 8px; font-size: 12px; font-weight: 700; }
+    .mapping { margin-top: 18px; padding: 18px; border: 1px solid #dedbd3; border-radius: 12px; background: #fbfaf7; }
+    .mapping h3 { margin: 0 0 6px; }
+    .mapping-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-top: 14px; }
+    .mapping-note { margin: 0; color: #68716e; }
     @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 31px; } }
+    @media (max-width: 850px) { .mapping-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 520px) { .mapping-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -59,9 +65,19 @@
       <span id="fileSummary" class="muted"></span>
     </div>
     <div id="importNotice" hidden></div>
+    <div id="mappingPanel" class="mapping" hidden>
+      <h3>Detected column mapping</h3>
+      <p id="detectionSummary" class="mapping-note"></p>
+      <div class="grid" style="margin-top: 14px">
+        <div><label for="worksheetSelect">Worksheet</label><select id="worksheetSelect"></select></div>
+        <div><label>Header detection</label><div id="headerSummary" class="notice" style="margin-top: 0"></div></div>
+      </div>
+      <div id="mappingGrid" class="mapping-grid"></div>
+      <p class="mapping-note" style="margin-top: 12px">If any detected column is wrong, change it here. The preview and valid-product count will update before anything is imported.</p>
+    </div>
     <div id="previewWrap" class="table-wrap" hidden>
       <table>
-        <thead><tr><th>Product code</th><th>Description</th><th>Unit</th><th>Category</th><th class="money">List price</th><th class="money">Solectrics buy price</th></tr></thead>
+        <thead><tr><th>Product code</th><th>Description</th><th>Brand</th><th>Unit</th><th class="money">List price</th><th class="money">Solectrics buy price</th></tr></thead>
         <tbody id="previewBody"></tbody>
       </table>
     </div>
@@ -90,53 +106,263 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
-const JAR_MAPPING = {
+const FIELD_DEFINITIONS = [
+  { key: "supplier_sku", label: "Product code / SKU", required: true },
+  { key: "description", label: "Description", required: true },
+  { key: "brand", label: "Brand", required: false },
+  { key: "unit_code", label: "Unit", required: false },
+  { key: "list_price", label: "List price", required: false },
+  { key: "buy_price", label: "Net / buy price", required: false }
+];
+const HEADER_ALIASES = {
+  supplier_sku: ["product code", "product no", "product number", "stock code", "item code", "catalogue code", "catalog code", "sku"],
+  description: ["product description", "item description", "description"],
+  brand: ["brand", "manufacturer", "make"],
+  unit_code: ["unit of measure", "unit", "uom"],
+  list_price: ["list price", "retail price", "rrp"],
+  buy_price: ["net price", "buy price", "trade price", "your price", "account price", "net cost", "unit cost"]
+};
+const KNOWN_UNITS = new Set(["EA", "EACH", "MT", "M", "MTR", "METRE", "LT", "PK", "PACK", "JAR", "PAIR", "COIL", "BOX", "ROLL", "SET", "KIT"]);
+const JAR_HEADERLESS_MAPPING = {
   supplier_sku: "B", description: "C", unit_code: "D", category_code: "E",
   barcode: "F", list_price: "H", source_price_date: "I", brand: "J",
   manufacturer_sku: "K", price_class: "L", buy_price: "N"
 };
+let workbookSheets = [];
+let currentSheet = null;
+let currentMapping = {};
 let previewProducts = [];
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[character]));
 }
-function money(value) { return value === null || value === undefined || value === "" ? "—" : new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value)); }
+function numberValue(value) { const parsed = Number(String(value ?? "").replace(/[$,\s]/g, "")); return Number.isFinite(parsed) ? parsed : null; }
+function money(value) { const parsed = numberValue(value); return parsed === null ? "—" : new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(parsed); }
 function notice(element, message, type = "") { element.hidden = false; element.className = `notice ${type}`; element.textContent = message; }
 function columnFromReference(reference) { return (String(reference || "").match(/[A-Z]+/i) || [""])[0].toUpperCase(); }
+function columnName(number) { let name = ""; for (let value = number; value > 0; value = Math.floor((value - 1) / 26)) name = String.fromCharCode(65 + ((value - 1) % 26)) + name; return name; }
+function elementsByLocalName(parent, name) { return [...parent.getElementsByTagName("*")].filter(element => element.localName === name); }
+function normaliseHeader(value) { return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function headerField(value) {
+  const normalised = normaliseHeader(value);
+  for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
+    if (aliases.some(alias => normalised === alias)) return field;
+  }
+  for (const [field, aliases] of Object.entries(HEADER_ALIASES)) {
+    if (aliases.some(alias => alias.length >= 5 && normalised.includes(alias))) return field;
+  }
+  return null;
+}
 
 async function readSharedStrings(zip) {
   const file = zip.file("xl/sharedStrings.xml");
   if (!file) return [];
   const xml = new DOMParser().parseFromString(await file.async("text"), "application/xml");
-  return [...xml.getElementsByTagName("si")].map(item => [...item.getElementsByTagName("t")].map(node => node.textContent || "").join(""));
+  return elementsByLocalName(xml, "si").map(item => elementsByLocalName(item, "t").map(node => node.textContent || "").join(""));
 }
 
 function cellValue(cell, sharedStrings) {
   const type = cell.getAttribute("t");
-  if (type === "inlineStr") return [...cell.getElementsByTagName("t")].map(node => node.textContent || "").join("");
-  const raw = cell.getElementsByTagName("v")[0]?.textContent ?? "";
+  if (type === "inlineStr") return elementsByLocalName(cell, "t").map(node => node.textContent || "").join("");
+  const raw = elementsByLocalName(cell, "v")[0]?.textContent ?? "";
   if (type === "s") return sharedStrings[Number(raw)] ?? "";
   return raw;
 }
 
-async function parseCatalogue(file) {
-  const zip = await JSZip.loadAsync(file);
+function worksheetPath(target) {
+  const clean = String(target || "").replace(/^\//, "").replace(/^\.\//, "");
+  return clean.startsWith("xl/") ? clean : `xl/${clean}`;
+}
+
+async function discoverWorksheets(zip, sharedStrings) {
   const workbookFile = zip.file("xl/workbook.xml");
   if (!workbookFile) throw new Error("This does not appear to be a valid Excel workbook.");
-  const sharedStrings = await readSharedStrings(zip);
-  const worksheet = zip.file("xl/worksheets/sheet1.xml");
-  if (!worksheet) throw new Error("The first worksheet could not be found.");
-  const xml = new DOMParser().parseFromString(await worksheet.async("text"), "application/xml");
-  if (xml.getElementsByTagName("parsererror").length) throw new Error("The worksheet XML could not be read.");
+  const workbookXml = new DOMParser().parseFromString(await workbookFile.async("text"), "application/xml");
+  const relationshipsFile = zip.file("xl/_rels/workbook.xml.rels");
+  const relationships = new Map();
+  if (relationshipsFile) {
+    const relationshipsXml = new DOMParser().parseFromString(await relationshipsFile.async("text"), "application/xml");
+    elementsByLocalName(relationshipsXml, "Relationship").forEach(item => relationships.set(item.getAttribute("Id"), worksheetPath(item.getAttribute("Target"))));
+  }
+  const listedSheets = elementsByLocalName(workbookXml, "sheet").map((sheet, index) => {
+    const relationshipId = sheet.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id") || sheet.getAttribute("r:id");
+    return { name: sheet.getAttribute("name") || `Sheet ${index + 1}`, path: relationships.get(relationshipId) };
+  });
+  const fallbackPaths = Object.keys(zip.files).filter(path => /^xl\/worksheets\/[^/]+\.xml$/i.test(path));
+  const definitions = listedSheets.filter(sheet => sheet.path && zip.file(sheet.path));
+  if (!definitions.length) fallbackPaths.forEach((path, index) => definitions.push({ name: `Sheet ${index + 1}`, path }));
+  if (!definitions.length) throw new Error("No worksheets were found in this Excel file.");
 
-  const rows = [...xml.getElementsByTagName("row")];
-  return rows.map(row => {
-    const values = {};
-    [...row.getElementsByTagName("c")].forEach(cell => { values[columnFromReference(cell.getAttribute("r"))] = cellValue(cell, sharedStrings).trim(); });
-    const product = {};
-    for (const [field, column] of Object.entries(JAR_MAPPING)) product[field] = values[column] || "";
-    return product;
-  }).filter(product => product.supplier_sku && product.description);
+  const sheets = [];
+  for (const definition of definitions) {
+    const xml = new DOMParser().parseFromString(await zip.file(definition.path).async("text"), "application/xml");
+    if (elementsByLocalName(xml, "parsererror").length) continue;
+    const rows = elementsByLocalName(xml, "row").map((row, rowIndex) => {
+      const cells = {};
+      elementsByLocalName(row, "c").forEach((cell, cellIndex) => {
+        const column = columnFromReference(cell.getAttribute("r")) || columnName(cellIndex + 1);
+        cells[column] = String(cellValue(cell, sharedStrings) ?? "").trim();
+      });
+      return { number: Number(row.getAttribute("r")) || rowIndex + 1, cells };
+    }).filter(row => Object.values(row.cells).some(Boolean));
+    sheets.push({ ...definition, rows, columns: [...new Set(rows.flatMap(row => Object.keys(row.cells)))].sort((a, b) => a.length - b.length || a.localeCompare(b)) });
+  }
+  if (!sheets.length) throw new Error("The worksheets could not be read.");
+  return sheets;
+}
+
+function detectHeader(sheet) {
+  let best = { score: 0, rowIndex: -1, mapping: {} };
+  sheet.rows.slice(0, 60).forEach((row, rowIndex) => {
+    const mapping = {};
+    for (const [column, value] of Object.entries(row.cells)) {
+      const field = headerField(value);
+      if (field && !mapping[field]) mapping[field] = column;
+    }
+    const score = Object.keys(mapping).length;
+    if (score > best.score) best = { score, rowIndex, mapping };
+  });
+  return best.score >= 3 ? best : { score: 0, rowIndex: -1, mapping: {} };
+}
+
+function columnStats(sheet, column, startIndex) {
+  const values = sheet.rows.slice(startIndex).map(row => row.cells[column]).filter(value => value !== undefined && value !== "");
+  const numeric = values.map(numberValue).filter(value => value !== null);
+  const decimals = values.filter(value => /^\s*[$]?[\d,]+\.\d+\s*$/.test(value));
+  return {
+    values,
+    filled: values.length,
+    numericRate: values.length ? numeric.length / values.length : 0,
+    decimalRate: values.length ? decimals.length / values.length : 0,
+    uniqueRate: values.length ? new Set(values.map(value => value.toUpperCase())).size / values.length : 0,
+    averageLength: values.length ? values.reduce((total, value) => total + value.length, 0) / values.length : 0,
+    spaceRate: values.length ? values.filter(value => /\s/.test(value)).length / values.length : 0,
+    unitRate: values.length ? values.filter(value => KNOWN_UNITS.has(value.toUpperCase())).length / values.length : 0,
+    numeric
+  };
+}
+
+function looksLikeHeaderlessJar(sheet) {
+  const sample = sheet.rows.slice(0, 30);
+  if (sample.length < 5) return false;
+  const complete = sample.filter(row => row.cells.B && row.cells.C && row.cells.D && row.cells.H && row.cells.J && row.cells.N);
+  const priceRows = complete.filter(row => numberValue(row.cells.H) !== null && numberValue(row.cells.N) !== null);
+  const unitRows = complete.filter(row => KNOWN_UNITS.has(String(row.cells.D).toUpperCase()));
+  return complete.length / sample.length >= 0.7 && priceRows.length / sample.length >= 0.7 && unitRows.length / sample.length >= 0.5;
+}
+
+function inferMapping(sheet, startIndex) {
+  if (looksLikeHeaderlessJar(sheet)) return { mapping: { ...JAR_HEADERLESS_MAPPING }, method: "J.A. Russell data-pattern match", confidence: "high" };
+  const stats = Object.fromEntries(sheet.columns.map(column => [column, columnStats(sheet, column, startIndex)]));
+  const populated = sheet.columns.filter(column => stats[column].filled >= Math.max(3, sheet.rows.length * 0.15));
+  const mapping = {};
+
+  mapping.description = populated.slice().sort((a, b) => (stats[b].averageLength + stats[b].spaceRate * 12) - (stats[a].averageLength + stats[a].spaceRate * 12))[0] || "";
+  mapping.unit_code = populated.slice().sort((a, b) => stats[b].unitRate - stats[a].unitRate)[0] || "";
+  const excluded = new Set([mapping.description, mapping.unit_code]);
+  mapping.supplier_sku = populated.filter(column => !excluded.has(column) && stats[column].averageLength <= 30).sort((a, b) => {
+    const score = column => stats[column].uniqueRate * 3 + Math.min(stats[column].averageLength, 14) / 14 - stats[column].spaceRate * 2;
+    return score(b) - score(a);
+  })[0] || "";
+  excluded.add(mapping.supplier_sku);
+  mapping.brand = populated.filter(column => !excluded.has(column) && stats[column].numericRate < 0.3 && stats[column].averageLength < 40).sort((a, b) => {
+    const score = column => (1 - stats[column].uniqueRate) + stats[column].filled / Math.max(sheet.rows.length, 1);
+    return score(b) - score(a);
+  })[0] || "";
+
+  const priceColumns = populated.filter(column => stats[column].numericRate >= 0.7 && stats[column].numeric.length && stats[column].numeric.sort((a, b) => a - b)[Math.floor(stats[column].numeric.length / 2)] < 100000);
+  let bestPair = null;
+  for (const first of priceColumns) for (const second of priceColumns) {
+    if (first === second) continue;
+    const comparable = sheet.rows.slice(startIndex).map(row => [numberValue(row.cells[first]), numberValue(row.cells[second])]).filter(values => values[0] !== null && values[1] !== null);
+    if (!comparable.length) continue;
+    const greaterRate = comparable.filter(values => values[0] >= values[1]).length / comparable.length;
+    const score = greaterRate * 2 + stats[first].decimalRate * 2 + stats[second].decimalRate * 2;
+    if (!bestPair || score > bestPair.score) bestPair = { list: first, buy: second, score };
+  }
+  if (bestPair) { mapping.list_price = bestPair.list; mapping.buy_price = bestPair.buy; }
+  return { mapping, method: "data-pattern inference", confidence: "review" };
+}
+
+function detectSheet(sheet) {
+  const header = detectHeader(sheet);
+  if (header.score) {
+    const inferred = inferMapping(sheet, header.rowIndex + 1);
+    return { header, mapping: { ...inferred.mapping, ...header.mapping }, method: `header row ${sheet.rows[header.rowIndex].number}`, confidence: header.score >= 4 ? "high" : "review" };
+  }
+  const inferred = inferMapping(sheet, 0);
+  return { header, ...inferred };
+}
+
+function mappedProducts(sheet, mapping, headerRowIndex) {
+  const startIndex = headerRowIndex >= 0 ? headerRowIndex + 1 : 0;
+  return sheet.rows.slice(startIndex).map(row => ({
+    supplier_sku: row.cells[mapping.supplier_sku] || "",
+    description: row.cells[mapping.description] || "",
+    brand: row.cells[mapping.brand] || "",
+    unit_code: row.cells[mapping.unit_code] || "",
+    category_code: row.cells[mapping.category_code] || "",
+    barcode: row.cells[mapping.barcode] || "",
+    list_price: row.cells[mapping.list_price] || "",
+    buy_price: row.cells[mapping.buy_price] || "",
+    source_price_date: row.cells[mapping.source_price_date] || "",
+    manufacturer_sku: row.cells[mapping.manufacturer_sku] || "",
+    price_class: row.cells[mapping.price_class] || ""
+  })).filter(product => {
+    const sku = product.supplier_sku.trim();
+    const description = product.description.trim();
+    if (!sku || !description || sku.length > 100 || description.length < 2) return false;
+    if (headerField(sku) || headerField(description)) return false;
+    if (/^(sub\s*total|total|grand total|category|group|heading)\b/i.test(description)) return false;
+    return !/^(sub\s*total|total)$/i.test(sku);
+  });
+}
+
+function columnOptions(sheet, selected, optional) {
+  const options = optional ? `<option value="">Not present</option>` : `<option value="">Select a column</option>`;
+  return options + sheet.columns.map(column => {
+    const samples = sheet.rows.map(row => row.cells[column]).filter(Boolean).slice(0, 2).join(" · ").slice(0, 55);
+    return `<option value="${column}" ${column === selected ? "selected" : ""}>${column}${samples ? ` — ${escapeHtml(samples)}` : ""}</option>`;
+  }).join("");
+}
+
+function renderMapping(detection) {
+  currentMapping = { ...detection.mapping };
+  document.getElementById("mappingPanel").hidden = false;
+  document.getElementById("detectionSummary").textContent = `${detection.confidence === "high" ? "High-confidence" : "Please review"} detection using ${detection.method}.`;
+  document.getElementById("headerSummary").textContent = detection.header.rowIndex >= 0 ? `Header found on row ${currentSheet.rows[detection.header.rowIndex].number}` : "No header row found — columns inferred from the product data";
+  document.getElementById("mappingGrid").innerHTML = FIELD_DEFINITIONS.map(field => `<div><label for="map_${field.key}">${field.label}${field.required ? " *" : ""}</label><select id="map_${field.key}" data-field="${field.key}">${columnOptions(currentSheet, currentMapping[field.key] || "", !field.required)}</select></div>`).join("");
+  document.querySelectorAll("[data-field]").forEach(select => select.addEventListener("change", () => {
+    currentMapping[select.dataset.field] = select.value;
+    renderPreview(detection.header.rowIndex);
+  }));
+  renderPreview(detection.header.rowIndex);
+}
+
+function renderPreview(headerRowIndex) {
+  previewProducts = mappedProducts(currentSheet, currentMapping, headerRowIndex);
+  const requiredMapped = currentMapping.supplier_sku && currentMapping.description;
+  document.getElementById("previewBody").innerHTML = previewProducts.slice(0, 10).map(product => `<tr><td>${escapeHtml(product.supplier_sku)}</td><td>${escapeHtml(product.description)}</td><td>${escapeHtml(product.brand)}</td><td>${escapeHtml(product.unit_code)}</td><td class="money">${money(product.list_price)}</td><td class="money"><strong>${money(product.buy_price)}</strong></td></tr>`).join("");
+  document.getElementById("previewWrap").hidden = !previewProducts.length;
+  document.getElementById("importButton").disabled = !requiredMapped || !previewProducts.length;
+  document.getElementById("fileSummary").textContent = `${previewProducts.length} valid products found; first ${Math.min(previewProducts.length, 10)} shown`;
+  if (!requiredMapped) notice(document.getElementById("importNotice"), "Select the product-code and description columns to continue.", "error");
+  else if (!previewProducts.length) notice(document.getElementById("importNotice"), "No valid product rows match this mapping. Please correct the columns above.", "error");
+  else notice(document.getElementById("importNotice"), "Preview ready. Check the mapping and the first products, then approve the import.", "success");
+}
+
+async function parseCatalogue(file) {
+  if (typeof JSZip === "undefined") throw new Error("The Excel reader did not load. Refresh the page and try again.");
+  const zip = await JSZip.loadAsync(file);
+  const sharedStrings = await readSharedStrings(zip);
+  workbookSheets = await discoverWorksheets(zip, sharedStrings);
+  const candidates = workbookSheets.map(sheet => {
+    const detection = detectSheet(sheet);
+    const products = mappedProducts(sheet, detection.mapping, detection.header.rowIndex);
+    return { sheet, detection, productCount: products.length };
+  }).sort((a, b) => b.productCount - a.productCount);
+  if (!candidates[0]) throw new Error("No readable worksheet rows were found. Please check the Excel file.");
+  return candidates[0];
 }
 
 document.getElementById("previewButton").addEventListener("click", async () => {
@@ -144,16 +370,17 @@ document.getElementById("previewButton").addEventListener("click", async () => {
   if (!file) return notice(document.getElementById("importNotice"), "Choose the J.A. Russell Excel file first.", "error");
   try {
     notice(document.getElementById("importNotice"), "Reading catalogue…");
-    previewProducts = await parseCatalogue(file);
-    if (!previewProducts.length) throw new Error("No product rows were found in the expected J.A. Russell columns.");
-    document.getElementById("previewBody").innerHTML = previewProducts.slice(0, 10).map(product => `<tr><td>${escapeHtml(product.supplier_sku)}</td><td>${escapeHtml(product.description)}</td><td>${escapeHtml(product.unit_code)}</td><td>${escapeHtml(product.category_code)}</td><td class="money">${money(product.list_price)}</td><td class="money"><strong>${money(product.buy_price)}</strong></td></tr>`).join("");
-    document.getElementById("previewWrap").hidden = false;
-    document.getElementById("importButton").disabled = false;
-    document.getElementById("fileSummary").textContent = `${previewProducts.length} products found; first 10 shown`;
-    notice(document.getElementById("importNotice"), "Preview ready. Confirm the product codes, units and Solectrics buy prices before importing.", "success");
+    const candidate = await parseCatalogue(file);
+    currentSheet = candidate.sheet;
+    const worksheetSelect = document.getElementById("worksheetSelect");
+    worksheetSelect.innerHTML = workbookSheets.map((sheet, index) => `<option value="${index}" ${sheet === currentSheet ? "selected" : ""}>${escapeHtml(sheet.name)} (${sheet.rows.length} non-blank rows)</option>`).join("");
+    worksheetSelect.onchange = () => { currentSheet = workbookSheets[Number(worksheetSelect.value)]; renderMapping(detectSheet(currentSheet)); };
+    renderMapping(candidate.detection);
   } catch (error) {
     previewProducts = [];
     document.getElementById("importButton").disabled = true;
+    document.getElementById("mappingPanel").hidden = true;
+    document.getElementById("previewWrap").hidden = true;
     notice(document.getElementById("importNotice"), error.message, "error");
   }
 });
@@ -164,7 +391,7 @@ document.getElementById("importButton").addEventListener("click", async () => {
   button.disabled = true;
   try {
     notice(document.getElementById("importNotice"), "Importing catalogue…");
-    const response = await fetch("/api/catalogue-import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ supplier_name: document.getElementById("supplierName").value, source_filename: file?.name || "", mapping: JAR_MAPPING, products: previewProducts }) });
+    const response = await fetch("/api/catalogue-import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ supplier_name: document.getElementById("supplierName").value, source_filename: file?.name || "", worksheet: currentSheet?.name || "", mapping: currentMapping, products: previewProducts }) });
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "The catalogue could not be imported.");
     const summary = data.summary;
