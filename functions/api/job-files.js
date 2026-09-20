@@ -18,8 +18,9 @@ const ALLOWED_TYPES = new Set([
   "application/pdf"
 ]);
 const ALLOWED_CATEGORIES = new Set([
-  "site_photo", "switchboard", "meter", "roof", "equipment",
-  "drawing", "supplier", "certificate", "other"
+  "site_photo", "switchboard", "meter", "roof", "cable_route", "fixings",
+  "equipment", "wiring", "labels", "testing", "completed", "drawing",
+  "supplier", "certificate", "other"
 ]);
 
 function getBucket(env) {
