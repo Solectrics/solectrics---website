@@ -77,6 +77,21 @@ export async function ensureSupplierCatalogueSchema(db) {
     db.prepare("CREATE INDEX IF NOT EXISTS idx_supplier_products_sku ON supplier_products(supplier_sku)"),
     db.prepare("CREATE INDEX IF NOT EXISTS idx_catalogue_imports_supplier ON catalogue_imports(supplier_id, imported_at)")
   ]);
+
+  const supplierColumns = await db.prepare("PRAGMA table_info(suppliers)").all();
+  if (!(supplierColumns.results || []).some(column => column.name === "is_default")) {
+    try {
+      await db.prepare("ALTER TABLE suppliers ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0").run();
+    } catch (error) {
+      if (!String(error.message || error).toLowerCase().includes("duplicate column")) throw error;
+    }
+  }
+
+  await db.prepare(`
+    UPDATE suppliers SET is_default = 1
+    WHERE name = 'J.A. Russell' COLLATE NOCASE
+      AND NOT EXISTS (SELECT 1 FROM suppliers WHERE is_default = 1)
+  `).run();
 }
 
 export async function ensureInternalCostingSchema(db) {
