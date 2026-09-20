@@ -134,6 +134,18 @@ function inferInverterType(design) {
   return text ? "grid_tied" : "";
 }
 
+function firstValue(...values) {
+  return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
+}
+
+function calculateSystemSize(design, assessment) {
+  const savedSize = firstValue(design.design_array_kw, assessment.solar_kw);
+  if (savedSize !== "") return savedSize;
+  const panelCount = Number(firstValue(design.design_panel_count, assessment.panel_count));
+  const panelWattage = Number(firstValue(design.design_panel_wattage, assessment.panel_wattage));
+  return panelCount && panelWattage ? (panelCount * panelWattage / 1000).toFixed(2) : "";
+}
+
 function buildArrayLayout(roofs) {
   return roofs.map((roof, index) => {
     const count = roof.roof_panel_count;
@@ -172,14 +184,15 @@ function updateMissing() {
 
 async function loadData() {
   if (!jobId) throw new Error("No job ID was supplied");
-  const urls = [`/api/job?id=${jobId}`, `/api/site-visit?job_id=${jobId}`, `/api/system-design?job_id=${jobId}`, `/api/job-files?job_id=${jobId}`];
+  const urls = [`/api/job?id=${jobId}`, `/api/site-visit?job_id=${jobId}`, `/api/system-design?job_id=${jobId}`, `/api/job-files?job_id=${jobId}`, `/api/assessment?job_id=${jobId}`];
   const responses = await Promise.all(urls.map(url => fetch(url)));
-  const [jobData, visitData, designData, filesData] = await Promise.all(responses.map(response => response.json()));
+  const [jobData, visitData, designData, filesData, assessmentData] = await Promise.all(responses.map(response => response.json()));
   if (!jobData.ok || !jobData.job) throw new Error(jobData.error || "Job could not be loaded");
   const job = jobData.job;
   const answers = parseAnswers(job.answers_json);
   const visit = visitData.site_visit || {};
   const design = designData.system_design || {};
+  const assessment = assessmentData.assessment || {};
   const roofs = Array.isArray(design.roofs) ? design.roofs : [];
   const mainRoof = roofs[0] || {};
   const address = splitAddress(job.address);
@@ -189,13 +202,17 @@ async function loadData() {
   setValue("suburb", address.suburb);
   setValue("cityPostcode", address.city);
   setValue("connectionType", design.design_connection_type || visit.visit_connection_type);
-  setValue("inverterType", inferInverterType(design));
-  const material = mainRoof.roof_material || visit.visit_roof_material;
+  const inverterDesign = {
+    ...design,
+    design_inverter_model: firstValue(design.design_inverter_model, assessment.inverter)
+  };
+  setValue("inverterType", inferInverterType(inverterDesign));
+  const material = firstValue(mainRoof.roof_material, visit.visit_roof_material, answers.roof_material, answers.roof_type);
   setValue("roofType", inferRoofType(material));
   setValue("roofOther", inferRoofType(material) === "other" ? material : "");
-  setValue("roofPitch", mainRoof.roof_pitch || visit.visit_roof_pitch);
+  setValue("roofPitch", firstValue(mainRoof.roof_pitch, visit.visit_roof_pitch, answers.roof_pitch, answers.pitch));
   setValue("arrayLayout", buildArrayLayout(roofs) || visit.visit_roof_layout);
-  setValue("systemSize", design.design_array_kw);
+  setValue("systemSize", calculateSystemSize(design, assessment));
   setChecked("saltSpray", design.design_salt_spray || visit.visit_salt_spray);
   setChecked("highWind", design.design_high_wind || visit.visit_high_wind);
   setChecked("trees", design.design_trees || visit.visit_trees);
