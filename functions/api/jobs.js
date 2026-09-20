@@ -1,3 +1,5 @@
+import { ensureJobTypeColumn } from "./_schema.js";
+
 export async function onRequestGet(context) {
   try {
     const db = context.env.DB;
@@ -9,11 +11,13 @@ export async function onRequestGet(context) {
       );
     }
 
+    await ensureJobTypeColumn(db);
     const { results } = await db.prepare(`
       SELECT
         jobs.id AS job_id,
         jobs.job_status,
         jobs.next_action,
+        jobs.job_type,
         enquiries.id AS enquiry_id,
         enquiries.enquiry_ref,
         enquiries.created_at,

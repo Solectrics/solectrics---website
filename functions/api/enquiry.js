@@ -1,3 +1,5 @@
+import { ensureJobTypeColumn } from "./_schema.js";
+
 export async function onRequestPost(context) {
   try {
     const db = context.env.DB;
@@ -12,6 +14,7 @@ export async function onRequestPost(context) {
       );
     }
 
+    await ensureJobTypeColumn(db);
     const formData = await context.request.formData();
     const answersText = formData.get("answers");
 
@@ -105,14 +108,16 @@ export async function onRequestPost(context) {
         (
           enquiry_id,
           job_status,
-          next_action
+          next_action,
+          job_type
         )
-        VALUES (?, ?, ?)
+        VALUES (?, ?, ?, ?)
       `)
       .bind(
         enquiryId,
         "New enquiry",
-        "Review Home Energy Check"
+        "Review Home Energy Check",
+        "solar"
       )
       .run();
 
