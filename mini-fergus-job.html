@@ -240,6 +240,64 @@
       margin-bottom: 6px;
     }
 
+    .costing-toolbar {
+      align-items: end;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1.2fr 1.2fr .8fr .8fr auto;
+      margin-top: 20px;
+    }
+
+    .costing-toolbar input,
+    .costing-toolbar select,
+    .costing-search input,
+    .costing-line input,
+    .costing-line select {
+      min-height: 40px;
+      width: 100%;
+    }
+
+    .costing-search-results {
+      border: 1px solid #ddd8cf;
+      border-radius: 10px;
+      margin-top: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .costing-search-result {
+      align-items: center;
+      border-bottom: 1px solid #ece8df;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      padding: 10px 12px;
+    }
+
+    .costing-search-result:last-child { border-bottom: 0; }
+    .costing-search-result button { white-space: nowrap; }
+
+    .costing-table-wrap { overflow-x: auto; margin-top: 18px; }
+    .costing-table { border-collapse: collapse; min-width: 1180px; width: 100%; }
+    .costing-table th, .costing-table td { border-bottom: 1px solid #e6e1d8; padding: 9px 7px; text-align: left; vertical-align: top; }
+    .costing-table th { color: #68746f; font-size: 11px; text-transform: uppercase; }
+    .costing-description { min-width: 230px; }
+    .costing-number { min-width: 90px; }
+    .costing-display { min-width: 150px; }
+    .costing-line-meta { color: #68746f; font-size: 12px; margin-top: 4px; }
+    .costing-remove { background: #fff0ed; color: #a12d2d; }
+
+    .costing-summary {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 22px;
+    }
+
+    .costing-summary-item { background: #f8f6f1; border-radius: 10px; padding: 13px; }
+    .costing-summary-item strong { display: block; font-size: 18px; margin-top: 5px; }
+    .costing-summary-item.highlight { background: #fff3e9; }
+
     .error {
       color: #a12d2d;
     }
@@ -256,6 +314,11 @@
 
       .card {
         padding: 25px 22px;
+      }
+
+      .costing-toolbar,
+      .costing-summary {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -1712,6 +1775,63 @@ window.currentAnswers = answers;
 
   <span id="supplierPricingMessage"></span>
 
+</section>
+
+<section class="card" id="internalCostingSection">
+  <h2>INTERNAL COSTING</h2>
+  <p class="placeholder">
+    Build the job cost once, then use it for the customer quote. Supplier costs,
+    mark-up and profit are internal and will never be shown to the customer.
+  </p>
+
+  <div class="costing-toolbar">
+    <div><label>Costing option</label><select id="costingOptionSelect"></select></div>
+    <div><label>Option name</label><input id="costingOptionName" type="text" placeholder="e.g. Solar only"></div>
+    <div><label>Status</label><select id="costingOptionStatus"><option value="draft">Draft</option><option value="approved">Approved</option></select></div>
+    <div><label>Default material mark-up %</label><input id="costingDefaultMarkup" type="number" min="0" step="0.1" value="30"></div>
+    <button type="button" id="newCostingOption">NEW OPTION</button>
+  </div>
+
+  <h3>Add catalogue products</h3>
+  <div class="costing-search">
+    <label for="costingProductSearch">Search product code, description or brand</label>
+    <input id="costingProductSearch" type="search" placeholder="e.g. solar cable, PDL, 10540100">
+    <div id="costingSearchResults" class="costing-search-results" hidden></div>
+  </div>
+
+  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+    <button type="button" class="addCostingLine" data-category="materials">ADD MANUAL MATERIAL</button>
+    <button type="button" class="addCostingLine" data-category="labour">ADD LABOUR</button>
+    <button type="button" class="addCostingLine" data-category="certification">ADD TESTING / CERTIFICATION</button>
+    <button type="button" class="addCostingLine" data-category="other">ADD OTHER COST</button>
+  </div>
+
+  <div class="costing-table-wrap">
+    <table class="costing-table">
+      <thead><tr><th>Description / supplier</th><th>Category</th><th>Used by</th><th>Qty</th><th>Unit</th><th>Unit cost</th><th>Mark-up %</th><th>Customer unit price</th><th>Customer display</th><th></th></tr></thead>
+      <tbody id="costingLines"></tbody>
+    </table>
+  </div>
+
+  <div id="costingEmpty" class="placeholder" style="margin-top:16px;">No costing lines yet. Search the catalogue or add a manual line.</div>
+
+  <div class="costing-summary">
+    <div class="costing-summary-item"><span>Materials cost</span><strong id="costingMaterialsCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Labour cost</span><strong id="costingLabourCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Subcontractor / certification</span><strong id="costingSubcontractorCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Other costs</span><strong id="costingOtherCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Total estimated job cost</span><strong id="costingTotalCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Customer price ex GST</span><strong id="costingCustomerEx">$0.00</strong></div>
+    <div class="costing-summary-item"><span>GST</span><strong id="costingGst">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Customer price incl GST</span><strong id="costingCustomerIncl">$0.00</strong></div>
+    <div class="costing-summary-item highlight"><span>Expected gross profit</span><strong id="costingProfit">$0.00</strong></div>
+    <div class="costing-summary-item highlight"><span>Expected gross margin</span><strong id="costingMargin">0.0%</strong></div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <button type="button" id="saveInternalCosting">SAVE INTERNAL COSTING</button>
+    <span id="costingMessage"></span>
+  </div>
 </section>
 
           <section class="card solar-only">
@@ -3467,6 +3587,228 @@ if (event.target.classList.contains("removeDesignRoof")) {
 });
 
 
+const costingState = {
+  options: [],
+  allLines: [],
+  currentOptionId: null,
+  lines: [],
+  catalogueResults: []
+};
+
+function costingMoney(value) {
+  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value) || 0);
+}
+
+function newCostingLine(category = "materials", product = null) {
+  const markup = Number(document.getElementById("costingDefaultMarkup")?.value) || 0;
+  const unitCost = Number(product?.buy_price) || 0;
+  return {
+    id: crypto.randomUUID(),
+    option_id: costingState.currentOptionId,
+    scope: "option",
+    supplier_product_id: product?.id || "",
+    supplier_name: product?.supplier_name || "",
+    supplier_sku: product?.supplier_sku || "",
+    description: product?.description || "",
+    unit_code: product?.unit_code || (category === "labour" ? "hour" : "each"),
+    quantity: 1,
+    unit_cost: unitCost,
+    markup_percent: category === "materials" ? markup : 0,
+    customer_unit_price: Number((unitCost * (1 + (category === "materials" ? markup : 0) / 100)).toFixed(2)),
+    category,
+    display_mode: "show",
+    combine_label: ""
+  };
+}
+
+function currentCostingOption() {
+  return costingState.options.find(option => option.id === costingState.currentOptionId);
+}
+
+function updateCostingOptionFields() {
+  const option = currentCostingOption();
+  if (!option) return;
+  document.getElementById("costingOptionName").value = option.name || "";
+  document.getElementById("costingOptionStatus").value = option.status || "draft";
+  document.getElementById("costingDefaultMarkup").value = Number(option.default_markup_percent ?? 30);
+}
+
+function renderCostingOptionSelect() {
+  const select = document.getElementById("costingOptionSelect");
+  if (!select) return;
+  select.innerHTML = costingState.options.map(option => `<option value="${escapeHtml(option.id)}" ${option.id === costingState.currentOptionId ? "selected" : ""}>${escapeHtml(option.name)}${option.status === "approved" ? " — Approved" : ""}</option>`).join("");
+  updateCostingOptionFields();
+}
+
+function selectCostingOption(optionId) {
+  costingState.currentOptionId = optionId;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id || line.option_id === optionId).map(line => ({ ...line, scope: line.option_id ? "option" : "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function createCostingOption() {
+  const optionNumber = costingState.options.length + 1;
+  const option = { id: crypto.randomUUID(), name: `Option ${optionNumber}`, status: "draft", default_markup_percent: 30 };
+  costingState.options.push(option);
+  costingState.currentOptionId = option.id;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id).map(line => ({ ...line, scope: "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function costingSelect(field, value) {
+  const choices = {
+    category: [["materials", "Materials"], ["labour", "Labour"], ["subcontractor", "Subcontractor"], ["certification", "Certification / testing"], ["other", "Other"]],
+    scope: [["option", "This option"], ["shared", "All options"]],
+    display_mode: [["show", "Show"], ["combine", "Combine"], ["hide", "Hide"]]
+  }[field];
+  return `<select data-field="${field}">${choices.map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
+function renderCostingLines() {
+  const body = document.getElementById("costingLines");
+  if (!body) return;
+  body.innerHTML = costingState.lines.map(line => `
+    <tr class="costing-line" data-line-id="${escapeHtml(line.id)}">
+      <td class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
+      <td>${costingSelect("category", line.category)}</td>
+      <td>${costingSelect("scope", line.scope)}</td>
+      <td class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
+      <td class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
+      <td class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
+      <td class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
+      <td class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
+      <td class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
+      <td><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
+    </tr>
+  `).join("");
+  document.getElementById("costingEmpty").style.display = costingState.lines.length ? "none" : "block";
+  updateCostingTotals();
+}
+
+function updateCostingTotals() {
+  const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
+  for (const line of costingState.lines) {
+    const quantity = Number(line.quantity) || 0;
+    totals[line.category] = (totals[line.category] || 0) + quantity * (Number(line.unit_cost) || 0);
+    totals.customer += quantity * (Number(line.customer_unit_price) || 0);
+  }
+  const totalCost = totals.materials + totals.labour + totals.subcontractor + totals.certification + totals.other;
+  const gst = totals.customer * 0.15;
+  const profit = totals.customer - totalCost;
+  const margin = totals.customer > 0 ? profit / totals.customer * 100 : 0;
+  document.getElementById("costingMaterialsCost").textContent = costingMoney(totals.materials);
+  document.getElementById("costingLabourCost").textContent = costingMoney(totals.labour);
+  document.getElementById("costingSubcontractorCost").textContent = costingMoney(totals.subcontractor + totals.certification);
+  document.getElementById("costingOtherCost").textContent = costingMoney(totals.other);
+  document.getElementById("costingTotalCost").textContent = costingMoney(totalCost);
+  document.getElementById("costingCustomerEx").textContent = costingMoney(totals.customer);
+  document.getElementById("costingGst").textContent = costingMoney(gst);
+  document.getElementById("costingCustomerIncl").textContent = costingMoney(totals.customer + gst);
+  document.getElementById("costingProfit").textContent = costingMoney(profit);
+  document.getElementById("costingMargin").textContent = `${margin.toFixed(1)}%`;
+}
+
+async function loadCosting(preferredOptionId) {
+  const message = document.getElementById("costingMessage");
+  try {
+    const response = await fetch(`/api/job-costing?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load internal costing");
+    costingState.options = data.options || [];
+    costingState.allLines = data.lines || [];
+    if (!costingState.options.length) createCostingOption();
+    else selectCostingOption(preferredOptionId && costingState.options.some(option => option.id === preferredOptionId) ? preferredOptionId : costingState.options[0].id);
+    if (message) message.textContent = "";
+  } catch (error) {
+    if (message) { message.textContent = error.message; message.className = "error"; }
+  }
+}
+
+async function saveInternalCosting() {
+  const option = currentCostingOption();
+  const message = document.getElementById("costingMessage");
+  if (!option) return;
+  option.name = document.getElementById("costingOptionName").value.trim();
+  option.status = document.getElementById("costingOptionStatus").value;
+  option.default_markup_percent = Number(document.getElementById("costingDefaultMarkup").value) || 0;
+  if (!option.name) { message.textContent = "Enter an option name."; message.className = "error"; return; }
+  try {
+    message.textContent = "Saving…"; message.className = "";
+    const response = await fetch("/api/job-costing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: Number(jobId), option, lines: costingState.lines }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not save internal costing");
+    await loadCosting(data.option_id);
+    message.textContent = "Internal costing saved.";
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+let costingSearchTimer;
+async function searchCostingProducts() {
+  const query = document.getElementById("costingProductSearch").value.trim();
+  const results = document.getElementById("costingSearchResults");
+  if (query.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
+  try {
+    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&limit=30`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Search failed");
+    costingState.catalogueResults = data.products || [];
+    results.innerHTML = costingState.catalogueResults.length ? costingState.catalogueResults.map((product, index) => `<div class="costing-search-result"><div><strong>${escapeHtml(product.description)}</strong><div class="costing-line-meta">${escapeHtml(product.supplier_name)} · ${escapeHtml(product.supplier_sku)} · ${escapeHtml(product.unit_code || "unit")} · Buy ${costingMoney(product.buy_price)}</div></div><button type="button" class="addCatalogueProduct" data-product-index="${index}">ADD</button></div>`).join("") : `<div class="placeholder" style="padding:12px">No matching products.</div>`;
+    results.hidden = false;
+  } catch (error) { results.innerHTML = `<div class="error" style="padding:12px">${escapeHtml(error.message)}</div>`; results.hidden = false; }
+}
+
+document.addEventListener("input", function(event) {
+  if (event.target?.id === "costingProductSearch") {
+    clearTimeout(costingSearchTimer);
+    costingSearchTimer = setTimeout(searchCostingProducts, 250);
+    return;
+  }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  const field = event.target.dataset.field;
+  line[field] = ["quantity", "unit_cost", "markup_percent", "customer_unit_price"].includes(field) ? Number(event.target.value) || 0 : event.target.value;
+  if (field === "unit_cost" || field === "markup_percent") {
+    line.customer_unit_price = Number((Number(line.unit_cost || 0) * (1 + Number(line.markup_percent || 0) / 100)).toFixed(2));
+    row.querySelector('[data-field="customer_unit_price"]').value = line.customer_unit_price;
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "costingOptionSelect") { selectCostingOption(event.target.value); return; }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  line[event.target.dataset.field] = event.target.value;
+  if (event.target.dataset.field === "display_mode") {
+    row.querySelector('[data-field="combine_label"]').style.display = event.target.value === "combine" ? "block" : "none";
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("click", function(event) {
+  if (event.target?.id === "newCostingOption") createCostingOption();
+  if (event.target?.id === "saveInternalCosting") saveInternalCosting();
+  if (event.target?.classList?.contains("addCostingLine")) {
+    costingState.lines.push(newCostingLine(event.target.dataset.category));
+    renderCostingLines();
+  }
+  if (event.target?.classList?.contains("addCatalogueProduct")) {
+    const product = costingState.catalogueResults[Number(event.target.dataset.productIndex)];
+    if (product) { costingState.lines.push(newCostingLine("materials", product)); renderCostingLines(); }
+  }
+  if (event.target?.classList?.contains("removeCostingLine")) {
+    const row = event.target.closest(".costing-line");
+    costingState.lines = costingState.lines.filter(line => line.id !== row?.dataset.lineId);
+    renderCostingLines();
+  }
+});
+
 const workLogToday = new Date();
 const workLogDateField = document.getElementById("workLogDate");
 if (workLogDateField) {
@@ -3479,7 +3821,7 @@ if (workLogDateField) {
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting()
   ]).then(() => {
 
     const roofOrientationField =
