@@ -111,6 +111,24 @@
     .source-note{margin:22px 0 0;color:#66736e;font-size:13px}
     .source-note a{color:#276b58;font-weight:700}
 
+    .usage-section{background:var(--green);color:#fff}
+    .usage-section .section-head{max-width:860px}
+    .usage-section .eyebrow{color:#f6bd63}
+    .usage-section h2{color:#fff}
+    .usage-section .section-head p{color:#d9e3df}
+    .usage-layout{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.7fr);gap:28px;align-items:stretch}
+    .usage-focus{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:34px;border-radius:22px;background:var(--orange);color:var(--green);box-shadow:0 16px 36px rgba(7,28,23,.22)}
+    .usage-focus-icon{display:grid;place-items:center;width:76px;height:76px;margin-bottom:18px;border:3px solid var(--green);border-radius:50%;font-size:36px;line-height:1}
+    .usage-focus strong{display:block;font-size:clamp(64px,9vw,104px);line-height:.88;letter-spacing:-.06em}
+    .usage-focus h3{margin:14px 0 8px;font-size:25px;line-height:1.1}
+    .usage-focus p{max-width:320px;margin:0;font-size:15px;line-height:1.5}
+    .usage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .usage-card{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:22px;border-radius:16px;background:rgba(255,255,255,.96);color:var(--green);border:1px solid rgba(255,255,255,.38)}
+    .usage-percent{min-width:74px;color:var(--orange);font-size:38px;line-height:1;font-weight:900;letter-spacing:-.04em}
+    .usage-card h3{margin:0 0 3px;font-size:17px;line-height:1.2}
+    .usage-card p{margin:0;color:var(--green-soft);font-size:13px;line-height:1.35}
+    .usage-note{margin:22px 0 0;color:#c5d3cf;font-size:13px}
+
     .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .step{padding:25px;border-radius:18px;background:rgba(255,255,255,.93);border:1px solid var(--line)}
     .step-number{color:#ef9c20;font-weight:800;font-size:12px;letter-spacing:.12em;margin-bottom:10px}
@@ -132,7 +150,10 @@
       .eyebrow{font-size:28px}
       .intro-strip p{font-size:23px}
       .section{padding:54px 0}
-      .hot-water,.steps{grid-template-columns:1fr}
+      .hot-water,.steps,.usage-layout{grid-template-columns:1fr}
+      .usage-grid{grid-template-columns:1fr}
+      .usage-focus{padding:30px 24px}
+      .usage-focus strong{font-size:78px}
       .energy-map{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding-top:10px}
       .energy-lines{display:none}
       .home-centre{order:-1;width:min(240px,72vw);margin:0 auto 14px}
@@ -249,6 +270,54 @@
           <p>When several large appliances could run together, sensible load management can help them share the available supply and prioritise what matters most.</p>
         </details>
       </div>
+    </div>
+  </section>
+
+  <section class="section usage-section" aria-labelledby="usage-title">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">A typical household picture</div>
+        <h2 id="usage-title">WHERE HOUSEHOLD ELECTRICITY GOES</h2>
+        <p>Seeing the larger loads makes it easier to decide where smarter timing, efficient equipment and daytime solar use can have the greatest effect.</p>
+      </div>
+
+      <div class="usage-layout">
+        <article class="usage-focus">
+          <span class="usage-focus-icon" aria-hidden="true">♨</span>
+          <strong>27%</strong>
+          <h3>Water heating</h3>
+          <p>The largest single use in this household breakdown—and one of the best places to look for practical savings.</p>
+        </article>
+
+        <div class="usage-grid">
+          <article class="usage-card">
+            <div class="usage-percent">20%</div>
+            <div><h3>Electronics and other electrical</h3><p>Everyday devices and miscellaneous household loads.</p></div>
+          </article>
+          <article class="usage-card">
+            <div class="usage-percent">17%</div>
+            <div><h3>Refrigeration</h3><p>Fridges and freezers operating throughout the day.</p></div>
+          </article>
+          <article class="usage-card">
+            <div class="usage-percent">15%</div>
+            <div><h3>Space heating</h3><p>Keeping living areas comfortable through colder weather.</p></div>
+          </article>
+          <article class="usage-card">
+            <div class="usage-percent">13%</div>
+            <div><h3>Lighting</h3><p>Indoor and outdoor household lighting.</p></div>
+          </article>
+          <article class="usage-card">
+            <div class="usage-percent">5%</div>
+            <div><h3>Cooking</h3><p>Ovens, hobs and other cooking appliances.</p></div>
+          </article>
+          <article class="usage-card">
+            <div class="usage-percent">3%</div>
+            <div><h3>Clothes drying</h3><p>Electric tumble drying and related laundry use.</p></div>
+          </article>
+        </div>
+      </div>
+
+      <p class="usage-note">Illustrative New Zealand household electricity split. Source: EECA Energy End Use Database, 2018. Every household is different.</p>
     </div>
   </section>
 
