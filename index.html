@@ -437,15 +437,50 @@ margin-left: 0;
 .hero-paths .button.secondary {
   margin-top: 14px !important;
 }
+
+/* Large overlapping homepage logo */
+header {
+  justify-content: flex-end;
+}
+
+header nav {
+  margin-left: auto;
+}
+
+.hero {
+  position: relative;
+}
+
+.hero > .brand-logo {
+  position: absolute;
+  width: 690px;
+  max-width: none;
+  height: auto;
+  top: -185px;
+  left: -25px;
+  z-index: 2;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+}
+
+@media (max-width: 800px) {
+  .hero > .brand-logo {
+    width: 460px;
+    top: -125px;
+    left: -75px;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<img class="brand-logo" src="EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics">
-
-
 <nav>
 <a href="#services">Solar</a>
 <a href="#smart">Smart Energy</a>
@@ -458,6 +493,7 @@ margin-left: 0;
 <main>
 
 <section class="hero">
+<img class="brand-logo" src="EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics">
 <div class="hero-content">
 <div class="eyebrow">Waiheke Island • New Zealand</div>
 
