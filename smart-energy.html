@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Energy for Your Home | Solectrics</title>
+  <meta name="description" content="Make more of your solar with smart appliance timing, EV charging, hot-water heat pumps, daytime heating and simple home-energy controls from Solectrics.">
+  <link rel="icon" type="image/png" href="./favicon.png?v=2">
+  <style>
+    :root{
+      --green:#17332d;
+      --green-soft:#49615b;
+      --orange:#ef9c20;
+      --cream:#f7f5ef;
+      --line:#e5e2d9;
+      --white:#fff;
+      --shadow:0 12px 34px rgba(23,51,45,.09);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--green);
+      line-height:1.6;
+      background:
+        linear-gradient(rgba(247,245,239,.88),rgba(247,245,239,.88)),
+        url("AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center/cover fixed;
+    }
+
+    a{color:inherit}
+    .wrap{width:min(1120px,calc(100% - 40px));margin:auto}
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:20px 0;
+      border-bottom:1px solid rgba(229,226,217,.9);
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(10px);
+    }
+
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{text-decoration:none;font-size:22px;font-weight:800;letter-spacing:.05em}
+    .brand .e{color:var(--orange)}
+    .nav-links{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:600}
+    .nav-links a{text-decoration:none}
+    .nav-links a:hover,.nav-links a[aria-current="page"]{color:#c96f00}
+
+    .hero{padding:86px 0 70px;background:rgba(255,255,255,.64)}
+    .eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800;color:#3c876c;margin-bottom:16px}
+    h1{font-size:clamp(46px,7vw,80px);line-height:.98;letter-spacing:-.045em;max-width:890px;margin:0 0 28px}
+    h1 span{color:var(--orange)}
+    .hero-intro{font-size:clamp(20px,2.3vw,27px);line-height:1.45;max-width:900px;margin:0;color:#405750}
+    .hero-note{max-width:800px;font-size:17px;color:var(--green-soft);margin:22px 0 0}
+
+    .intro-strip{padding:34px 0;background:rgba(23,51,45,.96);color:#fff}
+    .intro-strip p{margin:0;max-width:900px;font-size:20px}
+
+    .section{padding:72px 0;background:rgba(247,245,239,.66)}
+    .section.white{background:rgba(255,255,255,.75)}
+    .section-head{max-width:790px;margin-bottom:34px}
+    h2{font-size:clamp(32px,4vw,49px);line-height:1.08;letter-spacing:-.025em;margin:0 0 16px}
+    .section-head p{font-size:18px;color:var(--green-soft);margin:0}
+
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+    .card-icon{font-size:28px;margin-bottom:14px}
+    .card h3{font-size:24px;line-height:1.18;margin:0 0 12px}
+    .card p{margin:0;color:var(--green-soft)}
+
+    .hot-water{display:grid;grid-template-columns:.9fr 1.1fr;gap:30px;align-items:start}
+    .hot-water-copy{background:rgba(255,255,255,.95);border-radius:22px;padding:32px;box-shadow:var(--shadow)}
+    .hot-water-copy p{color:var(--green-soft);font-size:17px}
+    .hot-water-copy p:last-child{margin-bottom:0}
+    .benefits{display:grid;gap:14px}
+    .benefit{padding:22px;border-left:5px solid var(--orange);background:rgba(255,255,255,.92);border-radius:0 16px 16px 0}
+    .benefit strong{display:block;font-size:18px;margin-bottom:5px}
+    .benefit span{color:var(--green-soft)}
+    .source-note{margin:22px 0 0;color:#66736e;font-size:13px}
+    .source-note a{color:#276b58;font-weight:700}
+
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .step{padding:25px;border-radius:18px;background:rgba(255,255,255,.93);border:1px solid var(--line)}
+    .step-number{color:#c96f00;font-weight:800;font-size:12px;letter-spacing:.12em;margin-bottom:10px}
+    .step h3{margin:0 0 8px;font-size:21px}
+    .step p{margin:0;color:var(--green-soft)}
+
+    .cta{padding:78px 0;text-align:center;background:rgba(255,255,255,.82)}
+    .cta h2{max-width:760px;margin:0 auto 16px}
+    .cta p{max-width:720px;margin:0 auto 28px;color:var(--green-soft);font-size:18px}
+    .buttons{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    .button{display:inline-block;text-decoration:none;border-radius:9px;padding:17px 25px;background:var(--orange);color:var(--green);font-weight:800;border:2px solid var(--orange)}
+    .button.secondary{background:var(--green);border-color:var(--green);color:#fff}
+
+    footer{padding:26px 20px;text-align:center;color:#65736e;background:rgba(255,255,255,.9);border-top:1px solid var(--line);font-size:13px}
+
+    @media(max-width:760px){
+      .nav-links{display:none}
+      .hero{padding:58px 0 48px}
+      .section{padding:54px 0}
+      .grid,.hot-water,.steps{grid-template-columns:1fr}
+      .wrap{width:min(100% - 28px,1120px)}
+      body{background-attachment:scroll}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/">sol<span class="e">e</span>ctrics</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home-energy-check.html">Home Energy Check</a>
+      <a href="/smart-energy.html" aria-current="page">Smart Energy</a>
+      <a href="/smart-solar-prices.html">Prices</a>
+      <a href="#enquire">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">More than panels on a roof</div>
+      <h1>Make more of the energy your home <span>already has.</span></h1>
+      <p class="hero-intro">
+        Over and above your solar system, the great news is that we can add simple timing and control devices to larger appliances and EV chargers. They help your home use more power while the sun is producing it—reducing grid use and bringing your electricity bills down even further.
+      </p>
+      <p class="hero-note">
+        You do not need to automate everything. We look at the appliances that use the most energy, then suggest the changes that are likely to make a real difference in your home.
+      </p>
+    </div>
+  </section>
+
+  <section class="intro-strip">
+    <div class="wrap">
+      <p><strong>The simple idea:</strong> generate during the day, use more of it while it is there, and rely less on expensive grid electricity later.</p>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Smart energy around the home</div>
+        <h2>Small controls can make a surprisingly big difference.</h2>
+        <p>These solutions can be added with a new solar installation or introduced gradually as your needs and budget allow.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <div class="card-icon">⏱️</div>
+          <h3>Appliance timers and smart switching</h3>
+          <p>Run suitable larger appliances during your strongest solar hours instead of in the evening. Depending on the appliance and installation, this may use a timer, controller, relay or another safely installed switching device.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🚗</div>
+          <h3>Solar-aware EV charging</h3>
+          <p>Schedule or control EV charging so more of the car's energy comes from daytime solar—or from a lower-cost electricity period when solar is not available. We also consider charging speed, available supply and the other electrical loads in your home.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">📊</div>
+          <h3>Energy monitoring</h3>
+          <p>See when your home is importing, exporting and using the most power. Clear information makes it easier to change everyday habits and decide which upgrade is worth doing next.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🏊</div>
+          <h3>Pool, spa and pump scheduling</h3>
+          <p>Pumps and heating can be significant loads. Where practical, their operating times can be shifted toward solar hours while still keeping the system working as it should.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">🔋</div>
+          <h3>Battery-ready controls</h3>
+          <p>You may not need a battery on day one. We can help prepare the electrical design and controls so storage can be added later without losing sight of how the home already uses energy.</p>
+        </article>
+
+        <article class="card">
+          <div class="card-icon">⚡</div>
+          <h3>Load management</h3>
+          <p>When several large appliances could run together, sensible load management can help them share the available supply and prioritise what matters most.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">The big opportunity</div>
+        <h2>Hot water can become one of the smartest parts of your home.</h2>
+        <p>EECA says water heating makes up around one-third of household energy bills, so it is a very worthwhile place to look for savings.</p>
+      </div>
+
+      <div class="hot-water">
+        <div class="hot-water-copy">
+          <p>Hot water is often one of a household's largest electricity uses. A conventional cylinder creates heat directly from electricity. A hot-water heat pump works differently: it gathers warmth from the surrounding air and transfers that heat into the water.</p>
+          <p>Because it moves heat rather than producing all of it from scratch, EECA says it can use around 60–75% less electricity than a conventional electric hot-water system. Pair it with solar-aware timing and it can do more of its work during the day, using energy from your roof whenever conditions allow.</p>
+          <p>EECA's example for an average three-person Auckland household estimates a saving of around $284 a year when changing from a traditional electric cylinder. That is a useful guide rather than a promise: the result for your home depends on water use, existing equipment, electricity prices, location and installation.</p>
+          <p>Hot-water heat pumps are still relatively new technology in New Zealand. We assess the cylinder, outdoor-unit position, noise, plumbing and electrical requirements, and work with suitably experienced installers.</p>
+        </div>
+
+        <div class="benefits">
+          <div class="benefit"><strong>Lower hot-water energy use</strong><span>EECA advises that these systems can use around one-third of the energy needed by electric-resistance water heating.</span></div>
+          <div class="benefit"><strong>A natural partner for solar</strong><span>Heat water during sunny hours and store that useful energy as hot water for later.</span></div>
+          <div class="benefit"><strong>Less evening grid demand</strong><span>Move a large household load away from the time when solar production has faded.</span></div>
+          <div class="benefit"><strong>Comfort without constant attention</strong><span>Once it is set up properly, smart timing can work quietly in the background.</span></div>
+        </div>
+      </div>
+      <p class="source-note">Independent guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/water-heating/hot-water-heat-pumps/" target="_blank" rel="noopener">EECA — hot-water heat pumps for your home</a>.</p>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Solar-powered comfort</div>
+        <h2>Use the daytime sun to warm your home before evening.</h2>
+        <p>An efficient heat pump can warm the house while solar is available. Your home then carries some of that warmth into the evening, which may reduce the heating needed after solar production fades. EECA says a heat pump is usually the best heating option for larger rooms, recommends using a timer, and suggests a maximum winter thermostat setting of 20–21°C. Good insulation and draught control help the warmth last longer.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step"><div class="step-number">01 · GENERATE</div><h3>Solar production rises</h3><p>Your panels begin producing useful energy through the day.</p></article>
+        <article class="step"><div class="step-number">02 · PRE-HEAT</div><h3>Warm the home in solar hours</h3><p>Use suitable controls or scheduling to run efficient heating while generation is available.</p></article>
+        <article class="step"><div class="step-number">03 · EASE THE EVENING</div><h3>Reduce the later demand</h3><p>A comfortably warmed home may need less grid-powered heating after sunset.</p></article>
+      </div>
+      <p class="source-note">Independent guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/heating-and-cooling/heat-and-cool-efficiently-at-home/" target="_blank" rel="noopener">EECA — heat and cool your home efficiently</a> and <a href="https://www.eeca.govt.nz/for-homes/vehicles/smart-ev-chargers/" target="_blank" rel="noopener">EECA — smart EV chargers</a>.</p>
+    </div>
+  </section>
+
+  <section class="cta" id="enquire">
+    <div class="wrap">
+      <div class="eyebrow">Start with your home</div>
+      <h2>Wondering which smart-energy upgrades would actually save you money?</h2>
+      <p>Tell us what you already have and what you would like to improve. We can suggest a practical starting point and provide prices for the options that suit your home.</p>
+      <div class="buttons">
+        <a class="button" href="mailto:jane@solectrics.co.nz?subject=Smart%20Energy%20price%20enquiry">ENQUIRE ABOUT PRICES →</a>
+        <a class="button secondary" href="/home-energy-check.html">START MY HOME ENERGY CHECK</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>© 2026 Solectrics • Smart Solar Living • Waiheke Island, New Zealand</footer>
+
+</body>
+</html>
