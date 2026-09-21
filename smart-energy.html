@@ -91,7 +91,9 @@
     .idea-card summary::-webkit-details-marker{display:none}
     .idea-card summary::after{content:'+';margin-left:auto;color:#ef9c20;font-size:22px;font-weight:500}
     .idea-card[open] summary::after{content:'−'}
-    .idea-symbol{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;background:#fff1da;font-size:20px}
+    .idea-symbol{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:#fff1da;color:var(--green)}
+    .idea-symbol svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .idea-symbol .accent{stroke:var(--orange);stroke-width:2.2}
     .idea-card p{position:absolute;top:calc(100% + 9px);left:0;width:min(360px,42vw);margin:0;padding:17px 18px;border-radius:13px;background:var(--green);color:#fff;font-size:14px;line-height:1.55;box-shadow:0 14px 30px rgba(23,51,45,.22);opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .18s ease,transform .18s ease,visibility .18s ease;pointer-events:none}
     .idea-card:nth-of-type(even) p{left:auto;right:0}
     .idea-card:nth-of-type(5) p,.idea-card:nth-of-type(6) p{top:auto;bottom:calc(100% + 9px);transform:translateY(6px)}
@@ -220,32 +222,32 @@
         </div>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">⏱</span>Appliance timers and smart switching</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><circle cx="14" cy="15" r="9"></circle><path d="M14 15l4-3M14 15V9M11 3h6M14 3v3"></path><path class="accent" d="M21 7l2 2"></path></svg></span>Appliance timers and smart switching</summary>
           <p>Run suitable larger appliances during your strongest solar hours instead of in the evening. Depending on the appliance and installation, this may use a timer, controller, relay or another safely installed switching device.</p>
         </details>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">🚗</span>Solar-aware EV charging</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M5 16l2-6h12l3 6v6H5zM8 16h11"></path><circle cx="9" cy="22" r="2"></circle><circle cx="19" cy="22" r="2"></circle><path class="accent" d="M12 6h5M15 3l-3 5h4l-2 4"></path></svg></span>Solar-aware EV charging</summary>
           <p>Schedule or control EV charging so more of the car's energy comes from daytime solar—or from a lower-cost electricity period when solar is not available. We also consider charging speed, available supply and the other electrical loads in your home.</p>
         </details>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">▥</span>Energy monitoring</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><rect x="4" y="4" width="20" height="20" rx="2"></rect><path d="M8 20v-5M13 20v-9M18 20v-6"></path><path class="accent" d="M7 9c4-3 8-2 14-3"></path></svg></span>Energy monitoring</summary>
           <p>See when your home is importing, exporting and using the most power. Clear information makes it easier to change everyday habits and decide which upgrade is worth doing next.</p>
         </details>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">≈</span>Pool, spa and pump scheduling</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M3 12c3 0 3 2 6 2s3-2 6-2 3 2 6 2 3-2 4-2M3 18c3 0 3 2 6 2s3-2 6-2 3 2 6 2 3-2 4-2"></path><path class="accent" d="M20 4v5M18 6h4"></path></svg></span>Pool, spa and pump scheduling</summary>
           <p>Pumps and heating can be significant loads. Where practical, their operating times can be shifted toward solar hours while still keeping the system working as it should.</p>
         </details>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">▣</span>Battery-ready controls</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><rect x="6" y="5" width="16" height="19" rx="2"></rect><path d="M11 2h6v3M10 19h8"></path><path class="accent" d="M15 8l-4 6h4l-2 4"></path></svg></span>Battery-ready controls</summary>
           <p>You may not need a battery on day one. We can help prepare the electrical design and controls so storage can be added later without losing sight of how the home already uses energy.</p>
         </details>
 
         <details class="idea-card">
-          <summary><span class="idea-symbol">⚡</span>Load management</summary>
+          <summary><span class="idea-symbol" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M14 3L8 14h5l-2 11 9-14h-6z"></path><path class="accent" d="M4 8h4M20 20h4"></path></svg></span>Load management</summary>
           <p>When several large appliances could run together, sensible load management can help them share the available supply and prioritise what matters most.</p>
         </details>
       </div>
