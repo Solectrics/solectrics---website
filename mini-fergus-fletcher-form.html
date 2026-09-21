@@ -175,22 +175,25 @@ function orientationFactor(value) {
 }
 
 function calculatePreliminaryProposal(answers, visit, design, assessment) {
-  const savedCount = numeric(firstValue(design.design_panel_count, assessment.panel_count));
+  // Assessment values are inputs, not an approved supplier proposal. Only a
+  // quantity saved in System Design is treated as Jane-reviewed.
+  const savedCount = design.design_reviewed ? numeric(firstValue(design.design_panel_count)) : 0;
   const panelWattage = numeric(firstValue(design.design_panel_wattage, assessment.panel_wattage)) || 445;
   const summerDaily = billDailyUse(answers?.bills?.summer);
   const winterDaily = billDailyUse(answers?.bills?.winter);
   const dailyValues = [summerDaily, winterDaily].filter(Boolean);
   const annualUse = dailyValues.length ? dailyValues.reduce((sum, value) => sum + value, 0) / dailyValues.length * 365 : 0;
+  const unusualOneBillEstimate = dailyValues.length === 1 && annualUse > 20000;
   const orientation = firstValue(design.roofs?.[0]?.roof_orientation_design, visit.visit_roof_orientation, assessment.roof_orientation, answers.direction);
   const productionPerKw = 1250 * orientationFactor(orientation);
-  const energyTargetKw = annualUse ? annualUse * .9 / productionPerKw : 0;
+  const energyTargetKw = annualUse && !unusualOneBillEstimate ? annualUse * .9 / productionPerKw : 0;
   const roofLength = numeric(firstValue(design.roofs?.[0]?.roof_length, visit.visit_roof_length));
   const roofWidth = numeric(firstValue(design.roofs?.[0]?.roof_width, visit.visit_roof_width));
   // Indicative only: reserve 25% for edges, access and obstructions; assume 2.4 m² per modern panel.
   const roofCapacity = roofLength && roofWidth ? Math.max(1, Math.floor(roofLength * roofWidth * .75 / 2.4)) : 0;
-  let panelCount = savedCount || (energyTargetKw ? Math.ceil(energyTargetKw * 1000 / panelWattage) : 0);
-  const limitedByRoof = Boolean(panelCount && roofCapacity && panelCount > roofCapacity);
-  if (limitedByRoof) panelCount = roofCapacity;
+  const energyPanelCount = energyTargetKw ? Math.ceil(energyTargetKw * 1000 / panelWattage) : 0;
+  let panelCount = savedCount || (energyPanelCount && roofCapacity ? Math.min(energyPanelCount, roofCapacity) : 0);
+  const limitedByRoof = Boolean(!savedCount && energyPanelCount && roofCapacity && energyPanelCount > roofCapacity);
   const systemKw = panelCount ? panelCount * panelWattage / 1000 : 0;
   const sources = [];
   if (dailyValues.length === 2) sources.push("summer and winter bill data");
@@ -198,7 +201,7 @@ function calculatePreliminaryProposal(answers, visit, design, assessment) {
   if (roofCapacity) sources.push("Tom's recorded roof dimensions");
   if (orientation) sources.push(`${orientation} orientation`);
   if (savedCount) sources.push("the saved panel quantity");
-  return { panelCount, panelWattage, systemKw, annualUse, roofCapacity, limitedByRoof, sources, hasEnergyData:Boolean(annualUse) };
+  return { panelCount, panelWattage, systemKw, annualUse, roofCapacity, limitedByRoof, sources, hasEnergyData:Boolean(annualUse), energyPanelCount, unusualOneBillEstimate };
 }
 
 let preliminaryProposal = null;
@@ -209,7 +212,12 @@ function renderPreliminaryProposal(proposal) {
   if (!proposal.panelCount) {
     panel.hidden = false;
     $("useProposal").hidden = true;
-    summary.innerHTML = `<strong>More information is needed for an automatic recommendation.</strong><p>Add a power bill or save a reviewed panel quantity in Mini Fergus. Tom's roof measurements improve the roof-capacity check.</p>`;
+    const energyText = proposal.unusualOneBillEstimate
+      ? `One bill annualises to approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh, which is unusually high for a home. Check the extracted bill figures or add another bill before using it to size the system.`
+      : proposal.energyPanelCount
+      ? `The energy-use estimate suggests approximately ${proposal.energyPanelCount} panels, but Mini Fergus will not use that as the proposal until the usable roof capacity is known.`
+      : "A reliable energy-use estimate is not yet available.";
+    summary.innerHTML = `<strong>More information is needed before proposing a system size.</strong><p>${energyText}</p><p>Add Tom's roof measurements or save a Jane-reviewed panel quantity in System Design. OpenSolar must confirm the final layout.</p>`;
     return;
   }
   panel.hidden = false;
@@ -230,11 +238,12 @@ function applyPreliminaryProposal(replaceExisting = true) {
   updateMissing();
 }
 
-function calculateSystemSize(design, assessment) {
-  const savedSize = firstValue(design.design_array_kw, assessment.solar_kw);
+function calculateSystemSize(design) {
+  if (!design.design_reviewed) return "";
+  const savedSize = firstValue(design.design_array_kw);
   if (savedSize !== "") return savedSize;
-  const panelCount = Number(firstValue(design.design_panel_count, assessment.panel_count));
-  const panelWattage = Number(firstValue(design.design_panel_wattage, assessment.panel_wattage));
+  const panelCount = Number(firstValue(design.design_panel_count));
+  const panelWattage = Number(firstValue(design.design_panel_wattage));
   return panelCount && panelWattage ? (panelCount * panelWattage / 1000).toFixed(2) : "";
 }
 
@@ -274,16 +283,18 @@ function buildArrayLayout(roofs) {
 
 function buildNotes(design, assessment, icp) {
   const items = [];
-  const panelCount = firstValue(design.design_panel_count, assessment.panel_count);
-  const panelWattage = firstValue(design.design_panel_wattage, assessment.panel_wattage);
-  const inverterModel = firstValue(design.design_inverter_model, assessment.inverter);
-  const batteryCapacity = firstValue(design.design_battery_kwh, assessment.battery_kwh);
+  const reviewed = Boolean(design.design_reviewed);
+  const panelCount = reviewed ? firstValue(design.design_panel_count) : "";
+  const panelWattage = reviewed ? firstValue(design.design_panel_wattage) : "";
+  const inverterModel = reviewed ? firstValue(design.design_inverter_model) : "";
+  const batteryCapacity = reviewed ? firstValue(design.design_battery_kwh) : "";
   if (icp) items.push(`ICP: ${icp}`);
-  if (panelCount || design.design_panel_model) {
-    items.push(`${panelCount || ""} panels ${design.design_panel_model || ""}${panelWattage ? ` (${panelWattage} W each)` : ""}`.trim());
+  if (!reviewed) return items.join("\n");
+  if (panelCount || (reviewed && design.design_panel_model)) {
+    items.push(`${panelCount || ""} panels ${reviewed ? design.design_panel_model || "" : ""}${panelWattage ? ` (${panelWattage} W each)` : ""}`.trim());
   }
   if (inverterModel || design.design_inverter_kw) items.push(`Inverter: ${inverterModel || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
-  if (design.design_battery_model || batteryCapacity || assessment.battery_option) items.push(`Battery: ${design.design_battery_model || assessment.battery_option || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
+  if (design.design_battery_model || batteryCapacity) items.push(`Battery: ${design.design_battery_model || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
   if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
   if (design.design_environment_notes) items.push(design.design_environment_notes);
   if (design.design_electrical_notes) items.push(design.design_electrical_notes);
@@ -337,9 +348,9 @@ async function loadData() {
   setValue("roofType", inferRoofType(material));
   setValue("roofOther", inferRoofType(material) === "other" ? material : "");
   setValue("roofPitch", firstValue(mainRoof.roof_pitch, visit.visit_roof_pitch, answers.roof_pitch, answers.pitch));
-  const panelCount = firstValue(design.design_panel_count, assessment.panel_count);
-  setValue("arrayLayout", buildArrayLayout(roofs) || visit.visit_roof_layout || (panelCount ? `${panelCount} panels` : ""));
-  setValue("systemSize", calculateSystemSize(design, assessment));
+  const panelCount = design.design_reviewed ? firstValue(design.design_panel_count) : "";
+  setValue("arrayLayout", (design.design_reviewed ? buildArrayLayout(roofs) : "") || visit.visit_roof_layout || (panelCount ? `${panelCount} panels` : ""));
+  setValue("systemSize", calculateSystemSize(design));
   setChecked("saltSpray", design.design_salt_spray || visit.visit_salt_spray);
   setChecked("highWind", design.design_high_wind || visit.visit_high_wind);
   setChecked("trees", design.design_trees || visit.visit_trees);
