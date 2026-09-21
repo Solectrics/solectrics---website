@@ -63,7 +63,7 @@ export async function onRequestPost(context) {
 
     /*
       Create the enquiry.
-      answers_json keeps the complete Home Energy Check so Mini Fergus
+      answers_json keeps the complete Home Energy Check so Job Hub
       can use the customer's original answers later.
     */
 
@@ -99,7 +99,7 @@ export async function onRequestPost(context) {
     }
 
     /*
-      Automatically create the linked Mini Fergus job.
+      Automatically create the linked Job Hub record.
     */
 
     const jobResult = await db

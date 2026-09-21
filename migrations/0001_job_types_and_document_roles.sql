@@ -1,4 +1,4 @@
--- Additive Mini Fergus migration. Existing Home Energy Check jobs are solar jobs.
+-- Additive Job Hub migration. Existing Home Energy Check jobs are solar jobs.
 ALTER TABLE jobs ADD COLUMN job_type TEXT NOT NULL DEFAULT 'solar';
 ALTER TABLE job_files ADD COLUMN document_role TEXT;
 

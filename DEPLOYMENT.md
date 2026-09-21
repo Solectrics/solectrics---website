@@ -1,4 +1,4 @@
-# Mini Fergus deployment notes
+# Solectrics Job Hub deployment notes
 
 ## Cloudflare bindings
 
@@ -11,8 +11,8 @@ The Pages project uses:
 
 Optional:
 
-- `FLETCHER_FROM_EMAIL` — full Resend sender value. If omitted, Mini Fergus uses
-  `Mini Fergus <mini-fergus@solectrics.co.nz>`.
+- `FLETCHER_FROM_EMAIL` — full Resend sender value. If omitted, Job Hub uses
+  `Solectrics Job Hub <mini-fergus@solectrics.co.nz>`.
 
 The Fletcher recipient is intentionally fixed in server code as
 `jane@solectrics.co.nz` so a form cannot accidentally be sent directly to a

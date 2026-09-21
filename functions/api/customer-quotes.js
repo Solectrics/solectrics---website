@@ -151,18 +151,27 @@ export async function onRequestPost(context) {
     const costing = await loadApprovedCosting(db, jobId);
     if (!costing.options.length) return errorResponse("Approve and save at least one costing option before generating the customer quote", 400);
     const job = await db.prepare(`
-      SELECT jobs.id AS job_id, enquiries.customer_name, enquiries.address, enquiries.email, enquiries.phone
+      SELECT jobs.id AS job_id, jobs.job_type, enquiries.customer_name, enquiries.address, enquiries.email, enquiries.phone
       FROM jobs JOIN enquiries ON jobs.enquiry_id = enquiries.id WHERE jobs.id = ?
     `).bind(jobId).first();
     if (!job) return errorResponse("Job not found", 404);
     const maxRow = await db.prepare("SELECT COALESCE(MAX(version_number), 0) AS maximum FROM customer_quote_versions WHERE job_id = ?").bind(jobId).first();
     const version = Number(maxRow?.maximum || 0) + 1;
     const source = quoteSource(costing.options, costing.lines);
+    const quotePrefix = job.job_type === "general_electrical" ? "SEW" : "SOL";
+    const template = job.job_type === "general_electrical" ? "general_electrical" : "solar";
     const snapshot = {
-      quote_number: `SOL-${jobId}-V${version}`,
+      quote_number: `${quotePrefix}-${jobId}-V${version}`,
       job_id: jobId,
+      job_type: job.job_type || "solar",
+      template,
+      terms_version: "2026-09-21",
       version,
       generated_at: new Date().toISOString(),
+      business: {
+        name: "Solectrics",
+        address: ["39 Bay Rd", "Ostend", "Waiheke Island 1081"]
+      },
       customer: { name: job.customer_name || "", address: job.address || "", email: job.email || "", phone: job.phone || "" },
       options: buildCustomerOptions(costing.options, costing.lines),
       currency: "NZD",

@@ -26,7 +26,7 @@
       color:var(--green);
       line-height:1.6;
       background:
-        linear-gradient(rgba(247,245,239,.88),rgba(247,245,239,.88)),
+        linear-gradient(rgba(247,245,239,.78),rgba(247,245,239,.78)),
         url("AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center/cover fixed;
     }
 
@@ -55,7 +55,7 @@
     .mobile-menu-links{position:absolute;right:0;top:calc(100% + 9px);width:min(260px,calc(100vw - 28px));padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 14px 32px rgba(23,51,45,.16)}
     .mobile-menu-links a{display:block;padding:12px 10px;text-decoration:none;font-weight:700}
 
-    .hero{padding:86px 0 70px;background:rgba(255,255,255,.64)}
+    .hero{padding:86px 0 70px;background:rgba(255,255,255,.25)}
     .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:36px;line-height:1.1;font-weight:800;color:#3c876c;margin-bottom:18px}
     h1{font-size:clamp(46px,7vw,80px);line-height:.98;letter-spacing:-.045em;max-width:890px;margin:0 0 28px}
     h1 span{color:var(--orange)}
@@ -64,6 +64,28 @@
 
     .intro-strip{padding:34px 0;background:var(--orange);color:var(--green)}
     .intro-strip p{margin:0;max-width:900px;font-size:28px;line-height:1.4;font-style:italic}
+
+    .usage-section{padding:76px 0;background:rgba(255,255,255,.82)}
+    .usage-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:48px;align-items:end;margin-bottom:38px}
+    .usage-intro h2{margin-bottom:0}
+    .usage-intro p{color:var(--green-soft);font-size:18px;margin:0}
+    .usage-board{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.7fr);gap:34px;align-items:center;padding:34px;border:1px solid var(--line);border-radius:26px;background:rgba(247,245,239,.9);box-shadow:var(--shadow)}
+    .usage-ring-wrap{text-align:center}
+    .usage-ring{position:relative;display:grid;place-items:center;width:min(310px,70vw);aspect-ratio:1;margin:auto;border-radius:50%;background:conic-gradient(var(--orange) 0 27%,#de7650 27% 47%,#3c876c 47% 64%,#79a293 64% 79%,#e8b44b 79% 92%,#c9a86a 92% 97%,#b8c8c1 97% 100%);box-shadow:inset 0 0 0 1px rgba(23,51,45,.08),0 14px 32px rgba(23,51,45,.12)}
+    .usage-ring::after{content:"";width:58%;aspect-ratio:1;border-radius:50%;background:var(--cream);box-shadow:0 0 0 10px rgba(255,255,255,.58)}
+    .usage-ring-copy{position:absolute;left:50%;top:50%;width:58%;transform:translate(-50%,-50%);z-index:1}
+    .usage-ring-copy strong{display:block;color:var(--green);font-size:46px;line-height:1}
+    .usage-ring-copy span{display:block;max-width:130px;margin:8px auto 0;color:var(--green-soft);font-size:13px;font-weight:800;line-height:1.25;text-transform:uppercase;letter-spacing:.06em}
+    .usage-ring-note{margin:18px auto 0;max-width:310px;color:var(--green-soft);font-size:14px}
+    .usage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .usage-card{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:92px;padding:15px;border-radius:15px;background:#fff;border:1px solid var(--line)}
+    .usage-card:first-child{border-color:var(--orange);box-shadow:0 8px 20px rgba(239,156,32,.12)}
+    .usage-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#fff1da;color:var(--green)}
+    .usage-icon svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .usage-icon .accent{stroke:var(--orange);stroke-width:2.2}
+    .usage-label{font-size:14px;font-weight:800;line-height:1.25}
+    .usage-value{color:var(--orange);font-size:29px;font-weight:900;letter-spacing:-.04em}
+    .usage-source{margin:18px 0 0;color:#66736e;font-size:13px;text-align:right}
 
     .section{padding:72px 0;background:rgba(247,245,239,.66)}
     .section.white{background:rgba(255,255,255,.75)}
@@ -141,6 +163,8 @@
       .intro-strip p{font-size:23px}
       .section{padding:54px 0}
       .hot-water,.steps{grid-template-columns:1fr}
+      .usage-intro,.usage-board{grid-template-columns:1fr}
+      .usage-intro{gap:15px}
       .energy-map{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding-top:10px}
       .energy-lines{display:none}
       .home-centre{order:-1;width:min(240px,72vw);margin:0 auto 14px}
@@ -150,6 +174,14 @@
       .idea-card[open] summary{border-radius:13px 13px 0 0;transform:none}
       .wrap{width:min(100% - 28px,1120px)}
       body{background-attachment:scroll}
+    }
+
+    @media(max-width:620px){
+      .usage-section{padding:54px 0}
+      .usage-board{padding:22px 16px}
+      .usage-grid{grid-template-columns:1fr}
+      .usage-card{min-height:78px}
+      .usage-ring{width:min(270px,76vw)}
     }
   </style>
 </head>
@@ -191,6 +223,59 @@
   <section class="intro-strip">
     <div class="wrap">
       <p><strong>The simple idea:</strong> generate and use more of your solar energy in daylight hours to save on your bills.</p>
+    </div>
+  </section>
+
+  <section class="usage-section" aria-labelledby="household-usage-title">
+    <div class="wrap">
+      <div class="usage-intro">
+        <div>
+          <div class="eyebrow">Where household electricity goes</div>
+          <h2 id="household-usage-title">Start with the loads that matter most.</h2>
+        </div>
+        <p>A typical home uses electricity across several everyday needs. Understanding the larger loads helps us decide where solar, efficient appliances and simple timing controls can make the biggest difference.</p>
+      </div>
+
+      <div class="usage-board">
+        <div class="usage-ring-wrap">
+          <div class="usage-ring" role="img" aria-label="Chart showing typical household electricity use by category">
+            <div class="usage-ring-copy"><strong>100%</strong><span>typical household electricity use</span></div>
+          </div>
+          <p class="usage-ring-note">Every household is different. Your Home Energy Check helps us understand your actual pattern.</p>
+        </div>
+
+        <div class="usage-grid">
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8 5v11a8 8 0 0 0 16 0V5"></path><path d="M8 10h16M12 3v5M20 3v5"></path><path class="accent" d="M13 22c2-3 4-3 6 0"></path></svg></span>
+            <span class="usage-label">Water heating</span><strong class="usage-value">27%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="4" y="6" width="24" height="17" rx="2"></rect><path d="M11 27h10M16 23v4"></path><path class="accent" d="M13 11l7 4-7 4z"></path></svg></span>
+            <span class="usage-label">Electronics and other electrical</span><strong class="usage-value">20%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="8" y="3" width="16" height="26" rx="2"></rect><path d="M8 16h16M20 8h1"></path><path class="accent" d="M3 11h3M26 11h3M4 21h3M25 21h3"></path></svg></span>
+            <span class="usage-label">Refrigeration</span><strong class="usage-value">17%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M10 25V7h12v18M6 25h20"></path><path d="M13 11h6M13 15h6M13 19h6"></path><path class="accent" d="M5 8c2 2 2 4 0 6M27 8c-2 2-2 4 0 6"></path></svg></span>
+            <span class="usage-label">Space heating</span><strong class="usage-value">15%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M12 22h8M14 26h4"></path><path d="M10 15a6 6 0 1 1 12 0c0 3-2 4-3 6h-6c-1-2-3-3-3-6z"></path><path class="accent" d="M16 2v3M5 8l3 2M27 8l-3 2"></path></svg></span>
+            <span class="usage-label">Lighting</span><strong class="usage-value">13%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 13h18v13H7zM10 13V9h12v4"></path><path d="M11 18h10"></path><path class="accent" d="M13 4c-2 2 2 3 0 5M19 4c-2 2 2 3 0 5"></path></svg></span>
+            <span class="usage-label">Cooking</span><strong class="usage-value">5%</strong>
+          </article>
+          <article class="usage-card">
+            <span class="usage-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="18" r="8"></circle><path d="M8 4h16v24H8zM11 8h2M16 8h5"></path><path class="accent" d="M12 18c2-3 6-3 8 0"></path></svg></span>
+            <span class="usage-label">Clothes drying</span><strong class="usage-value">3%</strong>
+          </article>
+        </div>
+      </div>
+      <p class="usage-source">Indicative national breakdown · Source: EECA Energy End Use Database, 2018.</p>
     </div>
   </section>
 

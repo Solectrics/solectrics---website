@@ -11,6 +11,10 @@ const CREATE_TABLE = `
     tests_results TEXT,
     issues_notes TEXT,
     supervisor_notes TEXT,
+    start_time TEXT,
+    finish_time TEXT,
+    materials_used TEXT,
+    certification_status TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
@@ -23,6 +27,30 @@ const COMPETENCIES = new Set([
   "health_safety", "planning", "cable_installation", "switchboards",
   "testing", "solar_pv", "fault_finding", "documentation", "other"
 ]);
+
+const CERTIFICATION_STATUSES = new Set([
+  "not_started", "in_progress", "ready_for_ben", "completed", "not_required"
+]);
+
+async function ensureWorkLogColumns(db) {
+  await db.prepare(CREATE_TABLE).run();
+  const columns = await db.prepare("PRAGMA table_info(job_work_logs)").all();
+  const existing = new Set((columns.results || []).map(column => column.name));
+  for (const [name, type] of [
+    ["start_time", "TEXT"],
+    ["finish_time", "TEXT"],
+    ["materials_used", "TEXT"],
+    ["certification_status", "TEXT"]
+  ]) {
+    if (!existing.has(name)) {
+      try {
+        await db.prepare(`ALTER TABLE job_work_logs ADD COLUMN ${name} ${type}`).run();
+      } catch (error) {
+        if (!String(error.message || error).toLowerCase().includes("duplicate column")) throw error;
+      }
+    }
+  }
+}
 
 function errorResponse(message, status = 500, detail) {
   return Response.json(
@@ -44,10 +72,11 @@ export async function onRequestGet(context) {
       return errorResponse("job_id is required", 400);
     }
 
-    await db.prepare(CREATE_TABLE).run();
+    await ensureWorkLogColumns(db);
     const result = await db.prepare(`
       SELECT id, work_date, hours, supervisor, supervision_type, competency,
-             work_completed, tests_results, issues_notes, supervisor_notes, created_at
+             work_completed, tests_results, issues_notes, supervisor_notes,
+             start_time, finish_time, materials_used, certification_status, created_at
       FROM job_work_logs
       WHERE job_id = ?
       ORDER BY work_date DESC, created_at DESC
@@ -79,6 +108,11 @@ export async function onRequestPost(context) {
     const testsResults = cleanText(body.tests_results, 2000);
     const issuesNotes = cleanText(body.issues_notes, 2000);
     const supervisorNotes = cleanText(body.supervisor_notes, 2000);
+    const startTime = cleanText(body.start_time, 5);
+    const finishTime = cleanText(body.finish_time, 5);
+    const materialsUsed = cleanText(body.materials_used, 3000);
+    const certificationStatus = CERTIFICATION_STATUSES.has(body.certification_status)
+      ? body.certification_status : "not_started";
 
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
@@ -93,16 +127,18 @@ export async function onRequestPost(context) {
       return errorResponse("Work completed is required", 400);
     }
 
-    await db.prepare(CREATE_TABLE).run();
+    await ensureWorkLogColumns(db);
     const id = crypto.randomUUID();
     await db.prepare(`
       INSERT INTO job_work_logs
         (id, job_id, work_date, hours, supervisor, supervision_type, competency,
-         work_completed, tests_results, issues_notes, supervisor_notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         work_completed, tests_results, issues_notes, supervisor_notes, start_time,
+         finish_time, materials_used, certification_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id, jobId, workDate, hours, supervisor || null, supervisionType, competency,
-      workCompleted, testsResults || null, issuesNotes || null, supervisorNotes || null
+      workCompleted, testsResults || null, issuesNotes || null, supervisorNotes || null,
+      startTime || null, finishTime || null, materialsUsed || null, certificationStatus
     ).run();
 
     return Response.json({ ok: true, id, message: "Daily record saved" });

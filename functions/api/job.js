@@ -54,7 +54,7 @@ export async function onRequestGet(context) {
     });
 
   } catch (error) {
-    console.error("Mini Fergus job error:", error);
+    console.error("Job Hub job error:", error);
 
     return Response.json(
       {
@@ -73,20 +73,42 @@ export async function onRequestPost(context) {
 
     const body = await context.request.json();
     const jobId = Number(body.job_id);
-    const jobType = body.job_type === "general_electrical" ? "general_electrical" : "solar";
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
 
     await ensureJobTypeColumn(db);
-    const result = await db.prepare(
-      "UPDATE jobs SET job_type = ? WHERE id = ?"
-    ).bind(jobType, jobId).run();
-    if (!result.meta?.changes) return errorResponse("Job not found", 404);
+    const existing = await db.prepare(
+      "SELECT job_type, job_status, next_action FROM jobs WHERE id = ?"
+    ).bind(jobId).first();
+    if (!existing) return errorResponse("Job not found", 404);
 
-    return Response.json({ ok: true, job_type: jobType });
+    const jobType = body.job_type === undefined
+      ? (existing.job_type || "solar")
+      : (body.job_type === "general_electrical" ? "general_electrical" : "solar");
+    const allowedStatuses = new Set([
+      "New enquiry", "New job", "quoted", "accepted", "scheduled",
+      "in_progress", "awaiting_inspection", "completed", "invoiced"
+    ]);
+    const jobStatus = allowedStatuses.has(body.job_status)
+      ? body.job_status
+      : (existing.job_status || "New job");
+    const nextAction = body.next_action === undefined
+      ? (existing.next_action || "")
+      : String(body.next_action || "").trim().slice(0, 500);
+
+    const result = await db.prepare(
+      "UPDATE jobs SET job_type = ?, job_status = ?, next_action = ? WHERE id = ?"
+    ).bind(jobType, jobStatus, nextAction, jobId).run();
+
+    return Response.json({
+      ok: true,
+      job_type: jobType,
+      job_status: jobStatus,
+      next_action: nextAction
+    });
   } catch (error) {
-    console.error("Mini Fergus job update error:", error);
+    console.error("Job Hub job update error:", error);
     return errorResponse("Unable to update job", 500, error.message);
   }
 }

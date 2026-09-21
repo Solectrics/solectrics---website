@@ -146,13 +146,13 @@ export async function onRequestPost(context) {
       : "<p><strong>All expected documents are attached.</strong></p>";
     const html = `
       <p>Hi Jane,</p>
-      <p>Mini Fergus has prepared the Fletcher / J.A. Russell solar package for
+      <p>Solectrics Job Hub has prepared the Fletcher / J.A. Russell solar package for
          <strong>${escapeHtml(job.customer_name || `Job ${jobId}`)}</strong>.</p>
       <p>${escapeHtml(job.address || "")}</p>
       <p><strong>Attached:</strong></p><ul>${includedItems}</ul>
       ${missingItems}
       <p>Please review the package before forwarding it to Fletcher.</p>
-      <p>Mini Fergus</p>
+      <p>Solectrics Job Hub</p>
     `;
 
     const response = await fetch("https://api.resend.com/emails", {
@@ -162,7 +162,7 @@ export async function onRequestPost(context) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: context.env.FLETCHER_FROM_EMAIL || "Mini Fergus <mini-fergus@solectrics.co.nz>",
+        from: context.env.FLETCHER_FROM_EMAIL || "Solectrics Job Hub <mini-fergus@solectrics.co.nz>",
         to: [RECIPIENT],
         subject,
         html,

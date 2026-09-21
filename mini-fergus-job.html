@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Fergus Job | Solectrics</title>
+  <title>Solectrics Job Hub | Job</title>
 
   <style>
     * { box-sizing: border-box; }
@@ -137,6 +137,15 @@
     .site-visit textarea {
       min-height: 80px;
     }
+
+    .general-job input,
+    .general-job select,
+    .general-job textarea {
+      min-height: 40px;
+      width: 100%;
+    }
+
+    .general-job textarea { min-height: 86px; }
 
     .job-files input:not([type="file"]),
     .job-files select,
@@ -352,7 +361,7 @@
     <div class="brand">solectrics</div>
     <div class="eyebrow">Internal workspace</div>
 
-    <a class="back" href="/mini-fergus">← Back to Mini Fergus</a>
+    <a class="back" href="/mini-fergus">← Back to Job Hub</a>
 
     <div id="page">
       Loading job...
@@ -442,6 +451,7 @@ if (typeof value === "object" && value !== null) {
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
   let currentAnswers = {};
+  let currentJobType = "solar";
 
 async function loadJob() {
   const page = document.getElementById("page");
@@ -464,6 +474,7 @@ async function loadJob() {
         }
 
         const job = data.job;
+        currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
         
 const answers = currentAnswers;
@@ -530,7 +541,67 @@ window.currentAnswers = answers;
             <span id="jobTypeMessage"></span>
           </section>
 
-<section class="card">
+          <section class="card general-job general-only" id="generalJobSection" hidden>
+            <h2>Electrical Job Brief</h2>
+            <p class="placeholder">
+              Keep the essential job information here. Tom can use phone dictation in any notes box.
+              Ben is the default supervisor and does not need to be selected for each job.
+            </p>
+
+            <div class="grid">
+              <div>
+                <label>Job status</label>
+                <select id="general_job_status">
+                  <option value="New job" ${job.job_status === "New job" ? "selected" : ""}>New job</option>
+                  <option value="quoted" ${job.job_status === "quoted" ? "selected" : ""}>Quoted</option>
+                  <option value="accepted" ${job.job_status === "accepted" ? "selected" : ""}>Accepted</option>
+                  <option value="scheduled" ${job.job_status === "scheduled" ? "selected" : ""}>Scheduled</option>
+                  <option value="in_progress" ${job.job_status === "in_progress" ? "selected" : ""}>In progress</option>
+                  <option value="awaiting_inspection" ${job.job_status === "awaiting_inspection" ? "selected" : ""}>Awaiting inspection / certification</option>
+                  <option value="completed" ${job.job_status === "completed" ? "selected" : ""}>Completed</option>
+                  <option value="invoiced" ${job.job_status === "invoiced" ? "selected" : ""}>Invoiced</option>
+                </select>
+              </div>
+              <div><label>Next action</label><input id="general_next_action" value="${escapeHtml(job.next_action || "")}"></div>
+            </div>
+
+            <h3>Work requested</h3>
+            <textarea id="general_job_description" placeholder="What has the customer asked Solectrics to do?">${escapeHtml(answers.jobDescription || "")}</textarea>
+
+            <h3>Site and existing installation</h3>
+            <div class="grid">
+              <div><label>Site contact / access</label><textarea id="general_site_contact"></textarea></div>
+              <div><label>Access or parking notes</label><textarea id="general_access_notes"></textarea></div>
+              <div><label>Supply / phase / main switch</label><textarea id="general_supply_details"></textarea></div>
+              <div><label>Switchboard details</label><textarea id="general_switchboard_details"></textarea></div>
+            </div>
+            <div style="margin-top:16px;"><label>Existing installation / fault information</label><textarea id="general_existing_installation"></textarea></div>
+            <div style="margin-top:16px;"><label>Hazards and safety notes</label><textarea id="general_hazards"></textarea></div>
+
+            <h3>Planned electrical work</h3>
+            <textarea id="general_work_scope" placeholder="Circuits, fittings, repairs, switchboard work or other agreed scope"></textarea>
+            <div class="grid" style="margin-top:16px;">
+              <div><label>Testing required / planned</label><textarea id="general_testing_required"></textarea></div>
+              <div>
+                <label>Certification status</label>
+                <select id="general_certification_status">
+                  <option value="not_started">Not started</option>
+                  <option value="testing_in_progress">Testing in progress</option>
+                  <option value="ready_for_ben">Ready for Ben's review</option>
+                  <option value="certificate_required">Certificate required</option>
+                  <option value="completed">Completed / certificate filed</option>
+                  <option value="not_required">Not required</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:16px;"><label>Customer notes / decisions</label><textarea id="general_customer_notes"></textarea></div>
+
+            <br>
+            <button type="button" id="saveGeneralJobDetails">SAVE ELECTRICAL JOB BRIEF</button>
+            <span id="generalJobMessage"></span>
+          </section>
+
+<section class="card solar-only">
             <h2>Home Energy Check</h2>
 
             <h3>Home & energy use</h3>
@@ -627,7 +698,7 @@ window.currentAnswers = answers;
 <h3>Smart energy use</h3>
 
 <div class="placeholder">
-  Mini Fergus can suggest how this home could use more of its own solar based on the Home Energy Check.
+  Job Hub can suggest how this home could use more of its own solar based on the Home Energy Check.
 </div>
 
 <div class="grid">
@@ -723,7 +794,7 @@ window.currentAnswers = answers;
 <h3>Overall recommendation</h3>
 
 <div class="placeholder">
-  Mini Fergus will assemble a concise recommendation from the design above. You can edit it before saving.
+  Job Hub will assemble a concise recommendation from the design above. You can edit it before saving.
 </div>
 
 <textarea id="recommendation"
@@ -833,7 +904,7 @@ window.currentAnswers = answers;
   <h2>Job Photos & Documents</h2>
   <div class="placeholder">
     Add site photos, switchboard and meter photos, drawings, supplier documents
-    and certificates. Each file stays attached to this Mini Fergus job.
+    and certificates. Each file stays attached to this Job Hub record.
   </div>
 
   <div class="grid" style="margin-top:20px;">
@@ -865,9 +936,9 @@ window.currentAnswers = answers;
       <label>Document use</label>
       <select id="jobFileRole">
         <option value="general">General job photo/document</option>
-        <option value="power_bill">Customer power bill</option>
-        <option value="sld">Single-line diagram (SLD)</option>
-        <option value="roof_layout">Roof / panel layout</option>
+        <option class="solar-file-role" value="power_bill">Customer power bill</option>
+        <option class="solar-file-role" value="sld">Single-line diagram (SLD)</option>
+        <option class="solar-file-role" value="roof_layout">Roof / panel layout</option>
         <option value="supplier_quote">Supplier quote</option>
         <option value="supplier_invoice">Supplier invoice</option>
         <option value="certificate">Certificate / Ben approval</option>
@@ -908,6 +979,14 @@ window.currentAnswers = answers;
       <input type="number" id="workLogHours" min="0.1" max="24" step="0.25" placeholder="e.g. 7.5">
     </div>
     <div>
+      <label>Start time (optional)</label>
+      <input type="time" id="workLogStartTime">
+    </div>
+    <div>
+      <label>Finish time (optional)</label>
+      <input type="time" id="workLogFinishTime">
+    </div>
+    <div>
       <label>Supervision</label>
       <select id="workLogSupervisionType">
         <option value="on_site">On-site</option>
@@ -936,6 +1015,22 @@ window.currentAnswers = answers;
     <label>Work completed</label>
     <textarea id="workLogCompleted" rows="3" maxlength="3000"
       placeholder="Describe or dictate what was completed today"></textarea>
+  </div>
+  <div class="grid" style="margin-top:16px;">
+    <div>
+      <label>Materials used</label>
+      <textarea id="workLogMaterials" rows="3" maxlength="3000" placeholder="Describe or dictate materials and quantities actually used"></textarea>
+    </div>
+    <div>
+      <label>Certification status</label>
+      <select id="workLogCertificationStatus">
+        <option value="not_started">Not started</option>
+        <option value="in_progress">Testing / records in progress</option>
+        <option value="ready_for_ben">Ready for Ben's review</option>
+        <option value="completed">Completed / certificate filed</option>
+        <option value="not_required">Not required</option>
+      </select>
+    </div>
   </div>
   <div class="grid" style="margin-top:16px;">
     <div>
@@ -2123,7 +2218,7 @@ applyJobTypeVisibility(job.job_type || "solar");
 
         page.innerHTML = `
           <section class="card error">
-            This job couldn't be loaded. Please return to Mini Fergus and try again.
+            This job couldn't be loaded. Please return to Job Hub and try again.
           </section>
         `;
       }
@@ -2132,10 +2227,20 @@ applyJobTypeVisibility(job.job_type || "solar");
 
 
 function applyJobTypeVisibility(jobType) {
+  currentJobType = jobType;
   const isSolar = jobType !== "general_electrical";
   document.querySelectorAll(".solar-only").forEach(section => {
     section.hidden = !isSolar;
   });
+  document.querySelectorAll(".general-only").forEach(section => {
+    section.hidden = isSolar;
+  });
+  document.querySelectorAll(".solar-file-role").forEach(option => {
+    option.hidden = !isSolar;
+    option.disabled = !isSolar;
+  });
+  const fileRole = document.getElementById("jobFileRole");
+  if (!isSolar && fileRole?.selectedOptions[0]?.disabled) fileRole.value = "general";
 }
 
 async function saveJobType() {
@@ -2155,6 +2260,71 @@ async function saveJobType() {
     message.textContent = " ✓ Job type saved";
   } catch (error) {
     console.error("Could not save job type:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  }
+}
+
+const generalJobFieldMap = {
+  job_description: "general_job_description",
+  site_contact: "general_site_contact",
+  access_notes: "general_access_notes",
+  supply_details: "general_supply_details",
+  switchboard_details: "general_switchboard_details",
+  existing_installation: "general_existing_installation",
+  hazards: "general_hazards",
+  work_scope: "general_work_scope",
+  testing_required: "general_testing_required",
+  certification_status: "general_certification_status",
+  customer_notes: "general_customer_notes"
+};
+
+async function loadGeneralJobDetails() {
+  if (!document.getElementById("generalJobSection")) return;
+  try {
+    const response = await fetch(`/api/general-job-details?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok || !data.details) return;
+    Object.entries(generalJobFieldMap).forEach(([key, id]) => {
+      const field = document.getElementById(id);
+      if (field && data.details[key] !== undefined) field.value = data.details[key] || "";
+    });
+  } catch (error) {
+    console.error("Could not load electrical job details:", error);
+  }
+}
+
+async function saveGeneralJobDetails() {
+  const message = document.getElementById("generalJobMessage");
+  if (!message) return;
+  message.textContent = " Saving…";
+  const details = {};
+  Object.entries(generalJobFieldMap).forEach(([key, id]) => {
+    details[key] = document.getElementById(id)?.value || "";
+  });
+  try {
+    const response = await fetch("/api/general-job-details", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId), details })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+
+    const jobResponse = await fetch("/api/job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: Number(jobId),
+        job_type: "general_electrical",
+        job_status: document.getElementById("general_job_status")?.value,
+        next_action: document.getElementById("general_next_action")?.value
+      })
+    });
+    const jobData = await jobResponse.json();
+    if (!jobResponse.ok || !jobData.ok) throw new Error(jobData.detail || jobData.error || "Job progress save failed");
+    message.textContent = " ✓ Electrical job brief saved";
+  } catch (error) {
+    console.error("Could not save electrical job details:", error);
     message.textContent = ` Could not save: ${error.message}`;
   }
 }
@@ -2878,19 +3048,26 @@ const jobFileRoleLabels = {
   fletcher_assessment: "Fletcher site assessment"
 };
 
-const jobPhotoChecklistItems = [
+const solarPhotoChecklistItems = [
   "site_photo", "switchboard", "meter", "cable_route", "fixings",
   "equipment", "wiring", "labels", "testing", "completed", "certificate"
 ];
 
+const electricalPhotoChecklistItems = [
+  "site_photo", "switchboard", "wiring", "testing", "completed", "certificate"
+];
+
 function renderJobPhotoChecklist(files) {
   const checklist = document.getElementById("jobPhotoChecklist");
+  const checklistItems = currentJobType === "general_electrical"
+    ? electricalPhotoChecklistItems
+    : solarPhotoChecklistItems;
   const counts = files.reduce((totals, file) => {
     totals[file.category] = (totals[file.category] || 0) + 1;
     return totals;
   }, {});
 
-  checklist.innerHTML = jobPhotoChecklistItems.map(category => {
+  checklist.innerHTML = checklistItems.map(category => {
     const count = counts[category] || 0;
     return `
       <div class="photo-checklist-row">
@@ -3046,6 +3223,14 @@ const workLogCompetencyLabels = {
   other: "Other"
 };
 
+const workLogCertificationLabels = {
+  not_started: "Not started",
+  in_progress: "Testing / records in progress",
+  ready_for_ben: "Ready for Ben's review",
+  completed: "Completed / certificate filed",
+  not_required: "Not required"
+};
+
 function formatWorkLogHours(hours) {
   const value = Number(hours) || 0;
   return `${value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")} hours`;
@@ -3079,11 +3264,14 @@ async function loadWorkLogs() {
         <div class="placeholder">
           Supervisor: ${escapeHtml(log.supervisor || "Not recorded")}
           · ${escapeHtml(workLogSupervisionLabels[log.supervision_type] || "Other")}
+          ${log.start_time || log.finish_time ? ` · ${escapeHtml(log.start_time || "?")}–${escapeHtml(log.finish_time || "?")}` : ""}
         </div>
         <div class="work-log-detail"><strong>Work completed:</strong> ${escapeHtml(log.work_completed)}</div>
+        ${log.materials_used ? `<div class="work-log-detail"><strong>Materials used:</strong> ${escapeHtml(log.materials_used)}</div>` : ""}
         ${log.tests_results ? `<div class="work-log-detail"><strong>Tests/results:</strong> ${escapeHtml(log.tests_results)}</div>` : ""}
         ${log.issues_notes ? `<div class="work-log-detail"><strong>Problems/changes:</strong> ${escapeHtml(log.issues_notes)}</div>` : ""}
         ${log.supervisor_notes ? `<div class="work-log-detail"><strong>For Ben:</strong> ${escapeHtml(log.supervisor_notes)}</div>` : ""}
+        <div class="work-log-detail"><strong>Certification:</strong> ${escapeHtml(workLogCertificationLabels[log.certification_status] || "Not started")}</div>
       </div>
     `).join("");
   } catch (error) {
@@ -3106,7 +3294,11 @@ async function saveWorkLog() {
     work_completed: document.getElementById("workLogCompleted").value,
     tests_results: document.getElementById("workLogTests").value,
     issues_notes: document.getElementById("workLogIssues").value,
-    supervisor_notes: document.getElementById("workLogSupervisorNotes").value
+    supervisor_notes: document.getElementById("workLogSupervisorNotes").value,
+    start_time: document.getElementById("workLogStartTime").value,
+    finish_time: document.getElementById("workLogFinishTime").value,
+    materials_used: document.getElementById("workLogMaterials").value,
+    certification_status: document.getElementById("workLogCertificationStatus").value
   };
 
   if (!payload.work_date || !payload.hours || !payload.work_completed.trim()) {
@@ -3126,8 +3318,9 @@ async function saveWorkLog() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
 
-    ["workLogHours", "workLogCompleted", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
+    ["workLogHours", "workLogStartTime", "workLogFinishTime", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
       .forEach(id => { document.getElementById(id).value = ""; });
+    document.getElementById("workLogCertificationStatus").value = "not_started";
     message.textContent = " ✓ Daily record saved";
     await loadWorkLogs();
   } catch (error) {
@@ -3443,6 +3636,18 @@ document.addEventListener("change", function(event) {
   if (event.target?.id === "design_reviewed") {
     updateSystemDesignReadiness();
   }
+
+  if (["workLogStartTime", "workLogFinishTime"].includes(event.target?.id)) {
+    const start = document.getElementById("workLogStartTime")?.value;
+    const finish = document.getElementById("workLogFinishTime")?.value;
+    const hoursField = document.getElementById("workLogHours");
+    if (start && finish && hoursField) {
+      const [startHour, startMinute] = start.split(":").map(Number);
+      const [finishHour, finishMinute] = finish.split(":").map(Number);
+      const minutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute);
+      if (minutes > 0) hoursField.value = (minutes / 60).toFixed(2);
+    }
+  }
 });
 
 
@@ -3481,6 +3686,10 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveJobType") {
     saveJobType();
+  }
+
+  if (event.target.id === "saveGeneralJobDetails") {
+    saveGeneralJobDetails();
   }
 
   if (event.target.id === "generateSupplierRequest") {
@@ -3911,7 +4120,7 @@ if (workLogDateField) {
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
   ]).then(() => {
 
     const roofOrientationField =

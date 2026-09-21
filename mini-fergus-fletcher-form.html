@@ -39,7 +39,7 @@
   <div id="missingPanel" class="card">Loading saved job information…</div>
 
   <section id="preliminaryProposal" class="card proposal" hidden>
-    <h2>Mini Fergus preliminary proposal</h2>
+    <h2>Job Hub preliminary proposal</h2>
     <div id="proposalSummary"></div>
     <p class="hint">This is a starting point calculated from the Home Energy Check and Tom's site visit. Jane should review it before creating the OpenSolar layout and SLD.</p>
     <button type="button" id="useProposal">USE THIS PROPOSAL ON THE FORM</button>
@@ -108,7 +108,7 @@
 
   <section class="card">
     <h2>Package documents</h2>
-    <p class="hint">Mini Fergus will reuse the latest SLD, roof layout and power bill already attached to this job. Missing optional documents will be listed but will not stop the email.</p>
+    <p class="hint">Job Hub will reuse the latest SLD, roof layout and power bill already attached to this job. Missing optional documents will be listed but will not stop the email.</p>
     <div id="packageDocuments">Checking job documents…</div>
   </section>
 
@@ -215,7 +215,7 @@ function renderPreliminaryProposal(proposal) {
     const energyText = proposal.unusualOneBillEstimate
       ? `One bill annualises to approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh, which is unusually high for a home. Check the extracted bill figures or add another bill before using it to size the system.`
       : proposal.energyPanelCount
-      ? `The energy-use estimate suggests approximately ${proposal.energyPanelCount} panels, but Mini Fergus will not use that as the proposal until the usable roof capacity is known.`
+      ? `The energy-use estimate suggests approximately ${proposal.energyPanelCount} panels, but Job Hub will not use that as the proposal until the usable roof capacity is known.`
       : "A reliable energy-use estimate is not yet available.";
     summary.innerHTML = `<strong>More information is needed before proposing a system size.</strong><p>${energyText}</p><p>Add Tom's roof measurements or save a Jane-reviewed panel quantity in System Design. OpenSolar must confirm the final layout.</p>`;
     return;
@@ -228,7 +228,7 @@ function renderPreliminaryProposal(proposal) {
   const energyNote = proposal.hasEnergyData
     ? ` Estimated annual household use: approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh.`
     : " The quantity comes from the saved design rather than an energy-use calculation.";
-  summary.innerHTML = `<strong>${proposal.panelCount} × ${proposal.panelWattage} W panels = ${proposal.systemKw.toFixed(2)} kWp</strong><p>${energyNote}${roofNote}</p><p class="hint">Based on: ${proposal.sources.join(", ") || "saved Mini Fergus information"}.</p>`;
+  summary.innerHTML = `<strong>${proposal.panelCount} × ${proposal.panelWattage} W panels = ${proposal.systemKw.toFixed(2)} kWp</strong><p>${energyNote}${roofNote}</p><p class="hint">Based on: ${proposal.sources.join(", ") || "saved Job Hub information"}.</p>`;
 }
 
 function applyPreliminaryProposal(replaceExisting = true) {
