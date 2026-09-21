@@ -8,7 +8,7 @@
 <style>
 :root{--ink:#24342f;--muted:#68736f;--orange:#ef9c20;--cream:#f7f5ef;--white:#fff;--line:#dddcd6}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(rgba(247,245,239,.88),rgba(247,245,239,.88)),url("AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center/cover fixed;color:var(--ink)}button,input,select{font:inherit}
-.top{position:sticky;top:0;z-index:5;background:rgba(247,245,239,.96);padding:18px 20px 10px}.top-inner,.screen{max-width:620px;margin:auto}.brand-logo{display:block;width:150px;height:auto;margin:-10px 0 -20px -14px;mix-blend-mode:multiply}
+.top{position:sticky;top:0;z-index:5;background:rgba(247,245,239,.96);padding:12px 20px 10px}.top-inner,.screen{max-width:620px;margin:auto}.top-row{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand-logo{display:block;width:150px;height:auto;margin:-10px 0 -20px -14px;mix-blend-mode:multiply}.mobile-menu{position:relative}.mobile-menu summary{list-style:none;cursor:pointer;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:800}.mobile-menu summary::-webkit-details-marker{display:none}.mobile-menu-links{position:absolute;right:0;top:calc(100% + 9px);width:min(260px,calc(100vw - 28px));padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 14px 32px rgba(36,52,47,.16)}.mobile-menu-links a{display:block;padding:12px 10px;color:var(--ink);text-decoration:none;font-weight:700}
 .stage{font-size:12px;color:var(--muted);margin:10px 0 7px;text-transform:uppercase;letter-spacing:1px}.progress{height:4px;background:var(--line);border-radius:10px;overflow:hidden}.progress-fill{height:100%;width:8%;background:var(--orange);transition:.3s}
 .screen{display:none;padding:44px 22px 50px;min-height:78vh}.screen.active{display:block}.eyebrow{color:#ef9c20;text-transform:uppercase;letter-spacing:1.4px;font-size:13px;font-weight:800;margin-bottom:12px}
 h1{font-size:clamp(38px,9vw,56px);line-height:1.02;margin:0 0 22px}h2{font-size:30px;line-height:1.1;margin:0 0 18px}p{font-size:18px;line-height:1.5}.muted{color:var(--muted);font-size:15px}
@@ -49,7 +49,7 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 </style>
 </head>
 <body>
-<header class="top"><div class="top-inner"><a href="/" aria-label="Solectrics home"><img class="brand-logo" src="EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"></a><div class="stage" id="stage">your home</div><div class="progress"><div class="progress-fill" id="progress"></div></div></div></header>
+<header class="top"><div class="top-inner"><div class="top-row"><a href="/" aria-label="Solectrics home"><img class="brand-logo" src="EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"></a><details class="mobile-menu"><summary>Menu</summary><div class="mobile-menu-links"><a href="/">Home</a><a href="/home-energy-check.html">Home Energy Check</a><a href="/smart-energy.html">Smart Energy</a><a href="/smart-solar-prices.html">Prices</a></div></details></div><div class="stage" id="stage">your home</div><div class="progress"><div class="progress-fill" id="progress"></div></div></div></header>
 
 <section class="screen active" data-stage="your home">
   <div class="eyebrow">my home solar check</div>
