@@ -23,6 +23,8 @@
     button:disabled { opacity:.55; }
     .missing { background:#fff4dc; border-left:4px solid #d28a00; padding:12px; }
     .ready { background:#edf8ef; border-left:4px solid #31814a; padding:12px; }
+    .proposal { background:#eef5f3; border-left:4px solid #26706a; }
+    .proposal strong { display:block; margin-bottom:5px; }
     .hint { color:#65767b; font-size:13px; }
     #status { font-weight:700; margin-left:8px; }
     @media (max-width:650px) { .grid,.checks { grid-template-columns:1fr; } }
@@ -35,6 +37,13 @@
   <p>Review the automatically filled details, then download the checklist or email the complete package to Jane for checking.</p>
 
   <div id="missingPanel" class="card">Loading saved job information…</div>
+
+  <section id="preliminaryProposal" class="card proposal" hidden>
+    <h2>Mini Fergus preliminary proposal</h2>
+    <div id="proposalSummary"></div>
+    <p class="hint">This is a starting point calculated from the Home Energy Check and Tom's site visit. Jane should review it before creating the OpenSolar layout and SLD.</p>
+    <button type="button" id="useProposal">USE THIS PROPOSAL ON THE FORM</button>
+  </section>
 
   <section class="card">
     <h2>Customer and site</h2>
@@ -144,6 +153,81 @@ function inferInverterType(design) {
 
 function firstValue(...values) {
   return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
+}
+
+function numeric(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+function billDailyUse(bill) {
+  if (!bill || typeof bill !== "object") return 0;
+  const daily = numeric(bill.average_daily_kwh ?? bill.averageDailyKwh);
+  if (daily) return daily;
+  const imported = numeric(bill.total_import_kwh ?? bill.totalImportKwh);
+  const days = numeric(bill.billing_days ?? bill.billingDays);
+  return imported && days ? imported / days : 0;
+}
+
+function orientationFactor(value) {
+  const key = String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+  return ({ north:1, northeast:.95, northwest:.95, east:.88, west:.88, southeast:.78, southwest:.78, south:.65, mixed:.9 })[key] || .9;
+}
+
+function calculatePreliminaryProposal(answers, visit, design, assessment) {
+  const savedCount = numeric(firstValue(design.design_panel_count, assessment.panel_count));
+  const panelWattage = numeric(firstValue(design.design_panel_wattage, assessment.panel_wattage)) || 445;
+  const summerDaily = billDailyUse(answers?.bills?.summer);
+  const winterDaily = billDailyUse(answers?.bills?.winter);
+  const dailyValues = [summerDaily, winterDaily].filter(Boolean);
+  const annualUse = dailyValues.length ? dailyValues.reduce((sum, value) => sum + value, 0) / dailyValues.length * 365 : 0;
+  const orientation = firstValue(design.roofs?.[0]?.roof_orientation_design, visit.visit_roof_orientation, assessment.roof_orientation, answers.direction);
+  const productionPerKw = 1250 * orientationFactor(orientation);
+  const energyTargetKw = annualUse ? annualUse * .9 / productionPerKw : 0;
+  const roofLength = numeric(firstValue(design.roofs?.[0]?.roof_length, visit.visit_roof_length));
+  const roofWidth = numeric(firstValue(design.roofs?.[0]?.roof_width, visit.visit_roof_width));
+  // Indicative only: reserve 25% for edges, access and obstructions; assume 2.4 m² per modern panel.
+  const roofCapacity = roofLength && roofWidth ? Math.max(1, Math.floor(roofLength * roofWidth * .75 / 2.4)) : 0;
+  let panelCount = savedCount || (energyTargetKw ? Math.ceil(energyTargetKw * 1000 / panelWattage) : 0);
+  const limitedByRoof = Boolean(panelCount && roofCapacity && panelCount > roofCapacity);
+  if (limitedByRoof) panelCount = roofCapacity;
+  const systemKw = panelCount ? panelCount * panelWattage / 1000 : 0;
+  const sources = [];
+  if (dailyValues.length === 2) sources.push("summer and winter bill data");
+  else if (dailyValues.length === 1) sources.push("one supplied power bill");
+  if (roofCapacity) sources.push("Tom's recorded roof dimensions");
+  if (orientation) sources.push(`${orientation} orientation`);
+  if (savedCount) sources.push("the saved panel quantity");
+  return { panelCount, panelWattage, systemKw, annualUse, roofCapacity, limitedByRoof, sources, hasEnergyData:Boolean(annualUse) };
+}
+
+let preliminaryProposal = null;
+
+function renderPreliminaryProposal(proposal) {
+  const panel = $("preliminaryProposal");
+  const summary = $("proposalSummary");
+  if (!proposal.panelCount) {
+    panel.hidden = false;
+    $("useProposal").hidden = true;
+    summary.innerHTML = `<strong>More information is needed for an automatic recommendation.</strong><p>Add a power bill or save a reviewed panel quantity in Mini Fergus. Tom's roof measurements improve the roof-capacity check.</p>`;
+    return;
+  }
+  panel.hidden = false;
+  $("useProposal").hidden = false;
+  const roofNote = proposal.roofCapacity
+    ? ` Indicative roof capacity: approximately ${proposal.roofCapacity} panels.${proposal.limitedByRoof ? " The recommendation has been reduced to that roof capacity." : ""}`
+    : " Roof capacity still needs confirmation in OpenSolar.";
+  const energyNote = proposal.hasEnergyData
+    ? ` Estimated annual household use: approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh.`
+    : " The quantity comes from the saved design rather than an energy-use calculation.";
+  summary.innerHTML = `<strong>${proposal.panelCount} × ${proposal.panelWattage} W panels = ${proposal.systemKw.toFixed(2)} kWp</strong><p>${energyNote}${roofNote}</p><p class="hint">Based on: ${proposal.sources.join(", ") || "saved Mini Fergus information"}.</p>`;
+}
+
+function applyPreliminaryProposal(replaceExisting = true) {
+  if (!preliminaryProposal?.panelCount) return;
+  if (replaceExisting || !$("arrayLayout").value.trim()) setValue("arrayLayout", `${preliminaryProposal.panelCount} panels — layout to be confirmed in OpenSolar`);
+  if (replaceExisting || !$("systemSize").value.trim()) setValue("systemSize", preliminaryProposal.systemKw.toFixed(2));
+  updateMissing();
 }
 
 function calculateSystemSize(design, assessment) {
@@ -271,6 +355,9 @@ async function loadData() {
   setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || roles.has("sld") || roles.has("roof_layout")));
   setChecked("powerBillAttached", Boolean(roles.has("power_bill") || answers.billFileName || answers.bill_filename || answers.billUploaded));
   setValue("additionalNotes", buildNotes(design, assessment, icp));
+  preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
+  renderPreliminaryProposal(preliminaryProposal);
+  applyPreliminaryProposal(false);
   renderPackageDocuments(files, answers);
   updateMissing();
 }
@@ -390,6 +477,7 @@ async function emailPackage() {
 document.querySelectorAll("input,select,textarea").forEach(field => field.addEventListener("input", updateMissing));
 $("downloadPdf").addEventListener("click", () => createAndSavePdf(true));
 $("emailPackage").addEventListener("click", emailPackage);
+$("useProposal").addEventListener("click", () => applyPreliminaryProposal(true));
 loadData().catch(error => { console.error(error); $("missingPanel").className = "card missing"; $("missingPanel").textContent = `Could not load job details: ${error.message}`; });
 </script>
 </body>
