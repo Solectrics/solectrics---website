@@ -42,8 +42,8 @@
     }
 
     .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
-    .brand{text-decoration:none;font-size:22px;font-weight:800;letter-spacing:.05em}
-    .brand .e{color:var(--orange)}
+    .brand-link{display:block;line-height:0}
+    .brand-logo{display:block;width:168px;height:auto;margin:-12px 0 -18px -14px;mix-blend-mode:multiply}
     .nav-links{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:600}
     .nav-links a{text-decoration:none}
     .nav-links a:hover,.nav-links a[aria-current="page"]{color:#ef9c20}
@@ -78,19 +78,11 @@
     .usage-intro h2{margin-bottom:14px}
     .usage-intro p{color:var(--green-soft);font-size:18px;margin:0}
     .smart-overview{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:26px;align-items:start}
-    .usage-chart,.solution-panel{padding:30px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.95);box-shadow:var(--shadow)}
-    .usage-chart h3,.solution-panel h3{margin:0 0 20px;font-size:25px;line-height:1.2}
-    .chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .chart-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;min-height:83px;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--cream)}
-    .chart-item.major{border:2px solid var(--orange);background:#fff4df}
-    .chart-label{font-size:15px;font-weight:800;line-height:1.25}
-    .chart-value{color:var(--green);font-size:30px;font-weight:900;letter-spacing:-.04em}
-    .chart-item.major .chart-value{color:var(--orange)}
-    .chart-bar{grid-column:1/-1;height:7px;border-radius:99px;background:#e1e7e3;overflow:hidden}
-    .chart-bar span{display:block;height:100%;border-radius:inherit;background:#6d9187}
-    .chart-item.major .chart-bar span{background:var(--orange)}
-    .usage-note{margin:18px 0 0;color:var(--green-soft);font-size:14px}
-    .usage-source{margin:12px 0 0;color:#66736e;font-size:12px}
+    .usage-infographic-link{display:block;border-radius:24px;overflow:hidden;background:var(--cream);box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease}
+    .usage-infographic-link:hover,.usage-infographic-link:focus{transform:translateY(-3px);box-shadow:0 18px 42px rgba(23,51,45,.16);outline:3px solid var(--orange);outline-offset:4px}
+    .usage-infographic-link img{display:block;width:100%;height:auto}
+    .solution-panel{padding:30px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.95);box-shadow:var(--shadow)}
+    .solution-panel h3{margin:0 0 20px;font-size:25px;line-height:1.2}
     .solution-panel h3{margin-bottom:7px}
     .solution-lead{margin:0 0 20px;color:var(--green-soft)}
     .solution-list{display:grid;gap:11px}
@@ -152,6 +144,7 @@
     @media(max-width:900px){
       .nav-links{display:none}
       .mobile-menu{display:block}
+      .brand-logo{width:148px}
       .hero{min-height:360px;padding:58px 0 48px;background-position:62% center}
       .eyebrow{font-size:28px}
       .intro-card{padding:24px 22px;border-radius:18px}
@@ -164,9 +157,7 @@
 
     @media(max-width:620px){
       .usage-section{padding:54px 0}
-      .usage-chart,.solution-panel{padding:22px 17px}
-      .chart-grid{grid-template-columns:1fr}
-      .chart-item{min-height:74px}
+      .solution-panel{padding:22px 17px}
     }
   </style>
 </head>
@@ -174,7 +165,7 @@
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="/">sol<span class="e">e</span>ctrics</a>
+    <a class="brand-link" href="/" aria-label="Solectrics home"><img class="brand-logo" src="/EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"></a>
     <nav class="nav-links">
       <a href="/">Home</a>
       <a href="/home-energy-check.html">Home Energy Check</a>
@@ -217,41 +208,9 @@
       </div>
 
       <div class="smart-overview">
-        <div class="usage-chart" aria-label="Chart showing typical household electricity use by category">
-          <h3>Typical household electricity use</h3>
-          <div class="chart-grid">
-            <article class="chart-item major">
-              <span class="chart-label">Water heating</span><strong class="chart-value">27%</strong>
-              <span class="chart-bar"><span style="width:100%"></span></span>
-            </article>
-            <article class="chart-item">
-              <span class="chart-label">Electronics and other electrical</span><strong class="chart-value">20%</strong>
-              <span class="chart-bar"><span style="width:74%"></span></span>
-            </article>
-            <article class="chart-item">
-              <span class="chart-label">Refrigeration</span><strong class="chart-value">17%</strong>
-              <span class="chart-bar"><span style="width:63%"></span></span>
-            </article>
-            <article class="chart-item major">
-              <span class="chart-label">Space heating</span><strong class="chart-value">15%</strong>
-              <span class="chart-bar"><span style="width:56%"></span></span>
-            </article>
-            <article class="chart-item">
-              <span class="chart-label">Lighting</span><strong class="chart-value">13%</strong>
-              <span class="chart-bar"><span style="width:48%"></span></span>
-            </article>
-            <article class="chart-item">
-              <span class="chart-label">Cooking</span><strong class="chart-value">5%</strong>
-              <span class="chart-bar"><span style="width:19%"></span></span>
-            </article>
-            <article class="chart-item">
-              <span class="chart-label">Clothes drying</span><strong class="chart-value">3%</strong>
-              <span class="chart-bar"><span style="width:11%"></span></span>
-            </article>
-          </div>
-          <p class="usage-note">Every household is different. Your Home Energy Check helps us understand where your home actually uses energy.</p>
-          <p class="usage-source">Indicative national breakdown · Source: EECA Energy End Use Database, 2018.</p>
-        </div>
+        <a class="usage-infographic-link" href="#hot-water" aria-label="Typical household electricity use. Water heating is the largest load at 27 percent. Go to the hot-water heat-pump section.">
+          <img src="/assets/solectrics-household-electricity-use.svg" alt="Solectrics infographic showing typical household electricity use: water heating 27 percent, electronics 20 percent, refrigeration 17 percent, space heating 15 percent, lighting 13 percent, cooking 5 percent and clothes drying 3 percent.">
+        </a>
 
         <aside class="solution-panel" aria-label="Smart energy solutions">
           <h3>Start with the biggest opportunities</h3>
