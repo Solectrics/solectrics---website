@@ -5,111 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Solectrics Customer Quote</title>
   <style>
-    :root{color-scheme:light;--green:#173f3f;--orange:#ef9c20;--paper:#fff;--wash:#f6f3ed;--line:#ded9cf;--muted:#68746f;--theme:#ef9c20;--theme-soft:#fff3e3}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--wash);color:#243536;font:15px/1.55 Arial,sans-serif}
-    body::before{content:"";position:fixed;inset:0;background:url("/AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center/cover no-repeat;opacity:.09;pointer-events:none;z-index:-1}
-    main{max-width:940px;margin:30px auto;padding:0 18px 50px}
-    .quote{position:relative;overflow:hidden;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;padding:42px;box-shadow:0 18px 50px rgba(23,63,63,.09)}
-    .quote.general-electrical{--theme:#173f3f;--theme-soft:#edf3f0}
-    .quote::after{content:"";position:absolute;inset:0;background:url("/AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") right top/760px auto no-repeat;opacity:.045;pointer-events:none}
-    .quote>*{position:relative;z-index:1}
-    header{display:flex;justify-content:space-between;gap:28px;border-bottom:4px solid var(--theme);padding-bottom:22px}
-    .logo{display:block;height:92px;width:240px;object-fit:contain;object-position:left center}
-    .business-address{color:var(--muted);font-size:12px;margin-top:5px}
-    .quote-kind{color:var(--theme);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-    h1,h2{color:var(--green);margin:0}
-    h1{font-size:30px;line-height:1.08;margin:5px 0}
-    h2{font-size:21px;margin-bottom:12px}
-    .meta{text-align:right}
-    .meta-number{font-size:17px;font-weight:800}
-    .intro-strip{background:var(--theme-soft);border-left:5px solid var(--theme);border-radius:0 10px 10px 0;margin:24px 0 0;padding:14px 17px}
-    .customer{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:26px 0}
-    .option{background:rgba(255,255,255,.9);border:1px solid var(--line);border-radius:13px;margin:18px 0;overflow:hidden;break-inside:avoid}
-    .option h2{background:var(--theme-soft);border-left:5px solid var(--theme);padding:15px 18px}
-    table{border-collapse:collapse;width:100%}
-    th,td{border-bottom:1px solid #ece8e0;padding:11px 14px;text-align:left}
-    th{color:var(--muted);font-size:11px;text-transform:uppercase}
-    .number{text-align:right;white-space:nowrap}
-    .totals{margin-left:auto;width:min(100%,350px);padding:12px 16px 18px}
-    .total-row{display:flex;justify-content:space-between;gap:20px;padding:5px 0}
-    .grand{border-top:2px solid var(--green);font-size:19px;font-weight:800;margin-top:5px;padding-top:10px}
-    .actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 auto 15px;max-width:940px;padding:0 18px}
-    button,a.button{background:var(--green);border:0;border-radius:7px;color:#fff;cursor:pointer;padding:11px 16px;text-decoration:none;font-weight:700}
-    a.button.secondary{background:var(--orange)}
-    .notice{background:#fff4df;border-left:4px solid var(--orange);border-radius:8px;padding:12px 15px;margin-top:22px}
-    .terms-link{color:var(--green);font-weight:800}
-    .quote-terms{border-top:4px solid var(--theme);margin-top:42px;padding-top:30px;page-break-before:always}
-    .quote-terms .eyebrow{color:var(--theme);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
-    .quote-terms h1{font-size:28px;margin:5px 0 12px}
-    .quote-terms h2{font-size:16px;margin:20px 0 5px}
-    .quote-terms p{font-size:12px;line-height:1.5;margin:0 0 8px}
-    .quote-terms .intro{color:var(--muted);font-size:13px;border-bottom:1px solid var(--line);padding-bottom:15px;margin-bottom:18px}
-    .quote-terms .note{background:#fff4df;border-left:4px solid var(--orange);padding:10px 12px;margin-top:20px}
-    .quote-footer{border-top:1px solid var(--line);color:var(--muted);font-size:11px;margin-top:28px;padding-top:14px;text-align:center}
-    @media(max-width:650px){.quote{padding:25px 18px}.customer{grid-template-columns:1fr}header{display:block}.logo{height:74px;width:200px}.meta{text-align:left;margin-top:16px}th:nth-child(2),td:nth-child(2),th:nth-child(3),td:nth-child(3){display:none}}
-    @media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{background:#fff}body::before{opacity:.06}.actions{display:none}main{margin:0;max-width:none;padding:0}.quote{border:0;border-radius:0;box-shadow:none;padding:18px}.option{break-inside:avoid}.quote-terms{break-before:page}.quote::after{opacity:.035}}
+    :root{color-scheme:light;--green:#173f3f;--orange:#ef9c20;--paper:#fff;--wash:#f6f3ed;--line:#ded9cf;--muted:#68746f;--soft-green:#edf4ef;--soft-orange:#fff3e3}
+    *{box-sizing:border-box} body{margin:0;background:var(--wash);color:#243536;font:14px/1.5 Arial,sans-serif} body::before{content:"";position:fixed;inset:0;background:url("/AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center/cover no-repeat;opacity:.07;pointer-events:none;z-index:-1}
+    main{max-width:1020px;margin:28px auto;padding:0 18px 50px}.quote{position:relative;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:18px;padding:38px;box-shadow:0 18px 50px rgba(23,63,63,.09)}
+    .top{display:flex;justify-content:space-between;gap:26px;border-bottom:4px solid var(--orange);padding-bottom:20px}.logo{display:block;height:90px;width:235px;object-fit:contain;object-position:left center}.business-address{color:var(--muted);font-size:11px;margin-top:4px}.meta{text-align:right}.kicker{color:var(--orange);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.meta-number{font-size:17px;font-weight:800}.meta h1{font-size:30px;line-height:1.08;margin:4px 0;color:var(--green)}
+    h1,h2,h3{color:var(--green)} h2{font-size:25px;line-height:1.15;margin:28px 0 12px} h3{font-size:18px;margin:20px 0 8px}.customer{display:grid;grid-template-columns:1fr 1fr;gap:24px;background:#f8f4ec;border:1px solid var(--line);margin-top:24px;padding:16px 18px}.customer h3{font-size:12px;margin:0 0 4px}.recommendation{font-size:16px;white-space:pre-line}.intro-strip,.notice{background:var(--soft-orange);border-left:5px solid var(--orange);border-radius:0 9px 9px 0;padding:13px 16px;margin-top:20px}
+    .system-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.fact{background:#f7f7f3;border:1px solid var(--line);border-radius:8px;padding:11px}.fact span{color:var(--muted);display:block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.fact strong{display:block;margin-top:3px}
+    .options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}.option{border:1px solid #bfd1c5;border-radius:12px;overflow:hidden;break-inside:avoid;background:var(--soft-green)}.option:nth-child(2){border-color:#edc27f;background:var(--soft-orange)}.option h3{border-left:5px solid var(--green);font-size:20px;margin:0;padding:15px 16px}.option:nth-child(2) h3{border-color:var(--orange);color:#b85f00}.option-body{padding:0 16px 16px}.included{list-style:none;margin:5px 0 15px;padding:0}.included li{margin:8px 0;padding-left:20px;position:relative}.included li::before{content:"✓";color:var(--green);font-weight:900;left:0;position:absolute}.option:nth-child(2) .included li::before{color:#c96a00}.price-label{font-size:11px;font-weight:800;text-transform:uppercase}.price{color:var(--orange);font-size:29px;font-weight:900;line-height:1.1}.tax{font-size:12px;margin-top:4px}.totals{border-top:1px solid rgba(23,63,63,.15);padding-top:10px}.total-row{display:flex;justify-content:space-between;gap:15px;padding:3px 0}.total-row.grand{font-size:16px;font-weight:800}
+    .visual-page{page-break-before:always}.visual-grid{display:grid;grid-template-columns:1fr;gap:20px}.visual-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:15px;break-inside:avoid}.roof-image{display:block;width:100%;max-height:520px;object-fit:contain;background:#f8f8f6}.caption,.source-note{color:var(--muted);font-size:11px;margin-top:7px}.chart{display:block;width:100%;height:auto}.legend{display:flex;flex-wrap:wrap;gap:15px;font-size:11px;margin:8px 0 0}.legend span::before{content:"";display:inline-block;width:24px;border-top:3px solid;margin-right:6px;vertical-align:middle}.legend .current::before{border-color:#33413e}.legend .solar::before{border-color:var(--orange)}.legend .battery::before{border-color:#3c876c}
+    .notes{display:grid;grid-template-columns:1fr 1fr;gap:14px}.note-card{background:#f7f7f3;border-left:4px solid var(--green);padding:13px 15px}.separate-list{margin:8px 0 0;padding-left:20px}.payment{background:var(--soft-orange);border-radius:10px;padding:16px;margin-top:22px}.terms-link{color:var(--green);font-weight:800}.quote-terms{border-top:4px solid var(--orange);margin-top:38px;padding-top:26px;page-break-before:always}.quote-terms .eyebrow{color:var(--orange);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.quote-terms h1{font-size:27px;margin:4px 0 12px}.quote-terms h2{font-size:16px;margin:18px 0 5px}.quote-terms p{font-size:11px;line-height:1.45;margin:0 0 7px}.quote-terms .intro{color:var(--muted);font-size:12px;border-bottom:1px solid var(--line);padding-bottom:14px}.quote-terms .note{background:var(--soft-orange);border-left:4px solid var(--orange);padding:10px 12px}.quote-footer{border-top:1px solid var(--line);color:var(--muted);font-size:10px;margin-top:26px;padding-top:12px;text-align:center}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 auto 14px;max-width:1020px;padding:0 18px}.button,button{background:var(--green);border:0;border-radius:7px;color:#fff;cursor:pointer;padding:11px 16px;text-decoration:none;font-weight:700}.secondary{background:var(--orange)!important}.general-electrical .options{grid-template-columns:1fr}.general-electrical .visual-page,.general-electrical .system-facts,.general-electrical .separate-section{display:none}
+    @media(max-width:720px){.quote{padding:24px 17px}.top{display:block}.meta{text-align:left;margin-top:14px}.options,.notes,.customer,.system-facts{grid-template-columns:1fr}.logo{height:72px;width:195px}}
+    @media print{@page{size:A4;margin:11mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{background:#fff}.actions{display:none}main{margin:0;max-width:none;padding:0}.quote{border:0;border-radius:0;box-shadow:none;padding:0}.options{gap:9px}.option h3{font-size:16px;padding:10px 11px}.option-body{padding:0 11px 11px}.included li{font-size:10.5px;margin:5px 0}.price{font-size:23px}.customer{margin-top:15px;padding:10px 12px}.system-facts{margin:10px 0}.fact{padding:8px}.visual-card{padding:10px}.roof-image{max-height:410px}.quote-terms{margin-top:0}.quote-terms h2{margin-top:12px}}
   </style>
 </head>
 <body>
   <div class="actions"><a class="button" id="backLink" href="/mini-fergus">← Back to job</a><button type="button" onclick="window.print()">PRINT / SAVE PDF</button><a class="button secondary" href="/terms-and-conditions" target="_blank" rel="noopener">VIEW TERMS &amp; CONDITIONS</a></div>
   <main><div id="content" class="quote">Loading customer quote…</div></main>
   <script>
-    const params = new URLSearchParams(location.search);
-    const quoteId = params.get("quote_id");
-    const money = value => new Intl.NumberFormat("en-NZ", { style:"currency", currency:"NZD" }).format(Number(value)||0);
-    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
-    async function attachTerms() {
-      const target = document.getElementById("quoteTerms");
-      if (!target) return;
-      try {
-        const response = await fetch("/terms-and-conditions.html");
-        if (!response.ok) throw new Error("Terms unavailable");
-        const page = new DOMParser().parseFromString(await response.text(), "text/html");
-        const article = page.querySelector("article");
-        if (!article) throw new Error("Terms unavailable");
-        target.innerHTML = article.innerHTML;
-      } catch (error) {
-        target.innerHTML = `<h1>Terms &amp; Conditions</h1><p>The full terms are available at <a class="terms-link" href="/terms-and-conditions">solectrics.co.nz/terms-and-conditions</a>.</p>`;
-      }
+    const params=new URLSearchParams(location.search);const quoteId=params.get("quote_id");
+    const money=value=>new Intl.NumberFormat("en-NZ",{style:"currency",currency:"NZD"}).format(Number(value)||0);
+    const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+    const date=value=>value?new Date(value).toLocaleDateString("en-NZ"):"";
+    function chartSvg(graph){
+      if(!graph?.current||!graph?.solar||!graph?.battery)return"";
+      const width=760,height=350,left=58,right=18,top=20,bottom=48;const values=[...graph.current,...graph.solar,...graph.battery].map(Number);let min=Math.min(0,...values),max=Math.max(0,...values);const range=Math.max(50,max-min);min-=range*.08;max+=range*.1;const x=i=>left+i/11*(width-left-right);const y=v=>top+(max-v)/(max-min)*(height-top-bottom);const path=arr=>arr.map((v,i)=>`${i?"L":"M"} ${x(i).toFixed(1)} ${y(Number(v)).toFixed(1)}`).join(" ");let grid="";for(let i=0;i<=5;i++){const v=min+(max-min)/5*i,yy=y(v);grid+=`<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" stroke="#e5e1dd"/><text x="${left-8}" y="${yy+4}" text-anchor="end" font-size="10" fill="#68746f">${money(v)}</text>`;}const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m,i)=>`<text x="${x(i)}" y="${height-17}" text-anchor="middle" font-size="10" fill="#68746f">${m}</text>`).join("");return `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Estimated monthly electricity costs">${grid}${months}<path d="${path(graph.current)}" fill="none" stroke="#33413e" stroke-width="3"/><path d="${path(graph.solar)}" fill="none" stroke="#ef9c20" stroke-width="3.5"/><path d="${path(graph.battery)}" fill="none" stroke="#3c876c" stroke-width="3.5"/></svg>`;
     }
-    async function loadQuote() {
-      const content = document.getElementById("content");
-      try {
-        if (!quoteId) throw new Error("Quote ID is missing");
-        const response = await fetch(`/api/customer-quotes?quote_id=${encodeURIComponent(quoteId)}`);
-        const data = await response.json();
-        if (!response.ok || !data.ok || !data.quote.snapshot) throw new Error(data.error || "Quote could not be loaded");
-        const quote = data.quote;
-        const snap = quote.snapshot;
-        const isElectrical = snap.template === "general_electrical" || snap.job_type === "general_electrical" || String(snap.quote_number).startsWith("SEW-");
-        const templateClass = isElectrical ? "general-electrical" : "solar";
-        const templateName = isElectrical ? "General Electrical Quote" : "Solar & Battery Quote";
-        const templateKicker = isElectrical ? "Electrical work" : "Solar smart living";
-        const templateIntro = isElectrical
-          ? "A clear quotation for the electrical work described below, prepared from the approved Solectrics job costing."
-          : "A tailored solar-smart proposal prepared from the approved Solectrics system design and job costing.";
-        const savedAddress = snap.business?.address;
-        const businessAddress = Array.isArray(savedAddress)
-          ? savedAddress
-          : ["39 Bay Rd", "Ostend", "Waiheke Island 1081"];
-        document.title = `${snap.quote_number} — Solectrics`;
-        document.getElementById("backLink").href = `/mini-fergus-job?id=${encodeURIComponent(snap.job_id)}`;
-        content.className = `quote ${templateClass}`;
-        content.innerHTML = `
-          <header>
-            <div><img class="logo" src="/EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"><div class="business-address">${businessAddress.map(escapeHtml).join("<br>")}</div></div>
-            <div class="meta"><div class="quote-kind">${templateKicker}</div><h1>${templateName}</h1><div class="meta-number">${escapeHtml(snap.quote_number)}</div>${new Date(snap.generated_at).toLocaleDateString("en-NZ")}<br>Status: ${escapeHtml(quote.status).toUpperCase()}</div>
-          </header>
-          <div class="intro-strip">${templateIntro}</div>
-          <section class="customer"><div><h2>Prepared for</h2><strong>${escapeHtml(snap.customer.name)}</strong><br>${escapeHtml(snap.customer.address)}</div><div><h2>Contact</h2>${escapeHtml(snap.customer.email)}<br>${escapeHtml(snap.customer.phone)}</div></section>
-          ${snap.options.map(option => `<section class="option"><h2>${escapeHtml(option.name)}</h2><table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th class="number">Price ex GST</th></tr></thead><tbody>${option.lines.map(line => `<tr><td>${escapeHtml(line.description)}</td><td>${Number(line.quantity)}</td><td>${escapeHtml(line.unit)}</td><td class="number">${money(line.total)}</td></tr>`).join("") || `<tr><td colspan="4">Included supply and installation</td></tr>`}</tbody></table><div class="totals"><div class="total-row"><span>Subtotal ex GST</span><strong>${money(option.subtotal_ex_gst)}</strong></div><div class="total-row"><span>GST</span><strong>${money(option.gst)}</strong></div><div class="total-row grand"><span>Total incl GST</span><strong>${money(option.total_incl_gst)}</strong></div></div></section>`).join("")}
-          <p class="notice">This is a saved quote version. Please contact Solectrics to accept an option or discuss changes. Acceptance is subject to the Terms &amp; Conditions attached below and available at <a class="terms-link" href="/terms-and-conditions" target="_blank" rel="noopener">solectrics.co.nz/terms-and-conditions</a>.</p>
-          <section class="quote-terms" id="quoteTerms"><h1>Terms &amp; Conditions</h1><p>Loading the terms attached to this quote…</p></section>
-          <footer class="quote-footer">Solectrics · 39 Bay Rd, Ostend, Waiheke Island 1081</footer>`;
-        await attachTerms();
-      } catch (error) { content.innerHTML = `<h1>Quote unavailable</h1><p>${escapeHtml(error.message)}</p>`; }
-    }
+    function systemFacts(system){const facts=[];if(system?.panels&&system?.panel_wattage)facts.push(["Solar array",`${system.panels} × ${system.panel_wattage} W panels`]);if(system?.solar_kw)facts.push(["System size",`${system.solar_kw} kWp`]);if(system?.inverter)facts.push(["Inverter",system.inverter]);if(system?.estimated_generation_kwh)facts.push(["Est. annual generation",`${Number(system.estimated_generation_kwh).toLocaleString("en-NZ")} kWh`]);if(system?.roof_orientation)facts.push(["Roof orientation",system.roof_orientation]);return facts.length?`<div class="system-facts">${facts.map(([a,b])=>`<div class="fact"><span>${escapeHtml(a)}</span><strong>${escapeHtml(b)}</strong></div>`).join("")}</div>`:"";}
+    function optionCard(option,index){return `<article class="option"><h3>OPTION ${index+1} · ${escapeHtml(option.name)}</h3><div class="option-body"><ul class="included">${option.lines.map(line=>`<li>${escapeHtml(line.description)}</li>`).join("")||"<li>Included supply and installation</li>"}</ul><div class="totals"><div class="price-label">Price excluding GST</div><div class="price">${money(option.subtotal_ex_gst)}</div><div class="tax">GST (15%): ${money(option.gst)}</div><div class="total-row grand"><span>Total incl. GST</span><span>${money(option.total_incl_gst)}</span></div></div></div></article>`;}
+    async function attachTerms(){const target=document.getElementById("quoteTerms");if(!target)return;try{const response=await fetch("/terms-and-conditions.html");if(!response.ok)throw new Error();const page=new DOMParser().parseFromString(await response.text(),"text/html");const article=page.querySelector("article");if(!article)throw new Error();target.innerHTML=article.innerHTML;}catch{target.innerHTML=`<h1>Terms &amp; Conditions</h1><p>The full terms are available at <a class="terms-link" href="/terms-and-conditions">solectrics.co.nz/terms-and-conditions</a>.</p>`;}}
+    async function loadQuote(){const content=document.getElementById("content");try{if(!quoteId)throw new Error("Quote ID is missing");const response=await fetch(`/api/customer-quotes?quote_id=${encodeURIComponent(quoteId)}`);const data=await response.json();if(!response.ok||!data.ok||!data.quote.snapshot)throw new Error(data.error||"Quote could not be loaded");const quote=data.quote,snap=quote.snapshot,isElectrical=snap.template==="general_electrical"||snap.job_type==="general_electrical";const savedAddress=Array.isArray(snap.business?.address)?snap.business.address:["39 Bay Rd","Ostend","Waiheke Island 1081"];const roof=snap.visuals?.roof_layout;const graph=chartSvg(snap.energy_graph);document.title=`${snap.quote_number} — Solectrics`;document.getElementById("backLink").href=`/mini-fergus-job?id=${encodeURIComponent(snap.job_id)}`;content.className=`quote ${isElectrical?"general-electrical":"solar"}`;content.innerHTML=`
+      <header class="top"><div><img class="logo" src="/EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"><div class="business-address">${savedAddress.map(escapeHtml).join("<br>")}</div></div><div class="meta"><div class="kicker">${isElectrical?"Electrical work":"Solar smart living"}</div><h1>${isElectrical?"General Electrical Quote":"Solar System Options"}</h1><div class="meta-number">${escapeHtml(snap.quote_number)}</div>${date(snap.generated_at)}<br>Valid until ${date(snap.valid_until)}<br>Status: ${escapeHtml(quote.status).toUpperCase()}</div></header>
+      <section class="customer"><div><h3>Prepared for</h3><strong>${escapeHtml(snap.customer.name)}</strong></div><div><h3>Installation address</h3>${escapeHtml(snap.customer.address)}</div></section>
+      ${isElectrical?`<div class="intro-strip">A clear quotation for the electrical work described below.</div>`:`<h2>Our recommendation</h2><div class="recommendation">${escapeHtml(snap.proposal?.recommendation||"Compare solar now with a battery-ready inverter against adding battery storage now.")}</div>${systemFacts(snap.proposal?.system)}`}
+      <section><h2>${isElectrical?"Quoted work":"Your solar options"}</h2><div class="options">${snap.options.map(optionCard).join("")}</div></section>
+      ${!isElectrical&&(roof||graph)?`<section class="visual-page"><h2>Your proposed system and energy picture</h2><div class="visual-grid">${roof?`<article class="visual-card"><h3>OpenSolar roof and panel layout</h3><img class="roof-image" src="/api/job-file?id=${encodeURIComponent(roof.id)}" alt="OpenSolar roof and panel layout"><div class="caption">${escapeHtml(roof.caption||roof.name||"Indicative panel layout")}</div></article>`:""}${graph?`<article class="visual-card"><h3>Estimated monthly electricity costs</h3>${graph}<div class="legend"><span class="current">Your home now</span><span class="solar">Solar without battery</span><span class="battery">Solar with battery</span></div><div class="source-note">Indicative modelling based on the Home Energy Check, supplied bills and design information. The solar line excludes separately quoted smart devices and hot-water heat pumps. Actual results vary.</div></article>`:""}</div></section>`:""}
+      ${!isElectrical?`<section><h2>Important notes</h2><div class="notes"><div class="note-card"><strong>Final design</strong><br>Panel layout, cable routes, mounting quantities and electrical details remain subject to site verification and final electrical/design approval.</div><div class="note-card"><strong>Battery-ready and backup</strong><br>A battery-ready inverter does not provide outage backup until compatible battery and backup equipment are installed and commissioned.</div><div class="note-card"><strong>Energy outcome</strong><br>Generation, battery behaviour and savings vary with weather, shading, tariffs and how household loads are scheduled.</div><div class="note-card"><strong>Other electrical work</strong><br>Switchboard upgrades and work not expressly listed in an option are excluded and quoted separately.</div></div></section><section class="separate-section"><h2>Further ways to reduce grid electricity use</h2><p>These improvements are assessed and quoted separately:</p><ul class="separate-list">${(snap.proposal?.separate_quotes||[]).map(item=>`<li>${escapeHtml(item)}</li>`).join("")}</ul></section>`:""}
+      <section class="payment"><h3>Deposit and payment</h3>${escapeHtml(snap.payment?.deposit_wording||"A deposit will be invoiced once an option is accepted.")} No bank-account details are included in this quotation.</section>
+      <p class="notice">This is a saved quote version. Please contact Solectrics to accept an option or discuss changes. Acceptance is subject to the Terms &amp; Conditions attached below and available at <a class="terms-link" href="/terms-and-conditions" target="_blank" rel="noopener">solectrics.co.nz/terms-and-conditions</a>.</p>
+      <section class="quote-terms" id="quoteTerms"><h1>Terms &amp; Conditions</h1><p>Loading the terms attached to this quote…</p></section><footer class="quote-footer">Solectrics · 39 Bay Rd, Ostend, Waiheke Island 1081 · Smart Solar Living</footer>`;await attachTerms();}catch(error){content.innerHTML=`<h1>Quote unavailable</h1><p>${escapeHtml(error.message)}</p>`;}}
     loadQuote();
   </script>
 </body>
