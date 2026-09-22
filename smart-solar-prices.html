@@ -55,14 +55,8 @@
       gap:20px;
     }
 
-    .brand{
-      text-decoration:none;
-      font-weight:800;
-      font-size:22px;
-      letter-spacing:.05em;
-    }
-
-    .brand .e{color:var(--orange)}
+    .brand-link{display:block;line-height:0}
+    .brand-logo{display:block;width:168px;height:auto;margin:-12px 0 -18px -14px;mix-blend-mode:multiply}
 
     .nav-links{
       display:flex;
@@ -405,6 +399,7 @@
     @media(max-width:650px){
       .nav-links{display:none}
       .mobile-menu{display:block}
+      .brand-logo{width:148px}
       .hero{padding:52px 0 38px}
       .prices{padding-top:42px}
       .price-grid,
@@ -418,7 +413,7 @@
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="/">sol<span class="e">e</span>ctrics</a>
+    <a class="brand-link" href="/" aria-label="Solectrics home"><img class="brand-logo" src="/EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"></a>
     <nav class="nav-links">
       <a href="/">Home</a>
       <a href="/home-energy-check.html">Home Solar Check</a>
