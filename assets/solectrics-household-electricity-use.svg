@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1450" viewBox="0 0 1200 1450">
+  <defs>
+    <style>
+      .brand{font:800 34px Arial,sans-serif;letter-spacing:2px;fill:#17332d}
+      .kicker{font:800 25px Arial,sans-serif;letter-spacing:5px;fill:#3c876c}
+      .title{font:900 69px Arial,sans-serif;letter-spacing:-2px;fill:#17332d}
+      .label{font:800 22px Arial,sans-serif;letter-spacing:.3px;fill:#17332d}
+      .value{font:900 58px Arial,sans-serif;letter-spacing:-2px;fill:#17332d}
+      .valueOrange{font:900 76px Arial,sans-serif;letter-spacing:-3px;fill:#ef9c20}
+      .small{font:400 19px Arial,sans-serif;fill:#49615b}
+      .tiny{font:400 15px Arial,sans-serif;fill:#66736e}
+      .calloutHead{font:900 30px Arial,sans-serif;fill:#ffffff}
+      .callout{font:400 22px Arial,sans-serif;fill:#ffffff}
+      .cta{font:900 19px Arial,sans-serif;letter-spacing:.5px;fill:#ffffff}
+      .icon{fill:none;stroke:#3c876c;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+      .iconOrange{fill:none;stroke:#ef9c20;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+  </defs>
+
+  <rect width="1200" height="1450" fill="#f7f5ef"/>
+
+  <text x="72" y="70" class="brand">sol<tspan fill="#ef9c20">e</tspan>ctrics</text>
+  <text x="72" y="135" class="kicker">TYPICAL NEW ZEALAND HOUSEHOLD</text>
+  <text x="72" y="213" class="title">ELECTRICITY USE</text>
+  <rect x="72" y="242" width="1056" height="5" rx="3" fill="#ef9c20"/>
+
+  <!-- Water heating: dominant, clickable card in the website version -->
+  <g>
+    <rect x="72" y="290" width="512" height="276" rx="28" fill="#fff1da" stroke="#ef9c20" stroke-width="4"/>
+  </g>
+  <text x="104" y="340" class="label">WATER HEATING</text>
+  <text x="403" y="362" class="valueOrange">27%</text>
+  <g transform="translate(108 385)">
+    <path class="iconOrange" d="M6 30h72m-45 0V12h35c19 0 29 9 29 26v10m-12 0h24"/>
+    <path class="iconOrange" d="M96 57c0 0-13 16-13 27a13 13 0 0 0 26 0c0-11-13-27-13-27z"/>
+    <rect x="145" y="4" width="72" height="116" rx="18" class="iconOrange"/>
+    <path class="iconOrange" d="M163 31h36m-36 23h36m-36 23h36"/>
+    <path class="iconOrange" d="M256 42h96l-11 72h-75zM278 42V22h50v20"/>
+    <path class="iconOrange" d="M276 80c18-17 35-17 53 0"/>
+  </g>
+  <text x="104" y="538" class="small">The largest single household electricity load.</text>
+
+  <!-- Electronics -->
+  <rect x="616" y="290" width="512" height="276" rx="28" fill="#ffffff" stroke="#e5e2d9" stroke-width="2"/>
+  <text x="648" y="340" class="label">ELECTRONICS + OTHER</text>
+  <text x="958" y="358" class="value">20%</text>
+  <g transform="translate(652 397)">
+    <rect x="0" y="0" width="150" height="88" rx="8" class="icon"/>
+    <path class="icon" d="M56 105h38m-19-17v17"/>
+    <path d="M61 24l45 20-45 21z" fill="#ef9c20"/>
+    <rect x="194" y="14" width="88" height="70" rx="7" class="icon"/>
+    <path class="icon" d="M214 101h48m-24-17v17"/>
+    <rect x="320" y="4" width="74" height="96" rx="8" class="icon"/>
+    <path class="icon" d="M336 28h42m-42 23h42m-42 23h42"/>
+  </g>
+
+  <!-- Refrigeration -->
+  <rect x="72" y="598" width="512" height="222" rx="28" fill="#ffffff" stroke="#e5e2d9" stroke-width="2"/>
+  <text x="104" y="648" class="label">REFRIGERATION</text>
+  <text x="423" y="664" class="value">17%</text>
+  <g transform="translate(108 683)">
+    <rect x="112" y="0" width="94" height="110" rx="10" class="icon"/>
+    <path class="icon" d="M112 54h94m-20-30v13"/>
+    <path class="iconOrange" d="M35 14v78M0 53h70M10 27l50 52M60 27L10 79"/>
+    <path class="iconOrange" d="M286 16v76m-33-38h66m-56-29l46 58m0-58l-46 58"/>
+  </g>
+
+  <!-- Space heating -->
+  <rect x="616" y="598" width="512" height="222" rx="28" fill="#fffaf0" stroke="#ef9c20" stroke-width="3"/>
+  <text x="648" y="648" class="label">SPACE HEATING</text>
+  <text x="969" y="664" class="value" fill="#ef9c20">15%</text>
+  <g transform="translate(652 688)">
+    <rect x="0" y="15" width="100" height="92" rx="14" class="iconOrange"/>
+    <path class="iconOrange" d="M22 48h56m-45 20h34M26 0v15m48-15v15"/>
+    <path class="icon" d="M174 2v72a31 31 0 1 0 31 0V2"/>
+    <circle cx="189" cy="92" r="13" fill="#ef9c20"/>
+    <path class="icon" d="M273 21v88m28-88v88m28-88v88m28-88v88M258 42h114M258 85h114"/>
+  </g>
+
+  <!-- Lighting -->
+  <rect x="72" y="852" width="512" height="222" rx="28" fill="#ffffff" stroke="#e5e2d9" stroke-width="2"/>
+  <text x="104" y="902" class="label">LIGHTING</text>
+  <text x="423" y="918" class="value">13%</text>
+  <g transform="translate(116 938)">
+    <path class="iconOrange" d="M41 3a46 46 0 0 0-25 84c12 8 15 16 15 29h42c0-13 3-21 15-29A46 46 0 0 0 41 3zM32 131h40m-34 16h28"/>
+    <path class="iconOrange" d="M52 30v15m-30-2l11 11m49-11L71 54"/>
+    <rect x="154" y="20" width="80" height="108" rx="7" class="icon"/>
+    <path class="icon" d="M176 72h36m-18-18v36"/>
+    <path class="icon" d="M292 21h72l-13 96h-46zM302 44h52m-49 23h46m-43 23h40"/>
+  </g>
+
+  <!-- Cooking -->
+  <rect x="616" y="852" width="512" height="222" rx="28" fill="#ffffff" stroke="#e5e2d9" stroke-width="2"/>
+  <text x="648" y="902" class="label">COOKING</text>
+  <text x="1000" y="918" class="value">5%</text>
+  <g transform="translate(652 945)">
+    <path class="iconOrange" d="M0 45h118v70H0zM22 45V27h74v18M-7 115h132"/>
+    <path class="iconOrange" d="M29 12c-12-13 13-17 0-31m36 31c-12-13 13-17 0-31"/>
+    <path class="icon" d="M170 43h111l-12 73h-87zM190 43V24h72v19"/>
+    <path class="icon" d="M316 58h98v58h-98zM334 58V40h62v18"/>
+    <path class="icon" d="M342 21c-9-10 10-13 0-24m30 24c-9-10 10-13 0-24"/>
+  </g>
+
+  <!-- Clothes drying -->
+  <rect x="72" y="1106" width="512" height="190" rx="28" fill="#ffffff" stroke="#e5e2d9" stroke-width="2"/>
+  <text x="104" y="1156" class="label">CLOTHES DRYING</text>
+  <text x="443" y="1172" class="value">3%</text>
+  <g transform="translate(112 1191)">
+    <path class="icon" d="M0 0h118v84M0 84V0m118 84V0M12 0h94"/>
+    <path d="M38 15c11 13 24 13 36 0l11 15-10 10v44H36V40L27 30z" fill="#ef9c20"/>
+    <rect x="174" y="0" width="94" height="94" rx="10" class="iconOrange"/>
+    <circle cx="221" cy="52" r="28" class="iconOrange"/>
+    <path class="iconOrange" d="M193 18h13m19 0h13"/>
+  </g>
+
+  <!-- Hot-water explanation and CTA -->
+  <g>
+    <rect x="616" y="1106" width="512" height="250" rx="28" fill="#17332d"/>
+  </g>
+  <text x="650" y="1155" class="calloutHead" fill="#ffffff">Start with hot water.</text>
+  <text x="650" y="1194" class="callout" fill="#ffffff">Water heating uses around 27% of a</text>
+  <text x="650" y="1226" class="callout" fill="#ffffff">typical household’s electricity—so it is</text>
+  <text x="650" y="1258" class="callout" fill="#ffffff">one of the best places to reduce bills.</text>
+  <rect x="650" y="1280" width="416" height="52" rx="26" fill="#ef9c20"/>
+  <text x="858" y="1314" class="cta" text-anchor="middle">EXPLORE HOT-WATER HEAT PUMPS  →</text>
+
+  <text x="72" y="1378" class="small">Every household is different. Your Home Energy Check helps us understand where your home actually uses energy.</text>
+  <text x="72" y="1418" class="tiny">Indicative national breakdown · Source: EECA Energy End Use Database, 2018.</text>
+</svg>
