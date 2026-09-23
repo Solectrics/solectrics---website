@@ -19,6 +19,7 @@ h1{font-size:clamp(38px,9vw,56px);line-height:1.02;margin:0 0 22px}h2{font-size:
 input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 12px}label.field{display:block;font-size:13px;font-weight:700;margin-top:8px}
 .card{background:white;border-radius:18px;padding:20px;margin:14px 0}.path{border:2px solid transparent}.path.recommended{border-color:var(--orange)}.badge{display:inline-block;background:var(--orange);color:white;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}.hidden{display:none}
 .score{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #ecebe7;padding:12px 0}.score strong{text-align:right}
+.persona-note{display:none;background:#fff7e8;border-left:4px solid var(--orange);border-radius:0 13px 13px 0;padding:14px 16px;margin:18px 0;color:var(--ink);font-size:15px;line-height:1.45}.persona-note.visible{display:block}.persona-note button{border:0;background:transparent;color:var(--ink);font-weight:800;text-decoration:underline;text-decoration-color:var(--orange);text-underline-offset:3px;cursor:pointer;padding:0;margin-left:4px}.detail-panel{margin:16px 0;padding:17px;border:1px solid #e7d9cf;border-radius:16px;background:rgba(255,255,255,.65)}.detail-panel h3{margin:0 0 8px;font-size:18px}.detail-panel .choice{padding:13px 15px}
 
 .bill-status{font-size:14px;margin-top:10px;color:var(--muted)}
 .bill-status.good{color:#2c6b50;font-weight:700}
@@ -65,6 +66,8 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
     It only takes a few minutes.
   </p>
 
+  <div class="persona-note" id="personaNote"></div>
+
   <button class="btn primary" onclick="next()">LET'S START →</button>
 </section>
 
@@ -72,7 +75,7 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 
 <section class="screen" data-stage="your home"><div class="eyebrow">your home</div><h2>What kind of home do you live in?</h2><button class="choice" onclick="single('homeType','House',this);next()">House</button><button class="choice" onclick="single('homeType','Apartment / unit',this);next()">Apartment / unit</button><button class="choice" onclick="single('homeType','Other',this);next()">Other</button><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
 
-<section class="screen" data-stage="your home"><div class="eyebrow">your routine</div><h2>How is your home used during the day?</h2><p class="muted">This helps us understand how much solar can be used directly and how useful smart timing could be.</p><button class="choice" onclick="single('dayHome','Usually someone home',this);next()">Usually someone home</button><button class="choice" onclick="single('dayHome','Home some days',this);next()">Home some days</button><button class="choice" onclick="single('dayHome','Usually empty during working hours',this);next()">Usually empty during working hours</button><button class="choice" onclick="single('dayHome','It varies',this);next()">It varies</button><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
+<section class="screen" data-stage="your home"><div class="eyebrow">your routine</div><h2>How is your home used during the day?</h2><p class="muted">This helps us understand how much solar can be used directly and how useful smart timing could be.</p><button class="choice day-home-choice" onclick="selectDayHome('Usually someone home',this)">Usually someone home</button><button class="choice day-home-choice" onclick="selectDayHome('Home some days',this)">Home some days</button><button class="choice day-home-choice" onclick="selectDayHome('Usually empty during working hours',this)">Usually empty during working hours</button><button class="choice day-home-choice" onclick="selectDayHome('It varies',this)">It varies</button><div class="detail-panel"><h3>Does anyone regularly work from home?</h3><button class="choice work-home-choice" onclick="selectWithin('workFromHome','Yes',this,'.work-home-choice')">Yes</button><button class="choice work-home-choice" onclick="selectWithin('workFromHome','Sometimes',this,'.work-home-choice')">Sometimes</button><button class="choice work-home-choice" onclick="selectWithin('workFromHome','No',this,'.work-home-choice')">No</button></div><div class="detail-panel"><h3>When is electricity use usually highest?</h3><button class="choice load-time-choice" onclick="selectWithin('loadTiming','Mostly daytime',this,'.load-time-choice')">Mostly daytime</button><button class="choice load-time-choice" onclick="selectWithin('loadTiming','Mostly evening',this,'.load-time-choice')">Mostly evening</button><button class="choice load-time-choice" onclick="selectWithin('loadTiming','Spread through the day',this,'.load-time-choice')">Spread through the day</button><button class="choice load-time-choice" onclick="selectWithin('loadTiming','Not sure',this,'.load-time-choice')">Not sure</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="next()">CONTINUE →</button></div></section>
 
 
 <section class="screen" data-stage="your energy">
@@ -285,7 +288,7 @@ READ MY BILL(S) →</button>
 <button class="btn primary" onclick="saveBillEdits();next()">CONTINUE →</button></section>
 
 
-<section class="screen" data-stage="your energy"><div class="eyebrow">hot water</div><h2>How do you heat your water?</h2><button class="choice" onclick="single('hotWater','Electric hot-water cylinder',this);next()">Electric hot-water cylinder</button><button class="choice" onclick="single('hotWater','Heat-pump hot water',this);next()">Heat-pump hot water</button><button class="choice" onclick="single('hotWater','Solar hot water',this);next()">Solar hot water</button><button class="choice" onclick="single('hotWater','Gas',this);next()">Gas</button><button class="choice" onclick="single('hotWater','Other / not sure',this);next()">Other / I’m not sure</button><div class="actions"><button class="btn back" onclick="back()">← Back</button></div></section>
+<section class="screen" data-stage="your energy"><div class="eyebrow">hot water</div><h2>How do you heat your water?</h2><button class="choice hot-water-choice" onclick="selectHotWater('Electric hot-water cylinder',this)">Electric hot-water cylinder</button><button class="choice hot-water-choice" onclick="selectHotWater('Heat-pump hot water',this)">Heat-pump hot water</button><button class="choice hot-water-choice" onclick="selectHotWater('Solar hot water',this)">Solar hot water</button><button class="choice hot-water-choice" onclick="selectHotWater('Gas',this)">Gas</button><button class="choice hot-water-choice" onclick="selectHotWater('Other / not sure',this)">Other / I’m not sure</button><div class="detail-panel hidden" id="cylinderDetails"><h3>A little more about your cylinder</h3><label class="field" for="cylinderSize">Cylinder size, if known</label><select id="cylinderSize" onchange="answers.cylinderSize=this.value"><option value="">Not sure</option><option>Under 180 litres</option><option>180–250 litres</option><option>Over 250 litres</option></select><label class="field" for="hotWaterControl">Is it on controlled or ripple power?</label><select id="hotWaterControl" onchange="answers.hotWaterControl=this.value"><option value="">Not sure</option><option>Yes</option><option>No</option></select><label class="field" for="cylinderCondition">How is the cylinder?</label><select id="cylinderCondition" onchange="answers.cylinderCondition=this.value"><option value="">Not sure</option><option>Working well</option><option>Older but serviceable</option><option>Likely to need replacement</option></select></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHotWaterDetails();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your energy">
 <div class="eyebrow">home energy</div>
@@ -386,6 +389,7 @@ Prepare for future energy needs
 <button class="btn primary" onclick="next()">CONTINUE →</button>
 </div>
 </section>
+<section class="screen" data-stage="your plans"><div class="eyebrow">today and tomorrow</div><h2>What is already there—and what might change?</h2><label class="field" for="existingSolar">Existing solar</label><select id="existingSolar" onchange="answers.existingSolar=this.value"><option>No existing solar</option><option>Solar already installed</option><option>Solar and battery already installed</option><option>Not sure</option></select><label class="field" for="batteryInterest">How do you feel about a battery?</label><select id="batteryInterest" onchange="answers.batteryInterest=this.value"><option>Open to advice</option><option>Interested if the numbers support it</option><option>Backup power is important</option><option>Prefer solar without a battery</option><option>Not sure</option></select><div class="detail-panel"><h3>Any planned changes?</h3><p class="muted">Choose everything that may happen in the next few years.</p><button class="choice" onclick="multi('plannedChanges','EV or another EV',this)">EV or another EV</button><button class="choice" onclick="multi('plannedChanges','Hot-water heat pump',this)">Hot-water heat pump</button><button class="choice" onclick="multi('plannedChanges','More electric heating',this)">More electric heating</button><button class="choice" onclick="multi('plannedChanges','Pool or spa',this)">Pool or spa</button><button class="choice" onclick="multi('plannedChanges','Home extension or more occupants',this)">Home extension or more occupants</button><button class="choice" onclick="multi('plannedChanges','No major changes planned',this)">No major changes planned</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="savePlans();next()">CONTINUE →</button></div></section>
 <section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
@@ -450,11 +454,26 @@ Prepare for future energy needs
 </section>
 
 <script>
-let step=0;const screens=[...document.querySelectorAll('.screen')];const answers={loads:[],goals:[],bills:{summer:null,winter:null}};
+const PERSONAS={
+  'just-us':'Just Us / low-energy',
+  'busy-family':'Busy Family',
+  'home-in-day':'Home in the Day',
+  'lots-going-on':'Lots Going On / higher-energy',
+  'something-different':'Something Different / mixed-use property'
+};
+const selectedPersona=new URLSearchParams(window.location.search).get('household');
+let step=0;const screens=[...document.querySelectorAll('.screen')];const answers={loads:[],goals:[],plannedChanges:[],bills:{summer:null,winter:null},householdPersona:PERSONAS[selectedPersona]?selectedPersona:null};
+function renderPersonaNote(){const note=document.getElementById('personaNote');if(!note)return;if(answers.householdPersona&&PERSONAS[answers.householdPersona]){note.classList.add('visible');note.innerHTML=`You told us you’re a <strong>${PERSONAS[answers.householdPersona]}</strong> household. Now let’s look at how your home actually uses energy.<label class="field" for="personaChoice">Change or clear this starting point</label><select id="personaChoice" onchange="changePersona(this.value)"><option value="just-us">Just Us / low-energy</option><option value="busy-family">Busy Family</option><option value="home-in-day">Home in the Day</option><option value="lots-going-on">Lots Going On / higher-energy</option><option value="something-different">Something Different / mixed-use property</option><option value="">No starting household</option></select>`;document.getElementById('personaChoice').value=answers.householdPersona;}else{note.classList.remove('visible');note.innerHTML='';}}
+function changePersona(value){answers.householdPersona=value||null;const url=value?window.location.pathname+'?household='+encodeURIComponent(value):window.location.pathname;history.replaceState({},'',url);renderPersonaNote()}
 function render(){screens.forEach((s,i)=>s.classList.toggle('active',i===step));document.getElementById('progress').style.width=((step+1)/screens.length*100)+'%';document.getElementById('stage').textContent=screens[step].dataset.stage||'smart solar home check';window.scrollTo({top:0,behavior:'smooth'})}
 function next(){if(step<screens.length-1){step++;render()}}function back(){if(step>0){step--;render()}}
 function single(key,value,el){answers[key]=value;document.querySelectorAll('.screen.active .choice').forEach(b=>b.classList.remove('selected'));el.classList.add('selected')}
 function multi(key,value,el){if(!answers[key])answers[key]=[];const i=answers[key].indexOf(value);if(i>=0){answers[key].splice(i,1);el.classList.remove('selected')}else{answers[key].push(value);el.classList.add('selected')}}
+function selectWithin(key,value,el,selector){answers[key]=value;document.querySelectorAll(selector).forEach(b=>b.classList.remove('selected'));el.classList.add('selected')}
+function selectDayHome(value,el){selectWithin('dayHome',value,el,'.day-home-choice')}
+function selectHotWater(value,el){selectWithin('hotWater',value,el,'.hot-water-choice');const box=document.getElementById('cylinderDetails');if(box)box.classList.toggle('hidden',value!=='Electric hot-water cylinder')}
+function saveHotWaterDetails(){const size=document.getElementById('cylinderSize'),control=document.getElementById('hotWaterControl'),condition=document.getElementById('cylinderCondition');if(size)answers.cylinderSize=size.value;if(control)answers.hotWaterControl=control.value;if(condition)answers.cylinderCondition=condition.value}
+function savePlans(){const solar=document.getElementById('existingSolar'),battery=document.getElementById('batteryInterest');if(solar)answers.existingSolar=solar.value;if(battery)answers.batteryInterest=battery.value}
 function toggleEvLoad(el){
   multi('loads','EV',el);
   const selected=(answers.loads||[]).includes('EV');
@@ -775,7 +794,7 @@ const flexibleLoads=(answers.loads||[]).some(x=>/washing machine|dishwasher|clot
 const evSolar=(answers.loads||[]).includes('EV')&&answers.evDayHome!=='Rarely';
 
 const goalText=(answers.goals||[]).join(' ').toLowerCase();
-const backupGoal=/backup|outage/.test(goalText);
+const backupGoal=/backup|outage/.test(goalText)||answers.batteryInterest==='Backup power is important';
 const storageGoal=backupGoal||/battery|reduce reliance/.test(goalText);
 
 document.getElementById('useScore').textContent=(flexibleHotWater||flexibleLoads||evSolar)?'HIGH':'GOOD';
@@ -789,13 +808,14 @@ document.getElementById('waterScore').textContent=waterScore;
 
 document.getElementById('batteryScore').textContent=
   backupGoal ? 'BACKUP REQUESTED' :
-  storageGoal ? 'WORTH EXPLORING' :
+  (storageGoal||answers.loadTiming==='Mostly evening'||answers.batteryInterest==='Interested if the numbers support it') ? 'WORTH ASSESSING' :
   'READY FOR LATER';
 const insights=makeInsights();document.getElementById('finalBillAnalysis').innerHTML=insights.length?'<h2>What we can already see from your bills</h2>'+insights.slice(0,4).map(x=>`<div class="insight">${escapeHtml(x)}</div>`).join(''):'';
 document.getElementById('summary').textContent='Your answers suggest good potential for a solar system designed around the way your household actually uses energy.';
 
 step=screens.length-1;
 render();
+renderPersonaNote();
 }function bookVisit(){const subject=encodeURIComponent('Free Solectrics home solar visit');const body=encodeURIComponent('Hi Solectrics,\n\nI completed the Smart Solar Home Check and would like to arrange a free home solar visit.\n\nName: '+(answers.name||'')+'\nPhone: '+(answers.phone||'')+'\nProperty: '+(answers.address||'')+'\n\nThanks.');window.location.href='mailto:jane@solectrics.co.nz?subject='+subject+'&body='+body}
 
 function compareHotWaterBattery(){
@@ -2396,6 +2416,25 @@ function smartAssessment(){
     );
   }
 
+  if(String(answers && answers.workFromHome ? answers.workFromHome : "").toLowerCase().includes("yes")){
+    score += 1;
+    opportunities.push(
+      "regular working from home may support strong direct use of daytime solar"
+    );
+  }
+
+  const loadTiming=String(answers && answers.loadTiming ? answers.loadTiming : "").toLowerCase();
+  if(loadTiming.includes("evening")){
+    opportunities.push(
+      "your electricity use is highest in the evening, so we should first assess which loads can be shifted before deciding whether battery storage adds enough value"
+    );
+  }else if(loadTiming.includes("daytime")){
+    score += 1;
+    opportunities.push(
+      "your strongest electricity use is already in daylight hours, which can improve direct solar self-consumption and may reduce the need for storage"
+    );
+  }
+
 
   const electricHotWater =
     String(answers && answers.hotWater ? answers.hotWater : "")
@@ -2404,8 +2443,21 @@ function smartAssessment(){
 
   if(electricHotWater){
     score += 2;
+    const cylinderCondition=String(answers && answers.cylinderCondition ? answers.cylinderCondition : "").toLowerCase();
+    opportunities.push(cylinderCondition.includes("working well")||cylinderCondition.includes("serviceable")
+      ? "your serviceable electric cylinder may be worth timing or smart-controlling into solar hours before it is replaced"
+      : "electric hot water is a major flexible load that may be timed or smart-controlled into solar-producing hours");
+  }
+
+  if(Array.isArray(answers && answers.plannedChanges) && answers.plannedChanges.length && !answers.plannedChanges.includes("No major changes planned")){
     opportunities.push(
-      "electric hot water is a major flexible load that may be timed or smart-controlled into solar-producing hours"
+      "your planned electrification should be allowed for when the system is right-sized, rather than sizing only for today"
+    );
+  }
+
+  if(String(answers && answers.existingSolar ? answers.existingSolar : "").toLowerCase().includes("already installed")){
+    opportunities.push(
+      "your existing solar performance and export pattern should be reviewed before adding more panels or storage"
     );
   }
 
