@@ -418,7 +418,7 @@ margin-left: 0;
   gap: 0px;
 }
 
- 
+}
 </style>
  <style>
 .hero-paths {
@@ -442,6 +442,63 @@ margin-left: 0;
 
 .hero-paths .button.secondary {
   margin-top: 14px !important;
+}
+
+@media (max-width: 800px) {
+  header {
+    min-height: 94px;
+    padding: 8px 5%;
+  }
+
+  .brand-logo {
+    width: 150px;
+  }
+
+  .mobile-menu summary {
+    padding: 9px 14px;
+    border: 2px solid #ef9c20;
+    border-radius: 10px;
+    color: #17332d;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    box-shadow: 0 3px 10px rgba(239, 156, 32, .12);
+  }
+
+  .hero {
+    min-height: calc(100svh - 94px);
+    padding: 28px 6% 40px;
+    background-position: 68% 42%;
+  }
+
+  .eyebrow {
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(44px, 12vw, 58px);
+    margin-bottom: 0;
+  }
+
+  .hero-message {
+    margin-top: 42px;
+    max-width: 330px;
+  }
+
+  .hero-message .hero-intro {
+    margin-bottom: 14px;
+  }
+
+  .hero-paths .hero-check-button {
+    width: auto;
+    max-width: 285px;
+    margin: 0;
+    padding: 16px 20px;
+    border-radius: 11px;
+    font-size: 17px;
+    line-height: 1.2;
+  }
 }
 
 </style>
