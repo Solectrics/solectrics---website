@@ -231,6 +231,20 @@
       white-space: pre-wrap;
     }
 
+    .work-date-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .work-date-row {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+
+    .work-date-row input { flex: 1; min-width: 0; }
+    .work-date-row button { white-space: nowrap; }
+
     .quote-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -963,28 +977,25 @@ window.currentAnswers = answers;
 <!-- DAILY WORK & EWRB RECORD -->
 
 <section class="card" id="workLogSection">
-  <h2>Daily Work & EWRB Record</h2>
+  <h2>Work & EWRB Record</h2>
   <div class="placeholder">
-    Record Tom's work, supervision and competency evidence each day. On a phone,
+    Record Tom's work across one or more dates, supervision and competency evidence. On a phone,
     use the keyboard microphone to dictate into the notes fields.
   </div>
 
   <div class="grid" style="margin-top:20px;">
     <div>
-      <label>Date worked</label>
-      <input type="date" id="workLogDate">
+      <label>Dates worked</label>
+      <div id="workLogDates" class="work-date-list"></div>
+      <button type="button" id="addWorkLogDate" style="margin-top:10px;">+ ADD ANOTHER DATE</button>
     </div>
     <div>
-      <label>Hours worked</label>
-      <input type="number" id="workLogHours" min="0.1" max="24" step="0.25" placeholder="e.g. 7.5">
+      <label>Number of days</label>
+      <input type="number" id="workLogDays" min="0.5" max="60" step="0.5" placeholder="e.g. 3">
     </div>
     <div>
-      <label>Start time (optional)</label>
-      <input type="time" id="workLogStartTime">
-    </div>
-    <div>
-      <label>Finish time (optional)</label>
-      <input type="time" id="workLogFinishTime">
+      <label>Total hours worked</label>
+      <input type="number" id="workLogHours" min="0.1" max="1440" step="0.25" placeholder="e.g. 22.5">
     </div>
     <div>
       <label>Supervision</label>
@@ -1014,7 +1025,7 @@ window.currentAnswers = answers;
   <div style="margin-top:16px;">
     <label>Work completed</label>
     <textarea id="workLogCompleted" rows="3" maxlength="3000"
-      placeholder="Describe or dictate what was completed today"></textarea>
+      placeholder="Describe or dictate what was completed on these dates"></textarea>
   </div>
   <div class="grid" style="margin-top:16px;">
     <div>
@@ -1048,12 +1059,12 @@ window.currentAnswers = answers;
   </div>
 
   <br>
-  <button type="button" id="saveWorkLog">SAVE DAILY RECORD</button>
+  <button type="button" id="saveWorkLog">SAVE WORK RECORD</button>
   <span id="workLogMessage"></span>
 
   <div id="workLogSummary" class="work-log-summary">Total recorded hours: 0</div>
-  <h3>Daily record history</h3>
-  <div id="workLogList" class="placeholder">No daily records yet.</div>
+  <h3>Work record history</h3>
+  <div id="workLogList" class="placeholder">No work records yet.</div>
 </section>
 
 <!-- SYSTEM DESIGN -->
@@ -3236,6 +3247,62 @@ function formatWorkLogHours(hours) {
   return `${value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")} hours`;
 }
 
+function formatWorkLogDays(days) {
+  const value = Number(days) || 0;
+  const formatted = value.toFixed(1).replace(/\.0$/, "");
+  return `${formatted} ${value === 1 ? "day" : "days"}`;
+}
+
+function workLogDatesFromRecord(log) {
+  try {
+    const dates = JSON.parse(log.work_dates || "[]");
+    if (Array.isArray(dates) && dates.length) return dates;
+  } catch (_) {}
+  return log.work_date ? [log.work_date] : [];
+}
+
+function selectedWorkLogDates() {
+  return [...new Set([...document.querySelectorAll(".work-log-date")]
+    .map(input => input.value)
+    .filter(Boolean))].sort();
+}
+
+function syncWorkLogDays() {
+  const daysField = document.getElementById("workLogDays");
+  const count = selectedWorkLogDates().length;
+  if (daysField && count) daysField.value = String(count);
+}
+
+function addWorkLogDate(value = "") {
+  const list = document.getElementById("workLogDates");
+  if (!list) return;
+  const row = document.createElement("div");
+  row.className = "work-date-row";
+  row.innerHTML = `
+    <input type="date" class="work-log-date" aria-label="Date worked">
+    <button type="button" class="removeWorkLogDate" aria-label="Remove this date">REMOVE</button>
+  `;
+  row.querySelector("input").value = value;
+  list.appendChild(row);
+  row.querySelector("button").hidden = list.children.length === 1;
+  [...list.querySelectorAll(".removeWorkLogDate")].forEach(button => {
+    button.hidden = list.children.length === 1;
+  });
+  syncWorkLogDays();
+}
+
+function resetWorkLogDates() {
+  const list = document.getElementById("workLogDates");
+  if (!list) return;
+  list.innerHTML = "";
+  const today = new Date();
+  addWorkLogDate([
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0")
+  ].join("-"));
+}
+
 async function loadWorkLogs() {
   const list = document.getElementById("workLogList");
   const summary = document.getElementById("workLogSummary");
@@ -3246,25 +3313,26 @@ async function loadWorkLogs() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
-    summary.textContent = `Total recorded hours: ${formatWorkLogHours(data.total_hours)}`;
+    summary.textContent = `Total recorded: ${formatWorkLogDays(data.total_days)} · ${formatWorkLogHours(data.total_hours)}`;
 
     if (!data.logs.length) {
       list.className = "placeholder";
-      list.textContent = "No daily records yet.";
+      list.textContent = "No work records yet.";
       return;
     }
 
     list.className = "";
-    list.innerHTML = data.logs.map(log => `
+    list.innerHTML = data.logs.map(log => {
+      const dates = workLogDatesFromRecord(log);
+      return `
       <div class="work-log-row">
         <div class="work-log-heading">
-          <span>${escapeHtml(log.work_date)} · ${escapeHtml(formatWorkLogHours(log.hours))}</span>
+          <span>${escapeHtml(dates.join(", "))} · ${escapeHtml(formatWorkLogDays(log.days || 1))} · ${escapeHtml(formatWorkLogHours(log.hours))}</span>
           <span>${escapeHtml(workLogCompetencyLabels[log.competency] || "Other")}</span>
         </div>
         <div class="placeholder">
           Supervisor: ${escapeHtml(log.supervisor || "Not recorded")}
           · ${escapeHtml(workLogSupervisionLabels[log.supervision_type] || "Other")}
-          ${log.start_time || log.finish_time ? ` · ${escapeHtml(log.start_time || "?")}–${escapeHtml(log.finish_time || "?")}` : ""}
         </div>
         <div class="work-log-detail"><strong>Work completed:</strong> ${escapeHtml(log.work_completed)}</div>
         ${log.materials_used ? `<div class="work-log-detail"><strong>Materials used:</strong> ${escapeHtml(log.materials_used)}</div>` : ""}
@@ -3273,7 +3341,7 @@ async function loadWorkLogs() {
         ${log.supervisor_notes ? `<div class="work-log-detail"><strong>For Ben:</strong> ${escapeHtml(log.supervisor_notes)}</div>` : ""}
         <div class="work-log-detail"><strong>Certification:</strong> ${escapeHtml(workLogCertificationLabels[log.certification_status] || "Not started")}</div>
       </div>
-    `).join("");
+    `; }).join("");
   } catch (error) {
     console.error("Could not load work logs:", error);
     list.className = "error";
@@ -3284,9 +3352,12 @@ async function loadWorkLogs() {
 async function saveWorkLog() {
   const message = document.getElementById("workLogMessage");
   const button = document.getElementById("saveWorkLog");
+  const workDates = selectedWorkLogDates();
   const payload = {
     job_id: jobId,
-    work_date: document.getElementById("workLogDate").value,
+    work_date: workDates[0] || "",
+    work_dates: workDates,
+    days: document.getElementById("workLogDays").value,
     hours: document.getElementById("workLogHours").value,
     supervisor: "Ben",
     supervision_type: document.getElementById("workLogSupervisionType").value,
@@ -3295,14 +3366,12 @@ async function saveWorkLog() {
     tests_results: document.getElementById("workLogTests").value,
     issues_notes: document.getElementById("workLogIssues").value,
     supervisor_notes: document.getElementById("workLogSupervisorNotes").value,
-    start_time: document.getElementById("workLogStartTime").value,
-    finish_time: document.getElementById("workLogFinishTime").value,
     materials_used: document.getElementById("workLogMaterials").value,
     certification_status: document.getElementById("workLogCertificationStatus").value
   };
 
-  if (!payload.work_date || !payload.hours || !payload.work_completed.trim()) {
-    message.textContent = " Date, hours and work completed are required";
+  if (!payload.work_dates.length || !payload.days || !payload.hours || !payload.work_completed.trim()) {
+    message.textContent = " Dates, number of days, total hours and work completed are required";
     return;
   }
 
@@ -3318,10 +3387,11 @@ async function saveWorkLog() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
 
-    ["workLogHours", "workLogStartTime", "workLogFinishTime", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
+    ["workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
       .forEach(id => { document.getElementById(id).value = ""; });
+    resetWorkLogDates();
     document.getElementById("workLogCertificationStatus").value = "not_started";
-    message.textContent = " ✓ Daily record saved";
+    message.textContent = " ✓ Work record saved";
     await loadWorkLogs();
   } catch (error) {
     console.error("Could not save work log:", error);
@@ -3626,6 +3696,10 @@ document.addEventListener("change", function(event) {
     renderSelectedJobFiles();
   }
 
+  if (event.target?.classList?.contains("work-log-date")) {
+    syncWorkLogDays();
+  }
+
   if (
     event.target &&
     event.target.id === "roof_orientation"
@@ -3637,22 +3711,22 @@ document.addEventListener("change", function(event) {
     updateSystemDesignReadiness();
   }
 
-  if (["workLogStartTime", "workLogFinishTime"].includes(event.target?.id)) {
-    const start = document.getElementById("workLogStartTime")?.value;
-    const finish = document.getElementById("workLogFinishTime")?.value;
-    const hoursField = document.getElementById("workLogHours");
-    if (start && finish && hoursField) {
-      const [startHour, startMinute] = start.split(":").map(Number);
-      const [finishHour, finishMinute] = finish.split(":").map(Number);
-      const minutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute);
-      if (minutes > 0) hoursField.value = (minutes / 60).toFixed(2);
-    }
-  }
 });
 
 
 document.addEventListener("click", function(event) {
   if (!event.target) return;
+
+  if (event.target.id === "addWorkLogDate") {
+    addWorkLogDate();
+  }
+
+  if (event.target.classList?.contains("removeWorkLogDate")) {
+    event.target.closest(".work-date-row")?.remove();
+    const buttons = document.querySelectorAll(".removeWorkLogDate");
+    buttons.forEach(button => { button.hidden = buttons.length === 1; });
+    syncWorkLogDays();
+  }
 
   if (event.target.id === "generateSmartSuggestions") {
     suggestSmartEnergyUse();
@@ -4108,15 +4182,7 @@ document.addEventListener("click", function(event) {
   }
 });
 
-const workLogToday = new Date();
-const workLogDateField = document.getElementById("workLogDate");
-if (workLogDateField) {
-  workLogDateField.value = [
-    workLogToday.getFullYear(),
-    String(workLogToday.getMonth() + 1).padStart(2, "0"),
-    String(workLogToday.getDate()).padStart(2, "0")
-  ].join("-");
-}
+resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
