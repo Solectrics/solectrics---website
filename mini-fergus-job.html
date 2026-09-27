@@ -43,6 +43,8 @@
       text-decoration: none;
     }
 
+    .button-link { background: #173f3f; border-radius: 7px; color: #fff; display: inline-block; font-weight: 800; margin-top: 14px; padding: 12px 16px; text-decoration: none; }
+
     h1 {
       font-size: 48px;
       margin: 5px 0 8px;
@@ -204,6 +206,15 @@
 
     .photo-checklist-status.complete { color: #287a45; }
     .photo-checklist-status.missing { color: #8a5a00; }
+    .energy-data-panel { background: #f8f6f1; border-left: 5px solid #ef9c20; border-radius: 8px; margin: 18px 0 24px; padding: 16px; }
+    .energy-data-panel h3 { margin-top: 0; }
+    .energy-status-grid { display: grid; gap: 8px; grid-template-columns: repeat(2,minmax(0,1fr)); margin: 12px 0 16px; }
+    .energy-status-item { background: #fff; border-radius: 7px; padding: 10px 12px; }
+    .energy-status-item.complete { color: #287a45; font-weight: 700; }
+    .energy-status-item.missing { color: #8a5a00; font-weight: 700; }
+    .energy-file-group { border-top: 1px solid #e6e1d8; margin-top: 12px; padding-top: 12px; }
+    .energy-file-group h4 { margin: 0 0 7px; }
+    .energy-file-link { display: block; margin: 7px 0; overflow-wrap: anywhere; }
 
     .work-log-summary {
       background: #f8f6f1;
@@ -347,7 +358,8 @@
       }
 
       .costing-toolbar,
-      .costing-summary {
+      .costing-summary,
+      .energy-status-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -921,6 +933,13 @@ window.currentAnswers = answers;
     and certificates. Each file stays attached to this Job Hub record.
   </div>
 
+  <div class="energy-data-panel solar-only" id="energyDataPanel">
+    <h3>Energy Usage / Bills</h3>
+    <div class="placeholder">Electricity evidence received through the Home Energy Check or uploaded to this job for energy modelling and quote preparation.</div>
+    <div id="energyDataStatus" class="energy-status-grid"></div>
+    <div id="energyFilesList" class="placeholder">No energy files received yet.</div>
+  </div>
+
   <div class="grid" style="margin-top:20px;">
     <div>
       <label>File category</label>
@@ -943,14 +962,16 @@ window.currentAnswers = answers;
       </select>
     </div>
     <div>
-      <label>Choose photos or PDFs</label>
-      <input type="file" id="jobFileInput" accept="image/*,.pdf" capture="environment" multiple>
+      <label>Choose files</label>
+      <input type="file" id="jobFileInput" accept="image/*,.pdf,.csv,.xls,.xlsx" multiple>
     </div>
     <div>
       <label>Document use</label>
       <select id="jobFileRole">
         <option value="general">General job photo/document</option>
         <option class="solar-file-role" value="power_bill">Customer power bill</option>
+        <option class="solar-file-role" value="annual_usage">12-month electricity usage</option>
+        <option class="solar-file-role" value="additional_power_bill">Additional electricity bill</option>
         <option class="solar-file-role" value="sld">Single-line diagram (SLD)</option>
         <option class="solar-file-role" value="roof_layout">Roof / panel layout</option>
         <option value="supplier_quote">Supplier quote</option>
@@ -1548,6 +1569,18 @@ window.currentAnswers = answers;
 
   <span id="systemDesignMessage"></span>
 
+</section>
+
+<section class="card solar-only" id="energyTariffReviewSection">
+  <h2>Energy → Retailer &amp; Tariff Review</h2>
+  <p class="placeholder">
+    Complete the pre-install energy baseline, connect the proposed solar and smart-energy system,
+    compare 3–5 relevant plans, and prepare the customer-facing electricity-plan summary before
+    retailer or metering changes are started.
+  </p>
+  <a class="button-link" href="/mini-fergus-energy-review.html?job_id=${encodeURIComponent(jobId)}">
+    OPEN RETAILER &amp; TARIFF REVIEW
+  </a>
 </section>
 
 <!-- SUPPLIER PRICING -->
@@ -3051,6 +3084,8 @@ const jobFileCategoryLabels = {
 const jobFileRoleLabels = {
   general: "General",
   power_bill: "Power bill",
+  annual_usage: "12-month electricity usage",
+  additional_power_bill: "Additional electricity bill",
   sld: "Single-line diagram",
   roof_layout: "Roof / panel layout",
   supplier_quote: "Supplier quote",
@@ -3058,6 +3093,39 @@ const jobFileRoleLabels = {
   certificate: "Certificate / Ben approval",
   fletcher_assessment: "Fletcher site assessment"
 };
+
+function renderEnergyData(files) {
+  const status = document.getElementById("energyDataStatus");
+  const list = document.getElementById("energyFilesList");
+  if (!status || !list) return;
+  const recent = files.filter(file => file.document_role === "power_bill");
+  const annual = files.filter(file => file.document_role === "annual_usage");
+  const extra = files.filter(file => file.document_role === "additional_power_bill");
+  const detailed = annual.filter(file => file.energy_data_detail === "half_hourly");
+  const moreRequired = !recent.length || !annual.length;
+  const statuses = [
+    [recent.length > 0, "Recent bill received", recent.length ? `${recent.length} file${recent.length === 1 ? "" : "s"}` : "Not received"],
+    [annual.length > 0, "12-month usage received", annual.length ? `${annual.length} file${annual.length === 1 ? "" : "s"}` : "Not received"],
+    [detailed.length > 0, "Detailed / half-hourly data received", detailed.length ? "Identified" : "Not identified"],
+    [extra.length > 0 || recent.length > 1, "Additional bills received", extra.length || Math.max(0, recent.length - 1) ? `${extra.length + Math.max(0, recent.length - 1)} additional` : "None"],
+    [!moreRequired, "Energy information complete", moreRequired ? "" : "Ready for detailed modelling"]
+  ];
+  if (moreRequired) statuses.push([false, "More information required", [!recent.length ? "recent bill" : "", !annual.length ? "12-month usage" : ""].filter(Boolean).join(" and ")]);
+  status.innerHTML = statuses.map(([complete, label, note]) => `<div class="energy-status-item ${complete ? "complete" : "missing"}">${complete ? "✓" : "○"} ${escapeHtml(label)}<div class="placeholder">${escapeHtml(note)}</div></div>`).join("");
+
+  const groups = [
+    ["Recent electricity bills", recent],
+    ["12-month consumption data", annual],
+    ["Additional electricity bills", extra]
+  ].filter(([, groupFiles]) => groupFiles.length);
+  if (!groups.length) {
+    list.className = "placeholder";
+    list.textContent = "No energy files received yet.";
+    return;
+  }
+  list.className = "";
+  list.innerHTML = groups.map(([heading, groupFiles]) => `<div class="energy-file-group"><h4>${escapeHtml(heading)}</h4>${groupFiles.map(file => `<a class="energy-file-link" href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.original_name)}</a><div class="placeholder">${escapeHtml(file.content_type || "File")} · uploaded ${escapeHtml(file.uploaded_at || "")}${file.energy_data_detail === "half_hourly" ? " · detailed / half-hourly data identified" : ""}</div>`).join("")}</div>`).join("");
+}
 
 const solarPhotoChecklistItems = [
   "site_photo", "switchboard", "meter", "cable_route", "fixings",
@@ -3130,6 +3198,7 @@ async function loadJobFiles() {
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
     renderJobPhotoChecklist(data.files);
+    renderEnergyData(data.files);
 
     if (!data.files.length) {
       list.className = "placeholder";

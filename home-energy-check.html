@@ -21,6 +21,11 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 .score{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #ecebe7;padding:12px 0}.score strong{text-align:right}
 .persona-note{display:none;background:#fff7e8;border-left:4px solid var(--orange);border-radius:0 13px 13px 0;padding:14px 16px;margin:18px 0;color:var(--ink);font-size:15px;line-height:1.45}.persona-note.visible{display:block}.persona-note button{border:0;background:transparent;color:var(--ink);font-weight:800;text-decoration:underline;text-decoration-color:var(--orange);text-underline-offset:3px;cursor:pointer;padding:0;margin-left:4px}.detail-panel{margin:16px 0;padding:17px;border:1px solid #e7d9cf;border-radius:16px;background:rgba(255,255,255,.65)}.detail-panel h3{margin:0 0 8px;font-size:18px}.detail-panel .choice{padding:13px 15px}
 
+.usage-help{margin-top:14px;border:1px solid #e7d9cf;border-radius:14px;background:#fffaf2;padding:16px}
+.usage-help summary{cursor:pointer;font-weight:800;color:var(--ink);text-decoration:underline;text-decoration-color:var(--orange);text-underline-offset:3px}
+.usage-help ol{padding-left:22px}.usage-help li{margin:8px 0;line-height:1.45}.request-copy{background:#fff;border-left:4px solid var(--orange);border-radius:0 10px 10px 0;padding:12px 14px;font-size:15px;line-height:1.45}
+.upload-note{font-size:15px;line-height:1.45;color:var(--muted)}
+.file-input-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.upload-file-button{display:block!important;background:var(--orange);color:#fff;border-radius:12px;padding:14px 16px;text-align:center;cursor:pointer;margin:12px 0 4px!important}
 .bill-status{font-size:14px;margin-top:10px;color:var(--muted)}
 .bill-status.good{color:#2c6b50;font-weight:700}
 .bill-status.bad{color:#963b32;font-weight:700}
@@ -81,7 +86,7 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 <section class="screen" data-stage="your energy">
 <div class="eyebrow">your power bills</div>
 <h2>Let’s read your electricity bills.</h2>
-<p>Upload one electricity bill to get started. If you have both a summer and winter bill, we can give you a better picture of your annual energy use. We’ll pull out the useful information and show it back to you in plain English.</p>
+<p>Upload one electricity bill to get started. Your recent bill helps us understand your retailer, plan, rates and fixed charges. If you have both a summer and winter bill, we can give you a better first picture of your annual energy use.</p>
 
 <div class="upload">
 
@@ -104,6 +109,32 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
     class="bill-status">
   </div>
 
+</div>
+
+<div class="upload" id="annualUsageUpload">
+  <label>Help us make your solar estimate more accurate</label>
+  <p class="upload-note">Your latest electricity bill tells us what you pay. Your 12-month electricity usage helps us understand how much power your home uses throughout the year and, where detailed information is available, when you use it.</p>
+  <label class="upload-file-button" for="annualUsageFiles">UPLOAD 12-MONTH USAGE DATA</label>
+  <input class="file-input-hidden" type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
+  <div id="annualUsageStatus" class="bill-status">Recommended for a more accurate solar and battery assessment — but you can still continue without it. You can upload one usage file or several electricity bills.</div>
+  <details class="usage-help">
+    <summary>I don’t know how to get this</summary>
+    <h3>How to get your electricity usage</h3>
+    <ol>
+      <li>Log in to your electricity company’s website or app.</li>
+      <li>Look for <strong>Usage</strong>, <strong>Energy Usage</strong>, <strong>My Usage</strong> or <strong>Consumption</strong>.</li>
+      <li>Select the last 12 months if there is a date-range option.</li>
+      <li>Look for <strong>Download</strong> or <strong>Export</strong>.</li>
+      <li>If you’re offered different types of data, choose detailed or half-hourly usage data if available.</li>
+      <li>Download the file and upload it here.</li>
+    </ol>
+    <p><strong>Can’t find it? That’s okay.</strong></p>
+    <p class="upload-note">Upload your latest electricity bill instead and we can help you work out what to request from your electricity company.</p>
+    <p>If you contact your electricity company, you can ask:</p>
+    <div class="request-copy">“Could you please send me my electricity consumption data for the last 12 months, preferably half-hourly smart-meter data if available?”</div>
+    <p class="upload-note">Then upload the file they send you here.</p>
+    <p><strong>You don’t need to understand the spreadsheet — that’s our job.</strong></p>
+  </details>
 </div>
 
 
@@ -283,6 +314,11 @@ READ MY BILL(S) →</button>
 <div id="billInsights" class="hidden">
   <h2 style="margin-top:28px">What your bills are telling us</h2>
   <div id="insights"></div>
+</div>
+
+<div class="detail-panel" style="margin-top:24px">
+  <h2>Your current electricity plan</h2>
+  <p class="muted">We use the bill information above to identify your current retailer, tariff and charges. You do not need to understand every field. Anything the bill does not show clearly will be marked <strong>Needs review</strong> for Solectrics to check before making a recommendation.</p>
 </div>
 
 <button class="btn primary" onclick="saveBillEdits();next()">CONTINUE →</button></section>
@@ -505,7 +541,12 @@ const BILL_FIELDS=[
  ['peak_rate_cents','Peak rate (c/kWh)','number',''],
  ['offpeak_rate_cents','Off-peak rate (c/kWh)','number',''],
  ['controlled_rate_cents','Controlled / hot-water rate (c/kWh)','number',''],
+ ['ev_night_rate_cents','EV / night rate (c/kWh)','number',''],
  ['export_rate_cents','Solar export credit (c/kWh)','number',''],
+ ['peak_export_rate_cents','Peak solar export credit (c/kWh)','number',''],
+ ['fixed_term','Fixed-term plan','text',''],
+ ['exit_cost_nzd','Known exit / switching cost ($)','number',''],
+ ['other_tariff_information','Other tariff information','text','full'],
  ['gst_nzd','GST ($)','number',''],
  ['icp','ICP (if shown)','text','full']
 ];
@@ -546,7 +587,7 @@ async function readBill(season){
     document.getElementById(season+'Review').classList.remove('hidden');
 
     status.className='bill-status good';
-    status.textContent='Bill read ✓ Please check the details below.';
+    status.textContent='Bill read ✓ Please check the details below. Anything unclear is marked Needs review.';
     updateBillInsights();
   }catch(err){
     status.className='bill-status bad';
@@ -566,12 +607,14 @@ function renderBillFields(season,data){
 
     const lab=document.createElement('label');
     lab.className='field';
-    lab.textContent=label;
+    const needsReview=(data[key]===null||data[key]===undefined||data[key]===''||(data.needs_review_fields||[]).includes(key));
+    lab.textContent=label+(needsReview?' — Needs review':'');
 
     const input=document.createElement('input');
     input.type=type;
     input.id=season+'_'+key;
     input.value=(data[key]??'');
+    input.placeholder='Needs review';
     if(type==='number') input.step='any';
 
     wrap.appendChild(lab);
@@ -672,16 +715,46 @@ function escapeHtml(s){
     "'":'&#39;'
   }[m]));
 }
+function updateAnnualUsageSelection(){
+  const input=document.getElementById('annualUsageFiles');
+  const status=document.getElementById('annualUsageStatus');
+  const files=Array.from(input?.files||[]);
+  if(!files.length){
+    status.className='bill-status';
+    status.textContent='Recommended for a more accurate solar and battery assessment — but you can still continue without it. You can upload one usage file or several electricity bills.';
+    return;
+  }
+  const oversized=files.find(file=>file.size>12*1024*1024);
+  status.className=`bill-status ${oversized?'bad':'good'}`;
+  status.textContent=oversized
+    ? `${oversized.name} is over the 12 MB file limit.`
+    : `${files.length} file${files.length===1?'':'s'} ready to send with your Home Energy Check.`;
+}
 async function submitHomeEnergyCheck(){
 
   try {
 
     const formData = new FormData();
 
+    const summerFile=document.getElementById('summerBill')?.files?.[0];
+    const winterFile=document.getElementById('winterBill')?.files?.[0];
+    const annualFiles=Array.from(document.getElementById('annualUsageFiles')?.files||[]);
+    const allFiles=[summerFile,winterFile,...annualFiles].filter(Boolean);
+    const oversized=allFiles.find(file=>file.size>12*1024*1024);
+    if(oversized) throw new Error(`${oversized.name} is over the 12 MB file limit`);
+
+    answers.energyDataUploads={
+      recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'})),
+      annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
+    };
+
     formData.append(
       'answers',
       JSON.stringify(answers)
     );
+    if(summerFile) formData.append('summer_bill',summerFile,summerFile.name);
+    if(winterFile) formData.append('winter_bill',winterFile,winterFile.name);
+    annualFiles.forEach(file=>formData.append('annual_usage_files',file,file.name));
 
     const response = await fetch(
       '/api/enquiry',
