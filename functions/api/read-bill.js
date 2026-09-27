@@ -71,10 +71,16 @@ Return ONLY valid JSON with exactly these keys:
   "peak_rate_cents": number|null,
   "offpeak_rate_cents": number|null,
   "controlled_rate_cents": number|null,
+  "ev_night_rate_cents": number|null,
   "export_rate_cents": number|null,
+  "peak_export_rate_cents": number|null,
+  "fixed_term": string|null,
+  "exit_cost_nzd": number|null,
+  "other_tariff_information": string|null,
   "gst_nzd": number|null,
   "icp": string|null,
   "notes": string|null,
+  "needs_review_fields": string[],
   "confidence": number
 }
 
@@ -84,6 +90,7 @@ Rules:
 - total_bill_nzd and gst_nzd must be numeric NZ dollars.
 - Dates should be YYYY-MM-DD if clear, otherwise copy the visible date text.
 - confidence must be 0 to 1.
+- If a field is unclear, return null for that field and include its exact key in needs_review_fields.
 - If multiple import rates exist and no single main rate is obvious, use peak/offpeak/controlled fields and leave import_rate_cents null.
 `;
 
@@ -159,10 +166,12 @@ function sanitise(x) {
     "billing_days","total_import_kwh","average_daily_kwh","total_export_kwh",
     "total_bill_nzd","daily_fixed_charge_cents","import_rate_cents",
     "peak_rate_cents","offpeak_rate_cents","controlled_rate_cents",
-    "export_rate_cents","gst_nzd","confidence"
+    "ev_night_rate_cents","export_rate_cents","peak_export_rate_cents",
+    "exit_cost_nzd","gst_nzd","confidence"
   ];
   const strings = [
-    "retailer","plan_name","billing_period_start","billing_period_end","icp","notes"
+    "retailer","plan_name","billing_period_start","billing_period_end","icp","notes",
+    "fixed_term","other_tariff_information"
   ];
 
   const out = {};
@@ -178,6 +187,11 @@ function sanitise(x) {
       ? null
       : String(v).slice(0, 500);
   }
+  const allowedReviewFields = new Set([...numeric, ...strings].filter(k => k !== "confidence"));
+  out.needs_review_fields = Array.isArray(x?.needs_review_fields)
+    ? x.needs_review_fields.map(String).filter(k => allowedReviewFields.has(k)).slice(0, 30)
+    : [];
+  for (const k of out.needs_review_fields) out[k] = null;
   return out;
 }
 

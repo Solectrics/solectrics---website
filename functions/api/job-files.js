@@ -11,6 +11,7 @@ const CREATE_TABLE = `
     category TEXT NOT NULL,
     caption TEXT,
     document_role TEXT,
+    energy_data_detail TEXT,
     uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `;
@@ -18,8 +19,12 @@ const CREATE_TABLE = `
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
-  "application/pdf"
+  "application/pdf", "text/csv", "application/csv",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/octet-stream"
 ]);
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif", "pdf", "csv", "xls", "xlsx"]);
 const ALLOWED_CATEGORIES = new Set([
   "site_photo", "switchboard", "meter", "roof", "cable_route", "fixings",
   "equipment", "wiring", "labels", "testing", "completed", "drawing",
@@ -28,8 +33,24 @@ const ALLOWED_CATEGORIES = new Set([
 
 const ALLOWED_DOCUMENT_ROLES = new Set([
   "general", "power_bill", "sld", "roof_layout", "supplier_quote",
-  "supplier_invoice", "certificate", "fletcher_assessment"
+  "supplier_invoice", "certificate", "fletcher_assessment",
+  "annual_usage", "additional_power_bill"
 ]);
+
+export async function identifyEnergyDataDetail(file, documentRole) {
+  if (documentRole !== "annual_usage") return null;
+  const name = String(file?.name || "").toLowerCase();
+  if (/(half[ -]?hour|30[ -]?min|interval|smart[ -]?meter)/.test(name)) return "half_hourly";
+  if (/\.csv$/i.test(name) || file?.type === "text/csv" || file?.type === "application/csv") {
+    try {
+      const sample = (await file.text()).slice(0, 250000);
+      const rows = sample.split(/\r?\n/).filter(Boolean);
+      const header = rows[0] || "";
+      if (rows.length > 100 && /(date|time|interval|period)/i.test(header)) return "half_hourly";
+    } catch {}
+  }
+  return "unknown";
+}
 
 function getBucket(env) {
   return env.JOB_FILES || env.UPLOADS || env.BUCKET || null;
@@ -55,7 +76,7 @@ export async function onRequestGet(context) {
     await ensureJobFileRoleColumn(db);
     const result = await db.prepare(`
       SELECT id, original_name, content_type, size_bytes, category, caption,
-             document_role, uploaded_at
+             document_role, energy_data_detail, uploaded_at
       FROM job_files
       WHERE job_id = ?
       ORDER BY uploaded_at DESC
@@ -101,17 +122,19 @@ export async function onRequestPost(context) {
     }
 
     const contentType = file.type || "application/octet-stream";
-    if (!ALLOWED_TYPES.has(contentType)) {
-      return errorResponse("Please upload a photo or PDF", 400);
+    const extension = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "";
+    if (!ALLOWED_TYPES.has(contentType) || !ALLOWED_EXTENSIONS.has(extension)) {
+      return errorResponse("Please upload an image, PDF, CSV or Excel file", 400);
     }
 
     await db.prepare(CREATE_TABLE).run();
     await ensureJobFileRoleColumn(db);
     const id = crypto.randomUUID();
-    const extension = file.name.includes(".")
+    const storedExtension = file.name.includes(".")
       ? `.${file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "")}`
       : "";
-    const storageKey = `jobs/${jobId}/${id}${extension}`;
+    const storageKey = `jobs/${jobId}/${id}${storedExtension}`;
+    const energyDataDetail = await identifyEnergyDataDetail(file, documentRole);
 
     await bucket.put(storageKey, await file.arrayBuffer(), {
       httpMetadata: { contentType },
@@ -122,11 +145,11 @@ export async function onRequestPost(context) {
       await db.prepare(`
         INSERT INTO job_files
           (id, job_id, storage_key, original_name, content_type, size_bytes,
-           category, caption, document_role)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           category, caption, document_role, energy_data_detail)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         id, jobId, storageKey, file.name.slice(0, 255), contentType,
-        file.size, category, caption || null, documentRole
+        file.size, category, caption || null, documentRole, energyDataDetail
       ).run();
     } catch (error) {
       await bucket.delete(storageKey);

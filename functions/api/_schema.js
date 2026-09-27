@@ -24,6 +24,15 @@ export async function ensureJobFileRoleColumn(db) {
       }
     }
   }
+  if (!(columns.results || []).some(column => column.name === "energy_data_detail")) {
+    try {
+      await db.prepare("ALTER TABLE job_files ADD COLUMN energy_data_detail TEXT").run();
+    } catch (error) {
+      if (!String(error.message || error).toLowerCase().includes("duplicate column")) {
+        throw error;
+      }
+    }
+  }
 }
 
 export async function ensureSupplierCatalogueSchema(db) {
