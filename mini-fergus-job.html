@@ -3495,7 +3495,1741 @@ async function saveWorkLog() {
 
     ["workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
       .forEach(id => { document.getElementById(id).value = ""; });
-    resetWorkLogDates();
+    function updateMaterialsInvoiceOptions(files) {
+  const select = document.getElementById("materialsInvoiceFile");
+  if (!select) return;
+  const current = select.value;
+  const invoices = (files || []).filter(file => file.document_role === "supplier_invoice");
+  select.innerHTML = '<option value="">Choose an uploaded supplier invoice</option>' + invoices.map(file => '<option value="' + escapeHtml(file.id) + '">' + escapeHtml(file.original_name) + '</option>').join("");
+  if (invoices.some(file => file.id === current)) select.value = current;
+}
+function updateMaterialsSourceFields() {
+  const stock = document.getElementById("materialsSource").value === "stock";
+  ["materialsSupplierWrap","materialsInvoiceWrap","materialsInvoiceNumberWrap","materialsInvoiceDateWrap"].forEach(id => { document.getElementById(id).hidden = stock; });
+}
+function materialsMoney(value) {
+  return (Number(value) || 0).toLocaleString("en-NZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function renderJobMaterials(materials) {
+  const list = document.getElementById("jobMaterialsList");
+  const total = materials.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unit_cost_ex_gst) || 0), 0);
+  document.getElementById("jobMaterialsTotal").textContent = materialsMoney(total);
+  if (!materials.length) { list.className = "placeholder"; list.textContent = "No material items recorded yet."; return; }
+  list.className = "";
+  list.innerHTML = materials.map(item => {
+    const lineTotal = (Number(item.quantity) || 0) * (Number(item.unit_cost_ex_gst) || 0);
+    const source = item.source === "stock" ? "Solectrics stock" : escapeHtml(item.supplier_name || "Supplier");
+    const invoice = item.invoice_file_name ? " · " + escapeHtml(item.invoice_file_name) : "";
+    const unit = item.unit_code ? " " + escapeHtml(item.unit_code) : "";
+    return '<div class="answer-box"><strong>' + escapeHtml(item.description) + '</strong><div class="placeholder">' +
+      source + invoice + (item.invoice_number ? " · Invoice " + escapeHtml(item.invoice_number) : "") +
+      ' · ' + escapeHtml(item.quantity) + unit + ' × 
+    document.getElementById("workLogCertificationStatus").value = "not_started";
+    message.textContent = " ✓ Work record saved";
+    await loadWorkLogs();
+  } catch (error) {
+    console.error("Could not save work log:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+const systemDesignFieldIds = [
+  "design_connection_type", "design_main_supply", "design_icp",
+  "design_retailer", "design_network", "design_switchboard",
+  "design_supply_notes", "design_environment_notes", "design_panel_model",
+  "design_panel_wattage", "design_panel_count", "design_array_kw",
+  "design_inverter_model", "design_inverter_kw", "design_battery_model",
+  "design_battery_kwh", "design_backup", "design_string_count",
+  "design_mppt", "design_dc_cable", "design_ac_cable",
+  "design_ac_protection", "design_dc_protection", "design_export_control",
+  "design_earthing", "design_electrical_notes", "design_reference",
+  "design_revision", "design_designer", "design_date", "design_standards"
+];
+
+const systemDesignCheckboxIds = [
+  "design_salt_spray", "design_high_wind", "design_trees",
+  "design_chimneys", "design_buildings", "design_aerials",
+  "design_vents", "design_satellite", "design_roof_plan", "design_sld",
+  "design_calculations", "design_equipment_schedule", "design_reviewed"
+];
+
+const roofFieldClasses = [
+  "roof_length", "roof_width", "roof_pitch", "roof_orientation_design",
+  "roof_material", "roof_panel_count", "roof_array_layout", "roof_shading",
+  "roof_notes"
+];
+
+function collectSystemDesign() {
+  const design = {};
+
+  systemDesignFieldIds.forEach(id => {
+    design[id] = document.getElementById(id)?.value ?? "";
+  });
+
+  systemDesignCheckboxIds.forEach(id => {
+    design[id] = Boolean(document.getElementById(id)?.checked);
+  });
+
+  design.roofs = Array.from(
+    document.querySelectorAll("#designRoofs .design-roof")
+  ).map(roof => {
+    const roofData = {};
+    roofFieldClasses.forEach(className => {
+      roofData[className] = roof.querySelector(`.${className}`)?.value ?? "";
+    });
+    return roofData;
+  });
+
+  return design;
+}
+
+function populateRoof(roof, roofData = {}) {
+  roofFieldClasses.forEach(className => {
+    const field = roof.querySelector(`.${className}`);
+    if (field) field.value = roofData[className] ?? "";
+  });
+}
+
+function updateSystemDesignReadiness() {
+  const readiness = document.getElementById("designReadiness");
+  const reviewed = document.getElementById("design_reviewed")?.checked;
+  if (!readiness) return;
+
+  readiness.textContent = reviewed
+    ? "SYSTEM DESIGN REVIEWED — READY FOR FINAL APPROVAL"
+    : "SYSTEM DESIGN INCOMPLETE";
+  readiness.style.background = reviewed ? "#eef7ed" : "#f5f5f5";
+}
+
+async function loadSystemDesign() {
+  try {
+    const response = await fetch(`/api/system-design?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    if (!data.system_design) return;
+    const design = data.system_design;
+
+    systemDesignFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = design[id] ?? "";
+    });
+
+    systemDesignCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(design[id]);
+    });
+
+    const roofsContainer = document.getElementById("designRoofs");
+    const roofs = Array.isArray(design.roofs) && design.roofs.length
+      ? design.roofs
+      : [{}];
+
+    while (roofsContainer.children.length > 1) {
+      roofsContainer.lastElementChild.remove();
+    }
+
+    populateRoof(roofsContainer.querySelector(".design-roof"), roofs[0]);
+    for (const roofData of roofs.slice(1)) {
+      document.getElementById("addDesignRoof").click();
+      populateRoof(roofsContainer.lastElementChild, roofData);
+    }
+
+    updateSystemDesignReadiness();
+  } catch (error) {
+    console.error("Could not load system design:", error);
+    const message = document.getElementById("systemDesignMessage");
+    if (message) message.textContent = " Could not load saved system design";
+  }
+}
+
+async function saveSystemDesign() {
+  const message = document.getElementById("systemDesignMessage");
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/system-design", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: jobId,
+        system_design: collectSystemDesign()
+      })
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Save failed");
+    }
+
+    message.textContent = " ✓ System design saved";
+    updateSystemDesignReadiness();
+    return true;
+  } catch (error) {
+    console.error("Could not save system design:", error);
+    message.textContent = " Could not save system design";
+    return false;
+  }
+}
+
+
+function updateDesignSuggestions() {
+  calculateSolarSize();
+  calculateEstimatedGeneration();
+}
+
+
+document.addEventListener("input", function(event) {
+
+  if (!event.target) return;
+
+
+  /* ASSESSMENT & DESIGN */
+
+  if (
+    event.target.id === "panel_wattage" ||
+    event.target.id === "panel_count"
+  ) {
+    updateDesignSuggestions();
+
+    const assessmentWattage =
+      document.getElementById("panel_wattage");
+
+    const assessmentCount =
+      document.getElementById("panel_count");
+
+    const designWattage =
+      document.getElementById("design_panel_wattage");
+
+    const designCount =
+      document.getElementById("design_panel_count");
+
+    if (assessmentWattage && designWattage) {
+      designWattage.value = assessmentWattage.value || "";
+    }
+
+    if (assessmentCount && designCount) {
+      designCount.value = assessmentCount.value || "";
+    }
+    
+const designArraySize =
+  document.getElementById("design_array_kw");
+
+if (designArraySize && designWattage && designCount) {
+  const wattage = Number(designWattage.value) || 0;
+  const panelCount = Number(designCount.value) || 0;
+
+  if (wattage > 0 && panelCount > 0) {
+    designArraySize.value =
+      ((wattage * panelCount) / 1000).toFixed(3);
+  } else {
+    designArraySize.value = "";
+  }
+}
+
+  }
+
+  /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
+
+  if (
+    event.target.id === "design_panel_wattage" ||
+    event.target.id === "design_panel_count" ||
+    event.target.classList.contains("roof_panel_count")
+  ) {
+
+    const wattage =
+      Number(document.getElementById("design_panel_wattage")?.value) || 0;
+
+    const panelCount =
+      Number(document.getElementById("design_panel_count")?.value) || 0;
+
+    const arraySize =
+      document.getElementById("design_array_kw");
+
+    if (arraySize) {
+
+      if (wattage > 0 && panelCount > 0) {
+        arraySize.value =
+          ((wattage * panelCount) / 1000).toFixed(3);
+      } else {
+        arraySize.value = "";
+      }
+
+    }
+
+  }
+
+  /* SUPPLIER PRICING — CALCULATE MATERIAL COSTS */
+
+  const supplierCostFields = [
+    "supplier_cost_panels",
+    "supplier_cost_inverter",
+    "supplier_cost_battery",
+    "supplier_cost_gateway",
+    "supplier_cost_mounting",
+    "supplier_cost_misc",
+    "supplier_cost_freight",
+    "supplier_cost_other"
+  ];
+
+  const solectricsMaterialFields = [
+    "solectrics_cable_cost",
+    "solectrics_conduit_cost",
+    "solectrics_switchgear_cost",
+    "solectrics_other_materials"
+  ];
+
+  if (
+    supplierCostFields.includes(event.target.id) ||
+    solectricsMaterialFields.includes(event.target.id)
+  ) {
+
+    const supplierSubtotal = supplierCostFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const supplierSubtotalField =
+      document.getElementById("supplier_subtotal");
+
+    if (supplierSubtotalField) {
+      supplierSubtotalField.value = supplierSubtotal.toFixed(2);
+    }
+
+
+    const additionalMaterials = solectricsMaterialFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const trueMaterialsCost =
+      supplierSubtotal + additionalMaterials;
+
+    const trueMaterialsDisplay =
+      document.getElementById("trueMaterialsCost");
+
+    if (trueMaterialsDisplay) {
+      trueMaterialsDisplay.textContent =
+        trueMaterialsCost.toFixed(2);
+    }
+
+  }
+});
+
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "jobFileInput") {
+    renderSelectedJobFiles();
+  }
+
+  if (event.target?.classList?.contains("work-log-date")) {
+    syncWorkLogDays();
+  }
+
+  if (
+    event.target &&
+    event.target.id === "roof_orientation"
+  ) {
+    calculateEstimatedGeneration();
+  }
+
+  if (event.target?.id === "design_reviewed") {
+    updateSystemDesignReadiness();
+  }
+
+});
+
+
+document.addEventListener("click", function(event) {
+  if (!event.target) return;
+
+  if (event.target.id === "addWorkLogDate") {
+    addWorkLogDate();
+  }
+
+  if (event.target.classList?.contains("removeWorkLogDate")) {
+    event.target.closest(".work-date-row")?.remove();
+    const buttons = document.querySelectorAll(".removeWorkLogDate");
+    buttons.forEach(button => { button.hidden = buttons.length === 1; });
+    syncWorkLogDays();
+  }
+
+  if (event.target.id === "generateSmartSuggestions") {
+    suggestSmartEnergyUse();
+    suggestBattery();
+  }
+
+  if (event.target.id === "generateAssessment") {
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+    suggestSmartEnergyUse();
+    suggestBattery();
+    suggestTariff();
+    generateRecommendation();
+  }
+
+  if (event.target.id === "saveAssessment") {
+    saveAssessment();
+  }
+
+  if (event.target.id === "saveSiteVisit") {
+    saveSiteVisit();
+  }
+
+  if (event.target.id === "uploadJobFile") {
+    uploadJobFile();
+  }
+
+  if (event.target.id === "saveWorkLog") {
+    saveWorkLog();
+  }
+
+  if (event.target.id === "saveJobType") {
+    saveJobType();
+  }
+
+  if (event.target.id === "saveGeneralJobDetails") {
+    saveGeneralJobDetails();
+  }
+
+  if (event.target.id === "generateSupplierRequest") {
+    saveSystemDesign().then(saved => {
+      if (saved) window.location.href = `/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}`;
+    });
+  }
+
+  if (event.target.id === "saveSystemDesign") {
+    saveSystemDesign();
+  }
+
+
+/* SYSTEM DESIGN — ADD ANOTHER ROOF */
+
+if (event.target.id === "addDesignRoof") {
+
+  const roofsContainer = document.getElementById("designRoofs");
+
+  if (!roofsContainer) return;
+
+  const existingRoofs =
+    roofsContainer.querySelectorAll(".design-roof");
+
+  const roofNumber = existingRoofs.length + 1;
+
+  const roof = document.createElement("div");
+
+  roof.className = "design-roof";
+  roof.dataset.roof = roofNumber;
+
+  roof.style.marginTop = "24px";
+  roof.style.paddingTop = "20px";
+  roof.style.borderTop = "1px solid #ddd";
+
+  roof.innerHTML = `
+
+    <h4>Roof ${roofNumber}</h4>
+
+    <div class="grid">
+
+      <div>
+        <label>Roof length (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_length">
+      </div>
+
+      <div>
+        <label>Roof width (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_width">
+      </div>
+
+      <div>
+        <label>Pitch (degrees)</label>
+        <input type="number"
+               step="0.1"
+               class="roof_pitch">
+      </div>
+
+      <div>
+        <label>Orientation</label>
+        <select class="roof_orientation_design">
+          <option value="">Select...</option>
+          <option>North</option>
+          <option>North-east</option>
+          <option>East</option>
+          <option>South-east</option>
+          <option>South</option>
+          <option>South-west</option>
+          <option>West</option>
+          <option>North-west</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Roof material / profile</label>
+        <input type="text"
+               class="roof_material"
+               placeholder="e.g. Corrugated steel">
+      </div>
+
+      <div>
+        <label>Proposed panels on this roof</label>
+        <input type="number"
+               class="roof_panel_count">
+      </div>
+
+      <div>
+        <label>Proposed array layout</label>
+        <input type="text"
+               class="roof_array_layout"
+               placeholder="e.g. 2 rows × 8 panels">
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Shading / obstructions</label>
+      <textarea class="roof_shading"
+                rows="2"
+                placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Roof notes</label>
+      <textarea class="roof_notes"
+                rows="2"
+                placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+    </div>
+
+    <button type="button"
+            class="removeDesignRoof"
+            style="margin-top:12px;">
+      REMOVE THIS ROOF
+    </button>
+
+  `;
+
+  roofsContainer.appendChild(roof);
+}
+
+
+/* SYSTEM DESIGN — REMOVE EXTRA ROOF */
+
+if (event.target.classList.contains("removeDesignRoof")) {
+
+  const roof = event.target.closest(".design-roof");
+
+  if (roof) {
+    roof.remove();
+  }
+}
+
+});
+
+
+const costingState = {
+  options: [],
+  allLines: [],
+  currentOptionId: null,
+  lines: [],
+  catalogueResults: []
+};
+
+function costingMoney(value) {
+  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value) || 0);
+}
+
+function newCostingLine(category = "materials", product = null) {
+  const markup = Number(document.getElementById("costingDefaultMarkup")?.value) || 0;
+  const unitCost = Number(product?.buy_price) || 0;
+  return {
+    id: crypto.randomUUID(),
+    option_id: costingState.currentOptionId,
+    scope: "option",
+    supplier_product_id: product?.id || "",
+    supplier_name: product?.supplier_name || "",
+    supplier_sku: product?.supplier_sku || "",
+    description: product?.description || "",
+    unit_code: product?.unit_code || (category === "labour" ? "hour" : "each"),
+    quantity: 1,
+    unit_cost: unitCost,
+    markup_percent: category === "materials" ? markup : 0,
+    customer_unit_price: Number((unitCost * (1 + (category === "materials" ? markup : 0) / 100)).toFixed(2)),
+    category,
+    display_mode: "show",
+    combine_label: ""
+  };
+}
+
+function currentCostingOption() {
+  return costingState.options.find(option => option.id === costingState.currentOptionId);
+}
+
+function updateCostingOptionFields() {
+  const option = currentCostingOption();
+  if (!option) return;
+  document.getElementById("costingOptionName").value = option.name || "";
+  document.getElementById("costingOptionStatus").value = option.status || "draft";
+  document.getElementById("costingDefaultMarkup").value = Number(option.default_markup_percent ?? 30);
+}
+
+function renderCostingOptionSelect() {
+  const select = document.getElementById("costingOptionSelect");
+  if (!select) return;
+  select.innerHTML = costingState.options.map(option => `<option value="${escapeHtml(option.id)}" ${option.id === costingState.currentOptionId ? "selected" : ""}>${escapeHtml(option.name)}${option.status === "approved" ? " — Approved" : ""}</option>`).join("");
+  updateCostingOptionFields();
+}
+
+function selectCostingOption(optionId) {
+  costingState.currentOptionId = optionId;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id || line.option_id === optionId).map(line => ({ ...line, scope: line.option_id ? "option" : "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function createCostingOption() {
+  const optionNumber = costingState.options.length + 1;
+  const option = { id: crypto.randomUUID(), name: `Option ${optionNumber}`, status: "draft", default_markup_percent: 30 };
+  costingState.options.push(option);
+  costingState.currentOptionId = option.id;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id).map(line => ({ ...line, scope: "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function costingSelect(field, value) {
+  const choices = {
+    category: [["materials", "Materials"], ["labour", "Labour"], ["subcontractor", "Subcontractor"], ["certification", "Certification / testing"], ["other", "Other"]],
+    scope: [["option", "This option"], ["shared", "All options"]],
+    display_mode: [["show", "Show"], ["combine", "Combine"], ["hide", "Hide"]]
+  }[field];
+  return `<select data-field="${field}">${choices.map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
+function renderCostingLines() {
+  const body = document.getElementById("costingLines");
+  if (!body) return;
+  body.innerHTML = costingState.lines.map(line => `
+    <tr class="costing-line" data-line-id="${escapeHtml(line.id)}">
+      <td data-label="Description / supplier" class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
+      <td data-label="Category">${costingSelect("category", line.category)}</td>
+      <td data-label="Used by">${costingSelect("scope", line.scope)}</td>
+      <td data-label="Quantity" class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
+      <td data-label="Unit" class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
+      <td data-label="Unit cost" class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
+      <td data-label="Mark-up %" class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
+      <td data-label="Customer unit price" class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
+      <td data-label="Customer display" class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
+      <td data-label=""><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
+    </tr>
+  `).join("");
+  document.getElementById("costingEmpty").style.display = costingState.lines.length ? "none" : "block";
+  updateCostingTotals();
+}
+
+function updateCostingTotals() {
+  const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
+  for (const line of costingState.lines) {
+    const quantity = Number(line.quantity) || 0;
+    totals[line.category] = (totals[line.category] || 0) + quantity * (Number(line.unit_cost) || 0);
+    totals.customer += quantity * (Number(line.customer_unit_price) || 0);
+  }
+  const totalCost = totals.materials + totals.labour + totals.subcontractor + totals.certification + totals.other;
+  const gst = totals.customer * 0.15;
+  const profit = totals.customer - totalCost;
+  const margin = totals.customer > 0 ? profit / totals.customer * 100 : 0;
+  document.getElementById("costingMaterialsCost").textContent = costingMoney(totals.materials);
+  document.getElementById("costingLabourCost").textContent = costingMoney(totals.labour);
+  document.getElementById("costingSubcontractorCost").textContent = costingMoney(totals.subcontractor + totals.certification);
+  document.getElementById("costingOtherCost").textContent = costingMoney(totals.other);
+  document.getElementById("costingTotalCost").textContent = costingMoney(totalCost);
+  document.getElementById("costingCustomerEx").textContent = costingMoney(totals.customer);
+  document.getElementById("costingGst").textContent = costingMoney(gst);
+  document.getElementById("costingCustomerIncl").textContent = costingMoney(totals.customer + gst);
+  document.getElementById("costingProfit").textContent = costingMoney(profit);
+  document.getElementById("costingMargin").textContent = `${margin.toFixed(1)}%`;
+}
+
+async function loadCosting(preferredOptionId) {
+  const message = document.getElementById("costingMessage");
+  try {
+    const response = await fetch(`/api/job-costing?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load internal costing");
+    costingState.options = data.options || [];
+    costingState.allLines = data.lines || [];
+    if (!costingState.options.length) createCostingOption();
+    else selectCostingOption(preferredOptionId && costingState.options.some(option => option.id === preferredOptionId) ? preferredOptionId : costingState.options[0].id);
+    if (message) message.textContent = "";
+  } catch (error) {
+    if (message) { message.textContent = error.message; message.className = "error"; }
+  }
+}
+
+async function saveInternalCosting() {
+  const option = currentCostingOption();
+  const message = document.getElementById("costingMessage");
+  if (!option) return;
+  option.name = document.getElementById("costingOptionName").value.trim();
+  option.status = document.getElementById("costingOptionStatus").value;
+  option.default_markup_percent = Number(document.getElementById("costingDefaultMarkup").value) || 0;
+  if (!option.name) { message.textContent = "Enter an option name."; message.className = "error"; return; }
+  try {
+    message.textContent = "Saving…"; message.className = "";
+    const response = await fetch("/api/job-costing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: Number(jobId), option, lines: costingState.lines }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not save internal costing");
+    await loadCosting(data.option_id);
+    message.textContent = "Internal costing saved.";
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function loadCustomerQuotes() {
+  const history = document.getElementById("customerQuoteHistory");
+  const warning = document.getElementById("customerQuoteWarning");
+  try {
+    const response = await fetch(`/api/customer-quotes?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer quote history");
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "Internal costing has changed since an issued or accepted quote. The saved quote has not been altered. Generate a new version if the customer price should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => `
+      <div class="quote-history-row"><div><strong>Quote v${Number(version.version_number)}</strong> · ${escapeHtml(version.status).toUpperCase()}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${Number(version.option_count)} option${Number(version.option_count) === 1 ? "" : "s"}</div></div>
+      <div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-quote?quote_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${version.status === "draft" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status !== "accepted" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="accepted">MARK ACCEPTED</button>` : ""}</div></div>`).join("") : `<div class="placeholder">No customer quote versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerQuote() {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    message.textContent = "Generating…"; message.className = "";
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"generate", job_id:Number(jobId) }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer quote");
+    message.textContent = `Quote v${data.version_number} generated.`;
+    await loadCustomerQuotes();
+    window.open(`/mini-fergus-customer-quote?quote_id=${encodeURIComponent(data.quote_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerQuoteStatus(quoteId, status) {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"set_status", quote_id:quoteId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update quote status");
+    message.textContent = status === "accepted" ? "Quote marked accepted." : "Quote marked issued.";
+    message.className = "";
+    await loadCustomerQuotes();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+let costingSearchTimer;
+async function loadCostingSuppliers() {
+  const select = document.getElementById("costingSupplierFilter");
+  if (!select) return;
+  try {
+    const response = await fetch("/api/supplier-products?limit=1");
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load suppliers");
+    select.innerHTML = `<option value="">All suppliers</option>${(data.suppliers || []).map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === data.default_supplier_id ? "selected" : ""}>${escapeHtml(supplier.name)}${supplier.id === data.default_supplier_id ? " — Default" : ""}</option>`).join("")}`;
+  } catch (error) {
+    select.innerHTML = `<option value="">All suppliers</option>`;
+  }
+}
+
+async function searchCostingProducts() {
+  const query = document.getElementById("costingProductSearch").value.trim();
+  const supplierId = document.getElementById("costingSupplierFilter")?.value || "";
+  const results = document.getElementById("costingSearchResults");
+  if (query.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
+  try {
+    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&supplier_id=${encodeURIComponent(supplierId)}&limit=30`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Search failed");
+    costingState.catalogueResults = data.products || [];
+    results.innerHTML = costingState.catalogueResults.length ? costingState.catalogueResults.map((product, index) => `<div class="costing-search-result"><div><strong>${escapeHtml(product.description)}</strong><div class="costing-line-meta">${escapeHtml(product.supplier_name)} · ${escapeHtml(product.supplier_sku)} · ${escapeHtml(product.unit_code || "unit")} · Buy ${costingMoney(product.buy_price)}</div></div><button type="button" class="addCatalogueProduct" data-product-index="${index}">ADD</button></div>`).join("") : `<div class="placeholder" style="padding:12px">No matching products.</div>`;
+    results.hidden = false;
+  } catch (error) { results.innerHTML = `<div class="error" style="padding:12px">${escapeHtml(error.message)}</div>`; results.hidden = false; }
+}
+
+document.addEventListener("input", function(event) {
+  if (event.target?.id === "costingProductSearch") {
+    clearTimeout(costingSearchTimer);
+    costingSearchTimer = setTimeout(searchCostingProducts, 250);
+    return;
+  }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  const field = event.target.dataset.field;
+  line[field] = ["quantity", "unit_cost", "markup_percent", "customer_unit_price"].includes(field) ? Number(event.target.value) || 0 : event.target.value;
+  if (field === "unit_cost" || field === "markup_percent") {
+    line.customer_unit_price = Number((Number(line.unit_cost || 0) * (1 + Number(line.markup_percent || 0) / 100)).toFixed(2));
+    row.querySelector('[data-field="customer_unit_price"]').value = line.customer_unit_price;
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "costingOptionSelect") { selectCostingOption(event.target.value); return; }
+  if (event.target?.id === "costingSupplierFilter") { searchCostingProducts(); return; }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  line[event.target.dataset.field] = event.target.value;
+  if (event.target.dataset.field === "display_mode") {
+    row.querySelector('[data-field="combine_label"]').style.display = event.target.value === "combine" ? "block" : "none";
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("click", function(event) {
+  if (event.target?.id === "newCostingOption") createCostingOption();
+  if (event.target?.id === "saveInternalCosting") saveInternalCosting();
+  if (event.target?.id === "generateCustomerQuote") generateCustomerQuote();
+  if (event.target?.classList?.contains("setCustomerQuoteStatus")) setCustomerQuoteStatus(event.target.dataset.quoteId, event.target.dataset.status);
+  if (event.target?.classList?.contains("addCostingLine")) {
+    costingState.lines.push(newCostingLine(event.target.dataset.category));
+    renderCostingLines();
+  }
+  if (event.target?.classList?.contains("addCatalogueProduct")) {
+    const product = costingState.catalogueResults[Number(event.target.dataset.productIndex)];
+    if (product) { costingState.lines.push(newCostingLine("materials", product)); renderCostingLines(); }
+  }
+  if (event.target?.classList?.contains("removeCostingLine")) {
+    const row = event.target.closest(".costing-line");
+    costingState.lines = costingState.lines.filter(line => line.id !== row?.dataset.lineId);
+    renderCostingLines();
+  }
+});
+
+resetWorkLogDates();
+
+loadJob().then(() => {
+  Promise.all([
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadJobFiles(), loadJobMaterials(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
+  ]).then(() => {
+
+    const roofOrientationField =
+      document.getElementById("roof_orientation");
+
+    if (
+      roofOrientationField &&
+      !roofOrientationField.value &&
+      window.currentAnswers?.direction
+    ) {
+      roofOrientationField.value = window.currentAnswers.direction;
+    }
+
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+  });
+});
+  </script>
+  <script src="/assets/fletcher-quote-import.js"></script>
+</body>
+</html>
+ + materialsMoney(item.unit_cost_ex_gst) + ' = 
+    document.getElementById("workLogCertificationStatus").value = "not_started";
+    message.textContent = " ✓ Work record saved";
+    await loadWorkLogs();
+  } catch (error) {
+    console.error("Could not save work log:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+const systemDesignFieldIds = [
+  "design_connection_type", "design_main_supply", "design_icp",
+  "design_retailer", "design_network", "design_switchboard",
+  "design_supply_notes", "design_environment_notes", "design_panel_model",
+  "design_panel_wattage", "design_panel_count", "design_array_kw",
+  "design_inverter_model", "design_inverter_kw", "design_battery_model",
+  "design_battery_kwh", "design_backup", "design_string_count",
+  "design_mppt", "design_dc_cable", "design_ac_cable",
+  "design_ac_protection", "design_dc_protection", "design_export_control",
+  "design_earthing", "design_electrical_notes", "design_reference",
+  "design_revision", "design_designer", "design_date", "design_standards"
+];
+
+const systemDesignCheckboxIds = [
+  "design_salt_spray", "design_high_wind", "design_trees",
+  "design_chimneys", "design_buildings", "design_aerials",
+  "design_vents", "design_satellite", "design_roof_plan", "design_sld",
+  "design_calculations", "design_equipment_schedule", "design_reviewed"
+];
+
+const roofFieldClasses = [
+  "roof_length", "roof_width", "roof_pitch", "roof_orientation_design",
+  "roof_material", "roof_panel_count", "roof_array_layout", "roof_shading",
+  "roof_notes"
+];
+
+function collectSystemDesign() {
+  const design = {};
+
+  systemDesignFieldIds.forEach(id => {
+    design[id] = document.getElementById(id)?.value ?? "";
+  });
+
+  systemDesignCheckboxIds.forEach(id => {
+    design[id] = Boolean(document.getElementById(id)?.checked);
+  });
+
+  design.roofs = Array.from(
+    document.querySelectorAll("#designRoofs .design-roof")
+  ).map(roof => {
+    const roofData = {};
+    roofFieldClasses.forEach(className => {
+      roofData[className] = roof.querySelector(`.${className}`)?.value ?? "";
+    });
+    return roofData;
+  });
+
+  return design;
+}
+
+function populateRoof(roof, roofData = {}) {
+  roofFieldClasses.forEach(className => {
+    const field = roof.querySelector(`.${className}`);
+    if (field) field.value = roofData[className] ?? "";
+  });
+}
+
+function updateSystemDesignReadiness() {
+  const readiness = document.getElementById("designReadiness");
+  const reviewed = document.getElementById("design_reviewed")?.checked;
+  if (!readiness) return;
+
+  readiness.textContent = reviewed
+    ? "SYSTEM DESIGN REVIEWED — READY FOR FINAL APPROVAL"
+    : "SYSTEM DESIGN INCOMPLETE";
+  readiness.style.background = reviewed ? "#eef7ed" : "#f5f5f5";
+}
+
+async function loadSystemDesign() {
+  try {
+    const response = await fetch(`/api/system-design?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    if (!data.system_design) return;
+    const design = data.system_design;
+
+    systemDesignFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = design[id] ?? "";
+    });
+
+    systemDesignCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(design[id]);
+    });
+
+    const roofsContainer = document.getElementById("designRoofs");
+    const roofs = Array.isArray(design.roofs) && design.roofs.length
+      ? design.roofs
+      : [{}];
+
+    while (roofsContainer.children.length > 1) {
+      roofsContainer.lastElementChild.remove();
+    }
+
+    populateRoof(roofsContainer.querySelector(".design-roof"), roofs[0]);
+    for (const roofData of roofs.slice(1)) {
+      document.getElementById("addDesignRoof").click();
+      populateRoof(roofsContainer.lastElementChild, roofData);
+    }
+
+    updateSystemDesignReadiness();
+  } catch (error) {
+    console.error("Could not load system design:", error);
+    const message = document.getElementById("systemDesignMessage");
+    if (message) message.textContent = " Could not load saved system design";
+  }
+}
+
+async function saveSystemDesign() {
+  const message = document.getElementById("systemDesignMessage");
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/system-design", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: jobId,
+        system_design: collectSystemDesign()
+      })
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Save failed");
+    }
+
+    message.textContent = " ✓ System design saved";
+    updateSystemDesignReadiness();
+    return true;
+  } catch (error) {
+    console.error("Could not save system design:", error);
+    message.textContent = " Could not save system design";
+    return false;
+  }
+}
+
+
+function updateDesignSuggestions() {
+  calculateSolarSize();
+  calculateEstimatedGeneration();
+}
+
+
+document.addEventListener("input", function(event) {
+
+  if (!event.target) return;
+
+
+  /* ASSESSMENT & DESIGN */
+
+  if (
+    event.target.id === "panel_wattage" ||
+    event.target.id === "panel_count"
+  ) {
+    updateDesignSuggestions();
+
+    const assessmentWattage =
+      document.getElementById("panel_wattage");
+
+    const assessmentCount =
+      document.getElementById("panel_count");
+
+    const designWattage =
+      document.getElementById("design_panel_wattage");
+
+    const designCount =
+      document.getElementById("design_panel_count");
+
+    if (assessmentWattage && designWattage) {
+      designWattage.value = assessmentWattage.value || "";
+    }
+
+    if (assessmentCount && designCount) {
+      designCount.value = assessmentCount.value || "";
+    }
+    
+const designArraySize =
+  document.getElementById("design_array_kw");
+
+if (designArraySize && designWattage && designCount) {
+  const wattage = Number(designWattage.value) || 0;
+  const panelCount = Number(designCount.value) || 0;
+
+  if (wattage > 0 && panelCount > 0) {
+    designArraySize.value =
+      ((wattage * panelCount) / 1000).toFixed(3);
+  } else {
+    designArraySize.value = "";
+  }
+}
+
+  }
+
+  /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
+
+  if (
+    event.target.id === "design_panel_wattage" ||
+    event.target.id === "design_panel_count" ||
+    event.target.classList.contains("roof_panel_count")
+  ) {
+
+    const wattage =
+      Number(document.getElementById("design_panel_wattage")?.value) || 0;
+
+    const panelCount =
+      Number(document.getElementById("design_panel_count")?.value) || 0;
+
+    const arraySize =
+      document.getElementById("design_array_kw");
+
+    if (arraySize) {
+
+      if (wattage > 0 && panelCount > 0) {
+        arraySize.value =
+          ((wattage * panelCount) / 1000).toFixed(3);
+      } else {
+        arraySize.value = "";
+      }
+
+    }
+
+  }
+
+  /* SUPPLIER PRICING — CALCULATE MATERIAL COSTS */
+
+  const supplierCostFields = [
+    "supplier_cost_panels",
+    "supplier_cost_inverter",
+    "supplier_cost_battery",
+    "supplier_cost_gateway",
+    "supplier_cost_mounting",
+    "supplier_cost_misc",
+    "supplier_cost_freight",
+    "supplier_cost_other"
+  ];
+
+  const solectricsMaterialFields = [
+    "solectrics_cable_cost",
+    "solectrics_conduit_cost",
+    "solectrics_switchgear_cost",
+    "solectrics_other_materials"
+  ];
+
+  if (
+    supplierCostFields.includes(event.target.id) ||
+    solectricsMaterialFields.includes(event.target.id)
+  ) {
+
+    const supplierSubtotal = supplierCostFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const supplierSubtotalField =
+      document.getElementById("supplier_subtotal");
+
+    if (supplierSubtotalField) {
+      supplierSubtotalField.value = supplierSubtotal.toFixed(2);
+    }
+
+
+    const additionalMaterials = solectricsMaterialFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const trueMaterialsCost =
+      supplierSubtotal + additionalMaterials;
+
+    const trueMaterialsDisplay =
+      document.getElementById("trueMaterialsCost");
+
+    if (trueMaterialsDisplay) {
+      trueMaterialsDisplay.textContent =
+        trueMaterialsCost.toFixed(2);
+    }
+
+  }
+});
+
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "jobFileInput") {
+    renderSelectedJobFiles();
+  }
+
+  if (event.target?.classList?.contains("work-log-date")) {
+    syncWorkLogDays();
+  }
+
+  if (
+    event.target &&
+    event.target.id === "roof_orientation"
+  ) {
+    calculateEstimatedGeneration();
+  }
+
+  if (event.target?.id === "design_reviewed") {
+    updateSystemDesignReadiness();
+  }
+
+});
+
+
+document.addEventListener("click", function(event) {
+  if (!event.target) return;
+
+  if (event.target.id === "addWorkLogDate") {
+    addWorkLogDate();
+  }
+
+  if (event.target.classList?.contains("removeWorkLogDate")) {
+    event.target.closest(".work-date-row")?.remove();
+    const buttons = document.querySelectorAll(".removeWorkLogDate");
+    buttons.forEach(button => { button.hidden = buttons.length === 1; });
+    syncWorkLogDays();
+  }
+
+  if (event.target.id === "generateSmartSuggestions") {
+    suggestSmartEnergyUse();
+    suggestBattery();
+  }
+
+  if (event.target.id === "generateAssessment") {
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+    suggestSmartEnergyUse();
+    suggestBattery();
+    suggestTariff();
+    generateRecommendation();
+  }
+
+  if (event.target.id === "saveAssessment") {
+    saveAssessment();
+  }
+
+  if (event.target.id === "saveSiteVisit") {
+    saveSiteVisit();
+  }
+
+  if (event.target.id === "uploadJobFile") {
+    uploadJobFile();
+  }
+
+  if (event.target.id === "saveWorkLog") {
+    saveWorkLog();
+  }
+
+  if (event.target.id === "saveJobType") {
+    saveJobType();
+  }
+
+  if (event.target.id === "saveGeneralJobDetails") {
+    saveGeneralJobDetails();
+  }
+
+  if (event.target.id === "generateSupplierRequest") {
+    saveSystemDesign().then(saved => {
+      if (saved) window.location.href = `/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}`;
+    });
+  }
+
+  if (event.target.id === "saveSystemDesign") {
+    saveSystemDesign();
+  }
+
+
+/* SYSTEM DESIGN — ADD ANOTHER ROOF */
+
+if (event.target.id === "addDesignRoof") {
+
+  const roofsContainer = document.getElementById("designRoofs");
+
+  if (!roofsContainer) return;
+
+  const existingRoofs =
+    roofsContainer.querySelectorAll(".design-roof");
+
+  const roofNumber = existingRoofs.length + 1;
+
+  const roof = document.createElement("div");
+
+  roof.className = "design-roof";
+  roof.dataset.roof = roofNumber;
+
+  roof.style.marginTop = "24px";
+  roof.style.paddingTop = "20px";
+  roof.style.borderTop = "1px solid #ddd";
+
+  roof.innerHTML = `
+
+    <h4>Roof ${roofNumber}</h4>
+
+    <div class="grid">
+
+      <div>
+        <label>Roof length (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_length">
+      </div>
+
+      <div>
+        <label>Roof width (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_width">
+      </div>
+
+      <div>
+        <label>Pitch (degrees)</label>
+        <input type="number"
+               step="0.1"
+               class="roof_pitch">
+      </div>
+
+      <div>
+        <label>Orientation</label>
+        <select class="roof_orientation_design">
+          <option value="">Select...</option>
+          <option>North</option>
+          <option>North-east</option>
+          <option>East</option>
+          <option>South-east</option>
+          <option>South</option>
+          <option>South-west</option>
+          <option>West</option>
+          <option>North-west</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Roof material / profile</label>
+        <input type="text"
+               class="roof_material"
+               placeholder="e.g. Corrugated steel">
+      </div>
+
+      <div>
+        <label>Proposed panels on this roof</label>
+        <input type="number"
+               class="roof_panel_count">
+      </div>
+
+      <div>
+        <label>Proposed array layout</label>
+        <input type="text"
+               class="roof_array_layout"
+               placeholder="e.g. 2 rows × 8 panels">
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Shading / obstructions</label>
+      <textarea class="roof_shading"
+                rows="2"
+                placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Roof notes</label>
+      <textarea class="roof_notes"
+                rows="2"
+                placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+    </div>
+
+    <button type="button"
+            class="removeDesignRoof"
+            style="margin-top:12px;">
+      REMOVE THIS ROOF
+    </button>
+
+  `;
+
+  roofsContainer.appendChild(roof);
+}
+
+
+/* SYSTEM DESIGN — REMOVE EXTRA ROOF */
+
+if (event.target.classList.contains("removeDesignRoof")) {
+
+  const roof = event.target.closest(".design-roof");
+
+  if (roof) {
+    roof.remove();
+  }
+}
+
+});
+
+
+const costingState = {
+  options: [],
+  allLines: [],
+  currentOptionId: null,
+  lines: [],
+  catalogueResults: []
+};
+
+function costingMoney(value) {
+  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value) || 0);
+}
+
+function newCostingLine(category = "materials", product = null) {
+  const markup = Number(document.getElementById("costingDefaultMarkup")?.value) || 0;
+  const unitCost = Number(product?.buy_price) || 0;
+  return {
+    id: crypto.randomUUID(),
+    option_id: costingState.currentOptionId,
+    scope: "option",
+    supplier_product_id: product?.id || "",
+    supplier_name: product?.supplier_name || "",
+    supplier_sku: product?.supplier_sku || "",
+    description: product?.description || "",
+    unit_code: product?.unit_code || (category === "labour" ? "hour" : "each"),
+    quantity: 1,
+    unit_cost: unitCost,
+    markup_percent: category === "materials" ? markup : 0,
+    customer_unit_price: Number((unitCost * (1 + (category === "materials" ? markup : 0) / 100)).toFixed(2)),
+    category,
+    display_mode: "show",
+    combine_label: ""
+  };
+}
+
+function currentCostingOption() {
+  return costingState.options.find(option => option.id === costingState.currentOptionId);
+}
+
+function updateCostingOptionFields() {
+  const option = currentCostingOption();
+  if (!option) return;
+  document.getElementById("costingOptionName").value = option.name || "";
+  document.getElementById("costingOptionStatus").value = option.status || "draft";
+  document.getElementById("costingDefaultMarkup").value = Number(option.default_markup_percent ?? 30);
+}
+
+function renderCostingOptionSelect() {
+  const select = document.getElementById("costingOptionSelect");
+  if (!select) return;
+  select.innerHTML = costingState.options.map(option => `<option value="${escapeHtml(option.id)}" ${option.id === costingState.currentOptionId ? "selected" : ""}>${escapeHtml(option.name)}${option.status === "approved" ? " — Approved" : ""}</option>`).join("");
+  updateCostingOptionFields();
+}
+
+function selectCostingOption(optionId) {
+  costingState.currentOptionId = optionId;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id || line.option_id === optionId).map(line => ({ ...line, scope: line.option_id ? "option" : "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function createCostingOption() {
+  const optionNumber = costingState.options.length + 1;
+  const option = { id: crypto.randomUUID(), name: `Option ${optionNumber}`, status: "draft", default_markup_percent: 30 };
+  costingState.options.push(option);
+  costingState.currentOptionId = option.id;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id).map(line => ({ ...line, scope: "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function costingSelect(field, value) {
+  const choices = {
+    category: [["materials", "Materials"], ["labour", "Labour"], ["subcontractor", "Subcontractor"], ["certification", "Certification / testing"], ["other", "Other"]],
+    scope: [["option", "This option"], ["shared", "All options"]],
+    display_mode: [["show", "Show"], ["combine", "Combine"], ["hide", "Hide"]]
+  }[field];
+  return `<select data-field="${field}">${choices.map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
+function renderCostingLines() {
+  const body = document.getElementById("costingLines");
+  if (!body) return;
+  body.innerHTML = costingState.lines.map(line => `
+    <tr class="costing-line" data-line-id="${escapeHtml(line.id)}">
+      <td data-label="Description / supplier" class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
+      <td data-label="Category">${costingSelect("category", line.category)}</td>
+      <td data-label="Used by">${costingSelect("scope", line.scope)}</td>
+      <td data-label="Quantity" class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
+      <td data-label="Unit" class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
+      <td data-label="Unit cost" class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
+      <td data-label="Mark-up %" class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
+      <td data-label="Customer unit price" class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
+      <td data-label="Customer display" class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
+      <td data-label=""><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
+    </tr>
+  `).join("");
+  document.getElementById("costingEmpty").style.display = costingState.lines.length ? "none" : "block";
+  updateCostingTotals();
+}
+
+function updateCostingTotals() {
+  const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
+  for (const line of costingState.lines) {
+    const quantity = Number(line.quantity) || 0;
+    totals[line.category] = (totals[line.category] || 0) + quantity * (Number(line.unit_cost) || 0);
+    totals.customer += quantity * (Number(line.customer_unit_price) || 0);
+  }
+  const totalCost = totals.materials + totals.labour + totals.subcontractor + totals.certification + totals.other;
+  const gst = totals.customer * 0.15;
+  const profit = totals.customer - totalCost;
+  const margin = totals.customer > 0 ? profit / totals.customer * 100 : 0;
+  document.getElementById("costingMaterialsCost").textContent = costingMoney(totals.materials);
+  document.getElementById("costingLabourCost").textContent = costingMoney(totals.labour);
+  document.getElementById("costingSubcontractorCost").textContent = costingMoney(totals.subcontractor + totals.certification);
+  document.getElementById("costingOtherCost").textContent = costingMoney(totals.other);
+  document.getElementById("costingTotalCost").textContent = costingMoney(totalCost);
+  document.getElementById("costingCustomerEx").textContent = costingMoney(totals.customer);
+  document.getElementById("costingGst").textContent = costingMoney(gst);
+  document.getElementById("costingCustomerIncl").textContent = costingMoney(totals.customer + gst);
+  document.getElementById("costingProfit").textContent = costingMoney(profit);
+  document.getElementById("costingMargin").textContent = `${margin.toFixed(1)}%`;
+}
+
+async function loadCosting(preferredOptionId) {
+  const message = document.getElementById("costingMessage");
+  try {
+    const response = await fetch(`/api/job-costing?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load internal costing");
+    costingState.options = data.options || [];
+    costingState.allLines = data.lines || [];
+    if (!costingState.options.length) createCostingOption();
+    else selectCostingOption(preferredOptionId && costingState.options.some(option => option.id === preferredOptionId) ? preferredOptionId : costingState.options[0].id);
+    if (message) message.textContent = "";
+  } catch (error) {
+    if (message) { message.textContent = error.message; message.className = "error"; }
+  }
+}
+
+async function saveInternalCosting() {
+  const option = currentCostingOption();
+  const message = document.getElementById("costingMessage");
+  if (!option) return;
+  option.name = document.getElementById("costingOptionName").value.trim();
+  option.status = document.getElementById("costingOptionStatus").value;
+  option.default_markup_percent = Number(document.getElementById("costingDefaultMarkup").value) || 0;
+  if (!option.name) { message.textContent = "Enter an option name."; message.className = "error"; return; }
+  try {
+    message.textContent = "Saving…"; message.className = "";
+    const response = await fetch("/api/job-costing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: Number(jobId), option, lines: costingState.lines }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not save internal costing");
+    await loadCosting(data.option_id);
+    message.textContent = "Internal costing saved.";
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function loadCustomerQuotes() {
+  const history = document.getElementById("customerQuoteHistory");
+  const warning = document.getElementById("customerQuoteWarning");
+  try {
+    const response = await fetch(`/api/customer-quotes?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer quote history");
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "Internal costing has changed since an issued or accepted quote. The saved quote has not been altered. Generate a new version if the customer price should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => `
+      <div class="quote-history-row"><div><strong>Quote v${Number(version.version_number)}</strong> · ${escapeHtml(version.status).toUpperCase()}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${Number(version.option_count)} option${Number(version.option_count) === 1 ? "" : "s"}</div></div>
+      <div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-quote?quote_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${version.status === "draft" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status !== "accepted" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="accepted">MARK ACCEPTED</button>` : ""}</div></div>`).join("") : `<div class="placeholder">No customer quote versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerQuote() {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    message.textContent = "Generating…"; message.className = "";
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"generate", job_id:Number(jobId) }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer quote");
+    message.textContent = `Quote v${data.version_number} generated.`;
+    await loadCustomerQuotes();
+    window.open(`/mini-fergus-customer-quote?quote_id=${encodeURIComponent(data.quote_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerQuoteStatus(quoteId, status) {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"set_status", quote_id:quoteId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update quote status");
+    message.textContent = status === "accepted" ? "Quote marked accepted." : "Quote marked issued.";
+    message.className = "";
+    await loadCustomerQuotes();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+let costingSearchTimer;
+async function loadCostingSuppliers() {
+  const select = document.getElementById("costingSupplierFilter");
+  if (!select) return;
+  try {
+    const response = await fetch("/api/supplier-products?limit=1");
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load suppliers");
+    select.innerHTML = `<option value="">All suppliers</option>${(data.suppliers || []).map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === data.default_supplier_id ? "selected" : ""}>${escapeHtml(supplier.name)}${supplier.id === data.default_supplier_id ? " — Default" : ""}</option>`).join("")}`;
+  } catch (error) {
+    select.innerHTML = `<option value="">All suppliers</option>`;
+  }
+}
+
+async function searchCostingProducts() {
+  const query = document.getElementById("costingProductSearch").value.trim();
+  const supplierId = document.getElementById("costingSupplierFilter")?.value || "";
+  const results = document.getElementById("costingSearchResults");
+  if (query.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
+  try {
+    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&supplier_id=${encodeURIComponent(supplierId)}&limit=30`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Search failed");
+    costingState.catalogueResults = data.products || [];
+    results.innerHTML = costingState.catalogueResults.length ? costingState.catalogueResults.map((product, index) => `<div class="costing-search-result"><div><strong>${escapeHtml(product.description)}</strong><div class="costing-line-meta">${escapeHtml(product.supplier_name)} · ${escapeHtml(product.supplier_sku)} · ${escapeHtml(product.unit_code || "unit")} · Buy ${costingMoney(product.buy_price)}</div></div><button type="button" class="addCatalogueProduct" data-product-index="${index}">ADD</button></div>`).join("") : `<div class="placeholder" style="padding:12px">No matching products.</div>`;
+    results.hidden = false;
+  } catch (error) { results.innerHTML = `<div class="error" style="padding:12px">${escapeHtml(error.message)}</div>`; results.hidden = false; }
+}
+
+document.addEventListener("input", function(event) {
+  if (event.target?.id === "costingProductSearch") {
+    clearTimeout(costingSearchTimer);
+    costingSearchTimer = setTimeout(searchCostingProducts, 250);
+    return;
+  }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  const field = event.target.dataset.field;
+  line[field] = ["quantity", "unit_cost", "markup_percent", "customer_unit_price"].includes(field) ? Number(event.target.value) || 0 : event.target.value;
+  if (field === "unit_cost" || field === "markup_percent") {
+    line.customer_unit_price = Number((Number(line.unit_cost || 0) * (1 + Number(line.markup_percent || 0) / 100)).toFixed(2));
+    row.querySelector('[data-field="customer_unit_price"]').value = line.customer_unit_price;
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "costingOptionSelect") { selectCostingOption(event.target.value); return; }
+  if (event.target?.id === "costingSupplierFilter") { searchCostingProducts(); return; }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  line[event.target.dataset.field] = event.target.value;
+  if (event.target.dataset.field === "display_mode") {
+    row.querySelector('[data-field="combine_label"]').style.display = event.target.value === "combine" ? "block" : "none";
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("click", function(event) {
+  if (event.target?.id === "newCostingOption") createCostingOption();
+  if (event.target?.id === "saveInternalCosting") saveInternalCosting();
+  if (event.target?.id === "generateCustomerQuote") generateCustomerQuote();
+  if (event.target?.classList?.contains("setCustomerQuoteStatus")) setCustomerQuoteStatus(event.target.dataset.quoteId, event.target.dataset.status);
+  if (event.target?.classList?.contains("addCostingLine")) {
+    costingState.lines.push(newCostingLine(event.target.dataset.category));
+    renderCostingLines();
+  }
+  if (event.target?.classList?.contains("addCatalogueProduct")) {
+    const product = costingState.catalogueResults[Number(event.target.dataset.productIndex)];
+    if (product) { costingState.lines.push(newCostingLine("materials", product)); renderCostingLines(); }
+  }
+  if (event.target?.classList?.contains("removeCostingLine")) {
+    const row = event.target.closest(".costing-line");
+    costingState.lines = costingState.lines.filter(line => line.id !== row?.dataset.lineId);
+    renderCostingLines();
+  }
+});
+
+resetWorkLogDates();
+
+loadJob().then(() => {
+  Promise.all([
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadJobFiles(), loadJobMaterials(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
+  ]).then(() => {
+
+    const roofOrientationField =
+      document.getElementById("roof_orientation");
+
+    if (
+      roofOrientationField &&
+      !roofOrientationField.value &&
+      window.currentAnswers?.direction
+    ) {
+      roofOrientationField.value = window.currentAnswers.direction;
+    }
+
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+  });
+});
+  </script>
+  <script src="/assets/fletcher-quote-import.js"></script>
+</body>
+</html>
+ + materialsMoney(lineTotal) +
+      ' ex GST</div><button type="button" class="costing-remove removeJobMaterial" data-material-id="' + escapeHtml(item.id) + '">REMOVE</button></div>';
+  }).join("");
+}
+async function loadJobMaterials() {
+  const list = document.getElementById("jobMaterialsList");
+  try {
+    const response = await fetch("/api/job-materials?job_id=" + encodeURIComponent(jobId));
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load materials");
+    renderJobMaterials(data.materials || []);
+  } catch (error) { list.className = "error"; list.textContent = error.message; }
+}
+async function addJobMaterial() {
+  const message = document.getElementById("jobMaterialsMessage");
+  const source = document.getElementById("materialsSource").value;
+  const description = document.getElementById("materialsDescription").value.trim();
+  if (!description) { message.textContent = "Enter a material description."; return; }
+  if (source === "supplier_invoice" && !document.getElementById("materialsInvoiceFile").value) { message.textContent = "Upload and select the supplier invoice first."; return; }
+  const button = document.getElementById("addJobMaterial");
+  button.disabled = true;
+  try {
+    message.textContent = "Saving…";
+    const response = await fetch("/api/job-materials", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: Number(jobId), source, supplier_name: document.getElementById("materialsSupplier").value,
+        invoice_file_id: document.getElementById("materialsInvoiceFile").value,
+        invoice_number: document.getElementById("materialsInvoiceNumber").value,
+        invoice_date: document.getElementById("materialsInvoiceDate").value,
+        description, supplier_sku: document.getElementById("materialsSku").value,
+        quantity: document.getElementById("materialsQuantity").value,
+        unit_code: document.getElementById("materialsUnit").value,
+        unit_cost_ex_gst: document.getElementById("materialsUnitCost").value
+      })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not save material");
+    ["materialsDescription","materialsSku","materialsUnit"].forEach(id => { document.getElementById(id).value = ""; });
+    document.getElementById("materialsQuantity").value = "1";
+    document.getElementById("materialsUnitCost").value = "0";
+    message.textContent = "Material added.";
+    await loadJobMaterials();
+  } catch (error) { message.textContent = error.message; }
+  finally { button.disabled = false; }
+}
+async function removeJobMaterial(id) {
+  const response = await fetch("/api/job-materials?job_id=" + encodeURIComponent(jobId) + "&id=" + encodeURIComponent(id), { method: "DELETE" });
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.error || "Could not remove material");
+  await loadJobMaterials();
+}
+document.getElementById("materialsSource")?.addEventListener("change", updateMaterialsSourceFields);
+document.getElementById("addJobMaterial")?.addEventListener("click", addJobMaterial);
+document.getElementById("uploadMaterialsInvoice")?.addEventListener("click", () => {
+  document.getElementById("jobFileCategory").value = "supplier";
+  document.getElementById("jobFileRole").value = "supplier_invoice";
+  document.getElementById("jobFilesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("jobFileInput").click();
+});
+document.getElementById("general_billing_route")?.addEventListener("change", updateCommercialRouteVisibility);
+document.addEventListener("click", async event => {
+  if (!event.target?.classList?.contains("removeJobMaterial")) return;
+  const message = document.getElementById("jobMaterialsMessage");
+  try { await removeJobMaterial(event.target.dataset.materialId); message.textContent = "Material removed."; }
+  catch (error) { message.textContent = error.message; }
+});
+
+resetWorkLogDates();
     document.getElementById("workLogCertificationStatus").value = "not_started";
     message.textContent = " ✓ Work record saved";
     await loadWorkLogs();
