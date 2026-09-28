@@ -41,6 +41,8 @@
     const total = (materials || []).reduce((sum, item) =>
       sum + (Number(item.quantity) || 0) * (Number(item.unit_cost_ex_gst) || 0), 0);
     byId("jobMaterialsTotal").textContent = money(total);
+    window.jobActualMaterialsCost = total;
+    window.dispatchEvent(new CustomEvent("jobhub:materials-updated", { detail: { total } }));
     if (!materials?.length) {
       list.className = "placeholder";
       list.textContent = "No material items recorded yet.";
