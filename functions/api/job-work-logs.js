@@ -140,21 +140,39 @@ export async function onRequestPost(context) {
     }
 
     await ensureWorkLogColumns(db);
-    const id = crypto.randomUUID();
-    await db.prepare(`
-      INSERT INTO job_work_logs
-        (id, job_id, work_date, work_dates, days, hours, supervisor, supervision_type,
-         competency, work_completed, tests_results, issues_notes, supervisor_notes,
-         start_time, finish_time, materials_used, certification_status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      id, jobId, workDate, JSON.stringify(workDates), days, hours, supervisor || null,
-      supervisionType, competency,
-      workCompleted, testsResults || null, issuesNotes || null, supervisorNotes || null,
-      null, null, materialsUsed || null, certificationStatus
-    ).run();
+    const requestedId = cleanText(body.id, 100);
+    const id = requestedId || crypto.randomUUID();
+    if (requestedId) {
+      const result = await db.prepare(`
+        UPDATE job_work_logs
+        SET work_date = ?, work_dates = ?, days = ?, hours = ?, supervisor = ?,
+            supervision_type = ?, competency = ?, work_completed = ?, tests_results = ?,
+            issues_notes = ?, supervisor_notes = ?, materials_used = ?,
+            certification_status = ?
+        WHERE id = ? AND job_id = ?
+      `).bind(
+        workDate, JSON.stringify(workDates), days, hours, supervisor || null,
+        supervisionType, competency, workCompleted, testsResults || null,
+        issuesNotes || null, supervisorNotes || null, materialsUsed || null,
+        certificationStatus, requestedId, jobId
+      ).run();
+      if (!(result.meta?.changes > 0)) return errorResponse("Work record not found", 404);
+    } else {
+      await db.prepare(`
+        INSERT INTO job_work_logs
+          (id, job_id, work_date, work_dates, days, hours, supervisor, supervision_type,
+           competency, work_completed, tests_results, issues_notes, supervisor_notes,
+           start_time, finish_time, materials_used, certification_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id, jobId, workDate, JSON.stringify(workDates), days, hours, supervisor || null,
+        supervisionType, competency,
+        workCompleted, testsResults || null, issuesNotes || null, supervisorNotes || null,
+        null, null, materialsUsed || null, certificationStatus
+      ).run();
+    }
 
-    return Response.json({ ok: true, id, message: "Work record saved" });
+    return Response.json({ ok: true, id, message: requestedId ? "Work record updated" : "Work record saved" });
   } catch (error) {
     console.error("Job work logs POST error:", error);
     return errorResponse("Unable to save daily record", 500, error.message);
