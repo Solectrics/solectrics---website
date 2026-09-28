@@ -22,9 +22,11 @@ function cleanDetails(value) {
   const allowed = [
     "job_description", "site_contact", "access_notes", "supply_details",
     "switchboard_details", "existing_installation", "hazards", "work_scope",
-    "testing_required", "certification_status", "customer_notes"
+    "testing_required", "certification_status", "customer_notes", "billing_route"
   ];
-  return Object.fromEntries(allowed.map(key => [key, cleanText(source[key])]));
+  const details = Object.fromEntries(allowed.map(key => [key, cleanText(source[key])]));
+  details.billing_route = source.billing_route === "invoice_only" ? "invoice_only" : "quote";
+  return details;
 }
 
 export async function onRequestGet(context) {
