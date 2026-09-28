@@ -2346,7 +2346,8 @@ const generalJobFieldMap = {
   work_scope: "general_work_scope",
   testing_required: "general_testing_required",
   certification_status: "general_certification_status",
-  customer_notes: "general_customer_notes"
+  customer_notes: "general_customer_notes",
+  billing_route: "general_billing_route"
 };
 
 async function loadGeneralJobDetails() {
@@ -2358,12 +2359,18 @@ async function loadGeneralJobDetails() {
     Object.entries(generalJobFieldMap).forEach(([key, id]) => {
       const field = document.getElementById(id);
       if (field && data.details[key] !== undefined) field.value = data.details[key] || "";
+      updateCommercialRouteVisibility();
     });
   } catch (error) {
     console.error("Could not load electrical job details:", error);
   }
 }
 
+function updateCommercialRouteVisibility() {
+  const route = document.getElementById("general_billing_route")?.value;
+  const tools = document.getElementById("customerQuoteTools");
+  if (tools) tools.hidden = route === "invoice_only";
+}
 async function saveGeneralJobDetails() {
   const message = document.getElementById("generalJobMessage");
   if (!message) return;
@@ -2393,7 +2400,8 @@ async function saveGeneralJobDetails() {
     });
     const jobData = await jobResponse.json();
     if (!jobResponse.ok || !jobData.ok) throw new Error(jobData.detail || jobData.error || "Job progress save failed");
-    message.textContent = " ✓ Electrical job brief saved";
+    updateCommercialRouteVisibility();
+    message.textContent = ' ✓ Electrical job brief saved';
   } catch (error) {
     console.error("Could not save electrical job details:", error);
     message.textContent = ` Could not save: ${error.message}`;
