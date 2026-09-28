@@ -563,8 +563,7 @@ window.currentAnswers = answers;
               <option value="solar" ${job.job_type !== "general_electrical" ? "selected" : ""}>Solar</option>
               <option value="general_electrical" ${job.job_type === "general_electrical" ? "selected" : ""}>General electrical</option>
             </select>
-            <button type="button" id="saveJobType" style="margin-top:12px;">SAVE JOB TYPE</button>
-            <span id="jobTypeMessage"></span>
+            <span id="jobTypeMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
           <section class="card general-job general-only" id="generalJobSection" hidden>
@@ -4457,7 +4456,16 @@ function scheduleSectionAutosave(event) {
     try {
       await save();
       const status = document.getElementById(messageId);
-      if (status && !status.textContent.includes("Could not")) status.textContent = "✓ Saved automatically";
+      if (status && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
+        status.classList.remove("error");
+        status.textContent = "✓ Saved automatically";
+      }
+    } catch (error) {
+      const status = document.getElementById(messageId);
+      if (status) {
+        status.textContent = `Could not save: ${error.message}. Try again when connected.`;
+        status.classList.add("error");
+      }
     } finally {
       autosaveBusy.delete(key);
       if (autosavePending.has(key)) {
