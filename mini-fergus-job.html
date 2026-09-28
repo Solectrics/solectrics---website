@@ -2003,6 +2003,18 @@ window.currentAnswers = answers;
     <div class="costing-summary-item highlight"><span>Expected gross margin</span><strong id="costingMargin">0.0%</strong></div>
   </div>
 
+  <div class="customer-quote-tools" id="actualMaterialsReconciliation">
+    <h3>Actual materials for the customer invoice</h3>
+    <p class="placeholder">Calculated from the material lines recorded above, including supplier invoices and Solectrics stock. This actual total is kept separate from the original quote costing so materials are not counted twice.</p>
+    <div class="costing-summary">
+      <div class="costing-summary-item"><span>Actual materials cost — ex GST</span><strong id="actualMaterialsCost">$0.00</strong></div>
+      <div class="costing-summary-item"><span>30% mark-up amount</span><strong id="actualMaterialsMarkup">$0.00</strong></div>
+      <div class="costing-summary-item"><span>Customer materials charge — ex GST</span><strong id="actualMaterialsCustomerEx">$0.00</strong></div>
+      <div class="costing-summary-item highlight"><span>Customer materials charge — incl GST</span><strong id="actualMaterialsCustomerIncl">$0.00</strong></div>
+    </div>
+    <p class="placeholder" id="actualMaterialsMarkupNote">Uses the default material mark-up above. Use the ex-GST customer charge as the materials line in Hnry; Hnry remains where you create and send the customer invoice.</p>
+  </div>
+
   <div style="margin-top:20px;">
     <span id="costingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
   </div>
@@ -4190,6 +4202,33 @@ function renderCostingLines() {
   updateCostingTotals();
 }
 
+function updateActualMaterialsCharge(total = window.jobActualMaterialsCost || 0) {
+  const cost = Number(total) || 0;
+  const markupField = document.getElementById("costingDefaultMarkup");
+  const markup = markupField && markupField.value !== "" ? Number(markupField.value) : 30;
+  const rate = Number.isFinite(markup) ? Math.max(0, markup) : 30;
+  const markupAmount = cost * rate / 100;
+  const customerEx = cost + markupAmount;
+  const customerIncl = customerEx * 1.15;
+  const values = {
+    actualMaterialsCost: cost,
+    actualMaterialsMarkup: markupAmount,
+    actualMaterialsCustomerEx: customerEx,
+    actualMaterialsCustomerIncl: customerIncl
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = costingMoney(value);
+  });
+  const note = document.getElementById("actualMaterialsMarkupNote");
+  if (note) note.textContent = `Uses the ${rate}% default material mark-up above, then adds 15% GST. Use the customer charge ex GST as the materials line in Hnry; Hnry remains where you create and send the customer invoice.`;
+}
+
+window.addEventListener("jobhub:materials-updated", event => {
+  window.jobActualMaterialsCost = Number(event.detail?.total) || 0;
+  updateActualMaterialsCharge(window.jobActualMaterialsCost);
+});
+
 function updateCostingTotals() {
   const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
   for (const line of costingState.lines) {
@@ -4211,6 +4250,7 @@ function updateCostingTotals() {
   document.getElementById("costingCustomerIncl").textContent = costingMoney(totals.customer + gst);
   document.getElementById("costingProfit").textContent = costingMoney(profit);
   document.getElementById("costingMargin").textContent = `${margin.toFixed(1)}%`;
+  updateActualMaterialsCharge();
 }
 
 async function loadCosting(preferredOptionId) {
