@@ -4456,7 +4456,7 @@ function scheduleSectionAutosave(event) {
     try {
       await save();
       const status = document.getElementById(messageId);
-      if (status && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
+      if (status && !status.classList.contains("error") && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
         status.classList.remove("error");
         status.textContent = "✓ Saved automatically";
       }
