@@ -628,8 +628,7 @@ window.currentAnswers = answers;
             <div style="margin-top:16px;"><label>Customer notes / decisions</label><textarea id="general_customer_notes"></textarea></div>
 
             <br>
-            <button type="button" id="saveGeneralJobDetails">SAVE ELECTRICAL JOB BRIEF</button>
-            <span id="generalJobMessage"></span>
+            <span id="generalJobMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
 <section class="card solar-only">
@@ -837,11 +836,7 @@ window.currentAnswers = answers;
   GENERATE RECOMMENDATION
 </button>
 
-<button type="button" id="saveAssessment">
-  SAVE ASSESSMENT
-</button>
-
-<span id="assessmentMessage"></span>
+<span id="assessmentMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 
   </form>
 </section>
@@ -925,8 +920,7 @@ window.currentAnswers = answers;
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
   <br>
-  <button type="button" id="saveSiteVisit">SAVE SITE VISIT</button>
-  <span id="siteVisitMessage"></span>
+  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 </section>
 
 <!-- JOB PHOTOS & DOCUMENTS -->
@@ -989,8 +983,8 @@ window.currentAnswers = answers;
   <div id="jobFileSelection" class="job-file-selection" hidden></div>
 
   <br>
-  <button type="button" id="uploadJobFile">UPLOAD ALL</button>
-  <span id="jobFileMessage"></span>
+  <button type="button" id="uploadJobFile" hidden>RETRY UPLOAD</button>
+  <span id="jobFileMessage" aria-live="polite">Files upload automatically after selection.</span>
 
   <h3>Photo evidence checklist</h3>
   <div class="placeholder">This updates automatically when files are uploaded.</div>
@@ -1107,8 +1101,8 @@ window.currentAnswers = answers;
   </div>
 
   <br>
-  <button type="button" id="saveWorkLog">SAVE WORK RECORD</button>
-  <span id="workLogMessage"></span>
+  <button type="button" id="newWorkLog">NEW WORK RECORD</button>
+  <span id="workLogMessage" class="autosave-status" aria-live="polite">Work records save automatically once dates, hours and work completed are entered.</span>
 
   <div id="workLogSummary" class="work-log-summary">Total recorded hours: 0</div>
   <h3>Work record history</h3>
@@ -1590,11 +1584,7 @@ window.currentAnswers = answers;
 
   <br>
 
-  <button type="button" id="saveSystemDesign">
-    SAVE SYSTEM DESIGN
-  </button>
-
-  <span id="systemDesignMessage"></span>
+  <span id="systemDesignMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 
 </section>
 
@@ -1957,11 +1947,7 @@ window.currentAnswers = answers;
 
   <br>
 
-  <button type="button" id="saveSupplierPricing">
-    SAVE SUPPLIER PRICING
-  </button>
-
-  <span id="supplierPricingMessage"></span>
+  <span id="supplierPricingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 
 </section>
 
@@ -2019,8 +2005,7 @@ window.currentAnswers = answers;
   </div>
 
   <div style="margin-top:20px;">
-    <button type="button" id="saveInternalCosting">SAVE INTERNAL COSTING</button>
-    <span id="costingMessage"></span>
+    <span id="costingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
   </div>
 
   <div class="customer-quote-tools" id="customerQuoteTools">
@@ -3284,7 +3269,7 @@ async function uploadJobFile() {
   const category = document.getElementById("jobFileCategory").value;
   const documentRole = document.getElementById("jobFileRole").value;
   const uploadButton = document.getElementById("uploadJobFile");
-  uploadButton.disabled = true;
+  if (uploadButton) uploadButton.disabled = true;
 
   try {
     for (let index = 0; index < files.length; index += 1) {
@@ -3314,8 +3299,9 @@ async function uploadJobFile() {
   } catch (error) {
     console.error("Could not upload job file:", error);
     message.textContent = ` Could not upload: ${error.message}`;
+    if (uploadButton) uploadButton.hidden = false;
   } finally {
-    uploadButton.disabled = false;
+    if (uploadButton) uploadButton.disabled = false;
   }
 }
 
@@ -3407,6 +3393,64 @@ function resetWorkLogDates() {
   ].join("-"));
 }
 
+let workLogRecords = [];
+let currentWorkLogId = null;
+let workLogAutosaveTimer = null;
+let workLogSavePromise = null;
+let workLogRevision = 0;
+
+function workLogDraftKey() { return `jobhub-work-log-draft-${jobId}`; }
+
+function workLogFormPayload() {
+  const workDates = selectedWorkLogDates();
+  return {
+    job_id: jobId, id: currentWorkLogId || undefined,
+    work_date: workDates[0] || "", work_dates: workDates,
+    days: document.getElementById("workLogDays").value,
+    hours: document.getElementById("workLogHours").value,
+    supervisor: "Ben",
+    supervision_type: document.getElementById("workLogSupervisionType").value,
+    competency: document.getElementById("workLogCompetency").value,
+    work_completed: document.getElementById("workLogCompleted").value,
+    tests_results: document.getElementById("workLogTests").value,
+    issues_notes: document.getElementById("workLogIssues").value,
+    supervisor_notes: document.getElementById("workLogSupervisorNotes").value,
+    materials_used: document.getElementById("workLogMaterials").value,
+    certification_status: document.getElementById("workLogCertificationStatus").value
+  };
+}
+
+function saveWorkLogDraftLocally() {
+  try {
+    const payload = workLogFormPayload();
+    if (payload.work_dates.length || payload.work_completed || payload.hours || payload.materials_used || payload.tests_results || payload.issues_notes || payload.supervisor_notes) {
+      localStorage.setItem(workLogDraftKey(), JSON.stringify(payload));
+    }
+  } catch {}
+}
+
+function restoreWorkLogDraft() {
+  try {
+    const raw = localStorage.getItem(workLogDraftKey());
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    currentWorkLogId = draft.id || null;
+    const dates = Array.isArray(draft.work_dates) ? draft.work_dates : [];
+    const list = document.getElementById("workLogDates");
+    list.innerHTML = "";
+    (dates.length ? dates : [""]).forEach(date => addWorkLogDate(date));
+    const values = {
+      workLogDays: draft.days, workLogHours: draft.hours,
+      workLogSupervisionType: draft.supervision_type, workLogCompetency: draft.competency,
+      workLogCompleted: draft.work_completed, workLogTests: draft.tests_results,
+      workLogIssues: draft.issues_notes, workLogSupervisorNotes: draft.supervisor_notes,
+      workLogMaterials: draft.materials_used, workLogCertificationStatus: draft.certification_status
+    };
+    Object.entries(values).forEach(([id, value]) => { if (value !== undefined && document.getElementById(id)) document.getElementById(id).value = value; });
+    if (Object.values(values).some(Boolean)) document.getElementById("workLogMessage").textContent = "Draft restored. It will save automatically when required fields are complete.";
+  } catch {}
+}
+
 async function loadWorkLogs() {
   const list = document.getElementById("workLogList");
   const summary = document.getElementById("workLogSummary");
@@ -3417,6 +3461,7 @@ async function loadWorkLogs() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    workLogRecords = data.logs || [];
     summary.textContent = `Total recorded: ${formatWorkLogDays(data.total_days)} · ${formatWorkLogHours(data.total_hours)}`;
 
     if (!data.logs.length) {
@@ -3434,6 +3479,7 @@ async function loadWorkLogs() {
           <span>${escapeHtml(dates.join(", "))} · ${escapeHtml(formatWorkLogDays(log.days || 1))} · ${escapeHtml(formatWorkLogHours(log.hours))}</span>
           <span>${escapeHtml(workLogCompetencyLabels[log.competency] || "Other")}</span>
         </div>
+        <button type="button" class="editWorkLog" data-work-log-id="${escapeHtml(log.id)}">EDIT</button>
         <div class="placeholder">
           Supervisor: ${escapeHtml(log.supervisor || "Not recorded")}
           · ${escapeHtml(workLogSupervisionLabels[log.supervision_type] || "Other")}
@@ -3453,56 +3499,86 @@ async function loadWorkLogs() {
   }
 }
 
-async function saveWorkLog() {
+function scheduleWorkLogAutosave() {
+  workLogRevision += 1;
+  saveWorkLogDraftLocally();
+  clearTimeout(workLogAutosaveTimer);
+  const payload = workLogFormPayload();
   const message = document.getElementById("workLogMessage");
-  const button = document.getElementById("saveWorkLog");
-  const workDates = selectedWorkLogDates();
-  const payload = {
-    job_id: jobId,
-    work_date: workDates[0] || "",
-    work_dates: workDates,
-    days: document.getElementById("workLogDays").value,
-    hours: document.getElementById("workLogHours").value,
-    supervisor: "Ben",
-    supervision_type: document.getElementById("workLogSupervisionType").value,
-    competency: document.getElementById("workLogCompetency").value,
-    work_completed: document.getElementById("workLogCompleted").value,
-    tests_results: document.getElementById("workLogTests").value,
-    issues_notes: document.getElementById("workLogIssues").value,
-    supervisor_notes: document.getElementById("workLogSupervisorNotes").value,
-    materials_used: document.getElementById("workLogMaterials").value,
-    certification_status: document.getElementById("workLogCertificationStatus").value
-  };
-
-  if (!payload.work_dates.length || !payload.days || !payload.hours || !payload.work_completed.trim()) {
-    message.textContent = " Dates, number of days, total hours and work completed are required";
+  if (!payload.work_dates.length || !Number(payload.days) || !Number(payload.hours) || !payload.work_completed.trim()) {
+    message.textContent = "Draft saved on this phone. It will sync when dates, hours and work completed are entered.";
     return;
   }
+  message.textContent = "Changes pending…";
+  workLogAutosaveTimer = setTimeout(saveWorkLogAutomatically, 900);
+}
 
-  button.disabled = true;
-  message.textContent = " Saving...";
-
-  try {
-    const response = await fetch("/api/job-work-logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
-
-    ["workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"]
-      .forEach(id => { document.getElementById(id).value = ""; });
-    resetWorkLogDates();
-    document.getElementById("workLogCertificationStatus").value = "not_started";
-    message.textContent = " ✓ Work record saved";
-    await loadWorkLogs();
-  } catch (error) {
-    console.error("Could not save work log:", error);
-    message.textContent = ` Could not save: ${error.message}`;
-  } finally {
-    button.disabled = false;
+async function saveWorkLogAutomatically() {
+  if (workLogSavePromise) {
+    await workLogSavePromise;
+    if (workLogAutosaveTimer) return;
   }
+  const revision = workLogRevision;
+  const payload = workLogFormPayload();
+  const message = document.getElementById("workLogMessage");
+  if (!payload.work_dates.length || !Number(payload.days) || !Number(payload.hours) || !payload.work_completed.trim()) return;
+  message.textContent = "Saving…";
+  workLogSavePromise = (async () => {
+    try {
+      const response = await fetch("/api/job-work-logs", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+      currentWorkLogId = data.id;
+      if (revision === workLogRevision) {
+        localStorage.removeItem(workLogDraftKey());
+        message.textContent = "✓ Saved automatically";
+        await loadWorkLogs();
+      }
+    } catch (error) {
+      console.error("Could not autosave work record:", error);
+      message.textContent = `Could not save: ${error.message}. Keep this page open and try again.`;
+    } finally {
+      workLogSavePromise = null;
+      if (revision !== workLogRevision) {
+        clearTimeout(workLogAutosaveTimer);
+        workLogAutosaveTimer = setTimeout(saveWorkLogAutomatically, 250);
+      }
+    }
+  })();
+  await workLogSavePromise;
+}
+
+function editWorkLog(id) {
+  const log = workLogRecords.find(item => item.id === id);
+  if (!log) return;
+  currentWorkLogId = log.id;
+  const list = document.getElementById("workLogDates");
+  list.innerHTML = "";
+  const dates = workLogDatesFromRecord(log);
+  (dates.length ? dates : [log.work_date]).forEach(date => addWorkLogDate(date));
+  const values = {
+    workLogDays: log.days, workLogHours: log.hours,
+    workLogSupervisionType: log.supervision_type, workLogCompetency: log.competency,
+    workLogCompleted: log.work_completed, workLogTests: log.tests_results,
+    workLogIssues: log.issues_notes, workLogSupervisorNotes: log.supervisor_notes,
+    workLogMaterials: log.materials_used, workLogCertificationStatus: log.certification_status
+  };
+  Object.entries(values).forEach(([fieldId, value]) => { if (document.getElementById(fieldId)) document.getElementById(fieldId).value = value || ""; });
+  document.getElementById("workLogMessage").textContent = "Editing saved work record. Changes save automatically.";
+  document.getElementById("workLogSection").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function startNewWorkLog() {
+  currentWorkLogId = null;
+  ["workLogDays", "workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"].forEach(id => { document.getElementById(id).value = ""; });
+  document.getElementById("workLogCertificationStatus").value = "not_started";
+  document.getElementById("workLogSupervisionType").value = "on_site";
+  document.getElementById("workLogCompetency").value = "health_safety";
+  localStorage.removeItem(workLogDraftKey());
+  resetWorkLogDates();
+  document.getElementById("workLogMessage").textContent = "New work record. It will save automatically when required fields are entered.";
 }
 
 
@@ -3656,6 +3732,7 @@ function updateDesignSuggestions() {
 
 
 document.addEventListener("input", function(event) {
+  if (event.target?.closest?.("#workLogSection")) scheduleWorkLogAutosave();
 
   if (!event.target) return;
 
@@ -3798,7 +3875,11 @@ if (designArraySize && designWattage && designCount) {
 document.addEventListener("change", function(event) {
   if (event.target?.id === "jobFileInput") {
     renderSelectedJobFiles();
+    const retry = document.getElementById("uploadJobFile");
+    if (retry) retry.hidden = true;
+    uploadJobFile();
   }
+  if (event.target?.closest?.("#workLogSection") && event.target.id !== "newWorkLog") scheduleWorkLogAutosave();
 
   if (event.target?.classList?.contains("work-log-date")) {
     syncWorkLogDays();
@@ -3858,9 +3939,8 @@ document.addEventListener("click", function(event) {
     uploadJobFile();
   }
 
-  if (event.target.id === "saveWorkLog") {
-    saveWorkLog();
-  }
+  if (event.target.id === "newWorkLog") startNewWorkLog();
+  if (event.target.classList?.contains("editWorkLog")) editWorkLog(event.target.dataset.workLogId);
 
   if (event.target.id === "saveJobType") {
     saveJobType();
@@ -4286,12 +4366,57 @@ document.addEventListener("click", function(event) {
   }
 });
 
+const autosaveTimers = new Map();
+const autosaveBusy = new Set();
+const autosavePending = new Set();
+
+function autosaveTarget(event) {
+  const target = event.target;
+  if (!target || target.disabled || target.readOnly) return null;
+  if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
+  if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
+  if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
+  if (target.closest("#systemDesignSection")) return ["systemDesign", saveSystemDesign, "systemDesignMessage"];
+  if (target.closest("#internalCostingSection")) return ["costing", saveInternalCosting, "costingMessage"];
+  if (target.id === "jobType") return ["jobType", saveJobType, "jobTypeMessage"];
+  return null;
+}
+
+function scheduleSectionAutosave(event) {
+  const target = autosaveTarget(event);
+  if (!target) return;
+  const [key, save, messageId] = target;
+  const message = document.getElementById(messageId);
+  if (message) message.textContent = "Changes pending…";
+  clearTimeout(autosaveTimers.get(key));
+  autosaveTimers.set(key, setTimeout(async () => {
+    if (autosaveBusy.has(key)) { autosavePending.add(key); return; }
+    autosaveBusy.add(key);
+    try {
+      await save();
+      const status = document.getElementById(messageId);
+      if (status && !status.textContent.includes("Could not")) status.textContent = "✓ Saved automatically";
+    } finally {
+      autosaveBusy.delete(key);
+      if (autosavePending.has(key)) {
+        autosavePending.delete(key);
+        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", costing:"#costingOptionName", jobType:"#jobType" }[key];
+        const retryTarget = document.querySelector(selector);
+        if (retryTarget) scheduleSectionAutosave({ target: retryTarget });
+      }
+    }
+  }, 1100));
+}
+document.addEventListener("input", scheduleSectionAutosave);
+document.addEventListener("change", scheduleSectionAutosave);
+
 resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
     loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
   ]).then(() => {
+    restoreWorkLogDraft();
 
     const roofOrientationField =
       document.getElementById("roof_orientation");
