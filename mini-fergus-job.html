@@ -1011,7 +1011,7 @@ window.currentAnswers = answers;
     <div><label>Unit (optional)</label><input id="materialsUnit" placeholder="m, each, pack"></div>
     <div><label>Unit cost ex GST ($)</label><input id="materialsUnitCost" type="number" min="0" step="0.01" value="0"></div>
   </div>
-  <div style="margin-top:14px;"><button type="button" id="addJobMaterial">ADD MATERIAL USED</button> <span id="jobMaterialsMessage"></span></div>
+  <div style="margin-top:14px;"><button type="button" id="newJobMaterial">NEW MATERIAL</button> <span id="jobMaterialsMessage" class="autosave-status" aria-live="polite">Material lines save automatically after you enter a description and select an invoice.</span></div>
   <div style="background:#fff3e9;border-radius:8px;font-weight:800;margin-top:16px;padding:14px;">Actual materials cost (ex GST): $<span id="jobMaterialsTotal">0.00</span></div>
   <h3>Items recorded</h3><div id="jobMaterialsList" class="placeholder">Loading materials…</div>
 </section>
