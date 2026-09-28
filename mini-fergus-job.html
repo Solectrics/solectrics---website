@@ -4229,6 +4229,13 @@ window.addEventListener("jobhub:materials-updated", event => {
   updateActualMaterialsCharge(window.jobActualMaterialsCost);
 });
 
+document.addEventListener("input", event => {
+  if (event.target?.id === "costingDefaultMarkup") updateActualMaterialsCharge();
+});
+document.addEventListener("change", event => {
+  if (event.target?.id === "costingDefaultMarkup") updateActualMaterialsCharge();
+});
+
 function updateCostingTotals() {
   const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
   for (const line of costingState.lines) {
