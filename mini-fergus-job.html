@@ -3530,8 +3530,8 @@ async function saveWorkLogAutomatically() {
       });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
-      currentWorkLogId = data.id;
       if (revision === workLogRevision) {
+        currentWorkLogId = data.id;
         localStorage.removeItem(workLogDraftKey());
         message.textContent = "✓ Saved automatically";
         await loadWorkLogs();
@@ -3551,6 +3551,8 @@ async function saveWorkLogAutomatically() {
 }
 
 function editWorkLog(id) {
+  workLogRevision += 1;
+  clearTimeout(workLogAutosaveTimer);
   const log = workLogRecords.find(item => item.id === id);
   if (!log) return;
   currentWorkLogId = log.id;
@@ -3571,6 +3573,8 @@ function editWorkLog(id) {
 }
 
 function startNewWorkLog() {
+  workLogRevision += 1;
+  clearTimeout(workLogAutosaveTimer);
   currentWorkLogId = null;
   ["workLogDays", "workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"].forEach(id => { document.getElementById(id).value = ""; });
   document.getElementById("workLogCertificationStatus").value = "not_started";
