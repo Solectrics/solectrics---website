@@ -84,21 +84,33 @@ export async function onRequestPost(context) {
       return errorResponse("Upload and select the supplier invoice first", 400);
     }
 
-    const id = crypto.randomUUID();
-    await db.prepare(`
-      INSERT INTO job_materials
-        (id, job_id, source, supplier_name, invoice_number, invoice_date,
-         invoice_file_id, description, supplier_sku, quantity, unit_code, unit_cost_ex_gst)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      id, jobId, source,
-      source === "stock" ? "Solectrics stock" : cleanText(body.supplier_name, 200),
+    const requestedId = cleanText(body.id, 100);
+    const id = requestedId || crypto.randomUUID();
+    const values = [
+      source, source === "stock" ? "Solectrics stock" : cleanText(body.supplier_name, 200),
       source === "stock" ? null : cleanText(body.invoice_number, 100) || null,
       source === "stock" ? null : cleanText(body.invoice_date, 10) || null,
       invoiceFileId || null, description, cleanText(body.supplier_sku, 120) || null,
       quantity, cleanText(body.unit_code, 40) || null, unitCost
-    ).run();
-    return Response.json({ ok: true, id, message: "Material recorded" });
+    ];
+    if (requestedId) {
+      const result = await db.prepare(`
+        UPDATE job_materials
+        SET source = ?, supplier_name = ?, invoice_number = ?, invoice_date = ?,
+            invoice_file_id = ?, description = ?, supplier_sku = ?, quantity = ?,
+            unit_code = ?, unit_cost_ex_gst = ?
+        WHERE id = ? AND job_id = ?
+      `).bind(...values, requestedId, jobId).run();
+      if (!(result.meta?.changes > 0)) return errorResponse("Material item not found", 404);
+    } else {
+      await db.prepare(`
+        INSERT INTO job_materials
+          (id, job_id, source, supplier_name, invoice_number, invoice_date,
+           invoice_file_id, description, supplier_sku, quantity, unit_code, unit_cost_ex_gst)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(id, jobId, ...values).run();
+    }
+    return Response.json({ ok: true, id, message: requestedId ? "Material updated" : "Material recorded" });
   } catch (error) {
     console.error("Job materials POST error:", error);
     return errorResponse("Unable to save material", 500, error.message);
