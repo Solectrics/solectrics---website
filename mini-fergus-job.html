@@ -569,6 +569,11 @@ window.currentAnswers = answers;
 
           <section class="card general-job general-only" id="generalJobSection" hidden>
             <h2>Electrical Job Brief</h2>
+            <div style="margin:16px 0;">
+              <label for="general_billing_route">How should this job be billed?</label>
+              <select id="general_billing_route"><option value="quote">Prepare a customer quote</option><option value="invoice_only">Invoice only — no quote required</option></select>
+              <div class="placeholder">Invoice-only jobs can be invoiced through Hnry when the work is complete.</div>
+            </div>
             <p class="placeholder">
               Keep the essential job information here. Tom can use phone dictation in any notes box.
               Ben is the default supervisor and does not need to be selected for each job.
@@ -993,6 +998,28 @@ window.currentAnswers = answers;
 
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
+</section>
+
+<!-- MATERIALS ACTUALLY USED -->
+<section class="card" id="jobMaterialsSection">
+  <h2>Materials actually used</h2>
+  <p class="placeholder">Upload the supplier invoice in Job Photos & Documents, then record its material lines here. Record anything taken from Solectrics stock separately.</p>
+  <button type="button" id="uploadMaterialsInvoice">UPLOAD SUPPLIER INVOICE</button>
+  <div class="grid" style="margin-top:16px;">
+    <div><label>Material source</label><select id="materialsSource"><option value="supplier_invoice">Supplier invoice</option><option value="stock">Solectrics stock</option></select></div>
+    <div id="materialsSupplierWrap"><label>Supplier</label><input id="materialsSupplier" value="J.A. Russell" placeholder="Supplier name"></div>
+    <div id="materialsInvoiceWrap"><label>Uploaded invoice</label><select id="materialsInvoiceFile"><option value="">Upload/select invoice first</option></select></div>
+    <div id="materialsInvoiceNumberWrap"><label>Invoice number (optional)</label><input id="materialsInvoiceNumber"></div>
+    <div id="materialsInvoiceDateWrap"><label>Invoice date (optional)</label><input id="materialsInvoiceDate" type="date"></div>
+    <div><label>Material description *</label><input id="materialsDescription" placeholder="e.g. 4 mm² solar cable"></div>
+    <div><label>Supplier code (optional)</label><input id="materialsSku"></div>
+    <div><label>Quantity *</label><input id="materialsQuantity" type="number" min="0.01" step="0.01" value="1"></div>
+    <div><label>Unit (optional)</label><input id="materialsUnit" placeholder="m, each, pack"></div>
+    <div><label>Unit cost ex GST ($)</label><input id="materialsUnitCost" type="number" min="0" step="0.01" value="0"></div>
+  </div>
+  <div style="margin-top:14px;"><button type="button" id="addJobMaterial">ADD MATERIAL USED</button> <span id="jobMaterialsMessage"></span></div>
+  <div style="background:#fff3e9;border-radius:8px;font-weight:800;margin-top:16px;padding:14px;">Actual materials cost (ex GST): $<span id="jobMaterialsTotal">0.00</span></div>
+  <h3>Items recorded</h3><div id="jobMaterialsList" class="placeholder">Loading materials…</div>
 </section>
 
 <!-- DAILY WORK & EWRB RECORD -->
@@ -1996,7 +2023,7 @@ window.currentAnswers = answers;
     <span id="costingMessage"></span>
   </div>
 
-  <div class="customer-quote-tools">
+  <div class="customer-quote-tools" id="customerQuoteTools">
     <h3>Customer quote</h3>
     <p class="placeholder">Approve and save the costing options you want to offer, then generate one customer-safe quote. Internal costs, mark-up and profit are never included.</p>
     <button type="button" id="generateCustomerQuote">GENERATE CUSTOMER QUOTE</button>
@@ -2319,7 +2346,8 @@ const generalJobFieldMap = {
   work_scope: "general_work_scope",
   testing_required: "general_testing_required",
   certification_status: "general_certification_status",
-  customer_notes: "general_customer_notes"
+  customer_notes: "general_customer_notes",
+  billing_route: "general_billing_route"
 };
 
 async function loadGeneralJobDetails() {
@@ -2331,12 +2359,18 @@ async function loadGeneralJobDetails() {
     Object.entries(generalJobFieldMap).forEach(([key, id]) => {
       const field = document.getElementById(id);
       if (field && data.details[key] !== undefined) field.value = data.details[key] || "";
+      updateCommercialRouteVisibility();
     });
   } catch (error) {
     console.error("Could not load electrical job details:", error);
   }
 }
 
+function updateCommercialRouteVisibility() {
+  const route = document.getElementById("general_billing_route")?.value;
+  const tools = document.getElementById("customerQuoteTools");
+  if (tools) tools.hidden = route === "invoice_only";
+}
 async function saveGeneralJobDetails() {
   const message = document.getElementById("generalJobMessage");
   if (!message) return;
@@ -2366,7 +2400,8 @@ async function saveGeneralJobDetails() {
     });
     const jobData = await jobResponse.json();
     if (!jobResponse.ok || !jobData.ok) throw new Error(jobData.detail || jobData.error || "Job progress save failed");
-    message.textContent = " ✓ Electrical job brief saved";
+    updateCommercialRouteVisibility();
+    message.textContent = ' ✓ Electrical job brief saved';
   } catch (error) {
     console.error("Could not save electrical job details:", error);
     message.textContent = ` Could not save: ${error.message}`;
@@ -4275,5 +4310,6 @@ loadJob().then(() => {
 });
   </script>
   <script src="/assets/fletcher-quote-import.js"></script>
+  <script src="/assets/jobhub-materials.js"></script>
 </body>
 </html>
