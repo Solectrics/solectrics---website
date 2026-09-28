@@ -119,8 +119,8 @@
         });
         const data = await response.json();
         if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not save material");
-        activeMaterialId = data.id;
         if (revision === materialRevision) {
+          activeMaterialId = data.id;
           message.textContent = "✓ Saved automatically";
           await loadMaterials();
         }
@@ -138,6 +138,8 @@
   }
 
   function editMaterial(id) {
+    materialRevision += 1;
+    clearTimeout(materialAutosaveTimer);
     const item = materialRecords.find(record => record.id === id);
     if (!item) return;
     activeMaterialId = item.id;
@@ -157,6 +159,8 @@
   }
 
   function newMaterial() {
+    materialRevision += 1;
+    clearTimeout(materialAutosaveTimer);
     activeMaterialId = null;
     ["materialsDescription", "materialsSku", "materialsUnit"].forEach(id => { byId(id).value = ""; });
     byId("materialsQuantity").value = "1";
