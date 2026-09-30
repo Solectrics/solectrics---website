@@ -2,6 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { calculateTariffCost, compareTariffs } from "../functions/api/_energy-calculator.js";
+import {
+  applyCurrentSystemDesign,
+  modelReadinessIssues,
+  tariffHasVerifiedSource
+} from "../functions/api/energy-review.js";
 
 const model = {
   model_ready: true,
@@ -61,4 +66,50 @@ test("review page and migration expose the requested modular architecture", () =
   assert.match(migration, /source_format/);
   assert.match(migration, /source_record_id/);
   assert.match(migration, /post_install_actuals_json/);
+});
+
+
+test("a design review gate prevents old assessment sizing from carrying forward", () => {
+  const saved = { solar_array_kw: 14.25, estimated_annual_solar_generation_kwh: 22000, battery_capacity_kwh: 20 };
+  const unreviewed = applyCurrentSystemDesign(saved, { design_reviewed: false }, { solar_kw: 14.25 });
+  assert.equal(unreviewed.system_design_confirmed, false);
+  assert.equal(unreviewed.solar_array_kw, null);
+  assert.equal(unreviewed.estimated_annual_solar_generation_kwh, null);
+  assert.equal(unreviewed.battery_capacity_kwh, null);
+
+  const reviewed = applyCurrentSystemDesign(saved, {
+    design_reviewed: true, design_array_kw: "6.2", design_battery_kwh: "10.7", design_inverter_model: "Current inverter"
+  }, { estimated_generation_kwh: 8500 });
+  assert.equal(reviewed.solar_array_kw, 6.2);
+  assert.equal(reviewed.estimated_annual_solar_generation_kwh, 8500);
+  assert.equal(reviewed.battery_capacity_kwh, 10.7);
+});
+
+test("model readiness requires every cost-driving flow and a reviewed system design", () => {
+  const review = {
+    selected_scenario: "solar_only",
+    proposed_system: { system_design_confirmed: true, solar_array_kw: 6 },
+    model: {
+      annual_consumption_kwh: 7000,
+      solar_generation_kwh: 8500,
+      grid_import_standard_kwh: 1000,
+      grid_import_peak_kwh: 0,
+      grid_import_offpeak_kwh: 0,
+      grid_import_controlled_kwh: 1200,
+      grid_import_ev_kwh: 0,
+      solar_export_standard_kwh: 3000,
+      solar_export_peak_kwh: 0
+    }
+  };
+  assert.deepEqual(modelReadinessIssues(review), []);
+  delete review.model.grid_import_offpeak_kwh;
+  assert.match(modelReadinessIssues(review).join(" "), /Off-peak grid imports/);
+  review.proposed_system.system_design_confirmed = false;
+  assert.match(modelReadinessIssues(review).join(" "), /System Design as reviewed/);
+});
+
+test("a tariff source requires a source name or URL and a last-verified date", () => {
+  assert.equal(tariffHasVerifiedSource({ source_name: "Retailer plan page", effective_date: "2026-09-01" }), false);
+  assert.equal(tariffHasVerifiedSource({ source_url: "https://retailer.example/solar", last_verified_date: "2026-09-27" }), true);
+  assert.equal(tariffHasVerifiedSource({ source_name: "Customer electricity bill", last_verified_date: "2026-09-27" }), true);
 });
