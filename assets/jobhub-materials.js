@@ -186,23 +186,37 @@
     await loadMaterials();
   }
 
-  byId("materialsSource")?.addEventListener("change", updateSourceFields);
-  byId("newJobMaterial")?.addEventListener("click", newMaterial);
-  ["materialsSource", "materialsSupplier", "materialsInvoiceFile", "materialsInvoiceNumber", "materialsInvoiceDate", "materialsDescription", "materialsSku", "materialsQuantity", "materialsUnit", "materialsUnitCost"].forEach(id => {
-    byId(id)?.addEventListener("input", scheduleMaterialAutosave);
-    byId(id)?.addEventListener("change", scheduleMaterialAutosave);
-  });
-  byId("jobMaterialsList")?.addEventListener("click", event => {
-    const edit = event.target.closest(".editJobMaterial");
-    if (edit) editMaterial(edit.dataset.materialId);
-  });
-  byId("uploadMaterialsInvoice")?.addEventListener("click", () => {
-    byId("jobFileCategory").value = "supplier";
-    byId("jobFileRole").value = "supplier_invoice";
-    // iOS Safari only opens the native picker while the original tap is active.
-    // Keep the click synchronous; scrolling first can consume that activation.
-    byId("jobFileInput").click();
-  });
+  let materialsInitialised = false;
+
+  function initialiseMaterials() {
+    if (materialsInitialised || !byId("jobMaterialsSection")) return false;
+    materialsInitialised = true;
+
+    byId("materialsSource").addEventListener("change", updateSourceFields);
+    byId("newJobMaterial").addEventListener("click", newMaterial);
+    ["materialsSource", "materialsSupplier", "materialsInvoiceFile", "materialsInvoiceNumber", "materialsInvoiceDate", "materialsDescription", "materialsSku", "materialsQuantity", "materialsUnit", "materialsUnitCost"].forEach(id => {
+      byId(id)?.addEventListener("input", scheduleMaterialAutosave);
+      byId(id)?.addEventListener("change", scheduleMaterialAutosave);
+    });
+    byId("jobMaterialsList").addEventListener("click", event => {
+      const edit = event.target.closest(".editJobMaterial");
+      if (edit) editMaterial(edit.dataset.materialId);
+    });
+    byId("uploadMaterialsInvoice").addEventListener("click", () => {
+      byId("jobFileCategory").value = "supplier";
+      byId("jobFileRole").value = "supplier_invoice";
+      byId("jobFileInput").click();
+    });
+    updateSourceFields();
+    updateCommercialRouteVisibility();
+    refreshInvoices();
+    loadMaterials();
+
+    const fileList = byId("jobFilesList");
+    if (fileList) new MutationObserver(refreshInvoices).observe(fileList, { childList: true, subtree: true });
+    return true;
+  }
+
   document.addEventListener("click", async event => {
     const button = event.target.closest(".removeJobMaterial");
     if (!button) return;
@@ -217,11 +231,14 @@
   document.addEventListener("change", event => {
     if (event.target?.id === "general_billing_route") updateCommercialRouteVisibility();
   });
-  updateSourceFields();
-  updateCommercialRouteVisibility();
-  refreshInvoices();
-  loadMaterials();
 
-  const fileList = byId("jobFilesList");
-  if (fileList) new MutationObserver(refreshInvoices).observe(fileList, { childList: true, subtree: true });
+  if (!initialiseMaterials()) {
+    const page = byId("page");
+    if (page) {
+      const observer = new MutationObserver(() => {
+        if (initialiseMaterials()) observer.disconnect();
+      });
+      observer.observe(page, { childList: true, subtree: true });
+    }
+  }
 })();
