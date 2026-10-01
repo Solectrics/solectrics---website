@@ -1,6 +1,7 @@
 import { ensureCustomerInvoiceSchema, ensureInternalCostingSchema } from "./_schema.js";
 
 const INVOICE_STATUSES = new Set(["draft", "issued", "paid", "void"]);
+const SOLECTRICS_GST_NUMBER = "137-174-537";
 const MATERIALS_TABLE = `
   CREATE TABLE IF NOT EXISTS job_materials (
     id TEXT PRIMARY KEY,
@@ -176,7 +177,7 @@ export async function onRequestGet(context) {
       const snap = parseSnapshot(latest);
       defaults = {
         business_name: snap?.business?.name || "Solectrics",
-        gst_number: snap?.business?.gst_number || "",
+        gst_number: snap?.business?.gst_number || SOLECTRICS_GST_NUMBER,
         business_email: snap?.business?.email || "tom@solectrics.co.nz",
         payment_instructions: snap?.payment?.instructions || "",
         payment_terms: snap?.payment?.terms || ""

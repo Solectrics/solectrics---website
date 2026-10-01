@@ -37,6 +37,7 @@ test("Job Hub exposes invoice creation and printable invoice pages", async () =>
   const jobPage = await readFile(new URL("../mini-fergus-job.html", import.meta.url), "utf8");
   const invoicePage = await readFile(new URL("../mini-fergus-customer-invoice.html", import.meta.url), "utf8");
   assert.match(jobPage, /GENERATE CUSTOMER INVOICE/);
+  assert.match(jobPage, /value="137-174-537"/);
   assert.match(jobPage, /loadCustomerInvoices\(\)/);
   assert.match(invoicePage, /TAX INVOICE/);
   assert.match(invoicePage, /PRINT \/ SAVE PDF/);
