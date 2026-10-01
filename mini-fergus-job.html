@@ -1067,6 +1067,10 @@ window.currentAnswers = answers;
     <label>Work completed</label>
     <textarea id="workLogCompleted" rows="3" maxlength="3000"
       placeholder="Describe or dictate what was completed on these dates"></textarea>
+    <div id="workLogPlannedScopeConfirmation" class="placeholder" hidden style="margin-top:8px;">
+      Planned electrical work was copied above. Edit it to match what was completed, or confirm it below.
+      <label style="display:block;margin-top:8px;font-weight:600;"><input type="checkbox" id="confirmPlannedWorkCompleted"> I confirm this describes the work completed</label>
+    </div>
   </div>
   <div class="grid" style="margin-top:16px;">
     <div>
@@ -3244,7 +3248,11 @@ async function loadJobFiles() {
           ${escapeHtml(file.original_name)}
         </a>
         <div class="placeholder">
-          ${escapeHtml(jobFileCategoryLabels[file.category] || "Other")}
+          <label>File category
+            <select class="job-file-category" data-file-id="${escapeHtml(file.id)}" aria-label="Category for ${escapeHtml(file.original_name)}">
+              ${Object.entries(jobFileCategoryLabels).map(([value, label]) => `<option value="${value}" ${file.category === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+            </select>
+          </label>
           · ${escapeHtml(jobFileRoleLabels[file.document_role] || "General")}
           · ${escapeHtml(formatFileSize(file.size_bytes))}
           · ${escapeHtml(file.uploaded_at || "")}
@@ -3259,6 +3267,20 @@ async function loadJobFiles() {
     list.className = "error";
     list.textContent = "Could not load job files.";
   }
+}
+
+async function updateJobFileCategory(fileId, category, select) {
+  select.disabled = true;
+  try {
+    const response = await fetch("/api/job-files", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId, id: fileId, category }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not update category");
+    document.getElementById("jobFileMessage").textContent = "✓ File category updated";
+    await loadJobFiles();
+  } catch (error) {
+    document.getElementById("jobFileMessage").textContent = `Could not update category: ${error.message}`;
+    await loadJobFiles();
+  } finally { select.disabled = false; }
 }
 
 async function uploadJobFile() {
@@ -3409,6 +3431,7 @@ let currentWorkLogId = null;
 let workLogAutosaveTimer = null;
 let workLogSavePromise = null;
 let workLogRevision = 0;
+let workLogPlannedScopeNeedsConfirmation = false;
 
 function workLogDraftKey() { return `jobhub-work-log-draft-${jobId}`; }
 
@@ -3434,6 +3457,7 @@ function workLogFormPayload() {
 function saveWorkLogDraftLocally() {
   try {
     const payload = workLogFormPayload();
+    payload.planned_work_unconfirmed = workLogPlannedScopeNeedsConfirmation;
     if (payload.work_dates.length || payload.work_completed || payload.hours || payload.materials_used || payload.tests_results || payload.issues_notes || payload.supervisor_notes) {
       localStorage.setItem(workLogDraftKey(), JSON.stringify(payload));
     }
@@ -3446,6 +3470,7 @@ function restoreWorkLogDraft() {
     if (!raw) return;
     const draft = JSON.parse(raw);
     currentWorkLogId = draft.id || null;
+    workLogPlannedScopeNeedsConfirmation = draft.planned_work_unconfirmed === true;
     const dates = Array.isArray(draft.work_dates) ? draft.work_dates : [];
     const list = document.getElementById("workLogDates");
     list.innerHTML = "";
@@ -3458,6 +3483,8 @@ function restoreWorkLogDraft() {
       workLogMaterials: draft.materials_used, workLogCertificationStatus: draft.certification_status
     };
     Object.entries(values).forEach(([id, value]) => { if (value !== undefined && document.getElementById(id)) document.getElementById(id).value = value; });
+    document.getElementById("workLogPlannedScopeConfirmation").hidden = !workLogPlannedScopeNeedsConfirmation;
+    document.getElementById("confirmPlannedWorkCompleted").checked = false;
     if (Object.values(values).some(Boolean)) document.getElementById("workLogMessage").textContent = "Draft restored. It will save automatically when required fields are complete.";
   } catch {}
 }
@@ -3516,6 +3543,10 @@ function scheduleWorkLogAutosave() {
   clearTimeout(workLogAutosaveTimer);
   const payload = workLogFormPayload();
   const message = document.getElementById("workLogMessage");
+  if (workLogPlannedScopeNeedsConfirmation) {
+    message.textContent = "Review the planned work above and edit it, or confirm that it matches the work completed, before this record can sync.";
+    return;
+  }
   if (!payload.work_dates.length || !Number(payload.days) || !Number(payload.hours) || !payload.work_completed.trim()) {
     message.textContent = "Draft saved on this phone. It will sync when dates, hours and work completed are entered.";
     return;
@@ -3567,6 +3598,9 @@ function editWorkLog(id) {
   const log = workLogRecords.find(item => item.id === id);
   if (!log) return;
   currentWorkLogId = log.id;
+  workLogPlannedScopeNeedsConfirmation = false;
+  document.getElementById("workLogPlannedScopeConfirmation").hidden = true;
+  document.getElementById("confirmPlannedWorkCompleted").checked = false;
   const list = document.getElementById("workLogDates");
   list.innerHTML = "";
   const dates = workLogDatesFromRecord(log);
@@ -3593,7 +3627,17 @@ function startNewWorkLog() {
   document.getElementById("workLogCompetency").value = "health_safety";
   localStorage.removeItem(workLogDraftKey());
   resetWorkLogDates();
-  document.getElementById("workLogMessage").textContent = "New work record. It will save automatically when required fields are entered.";
+  const plannedWork = document.getElementById("general_work_scope").value.trim();
+  const completedField = document.getElementById("workLogCompleted");
+  const confirmation = document.getElementById("workLogPlannedScopeConfirmation");
+  const confirmationCheckbox = document.getElementById("confirmPlannedWorkCompleted");
+  completedField.value = plannedWork;
+  workLogPlannedScopeNeedsConfirmation = Boolean(plannedWork);
+  confirmation.hidden = !plannedWork;
+  confirmationCheckbox.checked = false;
+  document.getElementById("workLogMessage").textContent = plannedWork
+    ? "Planned electrical work copied into the new record. Review or confirm it before saving."
+    : "New work record. It will save automatically when required fields are entered.";
 }
 
 
@@ -3747,6 +3791,10 @@ function updateDesignSuggestions() {
 
 
 document.addEventListener("input", function(event) {
+  if (event.target?.id === "workLogCompleted" && workLogPlannedScopeNeedsConfirmation) {
+    workLogPlannedScopeNeedsConfirmation = false;
+    document.getElementById("workLogPlannedScopeConfirmation").hidden = true;
+  }
   if (event.target?.closest?.("#workLogSection")) scheduleWorkLogAutosave();
 
   if (!event.target) return;
@@ -3888,6 +3936,11 @@ if (designArraySize && designWattage && designCount) {
 
 
 document.addEventListener("change", function(event) {
+  if (event.target?.classList?.contains("job-file-category")) updateJobFileCategory(event.target.dataset.fileId, event.target.value, event.target);
+  if (event.target?.id === "confirmPlannedWorkCompleted") {
+    workLogPlannedScopeNeedsConfirmation = !event.target.checked;
+    scheduleWorkLogAutosave();
+  }
   if (event.target?.id === "jobFileInput") {
     renderSelectedJobFiles();
     const retry = document.getElementById("uploadJobFile");
