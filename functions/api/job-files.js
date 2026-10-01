@@ -89,6 +89,26 @@ export async function onRequestGet(context) {
   }
 }
 
+export async function onRequestPatch(context) {
+  try {
+    const db = context.env.DB;
+    if (!db) return errorResponse("D1 database binding DB is not available");
+    const body = await context.request.json();
+    const jobId = Number(body.job_id);
+    const id = String(body.id || "");
+    const category = String(body.category || "");
+    if (!Number.isInteger(jobId) || jobId <= 0 || !id) return errorResponse("job_id and file id are required", 400);
+    if (!ALLOWED_CATEGORIES.has(category)) return errorResponse("Choose a valid file category", 400);
+    await db.prepare(CREATE_TABLE).run();
+    const result = await db.prepare("UPDATE job_files SET category = ? WHERE id = ? AND job_id = ?").bind(category, id, jobId).run();
+    if (!result.meta?.changes) return errorResponse("File not found for this job", 404);
+    return Response.json({ ok: true, id, category });
+  } catch (error) {
+    console.error("Job files PATCH error:", error);
+    return errorResponse("Unable to update file category", 500, error.message);
+  }
+}
+
 export async function onRequestPost(context) {
   try {
     const db = context.env.DB;
