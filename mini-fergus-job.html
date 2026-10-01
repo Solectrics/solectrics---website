@@ -571,7 +571,7 @@ window.currentAnswers = answers;
             <div style="margin:16px 0;">
               <label for="general_billing_route">How should this job be billed?</label>
               <select id="general_billing_route"><option value="quote">Prepare a customer quote</option><option value="invoice_only">Invoice only — no quote required</option></select>
-              <div class="placeholder">Invoice-only jobs can be invoiced through Hnry when the work is complete.</div>
+              <div class="placeholder">Invoice-only jobs can be turned into a customer invoice in Job Hub when the work is complete.</div>
             </div>
             <p class="placeholder">
               Keep the essential job information here. Tom can use phone dictation in any notes box.
@@ -2033,7 +2033,7 @@ window.currentAnswers = answers;
       <div class="costing-summary-item"><span>Customer materials charge — ex GST</span><strong id="actualMaterialsCustomerEx">$0.00</strong></div>
       <div class="costing-summary-item highlight"><span>Customer materials charge — incl GST</span><strong id="actualMaterialsCustomerIncl">$0.00</strong></div>
     </div>
-    <p class="placeholder" id="actualMaterialsMarkupNote">Uses the default material mark-up above. Use the ex-GST customer charge as the materials line in Hnry; Hnry remains where you create and send the customer invoice.</p>
+    <p class="placeholder" id="actualMaterialsMarkupNote">Uses the default material mark-up above. The marked-up ex-GST amount is added to the Job Hub customer invoice below.</p>
   </div>
 
   <div style="margin-top:20px;">
@@ -2047,6 +2047,27 @@ window.currentAnswers = answers;
     <span id="customerQuoteMessage"></span>
     <div id="customerQuoteWarning" class="quote-warning" hidden></div>
     <div id="customerQuoteHistory" class="quote-history"></div>
+  </div>
+
+  <div class="customer-quote-tools" id="customerInvoiceTools">
+    <h3>Customer invoice</h3>
+    <p class="placeholder">Create a saved customer invoice from this costing option. Job Hub uses the customer labour and other charges above, plus the marked-up materials actually used. Review the draft before marking it issued.</p>
+    <div class="grid">
+      <div><label for="invoiceBusinessName">Business name</label><input id="invoiceBusinessName" value="Solectrics"></div>
+      <div><label for="invoiceGstNumber">Solectrics GST number</label><input id="invoiceGstNumber" inputmode="numeric" autocomplete="off" placeholder="Enter GST number"></div>
+      <div><label for="invoiceBusinessEmail">Business email</label><input id="invoiceBusinessEmail" type="email" value="tom@solectrics.co.nz"></div>
+      <div><label for="invoiceIssueDate">Invoice date</label><input id="invoiceIssueDate" type="date"></div>
+      <div><label for="invoiceDueDate">Due date</label><input id="invoiceDueDate" type="date"></div>
+      <div><label for="invoicePaymentTerms">Payment terms</label><input id="invoicePaymentTerms" value="Payment due within 7 days"></div>
+    </div>
+    <label for="invoicePaymentInstructions">Payment instructions</label>
+    <textarea id="invoicePaymentInstructions" rows="3" placeholder="Account name, bank account number and payment reference instructions"></textarea>
+    <label for="invoiceNotes">Invoice notes (optional)</label>
+    <textarea id="invoiceNotes" rows="2" placeholder="Optional customer note"></textarea>
+    <button type="button" id="generateCustomerInvoice">GENERATE CUSTOMER INVOICE</button>
+    <span id="customerInvoiceMessage" aria-live="polite"></span>
+    <div id="customerInvoiceWarning" class="quote-warning" hidden></div>
+    <div id="customerInvoiceHistory" class="quote-history"></div>
   </div>
 </section>
 
@@ -4291,7 +4312,7 @@ function updateActualMaterialsCharge(total = window.jobActualMaterialsCost || 0)
     if (element) element.textContent = costingMoney(value);
   });
   const note = document.getElementById("actualMaterialsMarkupNote");
-  if (note) note.textContent = `Uses the ${rate}% default material mark-up above, then adds 15% GST. Use the customer charge ex GST as the materials line in Hnry; Hnry remains where you create and send the customer invoice.`;
+  if (note) note.textContent = `Uses the ${rate}% default material mark-up above, then adds 15% GST. The marked-up ex-GST amount is added to the Job Hub customer invoice below.`;
 }
 
 window.addEventListener("jobhub:materials-updated", event => {
@@ -4404,6 +4425,74 @@ async function setCustomerQuoteStatus(quoteId, status) {
   } catch (error) { message.textContent = error.message; message.className = "error"; }
 }
 
+function localIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function initialiseInvoiceDates() {
+  const issue = document.getElementById("invoiceIssueDate");
+  const due = document.getElementById("invoiceDueDate");
+  const today = new Date();
+  if (issue && !issue.value) issue.value = localIsoDate(today);
+  if (due && !due.value) {
+    const dueDate = new Date(today);
+    dueDate.setDate(dueDate.getDate() + 7);
+    due.value = localIsoDate(dueDate);
+  }
+}
+
+async function loadCustomerInvoices() {
+  const history = document.getElementById("customerInvoiceHistory");
+  const warning = document.getElementById("customerInvoiceWarning");
+  if (!history || !warning) return;
+  initialiseInvoiceDates();
+  try {
+    const response = await fetch(`/api/customer-invoices?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer invoice history");
+    const defaults = data.defaults || {};
+    const fields = { invoiceBusinessName: defaults.business_name, invoiceGstNumber: defaults.gst_number, invoiceBusinessEmail: defaults.business_email, invoicePaymentInstructions: defaults.payment_instructions, invoicePaymentTerms: defaults.payment_terms };
+    Object.entries(fields).forEach(([id, value]) => { const field = document.getElementById(id); if (field && !field.value && value) field.value = value; });
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "The labour, customer charges or actual materials have changed since the latest saved invoice. That invoice has not been altered. Generate a new version if the customer invoice should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => {
+      const status = escapeHtml(version.status).toUpperCase();
+      const controls = version.status === "void" ? "" : `${version.status === "draft" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status === "issued" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="paid">MARK PAID</button>` : ""}${version.status !== "paid" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="void">VOID</button>` : ""}`;
+      return `<div class="quote-history-row"><div><strong>${escapeHtml(version.invoice_number || `Invoice v${version.version_number}`)}</strong> · ${status}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${costingMoney(version.total_incl_gst)} incl GST</div></div><div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-invoice?invoice_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${controls}</div></div>`;
+    }).join("") : `<div class="placeholder">No customer invoice versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerInvoice() {
+  const message = document.getElementById("customerInvoiceMessage");
+  try {
+    message.textContent = "Saving costing and generating invoice…"; message.className = "";
+    await saveInternalCosting();
+    const payload = { action: "generate", job_id: Number(jobId), option_id: costingState.currentOptionId, business_name: document.getElementById("invoiceBusinessName").value, gst_number: document.getElementById("invoiceGstNumber").value, business_email: document.getElementById("invoiceBusinessEmail").value, issue_date: document.getElementById("invoiceIssueDate").value, due_date: document.getElementById("invoiceDueDate").value, payment_terms: document.getElementById("invoicePaymentTerms").value, payment_instructions: document.getElementById("invoicePaymentInstructions").value, notes: document.getElementById("invoiceNotes").value };
+    const response = await fetch("/api/customer-invoices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer invoice");
+    message.textContent = `${data.invoice_number} generated as a draft.`;
+    await loadCustomerInvoices();
+    window.open(`/mini-fergus-customer-invoice?invoice_id=${encodeURIComponent(data.invoice_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerInvoiceStatus(invoiceId, status) {
+  const message = document.getElementById("customerInvoiceMessage");
+  if (status === "void" && !window.confirm("Void this saved invoice?")) return;
+  try {
+    const response = await fetch("/api/customer-invoices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "set_status", invoice_id: invoiceId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update invoice status");
+    message.textContent = `Invoice marked ${status}.`; message.className = "";
+    await loadCustomerInvoices();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
 let costingSearchTimer;
 async function loadCostingSuppliers() {
   const select = document.getElementById("costingSupplierFilter");
@@ -4471,6 +4560,8 @@ document.addEventListener("click", function(event) {
   if (event.target?.id === "saveInternalCosting") saveInternalCosting();
   if (event.target?.id === "generateCustomerQuote") generateCustomerQuote();
   if (event.target?.classList?.contains("setCustomerQuoteStatus")) setCustomerQuoteStatus(event.target.dataset.quoteId, event.target.dataset.status);
+  if (event.target?.id === "generateCustomerInvoice") generateCustomerInvoice();
+  if (event.target?.classList?.contains("setCustomerInvoiceStatus")) setCustomerInvoiceStatus(event.target.dataset.invoiceId, event.target.dataset.status);
   if (event.target?.classList?.contains("addCostingLine")) {
     costingState.lines.push(newCostingLine(event.target.dataset.category));
     renderCostingLines();
@@ -4601,7 +4692,7 @@ resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCostingSuppliers()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
   ]).then(() => {
     restoreWorkLogDraft();
 
