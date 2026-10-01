@@ -164,10 +164,18 @@
     materialRevision += 1;
     clearTimeout(materialAutosaveTimer);
     activeMaterialId = null;
+    byId("materialsSource").value = "supplier_invoice";
+    byId("materialsSupplier").value = "";
+    byId("materialsInvoiceFile").value = "";
+    byId("materialsInvoiceNumber").value = "";
+    byId("materialsInvoiceDate").value = "";
     ["materialsDescription", "materialsSku", "materialsUnit"].forEach(id => { byId(id).value = ""; });
     byId("materialsQuantity").value = "1";
     byId("materialsUnitCost").value = "0";
-    byId("jobMaterialsMessage").textContent = "New material. Changes save automatically once the description and invoice are selected.";
+    updateSourceFields();
+    byId("jobMaterialsMessage").textContent = "New material entry ready. Enter a description and select its invoice to save.";
+    byId("materialsDescription").scrollIntoView({ behavior: "smooth", block: "center" });
+    byId("materialsDescription").focus({ preventScroll: true });
   }
 
   async function removeMaterial(id) {
@@ -191,7 +199,8 @@
   byId("uploadMaterialsInvoice")?.addEventListener("click", () => {
     byId("jobFileCategory").value = "supplier";
     byId("jobFileRole").value = "supplier_invoice";
-    byId("jobFilesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    // iOS Safari only opens the native picker while the original tap is active.
+    // Keep the click synchronous; scrolling first can consume that activation.
     byId("jobFileInput").click();
   });
   document.addEventListener("click", async event => {
