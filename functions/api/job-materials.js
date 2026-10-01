@@ -29,6 +29,11 @@ function number(value, fallback, max = 10000000) {
   return Number.isFinite(parsed) && parsed >= 0 && parsed <= max ? parsed : fallback;
 }
 
+function money(value, fallback = 0, max = 10000000) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && Math.abs(parsed) <= max ? parsed : fallback;
+}
+
 async function ensureSchema(db) {
   await db.prepare(CREATE_TABLE).run();
   await db.prepare("CREATE INDEX IF NOT EXISTS idx_job_materials_job ON job_materials(job_id, created_at)").run();
@@ -67,7 +72,7 @@ export async function onRequestPost(context) {
     const source = body.source === "stock" ? "stock" : "supplier_invoice";
     const description = cleanText(body.description, 1000);
     const quantity = number(body.quantity, 1, 1000000);
-    const unitCost = number(body.unit_cost_ex_gst, 0);
+    const unitCost = money(body.unit_cost_ex_gst, 0);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
     if (!description) return errorResponse("Enter a material description", 400);
     if (quantity <= 0) return errorResponse("Quantity must be greater than zero", 400);

@@ -34,6 +34,199 @@
   let materialAutosaveTimer = null;
   let materialSavePromise = null;
   let materialRevision = 0;
+  let invoiceReadResult = null;
+
+  function hideInvoicePreview() {
+    invoiceReadResult = null;
+    const preview = byId("materialsInvoicePreview");
+    if (preview) preview.hidden = true;
+    if (byId("materialsInvoiceImportMessage")) byId("materialsInvoiceImportMessage").textContent = "";
+  }
+
+  function invoicePreviewValue(id) {
+    return byId(id)?.value?.trim() || "";
+  }
+
+  function renderInvoicePreview(invoice) {
+    invoiceReadResult = invoice;
+    const summary = byId("materialsInvoiceSummary");
+    const warnings = byId("materialsInvoiceWarnings");
+    const lines = byId("materialsInvoiceLines");
+    const preview = byId("materialsInvoicePreview");
+    const documentLabel = invoice.document_type === "credit_note" ? "Credit note" : "Invoice";
+
+    summary.innerHTML = `
+      <div><label>Supplier</label><input id="invoicePreviewSupplier" value="${escapeHtml(invoice.supplier || "J.A. Russell")}"></div>
+      <div><label>Document</label><input value="${documentLabel}" disabled></div>
+      <div><label>Invoice / credit number</label><input id="invoicePreviewNumber" value="${escapeHtml(invoice.invoice_number || "")}"></div>
+      <div><label>Date</label><input id="invoicePreviewDate" type="date" value="${escapeHtml(invoice.invoice_date || "")}"></div>
+      <div><label>Order reference</label><input id="invoicePreviewReference" value="${escapeHtml(invoice.purchase_order_reference || "")}"></div>
+      <div><label>Subtotal ex GST</label><input id="invoicePreviewSubtotal" type="number" step="0.01" value="${invoice.subtotal_ex_gst ?? ""}"></div>
+      <div><label>GST</label><input id="invoicePreviewGst" type="number" step="0.01" value="${invoice.gst ?? ""}"></div>
+      <div><label>Total incl GST</label><input id="invoicePreviewTotal" type="number" step="0.01" value="${invoice.total_incl_gst ?? ""}"></div>`;
+
+    warnings.innerHTML = (invoice.warnings || []).map(warning =>
+      `<div class="error" style="margin-top:10px;">Check: ${escapeHtml(warning)}</div>`
+    ).join("");
+    if (invoice.confidence < 0.8) {
+      warnings.insertAdjacentHTML("beforeend", '<div class="error" style="margin-top:10px;">The scan was not fully certain. Check all figures against the PDF.</div>');
+    }
+
+    if (!invoice.lines?.length) {
+      lines.innerHTML = '<div class="placeholder">No individual product lines were found. You can still use the checked ex-GST total above.</div>';
+    } else {
+      lines.innerHTML = invoice.lines.map((line, index) => `
+        <div class="answer-box invoice-import-line" data-invoice-line="${index}">
+          <label style="display:flex;align-items:center;gap:10px;font-weight:800;">
+            <input type="checkbox" class="invoice-line-selected" checked style="width:auto;"> Add this line
+          </label>
+          <div class="grid" style="margin-top:10px;">
+            <div><label>Description</label><input class="invoice-line-description" value="${escapeHtml(line.description)}"></div>
+            <div><label>Supplier code</label><input class="invoice-line-sku" value="${escapeHtml(line.stock_code || "")}"></div>
+            <div><label>Quantity</label><input class="invoice-line-quantity" type="number" min="0.01" step="0.01" value="${line.quantity}"></div>
+            <div><label>Unit</label><input class="invoice-line-unit" value="${escapeHtml(line.unit || "each")}"></div>
+            <div><label>Unit cost ex GST</label><input class="invoice-line-cost" type="number" step="0.0001" value="${line.unit_price_ex_gst}"></div>
+            <div><label>Printed line total ex GST</label><input value="${line.extension_ex_gst}" disabled></div>
+          </div>
+        </div>`).join("");
+    }
+    preview.hidden = false;
+    preview.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function readSelectedInvoice() {
+    const fileId = byId("materialsInvoiceFile").value;
+    const message = byId("materialsInvoiceReadMessage");
+    if (!fileId) {
+      message.textContent = "Select an uploaded PDF invoice first.";
+      return;
+    }
+    const button = byId("readMaterialsInvoice");
+    button.disabled = true;
+    hideInvoicePreview();
+    message.textContent = "Reading invoice — this can take a little while…";
+    try {
+      const response = await fetch("/api/supplier-invoice-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: Number(materialsJobId), file_id: fileId })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not read invoice");
+      renderInvoicePreview(data.invoice);
+      message.textContent = "✓ Invoice read. Check the figures below before adding them.";
+    } catch (error) {
+      message.textContent = `Could not read invoice: ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function postImportedMaterial(payload) {
+    const response = await fetch("/api/job-materials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not add material");
+  }
+
+  function invoiceImportBase() {
+    return {
+      job_id: Number(materialsJobId),
+      source: "supplier_invoice",
+      supplier_name: invoicePreviewValue("invoicePreviewSupplier") || "J.A. Russell",
+      invoice_file_id: byId("materialsInvoiceFile").value,
+      invoice_number: invoicePreviewValue("invoicePreviewNumber"),
+      invoice_date: invoicePreviewValue("invoicePreviewDate")
+    };
+  }
+
+  function invoiceAlreadyImported(fileId) {
+    return materialRecords.some(record => record.invoice_file_id === fileId);
+  }
+
+  async function importInvoiceLines() {
+    const base = invoiceImportBase();
+    const message = byId("materialsInvoiceImportMessage");
+    if (invoiceAlreadyImported(base.invoice_file_id)) {
+      message.textContent = "This invoice already has recorded material entries. Remove those entries before importing it again.";
+      return;
+    }
+    const selected = Array.from(document.querySelectorAll(".invoice-import-line")).filter(row =>
+      row.querySelector(".invoice-line-selected")?.checked
+    );
+    if (!selected.length) {
+      message.textContent = "Tick at least one material line, or choose ADD TOTAL ONLY.";
+      return;
+    }
+    const button = byId("importMaterialsInvoiceLines");
+    button.disabled = true;
+    try {
+      message.textContent = `Adding ${selected.length} checked material line${selected.length === 1 ? "" : "s"}…`;
+      const items = selected.map(row => ({
+          description: row.querySelector(".invoice-line-description").value.trim(),
+          supplier_sku: row.querySelector(".invoice-line-sku").value.trim(),
+          quantity: row.querySelector(".invoice-line-quantity").value,
+          unit_code: row.querySelector(".invoice-line-unit").value.trim(),
+          unit_cost_ex_gst: row.querySelector(".invoice-line-cost").value
+      }));
+      const response = await fetch("/api/job-materials-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...base, items })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not add invoice lines");
+      message.textContent = `✓ ${selected.length} material line${selected.length === 1 ? "" : "s"} added`;
+      await loadMaterials();
+      hideInvoicePreview();
+      byId("materialsInvoiceReadMessage").textContent = "✓ Invoice lines added after confirmation.";
+    } catch (error) {
+      message.textContent = `Could not finish importing: ${error.message}`;
+      await loadMaterials();
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function importInvoiceTotal() {
+    const base = invoiceImportBase();
+    const message = byId("materialsInvoiceImportMessage");
+    if (invoiceAlreadyImported(base.invoice_file_id)) {
+      message.textContent = "This invoice already has recorded material entries. Remove those entries before importing it again.";
+      return;
+    }
+    const subtotalText = invoicePreviewValue("invoicePreviewSubtotal");
+    const subtotal = Number(subtotalText);
+    if (!subtotalText || !Number.isFinite(subtotal)) {
+      message.textContent = "Check and enter the ex-GST subtotal first.";
+      return;
+    }
+    const button = byId("importMaterialsInvoiceTotal");
+    button.disabled = true;
+    message.textContent = "Adding checked invoice total…";
+    try {
+      const kind = invoiceReadResult?.document_type === "credit_note" ? "credit note" : "invoice";
+      const number = base.invoice_number ? ` ${base.invoice_number}` : "";
+      await postImportedMaterial({
+        ...base,
+        description: `${base.supplier_name} materials — ${kind}${number}`,
+        supplier_sku: "",
+        quantity: 1,
+        unit_code: "invoice",
+        unit_cost_ex_gst: subtotal
+      });
+      await loadMaterials();
+      hideInvoicePreview();
+      byId("materialsInvoiceReadMessage").textContent = "✓ Checked ex-GST invoice total added.";
+    } catch (error) {
+      message.textContent = `Could not add invoice total: ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  }
 
   function render(materials) {
     materialRecords = materials || [];
@@ -194,6 +387,16 @@
 
     byId("materialsSource").addEventListener("change", updateSourceFields);
     byId("newJobMaterial").addEventListener("click", newMaterial);
+    byId("readMaterialsInvoice").addEventListener("click", readSelectedInvoice);
+    byId("importMaterialsInvoiceLines").addEventListener("click", importInvoiceLines);
+    byId("importMaterialsInvoiceTotal").addEventListener("click", importInvoiceTotal);
+    byId("cancelMaterialsInvoiceImport").addEventListener("click", hideInvoicePreview);
+    byId("materialsInvoiceFile").addEventListener("change", () => {
+      hideInvoicePreview();
+      byId("materialsInvoiceReadMessage").textContent = byId("materialsInvoiceFile").value
+        ? "Ready to read this invoice."
+        : "Select an uploaded PDF invoice first.";
+    });
     ["materialsSource", "materialsSupplier", "materialsInvoiceFile", "materialsInvoiceNumber", "materialsInvoiceDate", "materialsDescription", "materialsSku", "materialsQuantity", "materialsUnit", "materialsUnitCost"].forEach(id => {
       byId(id)?.addEventListener("input", scheduleMaterialAutosave);
       byId(id)?.addEventListener("change", scheduleMaterialAutosave);
