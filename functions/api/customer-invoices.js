@@ -71,13 +71,17 @@ async function loadInvoiceSource(db, jobId, requestedOptionId) {
     ORDER BY sort_order, created_at
   `).bind(jobId, option.id).all() : { results: [] };
   const materials = await db.prepare(`
-    SELECT COALESCE(SUM(quantity * unit_cost_ex_gst), 0) AS actual_cost
+    SELECT COALESCE(SUM(quantity * unit_cost_ex_gst), 0) AS actual_cost,
+           COALESCE(SUM(CASE WHEN billable_to_customer = 1 THEN quantity * unit_cost_ex_gst ELSE 0 END), 0) AS billable_cost,
+           COALESCE(SUM(CASE WHEN billable_to_customer = 1 THEN quantity * unit_cost_ex_gst * (1 + customer_markup_percent / 100.0) ELSE 0 END), 0) AS billable_charge
     FROM job_materials WHERE job_id = ?
   `).bind(jobId).first();
   return {
     option,
     lines: lines.results || [],
-    actual_materials_cost: money(materials?.actual_cost || 0)
+    actual_materials_cost: money(materials?.actual_cost || 0),
+    billable_materials_cost: money(materials?.billable_cost || 0),
+    billable_materials_charge: money(materials?.billable_charge || 0)
   };
 }
 
@@ -86,7 +90,7 @@ export function buildInvoiceLines(source) {
   const combined = new Map();
   const actualCost = money(source.actual_materials_cost);
   const markup = Number(source.option?.default_markup_percent) || 0;
-  const actualCustomerCharge = money(actualCost * (1 + markup / 100));
+  const actualCustomerCharge = money(source.billable_materials_charge ?? ((source.billable_materials_cost ?? actualCost) * (1 + markup / 100)));
 
   for (const line of source.lines || []) {
     if (line.category === "materials" && actualCost) continue;
@@ -112,15 +116,15 @@ export function buildInvoiceLines(source) {
   for (const [description, total] of combined) {
     result.push({ description, quantity: 1, unit: "item", unit_price_ex_gst: total, total_ex_gst: total, source: "costing" });
   }
-  if (actualCost) {
+  if (actualCustomerCharge > 0) {
     result.push({
-      description: "Electrical materials",
+      description: "Materials",
       quantity: 1,
       unit: "item",
       unit_price_ex_gst: actualCustomerCharge,
       total_ex_gst: actualCustomerCharge,
       source: "actual_materials",
-      internal_cost_ex_gst: actualCost,
+      internal_cost_ex_gst: money(source.billable_materials_cost ?? actualCost),
       markup_percent: markup
     });
   }
@@ -132,6 +136,8 @@ function sourceForHash(source) {
     option_id: source.option?.id || null,
     default_markup_percent: Number(source.option?.default_markup_percent) || 0,
     actual_materials_cost: source.actual_materials_cost,
+    billable_materials_cost: source.billable_materials_cost,
+    billable_materials_charge: source.billable_materials_charge,
     lines: buildInvoiceLines(source)
   };
 }
