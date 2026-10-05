@@ -174,6 +174,12 @@ export async function onRequestPost(context) {
 
     const jobId = jobResult.meta.last_row_id;
 
+    if (jobId) {
+      const supplierReference = `S${String(jobId).padStart(4, "0")}`;
+      await db.prepare("UPDATE jobs SET supplier_reference = ? WHERE id = ? AND (supplier_reference IS NULL OR supplier_reference = '')")
+        .bind(supplierReference, jobId).run();
+    }
+
     if (uploads.length) {
       const storedKeys = [];
       try {
