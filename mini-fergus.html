@@ -240,7 +240,10 @@
 
     <div class="section-head">
       <h2>Jobs</h2>
-      <a class="catalogue-link" href="/mini-fergus-suppliers">SUPPLIER CATALOGUE →</a>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end">
+        <a class="catalogue-link" href="/mini-fergus-supplier-invoices">SUPPLIER INVOICE INBOX →</a>
+        <a class="catalogue-link" href="/mini-fergus-suppliers">SUPPLIER CATALOGUE →</a>
+      </div>
     </div>
 
     <div class="workspace-actions">
@@ -310,6 +313,7 @@ async function loadJobs() {
 <div class="address">${escapeHtml(job.address || "")}</div>
 <div class="address">Received: ${formatReceivedDate(job.created_at)}</div>
 <span class="job-type">${job.job_type === "general_electrical" ? "General electrical" : "Solar"}</span>
+<div class="address">Supplier reference: <strong>${escapeHtml(job.supplier_reference || "Pending migration")}</strong></div>
           </div>
 
           <div>
