@@ -17,6 +17,15 @@ pause_for() {
   [[ "$answer" == 'yes' ]] || fail 'Confirmation did not match; no further action taken.'
 }
 
+INSPECT_ONLY=0
+if [[ $# -gt 1 ]]; then
+  fail 'Usage: bash staging/apply-jobhub-staging.sh [--inspect-only]'
+fi
+if [[ $# -eq 1 ]]; then
+  [[ "$1" == '--inspect-only' ]] || fail 'Usage: bash staging/apply-jobhub-staging.sh [--inspect-only]'
+  INSPECT_ONLY=1
+fi
+
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'Run this from the Job Hub Git checkout.'
 cd "$ROOT"
 [[ "$(git branch --show-current)" == "$EXPECTED_BRANCH" ]] || fail "Checkout must be exactly $EXPECTED_BRANCH."
@@ -193,6 +202,11 @@ STATE="$(printf '%s\n' "$STATE_OUTPUT" | sed -n 's/.*JOBHUB_STATE_\([A-Z0-9_]*\)
 [[ -n "$STATE" ]] || fail 'Could not parse the staging schema state; no schema write was attempted.'
 printf 'Detected existing schema state: %s\n' "$STATE"
 
+if [[ "$INSPECT_ONLY" == 1 && "$STATE" == 'EMPTY' ]]; then
+  printf 'Inspect-only mode: database is empty; baseline and migrations were not written.\n'
+  exit 0
+fi
+
 case "$STATE" in
   EMPTY)
     printf '\n[1/5] Database is empty. Apply the pre-0015 baseline once.\n'
@@ -226,6 +240,10 @@ wrangler_execute --command "$STATE_SQL"
 if [[ -n "$EXPECTED_PENDING" ]]; then
   printf '\n[3/5] Wrangler migration history (expected pending: %s).\n' "$EXPECTED_PENDING"
   wrangler_migrations list
+  if [[ "$INSPECT_ONLY" == 1 ]]; then
+    printf 'Inspect-only mode: no baseline or migration write was run.\n'
+    exit 0
+  fi
   printf 'Continue only if the Wrangler list shows exactly these pending migrations: %s.\n' "$EXPECTED_PENDING"
   pause_for 'Does the pending list match that exact sequence? Type yes to apply only pending migrations: '
   printf '\n[4/5] Applying pending migration files from 0015-0018 to %s.\n' "$DATABASE"
