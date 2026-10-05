@@ -1,10 +1,10 @@
--- Clean staging baseline for the live Job Hub schema immediately before migration 0015.
+-- Staging baseline copied from the user-supplied live Job Hub schema-only export.
 
--- Source: user-supplied schema-only sqlite_schema CSV; no row/customer/job data is included.
+-- No row/customer/job data is included. This snapshot is the supplied pre-0015 source.
 
 -- Cloudflare _cf_* and SQLite sqlite_* internal objects are omitted.
 
--- This is a post-0014 baseline. Apply only migrations 0015 and later to this schema.
+-- Apply only migrations 0015 and later to this schema; do not replay 0001-0014.
 
 PRAGMA foreign_keys = ON;
 
@@ -217,5 +217,4 @@ CREATE INDEX idx_job_materials_job ON job_materials(job_id, created_at);
 CREATE INDEX idx_supplier_products_description ON supplier_products(description);
 
 CREATE INDEX idx_supplier_products_sku ON supplier_products(supplier_sku);
-
 
