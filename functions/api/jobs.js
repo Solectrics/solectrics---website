@@ -18,6 +18,7 @@ export async function onRequestGet(context) {
         jobs.job_status,
         jobs.next_action,
         jobs.job_type,
+        jobs.supplier_reference,
         enquiries.id AS enquiry_id,
         enquiries.enquiry_ref,
         enquiries.created_at,
@@ -114,7 +115,12 @@ export async function onRequestPost(context) {
     const jobId = jobResult.meta?.last_row_id;
     if (!jobId) throw new Error("Job was not created");
 
-    return Response.json({ ok: true, job_id: jobId, enquiry_ref: enquiryRef });
+    // Compact and human-readable; the unique database index is the final guard.
+    const supplierReference = `S${String(jobId).padStart(4, "0")}`;
+    await db.prepare("UPDATE jobs SET supplier_reference = ? WHERE id = ? AND (supplier_reference IS NULL OR supplier_reference = '')")
+      .bind(supplierReference, jobId).run();
+
+    return Response.json({ ok: true, job_id: jobId, enquiry_ref: enquiryRef, supplier_reference: supplierReference });
   } catch (error) {
     console.error("Job Hub create job error:", error);
     return Response.json(
