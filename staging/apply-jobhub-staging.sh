@@ -134,24 +134,108 @@ wrangler_migrations() {
   npx wrangler d1 migrations "$action" "$DATABASE" --remote --config "$CONFIG"
 }
 
-printf '\n[1/5] Read-only check: application tables before baseline.\n'
-wrangler_execute --command "SELECT COUNT(*) AS app_tables FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND substr(name,1,4) <> '_cf_';"
-printf 'Expected app_tables = 0. If the result is not zero, stop here.\n'
-pause_for 'Did the result show app_tables = 0? Type yes to apply the baseline: '
+# Inspect schema before any schema write. This makes reruns after the baseline or
+# after one or more successful migrations resume from a known boundary. Unknown
+# or partially-applied states stop without attempting a repair.
+STATE_SQL="WITH counts AS (
+  SELECT
+    (SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND sql IS NOT NULL
+      AND name NOT LIKE 'sqlite_%' AND substr(name,1,4) <> '_cf_' AND name <> 'd1_migrations') AS t,
+    (SELECT COUNT(*) FROM sqlite_schema WHERE type='index' AND sql IS NOT NULL
+      AND name NOT LIKE 'sqlite_%' AND substr(name,1,4) <> '_cf_') AS i
+), markers AS (
+  SELECT
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='jobs') AS has_jobs,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enquiries') AS has_enquiries,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='customer_invoice_versions') AS has_invoice_versions,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_books') AS has_books,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_accounts') AS has_accounts,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_bank_accounts') AS has_bank_accounts,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_bank_feed_transactions') AS has_bank_feed,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_supplier_invoice_inbox') AS has_supplier_inbox,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_supplier_invoice_events') AS has_supplier_events,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_job_books') AS has_job_books,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='bookkeeping_transactions'
+      AND instr(sql, 'allowable_input_gst') > 0) AS has_input_gst_column,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='jobs'
+      AND instr(sql, 'supplier_reference') > 0) AS has_supplier_reference_column,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='job_materials'
+      AND instr(sql, 'customer_markup_percent') > 0
+      AND instr(sql, 'supplier_invoice_inbox_id') > 0) AS has_material_v18_columns,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='index' AND name='idx_jobs_supplier_reference_unique') AS has_job_ref_index,
+    EXISTS(SELECT 1 FROM sqlite_schema WHERE type='index' AND name='idx_job_materials_supplier_inbox') AS has_material_inbox_index
+)
+SELECT CASE
+  WHEN t=0 AND i=0 THEN 'JOBHUB_STATE_EMPTY'
+  WHEN t=18 AND i=10 AND has_jobs AND has_enquiries AND has_invoice_versions
+    THEN 'JOBHUB_STATE_BASELINE'
+  WHEN t=32 AND i=17 AND has_books AND has_accounts AND NOT has_bank_accounts
+    THEN 'JOBHUB_STATE_0015'
+  WHEN t=38 AND i=21 AND has_bank_accounts AND has_bank_feed AND has_input_gst_column
+    AND NOT has_supplier_inbox
+    THEN 'JOBHUB_STATE_0016'
+  WHEN t=42 AND i=25 AND has_supplier_inbox AND has_supplier_events AND has_job_books
+    AND has_input_gst_column AND NOT has_supplier_reference_column
+    THEN 'JOBHUB_STATE_0017'
+  WHEN t=42 AND i=27 AND has_supplier_inbox AND has_input_gst_column
+    AND has_supplier_reference_column AND has_material_v18_columns
+    AND has_job_ref_index AND has_material_inbox_index
+    THEN 'JOBHUB_STATE_0018'
+  ELSE 'JOBHUB_STATE_UNKNOWN'
+END AS recovery_state
+FROM counts, markers;"
 
-printf '\n[2/5] Applying the schema-only baseline to %s.\n' "$DATABASE"
-wrangler_execute --file "$ROOT/$BASELINE_REL"
+STATE_OUTPUT="$(wrangler_execute --command "$STATE_SQL" 2>&1)" || {
+  printf '%s\n' "$STATE_OUTPUT" >&2
+  fail 'Could not read the staging schema state; no schema write was attempted.'
+}
+STATE="$(printf '%s\n' "$STATE_OUTPUT" | sed -n 's/.*JOBHUB_STATE_\([A-Z0-9_]*\).*/\1/p' | tail -n 1)"
+[[ -n "$STATE" ]] || fail 'Could not parse the staging schema state; no schema write was attempted.'
+printf 'Detected existing schema state: %s\n' "$STATE"
 
-printf '\n[3/5] Read-only baseline verification.\n'
-wrangler_execute --command "SELECT (SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%' AND substr(name,1,4) <> '_cf_') AS app_tables, (SELECT COUNT(*) FROM sqlite_schema WHERE type='index' AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%' AND substr(name,1,4) <> '_cf_') AS explicit_indexes;"
-printf 'Expected app_tables = 18 and explicit_indexes = 10.\n'
-pause_for 'Did the baseline counts match 18 tables and 10 indexes? Type yes to continue: '
+case "$STATE" in
+  EMPTY)
+    printf '\n[1/5] Database is empty. Apply the pre-0015 baseline once.\n'
+    pause_for 'Did the previous check show app_tables = 0? Type yes to apply the baseline: '
+    printf '\nApplying baseline to %s.\n' "$DATABASE"
+    wrangler_execute --file "$ROOT/$BASELINE_REL"
+    STATE="BASELINE"
+    ;;
+  BASELINE|0015|0016|0017|0018)
+    printf 'Baseline will not be reapplied. Existing staging schema is retained.\n'
+    ;;
+  *)
+    fail 'Staging schema is not at a recognized empty/baseline/migration boundary. No baseline or migration was run. Inspect the staging D1 schema and migration history before proceeding.'
+    ;;
+esac
 
-printf '\n[4/5] Confirming pending migrations, then applying only 0015-0018.\n'
-wrangler_migrations list
-printf 'The list must contain only 0015, 0016, 0017 and 0018 as pending.\n'
-pause_for 'Does the migration list show only 0015-0018 pending? Type yes to apply them: '
-wrangler_migrations apply
+case "$STATE" in
+  BASELINE) EXPECTED_PENDING='0015, 0016, 0017, 0018' ;;
+  0015) EXPECTED_PENDING='0016, 0017, 0018' ;;
+  0016) EXPECTED_PENDING='0017, 0018' ;;
+  0017) EXPECTED_PENDING='0018' ;;
+  0018)
+    printf '\nAll four schema signatures are present. No migration will be applied.\n'
+    EXPECTED_PENDING=''
+    ;;
+esac
+
+printf '\n[2/5] Read-only verification of the detected checkpoint: %s.\n' "$STATE"
+wrangler_execute --command "$STATE_SQL"
+
+if [[ -n "$EXPECTED_PENDING" ]]; then
+  printf '\n[3/5] Wrangler migration history (expected pending: %s).\n' "$EXPECTED_PENDING"
+  wrangler_migrations list
+  printf 'Continue only if the Wrangler list shows exactly these pending migrations: %s.\n' "$EXPECTED_PENDING"
+  pause_for 'Does the pending list match that exact sequence? Type yes to apply only pending migrations: '
+  printf '\n[4/5] Applying pending migration files from 0015-0018 to %s.\n' "$DATABASE"
+  wrangler_migrations apply
+else
+  printf '\n[3/5] Verifying Wrangler migration history for an already-complete schema.\n'
+  wrangler_migrations list
+  printf 'The migration history must show 0015-0018 applied. No migration write will be run.\n'
+  pause_for 'Does Wrangler show 0015-0018 applied? Type yes to run final read-only checks: '
+fi
 
 printf '\n[5/5] Read-only post-migration verification.\n'
 wrangler_migrations list
