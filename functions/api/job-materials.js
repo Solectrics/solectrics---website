@@ -46,11 +46,14 @@ export async function onRequestGet(context) {
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
     await ensureSchema(db);
+    const costing = await db.prepare("SELECT default_markup_percent FROM costing_options WHERE job_id = ? ORDER BY updated_at DESC LIMIT 1").bind(jobId).first();
+    const markup = Number.isFinite(Number(costing?.default_markup_percent)) ? Math.max(0, Number(costing.default_markup_percent)) : 30;
     const result = await db.prepare(`
       SELECT m.id, m.source, m.supplier_name, m.invoice_number, m.invoice_date,
              m.invoice_file_id, f.original_name AS invoice_file_name,
              m.description, m.supplier_sku, m.quantity, m.unit_code,
-             m.unit_cost_ex_gst, m.created_at
+             m.unit_cost_ex_gst, m.billable_to_customer, m.customer_markup_percent,
+             m.material_status, m.created_at
       FROM job_materials m
       LEFT JOIN job_files f ON f.id = m.invoice_file_id AND f.job_id = m.job_id
       WHERE m.job_id = ?
@@ -96,14 +99,16 @@ export async function onRequestPost(context) {
       source === "stock" ? null : cleanText(body.invoice_number, 100) || null,
       source === "stock" ? null : cleanText(body.invoice_date, 10) || null,
       invoiceFileId || null, description, cleanText(body.supplier_sku, 120) || null,
-      quantity, cleanText(body.unit_code, 40) || null, unitCost
+      quantity, cleanText(body.unit_code, 40) || null, unitCost,
+      source === "stock" ? 0 : 1, markup, source === "stock" ? "stock" : "normal"
     ];
     if (requestedId) {
       const result = await db.prepare(`
         UPDATE job_materials
         SET source = ?, supplier_name = ?, invoice_number = ?, invoice_date = ?,
             invoice_file_id = ?, description = ?, supplier_sku = ?, quantity = ?,
-            unit_code = ?, unit_cost_ex_gst = ?
+            unit_code = ?, unit_cost_ex_gst = ?, billable_to_customer = ?,
+            customer_markup_percent = ?, material_status = ?
         WHERE id = ? AND job_id = ?
       `).bind(...values, requestedId, jobId).run();
       if (!(result.meta?.changes > 0)) return errorResponse("Material item not found", 404);
@@ -111,8 +116,9 @@ export async function onRequestPost(context) {
       await db.prepare(`
         INSERT INTO job_materials
           (id, job_id, source, supplier_name, invoice_number, invoice_date,
-           invoice_file_id, description, supplier_sku, quantity, unit_code, unit_cost_ex_gst)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           invoice_file_id, description, supplier_sku, quantity, unit_code, unit_cost_ex_gst,
+           billable_to_customer, customer_markup_percent, material_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(id, jobId, ...values).run();
     }
     return Response.json({ ok: true, id, message: requestedId ? "Material updated" : "Material recorded" });
