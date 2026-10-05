@@ -1,0 +1,60 @@
+[
+  {
+    "supplier": "J.A. Russell Ltd",
+    "document_type": "invoice",
+    "invoice_number": "43348591",
+    "invoice_date": "2026-09-14",
+    "purchase_order_reference": null,
+    "subtotal_ex_gst": 5.61,
+    "gst": 0.84,
+    "total_incl_gst": 6.45,
+    "confidence": 0.98,
+    "lines": [{"stock_code":"32530200","description":"Saddle half 32mm ZP","quantity":4,"unit":"EA","unit_price_ex_gst":1.4025,"extension_ex_gst":5.61}]
+  },
+  {
+    "supplier": "J.A. Russell Ltd",
+    "document_type": "invoice",
+    "invoice_number": "43357185",
+    "invoice_date": "2026-09-14",
+    "purchase_order_reference": "DAMIEN",
+    "subtotal_ex_gst": 204.24,
+    "gst": 30.64,
+    "total_incl_gst": 234.88,
+    "confidence": 0.98,
+    "lines": [
+      {"stock_code":"Q5040710","description":"Bulkhead LED 10W oval BK","quantity":2,"unit":"EA","unit_price_ex_gst":24,"extension_ex_gst":48},
+      {"stock_code":"22210780","description":"Outlet double 10A V WH","quantity":10,"unit":"EA","unit_price_ex_gst":15.624,"extension_ex_gst":156.24}
+    ]
+  },
+  {
+    "supplier": "J.A. Russell Ltd",
+    "document_type": "invoice",
+    "invoice_number": "43384149",
+    "invoice_date": "2026-09-17",
+    "purchase_order_reference": "DAMIEN",
+    "subtotal_ex_gst": 8.44,
+    "gst": 1.27,
+    "total_incl_gst": 9.71,
+    "confidence": 0.98,
+    "lines": [
+      {"stock_code":"30214260","description":"Tee inspection 25mm GY","quantity":1,"unit":"EA","unit_price_ex_gst":6.88,"extension_ex_gst":6.88},
+      {"stock_code":"30210040","description":"Coupling 25mm plain GY","quantity":1,"unit":"EA","unit_price_ex_gst":1.56,"extension_ex_gst":1.56}
+    ]
+  },
+  {
+    "supplier": "J.A. Russell Ltd",
+    "document_type": "invoice",
+    "invoice_number": "43423918",
+    "invoice_date": "2026-09-23",
+    "purchase_order_reference": "GREG",
+    "subtotal_ex_gst": 89.98,
+    "gst": 13.50,
+    "total_incl_gst": 103.48,
+    "confidence": 1,
+    "lines": [
+      {"stock_code":"53931060","description":"MCB 20A 1P 6kA C curve","quantity":1,"unit":"EA","unit_price_ex_gst":4.06,"extension_ex_gst":4.06},
+      {"stock_code":"30310340","description":"Junct box 25mm angle GY","quantity":2,"unit":"EA","unit_price_ex_gst":7.56,"extension_ex_gst":15.12},
+      {"stock_code":"30110045","description":"Conduit 25mm 4m HD ABOVE GY","quantity":3,"unit":"LT","unit_price_ex_gst":23.60,"extension_ex_gst":70.80}
+    ]
+  }
+]
