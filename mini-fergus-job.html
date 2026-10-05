@@ -520,6 +520,7 @@ window.currentAnswers = answers;
         page.innerHTML = `
           <h1>${escapeHtml(job.customer_name || "Customer")}</h1>
           <div class="address">${escapeHtml(job.address || "")}</div>
+          <div class="address">Supplier / purchase reference: <strong>${escapeHtml(job.supplier_reference || "Pending migration")}</strong></div>
 
           <div class="status">${escapeHtml(formatStatus(job.job_status))}</div>
 
