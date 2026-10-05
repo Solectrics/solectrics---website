@@ -11,6 +11,13 @@ export async function onRequest(context) {
     return context.next();
   }
 
+  // The isolated staging Pages project may opt into its own Access-protected
+  // pages.dev hostname. Production keeps the canonical-host redirect unless
+  // this explicit Pages environment variable is set.
+  if (context.env.ALLOW_PAGES_DEV_HOST === "true") {
+    return context.next();
+  }
+
   if (context.request.method === "GET" || context.request.method === "HEAD") {
     url.protocol = "https:";
     url.hostname = CANONICAL_HOSTNAME;
