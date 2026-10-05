@@ -58,6 +58,12 @@ bypassing the Cloudflare Access rules on `solectrics.co.nz`. Browser requests
 are redirected to the custom domain. Non-read requests to a Pages hostname are
 rejected instead of forwarding their request bodies.
 
+For the isolated staging Pages project only, set the non-secret Pages
+environment variable `ALLOW_PAGES_DEV_HOST=true` to keep its own `*.pages.dev`
+hostname instead of redirecting to the live custom domain. Before enabling this,
+protect the staging Pages hostname with its own Cloudflare Access application
+and policy. Do not set this variable on the production project.
+
 ## Resend
 
 Before testing email:
