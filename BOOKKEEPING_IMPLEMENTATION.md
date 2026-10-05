@@ -1,0 +1,45 @@
+# Job Hub bookkeeping implementation notes
+
+## Existing workflow and plan
+
+Job Hub already stores jobs and enquiries, quote costing options and lines, supplier invoice files and material rows, work logs, and customer invoice snapshots. Those operational records remain intact. Customer invoice versions are numbered per job and contain an issued invoice snapshot.
+
+The additive implementation sequence is:
+
+1. Establish a book-scoped accounting foundation without migrating or changing old job records.
+2. Add a supplier-document inbox which stores original PDFs before job assignment, detects duplicates, extracts a reviewable preview, and requires explicit approval before posting.
+3. On approval, attach the same stored PDF to the selected job, record one actual materials cost at invoice total, create a supplier bill/accounts-payable transaction and balanced journal, and retain an audit event.
+4. Add customer invoice/payment connections, bank matching, reporting/export and tax-reserve workflows in later stages, verifying each against a non-production database before deployment.
+
+The main risks are duplicate bills, incorrect job assignment, incorrect extracted totals, GST basis/claimability assumptions, and mixing data belonging to separate businesses. The inbox therefore scopes duplicates and records by book, stores a content hash, only preselects a job for one exact unique supplier-reference match, keeps other matches in the user's hands, validates amount arithmetic, requires a human to confirm the accounting fields, and blocks posting until commencement date and GST basis are configured. Existing records are not bulk-imported into a new book.
+
+## Implemented in this source stage
+
+- `0015_bookkeeping_foundation.sql` adds independent books, a starter chart of accounts, transactions, posted double-entry journals, payment allocations, tax events and adjustments, reserve-account balances, configurable export mappings, document links, audit events, fixed assets and opening balances.
+- `0016_bank_reconciliation.sql` adds provider-neutral bank-feed import and matching records. It is not yet connected to a production bank feed or supplier inbox payment workflow.
+- `0017_supplier_invoice_inbox.sql` adds per-book inbox addressing, job-to-book assignment, supplier inbox records and event history.
+- `0018_job_supplier_references_and_billable_materials.sql` adds a unique short `S####` supplier reference to each existing job and stores material billability, markup and credit/return classification separately from actual cost.
+- `functions/api/supplier-invoice-inbox.js` accepts PDF attachments through manual multipart upload or authenticated JSON intake. Zapier can call this endpoint, and an optional separate Cloudflare Email Worker can deliver direct email attachments. Neither route is configured in production by this change.
+- Each new PDF is stored in the existing R2 job-file bucket before a job is selected. SHA-256 duplicates within a book reuse the original object and enter a duplicate state; replayed email attachments are idempotent by message ID, attachment name and hash. Invoice-number duplicates are checked again before posting.
+- The existing supplier invoice reader is reused for a preview when `OPENAI_API_KEY` is configured. Multi-invoice PDFs are flagged and their combined values are suppressed. Extraction is not treated as verified accounting data.
+- The mobile inbox lets a user review the document and extracted values, confirm ex-GST, GST, total and allowable input GST, choose a job when necessary, and explicitly decide whether a material charge is billable. A single exact, unique supplier reference preselects the matching job; ambiguous/customer-name matches remain for the user to choose.
+- Approval attaches the stored PDF to the job, creates one aggregate actual materials row (it does not post OCR product lines), creates the supplier bill or supplier-credit adjustment, balanced journal and audit record, and updates the job-to-book association. Supplier credit amounts reduce actual job cost; they reduce billable material charges only when the user explicitly marks them billable. Stock, warranty and other non-billable material must be marked not billable. A pre-commencement document is labelled historical and is not posted into current-period journal/tax totals.
+- Customer invoice drafts use the saved billable material cost and the job's configured materials markup. Non-billable material still remains in actual job costs and profitability, but is excluded from the customer invoice. Creating a draft does not issue it; the user must review and issue it separately.
+- The optional direct-email worker has sender allowlisting, PDF-only intake and an optional failure-forward address. Zapier is optional in the target architecture; neither Zapier nor Hnry was changed.
+
+## Existing data and accounting boundaries
+
+- Migrations are additive. They do not delete, rewrite or automatically import old jobs, quotes, invoices, supplier documents, materials, labour, photos or EWRB records.
+- Old Job Hub supplier documents remain available in their existing job workflow. The new inbox is an intake/review queue; approval references its R2 object from `job_files` instead of uploading the PDF twice.
+- A book represents an accounting boundary. Jobs are assigned to a book only as bookkeeping starts; a job already assigned to another book cannot be posted into a second one.
+- Supplier invoice totals populate actual cost; the existing quoted 30% materials markup remains separate. No Hnry “untaxed portion” model is introduced.
+- GST basis, registration and allowable input GST must be confirmed for each book. The software does not file GST returns, calculate IRD income tax, or replace accountant review.
+- `Tom's` operational job-costing labour is not automatically posted as a financial expense. Payroll and actual labour payments need their own bookkeeping workflow.
+
+## Verification completed and outstanding
+
+Automated tests cover invoice values transcribed from actual J.A. Russell PDFs, arithmetic checks, duplicate invoice identity, book separation, safe multi-invoice bundle handling, exact supplier-reference matching, billable/non-billable invoice-line calculation, email MIME attachment parsing, and preservation of the current Hnry/Zapier route. In this stage a real one-page invoice PDF was available and visually checked. It is invoice 43423918 dated 23 September 2026, PO GREG, with three material lines totalling $89.98 ex GST, $13.50 GST and $103.48 including GST. Its confirmed values are included in the parser/validation tests. All 10 test files pass. Migration 0018 was applied to an in-memory SQLite schema with pre-existing jobs and materials; both were preserved, references were backfilled, and the unique constraint was verified. The changed JavaScript files pass syntax checks.
+
+The test exercised PDF readability and visual content, extraction sanitisation, arithmetic validation, duplicate invoice-number detection and a GREG job suggestion. It did not submit the PDF through a deployed R2/D1 inbox or call the configured OCR service. The Job Hub code workspace has no deployed D1/R2 environment or live Zapier/email delivery, so receipt persistence, attachment retrieval and actual ledger posting remain to be verified end to end. Credit-note ledger handling has not been verified against a real credit-note PDF; use the inbox review and accountant-confirmed GST treatment in staging before relying on that path. This invoice may already be recorded in Hnry; it was used only as a local test sample and was not sent to Hnry or posted to production Job Hub. Consequently the inbox is not yet verified for production use, and the existing Hnry/Zapier destination must stay as-is until acceptance testing with a safe test copy and non-production environment is completed.
+
+Before production use, deploy to a non-production D1/R2 environment, apply the additive migrations, configure a test inbox address and secret, submit one single-invoice J.A. Russell PDF and a duplicate, verify PDF retention/extraction/manual job approval/AP+GST+GL totals, and test direct-email or Zapier delivery without changing the live Hnry route. Then reconcile test results with the accountant and complete the later customer invoice, bank reconciliation, reporting and tax-reserve stages before treating Job Hub as the primary books.
