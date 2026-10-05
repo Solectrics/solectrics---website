@@ -194,12 +194,18 @@ SELECT CASE
 END AS recovery_state
 FROM counts, markers;"
 
-STATE_OUTPUT="$(wrangler_execute --command "$STATE_SQL" 2>&1)" || {
-  printf '%s\n' "$STATE_OUTPUT" >&2
-  fail 'Could not read the staging schema state; no schema write was attempted.'
+detect_schema_state() {
+  local output state
+  output="$(wrangler_execute --command "$STATE_SQL" 2>&1)" || {
+    printf '%s\n' "$output" >&2
+    fail 'Could not read the staging schema state; no schema write was attempted.'
+  }
+  state="$(printf '%s\n' "$output" | sed -n 's/.*JOBHUB_STATE_\([A-Z0-9_]*\).*/\1/p' | tail -n 1)"
+  [[ -n "$state" ]] || fail 'Could not parse the staging schema state; no schema write was attempted.'
+  printf '%s' "$state"
 }
-STATE="$(printf '%s\n' "$STATE_OUTPUT" | sed -n 's/.*JOBHUB_STATE_\([A-Z0-9_]*\).*/\1/p' | tail -n 1)"
-[[ -n "$STATE" ]] || fail 'Could not parse the staging schema state; no schema write was attempted.'
+
+STATE="$(detect_schema_state)"
 printf 'Detected existing schema state: %s\n' "$STATE"
 
 if [[ "$INSPECT_ONLY" == 1 && "$STATE" == 'EMPTY' ]]; then
@@ -213,7 +219,9 @@ case "$STATE" in
     pause_for 'Did the previous check show app_tables = 0? Type yes to apply the baseline: '
     printf '\nApplying baseline to %s.\n' "$DATABASE"
     wrangler_execute --file "$ROOT/$BASELINE_REL"
-    STATE="BASELINE"
+    STATE="$(detect_schema_state)"
+    [[ "$STATE" == 'BASELINE' ]] || fail "Baseline write returned, but schema verification detected $STATE; no migration was attempted."
+    printf 'Baseline verified: %s.\n' "$STATE"
     ;;
   BASELINE|0015|0016|0017|0018)
     printf 'Baseline will not be reapplied. Existing staging schema is retained.\n'
