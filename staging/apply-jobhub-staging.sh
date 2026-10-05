@@ -25,7 +25,7 @@ command -v npx >/dev/null 2>&1 || fail 'Node/npm npx is unavailable.'
 # Prove the script and branch match the latest branch tip before contacting
 # Cloudflare. Fetch only updates local Git metadata; it does not touch Cloudflare.
 git cat-file -e "HEAD:$SCRIPT_REL" 2>/dev/null || fail 'This checkout does not contain the committed staging runner.'
-git diff --quiet HEAD -- "$SCRIPT_REL" || fail 'The local runner differs from its committed version; restore/sync the branch and retry.'
+git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" || fail 'A migration input or the local runner differs from its committed version; restore/sync the branch and retry.'
 git fetch --quiet origin "$EXPECTED_BRANCH" || fail 'Could not verify the branch against origin; no Cloudflare command was run.'
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD 2>/dev/null)" || fail 'Could not read the fetched branch commit; no Cloudflare command was run.'
 LOCAL_HEAD="$(git rev-parse HEAD 2>/dev/null)" || fail 'Could not read the current commit; no Cloudflare command was run.'
