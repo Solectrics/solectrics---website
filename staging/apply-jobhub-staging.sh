@@ -260,6 +260,10 @@ else
   printf '\n[3/5] Verifying Wrangler migration history for an already-complete schema.\n'
   wrangler_migrations list
   printf 'The migration history must show 0015-0018 applied. No migration write will be run.\n'
+  if [[ "$INSPECT_ONLY" == 1 ]]; then
+    printf 'Inspect-only mode: no baseline or migration write was run.\n'
+    exit 0
+  fi
   pause_for 'Does Wrangler show 0015-0018 applied? Type yes to run final read-only checks: '
 fi
 
