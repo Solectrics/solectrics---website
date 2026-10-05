@@ -35,6 +35,7 @@ export async function onRequestGet(context) {
         jobs.job_status,
         jobs.next_action,
         jobs.job_type,
+        jobs.supplier_reference,
         enquiries.*
       FROM jobs
       JOIN enquiries ON jobs.enquiry_id = enquiries.id
