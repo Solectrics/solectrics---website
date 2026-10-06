@@ -17,7 +17,7 @@ test("Solectrics enables trade and electrical modules", () => {
   assert.equal(b.modules.jobs_trades, true);
   assert.equal(b.modules.electrical_solar, true);
   assert.equal(b.modules.events, false);
-  assert.equal(b.modules.pos, true);
+  assert.equal(b.modules.pos, false);
   assert.equal(b.book_strategy.link_existing_book, true);
 });
 
@@ -36,7 +36,7 @@ test("YOGACAMP uses GBP with event and POS modules", () => {
   assert.equal(b.timezone, "Europe/London");
   assert.equal(b.modules.core_accounting, true);
   assert.equal(b.modules.events, true);
-  assert.equal(b.modules.pos, false);
+  assert.equal(b.modules.pos, true);
 });
 
 test("seed only links a Solectrics book when exactly one active unassigned book exists", () => {
