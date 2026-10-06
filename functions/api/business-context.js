@@ -38,12 +38,13 @@ export function accessIdentityFromRequest(request) {
 }
 
 export async function findVerifiedUser(db, identity) {
-  if (!identity?.provider || !identity?.provider_subject || !identity?.email_verified) return null;
+  const subject = identity?.provider_subject || identity?.subject;
+  if (!identity?.provider || !subject || !identity?.email_verified) return null;
   return db.prepare(`SELECT u.id, u.primary_email, u.display_name, u.active
     FROM jobhub_user_identities i
     JOIN jobhub_users u ON u.id = i.user_id
     WHERE i.provider = ? AND i.provider_subject = ? AND i.email_verified = 1 AND u.active = 1
-    LIMIT 1`).bind(identity.provider, identity.provider_subject).first();
+    LIMIT 1`).bind(identity.provider, subject).first();
 }
 
 export async function loadBusinessContexts(db, userId) {
