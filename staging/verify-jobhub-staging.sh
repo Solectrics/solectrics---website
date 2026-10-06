@@ -29,12 +29,12 @@ command -v npx >/dev/null 2>&1 || fail 'Node/npm npx is unavailable.'
 
 # Do not run a stale or locally altered verifier/query.
 git cat-file -e "HEAD:$SCRIPT_REL" 2>/dev/null || fail 'This checkout does not contain the committed verifier.'
-git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" "\${CHECK_FILES[@]}" || fail 'The verifier, schema manifest, baseline, or migrations differ from their committed versions.'
+git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" "${CHECK_FILES[@]}" || fail 'The verifier, schema manifest, baseline, or migrations differ from their committed versions.'
 git fetch --quiet origin "$EXPECTED_BRANCH" || fail 'Could not verify the development branch; no Cloudflare command was run.'
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD 2>/dev/null)" || fail 'Could not read the fetched branch commit.'
 LOCAL_HEAD="$(git rev-parse HEAD 2>/dev/null)" || fail "Codespace is behind. Run: git pull --ff-only origin $EXPECTED_BRANCH"
 [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "Codespace is behind. Run: git pull --ff-only origin $EXPECTED_BRANCH ; then rerun this verifier. No D1 query was run."
-for check_file in "\${CHECK_FILES[@]}"; do
+for check_file in "${CHECK_FILES[@]}"; do
   [[ -f "$check_file" ]] || fail "Missing $check_file."
 done
 
@@ -112,9 +112,9 @@ then
 fi
 
 printf 'Verified sole target: %s (UUID confirmed). Running seven bounded, read-only post-0018 schema checks.\n' "$DATABASE"
-for index in "\${!CHECK_KEYS[@]}"; do
-  check_key="\${CHECK_KEYS[$index]}"
-  check_file="$ROOT/\${CHECK_FILES[$index]}"
+for index in "${!CHECK_KEYS[@]}"; do
+  check_key="${CHECK_KEYS[$index]}"
+  check_file="$ROOT/${CHECK_FILES[$index]}"
   out="$RUN_DIR/$check_key.json"
   if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$check_file" >"$out"; then
     cat "$out" >&2
