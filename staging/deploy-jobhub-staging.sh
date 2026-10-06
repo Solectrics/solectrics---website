@@ -87,8 +87,10 @@ printf 'Type DEPLOY STAGING to upload the application, or press Enter to stop: '
 read -r confirmation || fail 'No deployment confirmation.'
 [[ "$confirmation" == 'DEPLOY STAGING' ]] || fail 'Deployment cancelled.'
 (
+ # Pages reads the isolated site/wrangler.json from this working directory.
+ # Pages rejects --config; never run this command from the repository root.
  cd "$RUN/site"
- "${WRANGLER[@]}" pages deploy public --project-name "$PROJECT" --branch "$BRANCH" --config "$RUN/site/wrangler.json" --commit-hash "$(git -C "$ROOT" rev-parse HEAD)"
+ "${WRANGLER[@]}" pages deploy public --project-name "$PROJECT" --branch "$BRANCH" --commit-hash "$(git -C "$ROOT" rev-parse HEAD)"
 ) || fail 'Staging deployment failed. Do not rerun migrations or change database resources.'
 printf '\nDeployment command completed. Test only the Access-protected URL:\n'
 printf 'https://solectrics-jobhub-staging.pages.dev/mini-fergus\n'
