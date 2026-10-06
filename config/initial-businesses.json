@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "businesses": [
+    {
+      "id": "business-solectrics",
+      "slug": "solectrics",
+      "name": "Solectrics",
+      "legal_name": null,
+      "business_type": "other",
+      "currency": "NZD",
+      "timezone": "Pacific/Auckland",
+      "modules": {
+        "core_accounting": true,
+        "jobs_trades": true,
+        "events": false,
+        "pos": false,
+        "electrical_solar": true
+      },
+      "book_strategy": {
+        "link_existing_book": true,
+        "book_code": "SOLECTRICS",
+        "book_role": "primary",
+        "use_as_default_book": true,
+        "use_as_supplier_inbox_book": true,
+        "use_as_sales_book": true
+      },
+      "notes": "Initial Job Hub business. Preserve the existing bookkeeping book and all existing Solectrics operational records."
+    },
+    {
+      "id": "business-sol-espresso",
+      "slug": "sol-espresso",
+      "name": "Sol Espresso",
+      "legal_name": null,
+      "business_type": "other",
+      "currency": "NZD",
+      "timezone": "Pacific/Auckland",
+      "modules": {
+        "core_accounting": true,
+        "jobs_trades": false,
+        "events": true,
+        "pos": true,
+        "electrical_solar": false
+      },
+      "book_strategy": {
+        "link_existing_book": false,
+        "create_book_later": true,
+        "book_code": "SOL-ESPRESSO"
+      },
+      "notes": "Seasonal mobile coffee business. POS and event profitability sit above the shared accounting core."
+    },
+    {
+      "id": "business-yogacamp",
+      "slug": "yogacamp",
+      "name": "YOGACAMP",
+      "legal_name": null,
+      "business_type": "other",
+      "currency": "GBP",
+      "timezone": "Europe/London",
+      "modules": {
+        "core_accounting": true,
+        "jobs_trades": false,
+        "events": true,
+        "pos": false,
+        "electrical_solar": false
+      },
+      "book_strategy": {
+        "link_existing_book": false,
+        "create_book_later": true,
+        "book_code": "YOGACAMP"
+      },
+      "notes": "UK event operation. Events sit above the shared accounting core; legal/entity configuration remains deliberately unset."
+    }
+  ],
+  "identity_and_ownership": {
+    "seed_users": false,
+    "reason": "Verified Cloudflare Access subjects must be captured from real authenticated sessions before memberships or ownership records are created."
+  }
+}
