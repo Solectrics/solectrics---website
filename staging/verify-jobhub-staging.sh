@@ -7,6 +7,7 @@ readonly EXPECTED_BRANCH='codex/jobhub-staging-migrations-0015-0018'
 readonly SCRIPT_REL='staging/verify-jobhub-staging.sh'
 readonly BASELINE_REL='staging/pre-0015-baseline.sql'
 readonly MIGRATION_SOURCE='migrations'
+readonly DIAGNOSTIC_SQL_REL='staging/post-0018-table-diagnostic.sql'
 readonly -a CHECK_KEYS=(objects columns-01 columns-02 columns-03 indexes foreign-keys integrity)
 readonly -a CHECK_FILES=(
   staging/post-0018-verify.sql
@@ -29,7 +30,7 @@ command -v npx >/dev/null 2>&1 || fail 'Node/npm npx is unavailable.'
 
 # Do not run a stale or locally altered verifier/query.
 git cat-file -e "HEAD:$SCRIPT_REL" 2>/dev/null || fail 'This checkout does not contain the committed verifier.'
-git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" "${CHECK_FILES[@]}" || fail 'The verifier, schema manifest, baseline, or migrations differ from their committed versions.'
+git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" "$DIAGNOSTIC_SQL_REL" "${CHECK_FILES[@]}" || fail 'The verifier, schema manifest, baseline, or migrations differ from their committed versions.'
 git fetch --quiet origin "$EXPECTED_BRANCH" || fail 'Could not verify the development branch; no Cloudflare command was run.'
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD 2>/dev/null)" || fail 'Could not read the fetched branch commit.'
 LOCAL_HEAD="$(git rev-parse HEAD 2>/dev/null)" || fail "Codespace is behind. Run: git pull --ff-only origin $EXPECTED_BRANCH"
@@ -37,6 +38,7 @@ LOCAL_HEAD="$(git rev-parse HEAD 2>/dev/null)" || fail "Codespace is behind. Run
 for check_file in "${CHECK_FILES[@]}"; do
   [[ -f "$check_file" ]] || fail "Missing $check_file."
 done
+[[ -f "$DIAGNOSTIC_SQL_REL" ]] || fail "Missing $DIAGNOSTIC_SQL_REL."
 
 RUN_DIR="$(mktemp -d "${TMPDIR:-/tmp}/jobhub-staging-verify.XXXXXX")"
 cleanup() { rm -rf -- "$RUN_DIR"; }
@@ -122,6 +124,15 @@ for index in "${!CHECK_KEYS[@]}"; do
   fi
   cat "$out"
   if ! grep -Fq "JOBHUB_VERIFY_OK:$check_key" "$out"; then
+    if [[ "$check_key" == 'objects' ]]; then
+      printf 'Object check mismatch. Listing table names and classifications read-only for diagnosis:\n' >&2
+      diagnostic_out="$RUN_DIR/table-inventory.json"
+      if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$ROOT/$DIAGNOSTIC_SQL_REL" >"$diagnostic_out"; then
+        cat "$diagnostic_out" >&2
+        fail 'Could not read the staging table inventory. No writes were performed.'
+      fi
+      cat "$diagnostic_out"
+    fi
     fail "Schema check $check_key reported a mismatch or did not return its pass marker. No writes were performed."
   fi
 done
