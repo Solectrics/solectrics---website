@@ -153,12 +153,21 @@ const fs = require('node:fs');
 const [file, key] = process.argv.slice(2);
 try {
   const batches = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (!Array.isArray(batches) || batches.length !== 1 || batches[0].success !== true) {
-    throw new Error('Expected one successful query result');
+  if (!Array.isArray(batches) || batches.some(batch => batch.success !== true || !Array.isArray(batch.results))) {
+    throw new Error('Expected successful query results');
   }
-  const rows = batches[0].results;
-  if (!Array.isArray(rows) || rows.length !== 1 || rows[0].result !== 'JOBHUB_VERIFY_OK:' + key) {
-    throw new Error('Schema mismatch or missing SELECT result');
+  if (key === 'integrity') {
+    // D1 supports quick_check and foreign_key_check, not integrity_check.
+    if (batches.length !== 2 || batches[0].results.length !== 1 ||
+        String(batches[0].results[0].quick_check).toLowerCase() !== 'ok' ||
+        batches[1].results.length !== 0) {
+      throw new Error('quick_check failed, foreign keys are invalid, or results are missing');
+    }
+  } else {
+    if (batches.length !== 1 || batches[0].results.length !== 1 ||
+        batches[0].results[0].result !== 'JOBHUB_VERIFY_OK:' + key) {
+      throw new Error('Schema mismatch or missing SELECT result');
+    }
   }
 } catch (error) {
   console.error(error.message);
@@ -173,5 +182,6 @@ NODE
   fi
 done
 printf '\nPASS: actual jobhub-staging schema matches the reconstructed post-0018 manifest.\n'
-printf 'Checked 42 application tables, 530 column definitions in three batches, 27 explicit indexes, 52 foreign-key definitions, integrity_check, and foreign_key_check.\n'
+printf 'Checked 42 application tables, 530 column definitions in three batches, 27 explicit indexes, 52 foreign-key definitions, D1 quick_check, and foreign_key_check.\n'
+printf 'Full SQLite integrity_check is unavailable on D1; quick_check does not verify index contents or UNIQUE constraints.\n'
 printf 'No database writes, migrations, exports, Pages, R2, or deployment actions were run.\n'
