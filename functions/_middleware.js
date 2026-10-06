@@ -7,6 +7,15 @@ function isPagesHostname(hostname) {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
+  // Staging deployments must not expose the shared staging DB through an
+  // unprotected per-deployment/preview alias. Use only the Access-protected host.
+  if (context.env.JOBHUB_STAGING_ONLY === "true" &&
+      url.hostname !== "solectrics-jobhub-staging.pages.dev") {
+    return new Response("Staging hostname is not allowed", {
+      status: 403, headers: { "Cache-Control": "no-store" }
+    });
+  }
+
   if (!isPagesHostname(url.hostname)) {
     return context.next();
   }
