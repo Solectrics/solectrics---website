@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Hub Business Settings</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f7f5ef;color:#263a36}
+.wrap{max-width:900px;margin:auto;padding:30px 20px 70px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+a{color:#ef9c20;font-weight:800;text-decoration:none}h1{margin:8px 0}.muted{color:#68716e}.card{background:#fff;border:1px solid #dedbd3;border-radius:16px;padding:20px;margin-top:18px}
+label{font-weight:800;font-size:13px;display:block;margin:12px 0 6px}input,select{width:100%;padding:11px;border:1px solid #cfcac0;border-radius:8px;font:inherit}
+button{margin-top:16px;background:#173f3f;color:white;border:0;border-radius:8px;padding:12px 16px;font-weight:800;cursor:pointer}
+.module{display:flex;align-items:center;gap:10px;margin:10px 0}.module input{width:auto}.error{color:#a33}.ok{color:#276749}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><div><div class="muted">Job Hub</div><h1>Business settings</h1></div><a href="/mini-fergus">← JOB HUB</a></div>
+<p class="muted">Configure business ownership, books and optional modules. Existing Solectrics workflows are not permission-enforced by this screen yet.</p>
+<div id="status" class="card">Loading business context…</div>
+<section id="bootstrap" class="card" hidden>
+<h2>Create first business</h2><p class="muted">This is only available to a verified Cloudflare Access identity with no existing business membership.</p>
+<label>Business name</label><input id="businessName" placeholder="Solectrics">
+<label>Legal name</label><input id="legalName" placeholder="Solectrics Limited">
+<label>Business type</label><select id="businessType"><option value="company">Company</option><option value="sole_trader">Sole trader</option><option value="partnership">Partnership</option><option value="other">Other</option></select>
+<button id="createBusiness">CREATE BUSINESS</button>
+</section>
+<section id="settings" class="card" hidden>
+<h2 id="selectedName">Business</h2>
+<label>Business</label><select id="businessSelect"></select>
+<h3>Modules</h3>
+<div id="modules"></div><button id="saveModules">SAVE MODULES</button>
+<h3>Accounting books</h3><div id="books" class="muted">No books linked yet.</div>
+</section>
+</main>
+<script>
+const statusEl=document.getElementById("status"), bootstrap=document.getElementById("bootstrap"), settings=document.getElementById("settings");
+let data=null, selected=null;
+const moduleLabels={core_accounting:"Core accounting",jobs_trades:"Jobs / Trades",events:"Events",pos:"POS",electrical_solar:"Electrical / Solar"};
+async function request(body){const r=await fetch("/api/business-config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Request failed");return j}
+function render(){
+  if(!data.user){statusEl.innerHTML="<strong>Verified identity found, but Job Hub is not configured yet.</strong>";bootstrap.hidden=false;settings.hidden=true;return}
+  statusEl.innerHTML="<strong>"+escapeHtml(data.user.display_name||data.user.primary_email)+"</strong><div class='muted'>Verified Job Hub user</div>";
+  bootstrap.hidden=true;
+  if(!data.businesses.length){settings.hidden=true;bootstrap.hidden=false;return}
+  settings.hidden=false;
+  const select=document.getElementById("businessSelect");select.innerHTML=data.businesses.map(b=>`<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}</option>`).join("");
+  selected=selected&&data.businesses.find(b=>b.id===selected.id)||data.businesses[0];select.value=selected.id;renderSelected();
+}
+function renderSelected(){
+  document.getElementById("selectedName").textContent=selected.name;
+  const enabled=new Map(selected.modules.map(m=>[m.module_code,m.enabled]));
+  document.getElementById("modules").innerHTML=Object.entries(moduleLabels).map(([code,label])=>`<label class="module"><input type="checkbox" data-module="${code}" ${code==="core_accounting"||enabled.get(code)?"checked":""} ${code==="core_accounting"?"disabled":""}> ${label}</label>`).join("");
+  document.getElementById("books").innerHTML=selected.books.length?selected.books.map(b=>`<div><strong>${escapeHtml(b.name)}</strong> · ${escapeHtml(b.book_code||"no code")} · ${escapeHtml(b.book_role||"primary")}</div>`).join(""):"No books linked yet. Book linking is available through the configuration API and will be added to this screen after staging acceptance.";
+}
+async function load(){
+ try{const r=await fetch("/api/business-config");data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||"Could not load");render()}
+ catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>";}
+}
+document.getElementById("businessSelect").addEventListener("change",e=>{selected=data.businesses.find(b=>b.id===e.target.value);renderSelected()});
+document.getElementById("createBusiness").addEventListener("click",async()=>{try{await request({action:"bootstrap_business",name:document.getElementById("businessName").value,legal_name:document.getElementById("legalName").value,business_type:document.getElementById("businessType").value});await load()}catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>"}});
+document.getElementById("saveModules").addEventListener("click",async()=>{try{const modules=[...document.querySelectorAll("[data-module]")].map(el=>({module_code:el.dataset.module,enabled:el.checked}));await request({action:"set_modules",business_id:selected.id,modules});statusEl.innerHTML="<span class='ok'>Modules saved.</span>";await load()}catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>"}});
+function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+load();
+</script></body></html>
