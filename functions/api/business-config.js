@@ -12,9 +12,9 @@ function slugify(value) {
 }
 async function requireIdentity(context) {
   const raw = accessIdentityFromRequest(context.request);
-  const identity = normalizeVerifiedIdentity(raw || {});
-  if (!identity) return { error: fail("Verified Cloudflare Access identity is required", 401) };
-  return { identity };
+  const normalized = normalizeVerifiedIdentity(raw || {});
+  if (!normalized) return { error: fail("Verified Cloudflare Access identity is required", 401) };
+  return { identity: { ...raw, subject: normalized.subject } };
 }
 async function membershipFor(db, userId, businessId) {
   return db.prepare(`SELECT * FROM jobhub_business_memberships
