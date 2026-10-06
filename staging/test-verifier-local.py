@@ -61,6 +61,8 @@ elif a[:3]==['wrangler','d1','execute']:
     assert 'database_name = "jobhub-staging"' in cfg and uid in cfg
     db=sqlite3.connect('file:'+os.environ['MOCK_DB']+'?mode=ro',uri=True)
     db.row_factory=sqlite3.Row
+    # Model D1's rejection of full integrity_check, including table-valued use.
+    db.set_authorizer(lambda action,arg1,arg2,dbname,origin: sqlite3.SQLITE_DENY if action==sqlite3.SQLITE_PRAGMA and arg1=='integrity_check' else sqlite3.SQLITE_OK)
     if '--file' in a:
         sql=pathlib.Path(a[a.index('--file')+1]).read_text()
         db.execute(sql).fetchall()
@@ -68,8 +70,19 @@ elif a[:3]==['wrangler','d1','execute']:
     else:
         assert '--command' in a
         sql=a[a.index('--command')+1]
-        rows=[dict(row) for row in db.execute(sql)]
-        print(json.dumps([{'success':True,'results':rows,'meta':{'rows_written':0,'num_tables':43}}]))
+        if sql.strip()=='PRAGMA quick_check;\\nPRAGMA foreign_key_check;':
+            results=[]
+            for query in ['PRAGMA quick_check','PRAGMA foreign_key_check']:
+                rows=[dict(row) for row in db.execute(query)]
+                if query=='PRAGMA quick_check' and os.environ.get('MOCK_BAD_INTEGRITY')=='quick':
+                    rows=[{'quick_check':'simulated corruption'}]
+                if query=='PRAGMA foreign_key_check' and os.environ.get('MOCK_BAD_INTEGRITY')=='fk':
+                    rows=[{'table':'jobs','rowid':1,'parent':'enquiries','fkid':0}]
+                results.append({'success':True,'results':rows,'meta':{'rows_written':0}})
+            print(json.dumps(results))
+        else:
+            rows=[dict(row) for row in db.execute(sql)]
+            print(json.dumps([{'success':True,'results':rows,'meta':{'rows_written':0,'num_tables':43}}]))
 else: raise Exception('Unexpected command')
 ''')
     git.chmod(0o755); npx.chmod(0o755)
@@ -102,6 +115,10 @@ else: raise Exception('Unexpected command')
     db.execute('CREATE TABLE d1_migrations(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, applied_at TEXT)')
     db.commit(); db.close()
     run(SCRIPT,True,'Corrected verifier with Wrangler migration-history table')
+    for failure in ['quick','fk']:
+        env['MOCK_BAD_INTEGRITY']=failure
+        run(SCRIPT,False,'Rejected failed D1 integrity check: '+failure)
+    env.pop('MOCK_BAD_INTEGRITY')
     db=sqlite3.connect(fixture)
     db.execute('CREATE TABLE unexpected_application_table(id INTEGER)')
     db.commit(); db.close()
