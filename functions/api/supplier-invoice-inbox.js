@@ -55,7 +55,7 @@ async function getReceivedAttachments(request) {
     const form = await request.formData();
     const body = Object.fromEntries(["book_id", "recipient_email", "sender_email", "email_subject", "email_message_id", "source_type"].map(key => [key, form.get(key)]));
     const files = [...form.getAll("attachment"), ...form.getAll("attachments"), ...form.getAll("file")].filter(file => file instanceof File && file.size);
-    return { body, files: files.map(file => ({ name: file.name, content_type: file.type || "application/pdf", bytes: new Uint8Array(await file.arrayBuffer()) })) };
+    return { body, files: await Promise.all(files.map(async file => ({ name: file.name, content_type: file.type || "application/pdf", bytes: new Uint8Array(await file.arrayBuffer()) }))) };
   }
   const body = await request.json();
   const attachments = Array.isArray(body.attachments) ? body.attachments : body.attachment ? [body.attachment] : [];
