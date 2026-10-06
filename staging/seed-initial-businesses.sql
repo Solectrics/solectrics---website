@@ -36,7 +36,7 @@ INSERT INTO jobhub_business_modules (id, business_id, module_code, enabled) VALU
   ('mod-yogacamp-core', 'business-yogacamp', 'core_accounting', 1),
   ('mod-yogacamp-jobs', 'business-yogacamp', 'jobs_trades', 0),
   ('mod-yogacamp-events', 'business-yogacamp', 'events', 1),
-  ('mod-yogacamp-pos', 'business-yogacamp', 'pos', 0),
+  ('mod-yogacamp-pos', 'business-yogacamp', 'pos', 1),
   ('mod-yogacamp-electrical', 'business-yogacamp', 'electrical_solar', 0)
 ON CONFLICT(business_id, module_code) DO UPDATE SET
   enabled = excluded.enabled,
