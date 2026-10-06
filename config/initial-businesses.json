@@ -60,7 +60,7 @@
         "core_accounting": true,
         "jobs_trades": false,
         "events": true,
-        "pos": false,
+        "pos": true,
         "electrical_solar": false
       },
       "book_strategy": {
@@ -68,7 +68,7 @@
         "create_book_later": true,
         "book_code": "YOGACAMP"
       },
-      "notes": "UK event operation. Events sit above the shared accounting core; legal/entity configuration remains deliberately unset."
+      "notes": "UK event operation. Events and on-site POS sales (including massages, sauna and retail) sit above the shared accounting core; legal/entity configuration remains deliberately unset."
     }
   ],
   "identity_and_ownership": {
