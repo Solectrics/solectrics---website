@@ -5,7 +5,18 @@ set -Eeuo pipefail
 # jobhub-staging. It contains no migration, Pages, R2, export, or deploy action.
 readonly EXPECTED_BRANCH='codex/jobhub-staging-migrations-0015-0018'
 readonly SCRIPT_REL='staging/verify-jobhub-staging.sh'
-readonly VERIFY_SQL_REL='staging/post-0018-verify.sql'
+readonly BASELINE_REL='staging/pre-0015-baseline.sql'
+readonly MIGRATION_SOURCE='migrations'
+readonly -a CHECK_KEYS=(objects columns-01 columns-02 columns-03 indexes foreign-keys integrity)
+readonly -a CHECK_FILES=(
+  staging/post-0018-verify.sql
+  staging/post-0018-columns-01.sql
+  staging/post-0018-columns-02.sql
+  staging/post-0018-columns-03.sql
+  staging/post-0018-indexes.sql
+  staging/post-0018-foreign-keys.sql
+  staging/post-0018-integrity.sql
+)
 readonly DATABASE='jobhub-staging'
 readonly FORBIDDEN_DATABASE='solectrics-enquiries'
 
@@ -18,12 +29,14 @@ command -v npx >/dev/null 2>&1 || fail 'Node/npm npx is unavailable.'
 
 # Do not run a stale or locally altered verifier/query.
 git cat-file -e "HEAD:$SCRIPT_REL" 2>/dev/null || fail 'This checkout does not contain the committed verifier.'
-git diff --quiet HEAD -- "$SCRIPT_REL" "$VERIFY_SQL_REL" || fail 'The verifier or SQL check differs from its committed version.'
+git diff --quiet HEAD -- "$SCRIPT_REL" "$BASELINE_REL" "$MIGRATION_SOURCE" "\${CHECK_FILES[@]}" || fail 'The verifier, schema manifest, baseline, or migrations differ from their committed versions.'
 git fetch --quiet origin "$EXPECTED_BRANCH" || fail 'Could not verify the development branch; no Cloudflare command was run.'
 REMOTE_HEAD="$(git rev-parse FETCH_HEAD 2>/dev/null)" || fail 'Could not read the fetched branch commit.'
 LOCAL_HEAD="$(git rev-parse HEAD 2>/dev/null)" || fail "Codespace is behind. Run: git pull --ff-only origin $EXPECTED_BRANCH"
 [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]] || fail "Codespace is behind. Run: git pull --ff-only origin $EXPECTED_BRANCH ; then rerun this verifier. No D1 query was run."
-[[ -f "$VERIFY_SQL_REL" ]] || fail "Missing $VERIFY_SQL_REL."
+for check_file in "\${CHECK_FILES[@]}"; do
+  [[ -f "$check_file" ]] || fail "Missing $check_file."
+done
 
 RUN_DIR="$(mktemp -d "${TMPDIR:-/tmp}/jobhub-staging-verify.XXXXXX")"
 cleanup() { rm -rf -- "$RUN_DIR"; }
@@ -98,16 +111,20 @@ then
   fail 'The configured UUID/name pair is not unambiguous; no schema query was run.'
 fi
 
-printf 'Verified sole target: %s (UUID confirmed). Running read-only post-0018 schema check.\n' "$DATABASE"
-OUT="$RUN_DIR/schema-check.json"
-if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$ROOT/$VERIFY_SQL_REL" >"$OUT"; then
-  cat "$OUT" >&2
-  fail 'The read-only schema verification query failed. No writes were performed.'
-fi
-cat "$OUT"
-if ! grep -q 'JOBHUB_SCHEMA_VERIFY_OK' "$OUT"; then
-  fail 'Post-0018 schema does not match the reconstructed schema manifest. Review the reported differences; no writes were performed.'
-fi
+printf 'Verified sole target: %s (UUID confirmed). Running seven bounded, read-only post-0018 schema checks.\n' "$DATABASE"
+for index in "\${!CHECK_KEYS[@]}"; do
+  check_key="\${CHECK_KEYS[$index]}"
+  check_file="$ROOT/\${CHECK_FILES[$index]}"
+  out="$RUN_DIR/$check_key.json"
+  if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$check_file" >"$out"; then
+    cat "$out" >&2
+    fail "Read-only schema check $check_key failed to execute. No writes were performed."
+  fi
+  cat "$out"
+  if ! grep -Fq "JOBHUB_VERIFY_OK:$check_key" "$out"; then
+    fail "Schema check $check_key reported a mismatch or did not return its pass marker. No writes were performed."
+  fi
+done
 printf '\nPASS: actual jobhub-staging schema matches the reconstructed post-0018 manifest.\n'
-printf 'The query checked 42 application tables, 530 column definitions, 27 explicit indexes, 52 foreign-key definitions, integrity_check, and foreign_key_check.\n'
+printf 'Checked 42 application tables, 530 column definitions in three batches, 27 explicit indexes, 52 foreign-key definitions, integrity_check, and foreign_key_check.\n'
 printf 'No database writes, migrations, exports, Pages, R2, or deployment actions were run.\n'
