@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Hub staging test</title>
+<style>body{font:17px system-ui;max-width:760px;margin:40px auto;padding:20px;color:#153c44;background:#f8faf9}button,a.button{padding:14px 18px;background:#17646a;color:white;border:0;border-radius:8px;display:inline-block;margin:8px 0;text-decoration:none}pre{white-space:pre-wrap}section{padding:18px;background:white;border:1px solid #ddd;border-radius:12px;margin:20px 0}</style>
+<h1>Job Hub staging test</h1>
+<p>This page works only on the Access-protected staging hostname.</p>
+<section><h2>1. Prepare synthetic test records</h2>
+<p>This creates one labelled test bookkeeping book (NZD, GST payments basis, 15% test GST) and one test job. These settings are test assumptions, not a change to your real business books. Existing matching test records are reused. Nothing is posted or invoiced.</p>
+<button id="prepare">Create staging test records</button><pre id="status" role="status"></pre></section>
+<section id="next" hidden><h2>2. Test the supplier inbox</h2>
+<p>Download the synthetic invoice, open the inbox, select <strong>STAGING TEST BOOK</strong>, and upload it. With no OCR key, enter the printed values manually.</p>
+<a class="button" id="pdf">Download test invoice PDF</a>
+<a class="button" href="/mini-fergus-supplier-invoices" target="_blank" rel="noopener">Open supplier inbox</a>
+<p>Use the displayed test job reference. Enter $100 ex GST, $15 GST, $115 total and $15 allowable input GST. Leave it as billable, then explicitly approve posting. Check that actual materials cost is $100. A customer invoice draft should use $130 ex GST for materials (30% markup).</p>
+<p>Upload the same PDF again. It must be flagged as a duplicate without adding a second materials cost or bill. Drafting a customer invoice must not issue it.</p>
+<a id="job" class="button" target="_blank" rel="noopener">Open test job</a>
+<p>Stop if totals, duplicate handling or the approval step behave differently. Do not send email or real invoices.</p></section>
+<script>
+const HOST="solectrics-jobhub-staging.pages.dev";
+const BOOK="STAGING TEST BOOK", CUSTOMER="STAGING TEST CUSTOMER";
+const button=document.getElementById("prepare"),status=document.getElementById("status");
+function assertHost(){if(location.protocol!=="https:"||location.hostname!==HOST)throw new Error("This test helper is locked to the staging hostname.");}
+async function api(path,body){assertHost();const response=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{});const result=await response.json();if(!response.ok||!result.ok)throw new Error(result.detail||result.error||"Request failed");return result;}
+function makePdf(reference,date){
+ const escape=text=>text.replace(/[\\()]/g,c=>"\\"+c);
+ const lines=["SYNTHETIC STAGING TEST - NOT A REAL INVOICE","Supplier: Staging Test Supplier","Invoice: STAGING-001","Date: "+date,"Job reference: "+reference,"Materials ex GST: NZD 100.00","GST (15%): NZD 15.00","Total incl GST: NZD 115.00"];
+ const stream="BT /F1 14 Tf 50 770 Td "+lines.map((line,i)=>(i?"0 -26 Td ":"")+"("+escape(line)+") Tj").join("\n")+" ET";
+ const objects=["<< /Type /Catalog /Pages 2 0 R >>","<< /Type /Pages /Kids [3 0 R] /Count 1 >>","<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>","<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>","<< /Length "+stream.length+" >>\nstream\n"+stream+"\nendstream"];
+ let pdf="%PDF-1.4\n",offsets=[0];for(let i=0;i<objects.length;i++){offsets.push(pdf.length);pdf+=(i+1)+" 0 obj\n"+objects[i]+"\nendobj\n";}
+ const xref=pdf.length;pdf+="xref\n0 6\n0000000000 65535 f \n"+offsets.slice(1).map(n=>String(n).padStart(10,"0")+" 00000 n \n").join("")+"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF\n";
+ return new Blob([pdf],{type:"application/pdf"});
+}
+button.onclick=async()=>{button.disabled=true;try{
+ assertHost();status.textContent="Preparing test records…";
+ const books=(await api("/api/bookkeeping?view=books")).books.filter(b=>b.name===BOOK);
+ if(books.length>1)throw new Error("Multiple test books found. Stop for review.");
+ let book=books[0];if(!book)book=(await api("/api/bookkeeping",{action:"create_book",name:BOOK,legal_name:"SYNTHETIC STAGING TEST ONLY",currency:"NZD",gst_registered:true,gst_basis:"payments",gst_rate:0.15,commencement_date:"2026-01-01",company_tax_enabled:false,invoice_prefix:"TEST",business_email:"staging@example.invalid"})).book;
+ if(book.gst_basis!=="payments"||book.commencement_date!=="2026-01-01")throw new Error("Existing test book has different settings. Stop for review.");
+ const jobs=(await api("/api/jobs")).jobs.filter(j=>j.customer_name===CUSTOMER);
+ if(jobs.length>1)throw new Error("Multiple test jobs found. Stop for review.");
+ let job=jobs[0];if(!job)job=await api("/api/jobs",{customer_name:CUSTOMER,email:"staging@example.invalid",address:"SYNTHETIC STAGING ADDRESS",job_description:"Synthetic invoice and 30% materials-markup test. Do not send."});
+ if(!job.job_id||!/^S\d+$/.test(job.supplier_reference||""))throw new Error("Test job has no valid supplier reference.");
+ status.textContent="Test book ready. Test job "+job.job_id+" / supplier reference "+job.supplier_reference+".";
+ const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Pacific/Auckland",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+ document.getElementById("pdf").href=URL.createObjectURL(makePdf(job.supplier_reference,date));document.getElementById("pdf").download="jobhub-staging-test-invoice.pdf";
+ document.getElementById("job").href="/mini-fergus-job?id="+encodeURIComponent(job.job_id);
+ document.getElementById("next").hidden=false;
+}catch(error){status.textContent="STOP: "+error.message;button.disabled=false;}};
+try{assertHost();}catch(error){button.disabled=true;status.textContent=error.message;}
+</script></html>
