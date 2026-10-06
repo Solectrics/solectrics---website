@@ -113,25 +113,61 @@ then
   fail 'The configured UUID/name pair is not unambiguous; no schema query was run.'
 fi
 
-printf 'Verified sole target: %s (UUID confirmed). Running seven bounded, read-only post-0018 schema checks.\n' "$DATABASE"
+# Use --command, not --file: remote --file uses D1's bulk import path
+# and returns execution metadata instead of SELECT rows/pass markers.
+# Strip full-line comments (including semicolons) before the query API.
+run_readonly_query() {
+  local query_file="$1" query_sql
+  query_sql="$(sed '/^[[:space:]]*--/d' "$query_file")" || return 1
+  [[ -n "$query_sql" ]] || return 1
+  npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --command "$query_sql"
+}
+
+# Print the inventory before schema validation, so it remains visible even if
+# Wrangler exits nonzero during the first objects query. Previously the inventory
+# was reachable only after a successful command with a missing pass marker.
+printf 'Verifier revision: inventory-before-checks-v2\\n'
+printf 'Verified sole target: %s (UUID confirmed). Reading table-name inventory.\\n' "$DATABASE"
+diagnostic_out="$RUN_DIR/table-inventory.json"
+if ! run_readonly_query "$ROOT/$DIAGNOSTIC_SQL_REL" >"$diagnostic_out"; then
+  cat "$diagnostic_out" >&2
+  fail 'Could not read the staging table inventory. No writes were performed.'
+fi
+printf 'BEGIN STAGING TABLE INVENTORY\\n'
+cat "$diagnostic_out"
+printf '\\nEND STAGING TABLE INVENTORY\\n'
+printf 'Running seven bounded, read-only post-0018 schema checks.\\n'
 for index in "${!CHECK_KEYS[@]}"; do
   check_key="${CHECK_KEYS[$index]}"
   check_file="$ROOT/${CHECK_FILES[$index]}"
   out="$RUN_DIR/$check_key.json"
-  if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$check_file" >"$out"; then
+  if ! run_readonly_query "$check_file" >"$out"; then
     cat "$out" >&2
     fail "Read-only schema check $check_key failed to execute. No writes were performed."
   fi
   cat "$out"
-  if ! grep -Fq "JOBHUB_VERIFY_OK:$check_key" "$out"; then
+  # Accept only a successful query with exactly the expected result row.
+  # Metadata, echoed SQL, mixed error/pass rows, or absent results must fail.
+  if ! node - "$out" "$check_key" <<'NODE'
+const fs = require('node:fs');
+const [file, key] = process.argv.slice(2);
+try {
+  const batches = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (!Array.isArray(batches) || batches.length !== 1 || batches[0].success !== true) {
+    throw new Error('Expected one successful query result');
+  }
+  const rows = batches[0].results;
+  if (!Array.isArray(rows) || rows.length !== 1 || rows[0].result !== 'JOBHUB_VERIFY_OK:' + key) {
+    throw new Error('Schema mismatch or missing SELECT result');
+  }
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
+NODE
+  then
     if [[ "$check_key" == 'objects' ]]; then
-      printf 'Object check mismatch. Listing table names and classifications read-only for diagnosis:\n' >&2
-      diagnostic_out="$RUN_DIR/table-inventory.json"
-      if ! npx wrangler d1 execute "$DATABASE" --remote --config "$CONFIG" --json --file "$ROOT/$DIAGNOSTIC_SQL_REL" >"$diagnostic_out"; then
-        cat "$diagnostic_out" >&2
-        fail 'Could not read the staging table inventory. No writes were performed.'
-      fi
-      cat "$diagnostic_out"
+      printf 'Object check mismatch; see the staging table inventory printed above.\\n' >&2
     fi
     fail "Schema check $check_key reported a mismatch or did not return its pass marker. No writes were performed."
   fi
