@@ -2,6 +2,53 @@
 
 Status: preparation only; no Pages deployment or Cloudflare settings change has been run by this work.
 
+## Guarded deployment after manual staging setup (6 October 2026)
+
+The user has confirmed Access login protection on the stable staging hostname,
+the staging production branch, disabled automatic production deployments, and
+DB/JOB_FILES/hostname settings. These are user-confirmed settings; the guarded
+script rechecks the actual staging resource identity and Pages bindings before
+its sole deployment write.
+
+Run from the Codespace:
+```bash
+git pull --ff-only && bash staging/deploy-jobhub-staging.sh
+```
+At the final prompt, type `DEPLOY STAGING`. This confirmation uploads only the
+application to solectrics-jobhub-staging. There is no migration or R2-object
+command. The script uses npm exec if npx is unavailable and initializes an
+existing NVM installation if needed. It does not install Node or request
+credentials. It stops if npm/npx or retained Wrangler authentication are
+unavailable; no alternative authentication method is attempted.
+
+D1 list is read-only account metadata. The script requires exactly one exact
+jobhub-staging name with a unique valid UUID, then validates d1 info for that
+exact database through an isolated config. It reads only the named staging
+Pages project's configuration and verifies the Production DB UUID and
+JOB_FILES bucket. It builds fresh from clean, latest committed inputs; the
+previous staging/pages-output folder is left untouched. It uses an isolated
+Pages config containing only jobhub-staging and jobhub-files-staging. It also
+sets JOBHUB_STAGING_ONLY=true automatically so the runtime refuses other
+hostnames, including unprotected deployment/preview aliases. Full suite and
+Functions syntax checks run before the deployment prompt.
+
+Once deployed, open:
+https://solectrics-jobhub-staging.pages.dev/jobhub-staging-test.html
+Sign in via Access, click **Create staging test records**, download the synthetic
+invoice and follow the on-page inbox/job steps. This creates test data via the
+existing APIs; there is no direct SQL seed or migration. The test settings
+(payments GST basis, 15% GST, commencement 1 January 2026) are explicit synthetic
+assumptions, not changes to real business accounting. Receipt does not post
+or invoice; approve posting explicitly in the inbox. Without an OCR key, enter
+the printed amounts manually. Reuse the same downloaded PDF for the duplicate
+test.
+
+Local validation: 48 Node tests passed, 4 Python identity/config guard tests
+passed, and the full shell deployment path was exercised with a fake Wrangler
+transport, including missing-npx npm fallback, cancellation, and rejection of a
+wrong D1 identity. These tests did not contact Cloudflare or prove the real
+deployment completed.
+
 ## Fixed scope
 
 - Repository: Solectrics/solectrics---website
