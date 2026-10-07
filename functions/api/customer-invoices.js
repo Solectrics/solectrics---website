@@ -1,5 +1,6 @@
 import { ensureCustomerInvoiceSchema, ensureInternalCostingSchema } from "./_schema.js";
 import { postIssuedCustomerInvoiceToBook } from "./customer-invoice-accounting.js";
+import { insertTask } from "./job-operations-core.js";
 
 const INVOICE_STATUSES = new Set(["draft", "issued", "paid", "void"]);
 const SOLECTRICS_GST_NUMBER = "137-174-537";
@@ -210,7 +211,7 @@ export async function onRequestPost(context) {
       const invoiceId = cleanText(body.invoice_id, 100);
       const status = cleanText(body.status, 20);
       if (!invoiceId || !INVOICE_STATUSES.has(status)) return errorResponse("A valid invoice and status are required", 400);
-      const existing = await db.prepare("SELECT job_id, status FROM customer_invoice_versions WHERE id = ?").bind(invoiceId).first();
+      const existing = await db.prepare("SELECT job_id, status, due_date FROM customer_invoice_versions WHERE id = ?").bind(invoiceId).first();
       if (!existing) return errorResponse("Customer invoice not found", 404);
       if (existing.status === "void" && status !== "void") return errorResponse("A void invoice cannot be changed", 409);
       await db.prepare(`
@@ -222,7 +223,8 @@ export async function onRequestPost(context) {
       `).bind(status, status, status, status, invoiceId).run();
       let accounting = null;
       if (status === "issued") {
-        await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Await customer payment' WHERE id = ?").bind(existing.job_id).run();
+        await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Await customer payment', final_payment_status = 'issued' WHERE id = ?").bind(existing.job_id).run();
+        await insertTask(db,{job_id:existing.job_id,task_key:`final-invoice-payment-${invoiceId}`,title:"Follow up final customer invoice payment",stage:"Final payment",category:"finance",due_date:existing.due_date,assigned_to:"Jane",source:"customer_invoice_issued"});
         try {
           accounting = await postIssuedCustomerInvoiceToBook(db, invoiceId, cleanText(body.actor || "Job Hub user", 160));
         } catch (error) {
@@ -231,6 +233,9 @@ export async function onRequestPost(context) {
         }
       } else if (status === "paid") {
         await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Payment received', final_payment_status = 'paid', final_payment_received_at = CURRENT_TIMESTAMP WHERE id = ?").bind(existing.job_id).run();
+        await db.prepare("UPDATE job_tasks SET status='completed',completed_at=CURRENT_TIMESTAMP,completed_by=?,updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND task_key=? AND status='open'").bind(cleanText(body.actor||"Job Hub user",160),existing.job_id,`final-invoice-payment-${invoiceId}`).run();
+      } else if (status === "void") {
+        await db.prepare("UPDATE job_tasks SET status='cancelled',updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND task_key=? AND status='open'").bind(existing.job_id,`final-invoice-payment-${invoiceId}`).run();
       }
       return Response.json({ ok: true, accounting });
     }

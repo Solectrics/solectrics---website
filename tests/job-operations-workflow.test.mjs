@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   generateAftercareTasks,
+  generatePostInstallTasks,
   installationReadiness,
   recordDepositReceived
 } from "../functions/api/job-operations-core.js";
@@ -71,4 +72,17 @@ test("install readiness distinguishes blockers and passes only when required dep
   assert.equal(notReady.ready, false);
   assert.ok(notReady.blockers.includes("Required finance approval is not confirmed"));
   assert.ok(notReady.blockers.includes("Required scaffolding is not booked"));
+});
+
+test("installation completion seeds shared compliance, commissioning, retailer and final-invoice tasks", async () => {
+  const db = fakeDb();
+  await generatePostInstallTasks(db, 17, "2026-10-07");
+  const rows = db.statements.filter(row => row.sql.includes("INSERT OR IGNORE INTO job_tasks"));
+  assert.deepEqual(rows.map(row => row.values[1]), [
+    "post-install-compliance",
+    "post-install-commissioning",
+    "retailer-export-completion",
+    "final-invoice-reconciliation"
+  ]);
+  assert.ok(rows.slice(0, 2).every(row => row.values[11] === 1), "compliance and commissioning require supporting evidence");
 });

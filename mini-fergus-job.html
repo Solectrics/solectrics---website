@@ -470,6 +470,7 @@
         <div><label for="jobTaskAssignee">Assigned to</label><select id="jobTaskAssignee"><option>Jane</option><option>Tom</option><option>Ben</option><option>External</option><option>Unassigned</option></select></div>
         <div><label><input id="jobTaskBlocker" type="checkbox"> Blocker</label></div>
         <div><label><input id="jobTaskEvidence" type="checkbox"> Requires evidence</label></div>
+        <div><label for="jobTaskKind">Calendar importance</label><select id="jobTaskKind"><option value="task">Routine task</option><option value="milestone">Major event / milestone</option></select></div>
         <div class="wide"><label for="jobTaskBlockerReason">Blocker reason</label><input id="jobTaskBlockerReason"></div>
         <div><button type="submit">ADD TASK</button></div>
       </form>
@@ -4931,7 +4932,7 @@ async function toggleJobTask(id,checked){
 }
 async function submitJobTask(event){
  event.preventDefault();
- try{await jobOperationsPost({action:"create_task",title:document.getElementById("jobTaskTitle").value,due_date:document.getElementById("jobTaskDue").value,stage:document.getElementById("jobTaskStage").value,assigned_to:document.getElementById("jobTaskAssignee").value,is_blocker:document.getElementById("jobTaskBlocker").checked,blocker_reason:document.getElementById("jobTaskBlockerReason").value,requires_evidence:document.getElementById("jobTaskEvidence").checked});document.getElementById("jobTaskForm").reset();document.getElementById("jobTaskStage").value="Operations";await loadJobOperations();}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+ try{await jobOperationsPost({action:"create_task",title:document.getElementById("jobTaskTitle").value,due_date:document.getElementById("jobTaskDue").value,stage:document.getElementById("jobTaskStage").value,assigned_to:document.getElementById("jobTaskAssignee").value,event_kind:document.getElementById("jobTaskKind").value,is_blocker:document.getElementById("jobTaskBlocker").checked,blocker_reason:document.getElementById("jobTaskBlockerReason").value,requires_evidence:document.getElementById("jobTaskEvidence").checked});document.getElementById("jobTaskForm").reset();document.getElementById("jobTaskStage").value="Operations";await loadJobOperations();}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
 }
 async function submitScopeItem(event){
  event.preventDefault();

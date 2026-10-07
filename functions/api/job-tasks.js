@@ -1,4 +1,4 @@
-import { insertTask, seedAcceptedQuoteTasks, generateAftercareTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
+import { insertTask, seedAcceptedQuoteTasks, generateAftercareTasks, generatePostInstallTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
 
 const ASSIGNEES = new Set(["Jane", "Tom", "Ben", "External", "Unassigned"]);
 const TASK_STATUSES = new Set(["open", "completed", "cancelled"]);
@@ -42,6 +42,7 @@ const WORKFLOW_FIELDS = {
   inspection_status: "text",
   coc_status: "text",
   final_payment_status: ["not_due", "issued", "outstanding", "paid"],
+  install_status: ["not_scheduled", "scheduled", "in_progress", "completed"],
   handover_completed_at: "date"
 };
 
@@ -59,7 +60,7 @@ function dateOffset(date, days) {
   return result.toISOString().slice(0, 10);
 }
 async function jobExists(db, jobId) {
-  return db.prepare("SELECT id, job_type, install_date FROM jobs WHERE id = ?").bind(jobId).first();
+  return db.prepare("SELECT id, job_type, install_date, install_status FROM jobs WHERE id = ?").bind(jobId).first();
 }
 async function settings(db) {
   const { results = [] } = await db.prepare("SELECT setting_key, days_before_install FROM job_workflow_settings").all();
@@ -226,6 +227,15 @@ export async function onRequestPost(context) {
       const task = await db.prepare("SELECT * FROM job_tasks WHERE id = ? AND job_id = ?").bind(taskId, jobId).first();
       if (!task) return jsonError("Task not found", 404);
       const nextStatus = TASK_STATUSES.has(body.status) ? body.status : task.status;
+      if (nextStatus === "completed" && task.task_key?.startsWith("final-invoice-payment-")) {
+        const payment=await db.prepare("SELECT final_payment_status FROM jobs WHERE id=?").bind(jobId).first();
+        if(payment?.final_payment_status!=="paid") return Response.json({ok:false,error:"Record the customer invoice as paid in the invoice section before completing this follow-up."},{status:409});
+      }
+      if (nextStatus === "completed" && task.task_key === "solar-installation") {
+        const fullJob=await db.prepare("SELECT * FROM jobs WHERE id=?").bind(jobId).first();
+        const readiness=installationReadiness(fullJob||{});
+        if(!readiness.ready) return Response.json({ok:false,error:"Installation readiness gate is not satisfied.",blockers:readiness.blockers},{status:409});
+      }
       const actor = clean(body.actor, 120) || null;
       const evidenceNote = body.evidence_note === undefined ? task.evidence_note : clean(body.evidence_note, 2000);
       if (nextStatus === "completed" && task.requires_evidence && !evidenceNote) {
@@ -250,6 +260,11 @@ export async function onRequestPost(context) {
       if (nextStatus === "completed" && task.task_key === "order-equipment") {
         const orderDate = new Date().toISOString().slice(0, 10);
         await db.prepare("UPDATE jobs SET materials_status = 'ordered', materials_ordered_at = ? WHERE id = ?").bind(orderDate, jobId).run();
+      }
+      if (nextStatus === "completed" && task.task_key === "solar-installation") {
+        const completedDate=new Date().toISOString().slice(0,10);
+        await db.prepare("UPDATE jobs SET install_status='completed', install_completed_at=COALESCE(install_completed_at, ?) WHERE id=?").bind(completedDate,jobId).run();
+        await generatePostInstallTasks(db,jobId,completedDate);
       }
       if (nextStatus === "completed" && task.task_key === "send-vector-docs-to-retailer") {
         await db.prepare("UPDATE jobs SET retailer_export_status = 'sent_to_retailer', retailer_contacted_at = COALESCE(retailer_contacted_at, CURRENT_TIMESTAMP) WHERE id = ?").bind(jobId).run();
@@ -353,8 +368,13 @@ export async function onRequestPost(context) {
       const row=await db.prepare("SELECT * FROM jobs WHERE id=?").bind(jobId).first();
       const taskRows=await db.prepare("SELECT COUNT(*) AS n FROM job_tasks WHERE job_id=? AND status='open' AND is_blocker=1").bind(jobId).first();
       const blockers=Number(taskRows?.n||0);
+      const requiredTaskRows=await db.prepare("SELECT task_key FROM job_tasks WHERE job_id=? AND task_key IN ('post-install-compliance','post-install-commissioning','final-invoice-reconciliation') AND status!='completed'").bind(jobId).all();
+      const requiredTasks=(requiredTaskRows.results||[]).map(task=>task.task_key);
       const failures=[];
       if(blockers) failures.push(`${blockers} open blocker task(s)`);
+      if(requiredTasks.includes("post-install-compliance")) failures.push("compliance task is not complete with evidence");
+      if(requiredTasks.includes("post-install-commissioning")) failures.push("commissioning task is not complete with evidence");
+      if(requiredTasks.includes("final-invoice-reconciliation")) failures.push("final cost reconciliation task is not complete");
       if(row.final_payment_status!=="paid") failures.push("final invoice is not paid in full");
       if(!row.handover_completed_at) failures.push("customer handover is not complete");
       if(row.install_status!=="completed") failures.push("installation is not marked complete");

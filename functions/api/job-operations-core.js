@@ -57,8 +57,18 @@ export async function generateAftercareTasks(db, jobId, handoverDate) {
 
 export async function recordDepositReceived(db, jobId, amount, receivedDate) {
   await db.prepare("UPDATE jobs SET deposit_status = 'received', deposit_received = ?, deposit_received_at = ? WHERE id = ?").bind(amount, receivedDate, jobId).run();
-  await insertTask(db, { job_id: jobId, task_key: "order-equipment", title: "Order equipment and record the supplier reference", stage: "Equipment", category: "supplier", due_date: receivedDate, assigned_to: "Tom", priority: "high", requires_evidence: true, source: "deposit_received" });
-  await insertTask(db, { job_id: jobId, task_key: "pay-equipment", title: "Pay the equipment supplier and record the invoice amount", stage: "Equipment", category: "supplier", due_date: receivedDate, assigned_to: "Jane", priority: "high", requires_evidence: true, source: "deposit_received" });
+  await insertTask(db, { job_id: jobId, task_key: "order-equipment", title: "Order equipment and record the supplier reference", stage: "Equipment", category: "supplier", due_date: receivedDate, assigned_to: "Tom", priority: "high", is_blocker: true, blocker_reason: "Equipment order is required before installation can proceed", requires_evidence: true, source: "deposit_received" });
+  await insertTask(db, { job_id: jobId, task_key: "pay-equipment", title: "Pay the equipment supplier and record the invoice amount", stage: "Equipment", category: "supplier", due_date: receivedDate, assigned_to: "Jane", priority: "high", is_blocker: true, blocker_reason: "Equipment must be paid before installation can proceed", requires_evidence: true, source: "deposit_received" });
+}
+
+export async function generatePostInstallTasks(db, jobId, completedDate) {
+  const tasks = [
+    { task_key: "post-install-compliance", title: "Complete electrical testing, supervision and compliance records", stage: "Compliance", category: "compliance", due_date: completedDate, assigned_to: "Ben", priority: "high", event_kind: "milestone", requires_evidence: true, source: "installation_completed" },
+    { task_key: "post-install-commissioning", title: "Complete solar, battery and smart-energy commissioning", stage: "Commissioning", category: "commissioning", due_date: completedDate, assigned_to: "Tom", priority: "high", event_kind: "milestone", requires_evidence: true, source: "installation_completed" },
+    { task_key: "retailer-export-completion", title: "Confirm retailer meter, tariff and export setup is complete", stage: "Retailer", category: "external", assigned_to: "Jane", source: "installation_completed" },
+    { task_key: "final-invoice-reconciliation", title: "Reconcile actual costs and prepare the final customer invoice", stage: "Final payment", category: "finance", assigned_to: "Jane", source: "installation_completed" }
+  ];
+  for (const task of tasks) await insertTask(db, { ...task, job_id: jobId });
 }
 
 export async function recordVectorDocumentReceived(db, jobId) {
