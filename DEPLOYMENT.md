@@ -8,12 +8,13 @@ The Pages project uses:
 - `JOB_FILES` — R2 bucket for job files
 - `OPENAI_API_KEY` — secret used by power-bill reading
 - `SUPPLIER_INBOX_SECRET` — shared secret for Zapier or inbound-email supplier PDF submissions
-- `RESEND_API_KEY` — secret used to email Fletcher packages
+- `RESEND_API_KEY` — secret used to email Fletcher packages and optional customer copies of completed Home Energy Checks
 
 Optional:
 
 - `FLETCHER_FROM_EMAIL` — full Resend sender value. If omitted, Job Hub uses
   `Solectrics Job Hub <mini-fergus@solectrics.co.nz>`.
+- `HEC_FROM_EMAIL` — optional full Resend sender value for customer HEC copies. If omitted, the HEC copy uses `FLETCHER_FROM_EMAIL` or the default sender.
 
 The Fletcher recipient is intentionally fixed in server code as
 `jane@solectrics.co.nz` so a form cannot accidentally be sent directly to a
