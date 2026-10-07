@@ -1,3 +1,4 @@
+import { assertAccountingDateOpen } from "./bookkeeping-controls.js";
 import { rankSupplierJobSuggestions, supplierInvoiceDuplicate, supplierInvoiceAmountsReconcile } from "./supplier-invoice-matching.js";
 import { ensureJobFileRoleColumn } from "./_schema.js";
 import { onRequestPost as readSupplierInvoice } from "./supplier-invoice-read.js";
@@ -262,7 +263,8 @@ export async function onRequestPost(context) {
       const configuredMarkup = costing ? Number(costing.default_markup_percent) : 30;
       const book = await db.prepare("SELECT * FROM bookkeeping_books WHERE id = ? AND active = 1").bind(bookId).first();
       if (!book) return fail("Book not found", 404);
-      if (!book.commencement_date || book.gst_basis === "unconfigured") return fail("Set this book's commencement date and accountant-confirmed GST basis before posting bills", 409);
+      if (!book.commencement_date || book.gst_basis === "unconfigured") return fail("Set this book\'s commencement date and accountant-confirmed GST basis before posting bills", 409);
+      await assertAccountingDateOpen(db, bookId, invoiceDate);
       if (Math.abs(allowableGst) > 0 && !book.gst_registered) return fail("This book is not marked GST registered; set allowable input GST to $0 or correct the book GST setting", 409);
       const existingTx = await db.prepare(`SELECT id FROM bookkeeping_transactions WHERE book_id = ? AND source_type = 'supplier_invoice_inbox' AND source_id = ?`).bind(bookId, id).first();
       if (existingTx) return fail("This invoice already has a bookkeeping transaction", 409);
