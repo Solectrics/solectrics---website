@@ -1,3 +1,5 @@
+import { assertAccountingDateOpen } from "./bookkeeping-controls.js";
+
 function money(value) {
   return Math.round((Number(value) || 0) * 100) / 100;
 }
@@ -43,6 +45,7 @@ export async function postIssuedCustomerInvoiceToBook(db, invoiceId, actor = "Jo
   const transactionId = crypto.randomUUID();
   const journalId = crypto.randomUUID();
   const issueDate = snapshot.issue_date || String(invoice.issued_at || "").slice(0, 10) || new Date().toISOString().slice(0,10);
+  await assertAccountingDateOpen(db, assignment.book_id, issueDate);
   const statements = [
     db.prepare(`INSERT INTO bookkeeping_transactions
       (id, book_id, job_id, kind, transaction_date, due_date, reference_number, contact_name,
