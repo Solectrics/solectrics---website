@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-readonly BRANCH='codex/jobhub-staging-migrations-0015-0018'
 readonly PROJECT='solectrics-jobhub-staging'
 readonly DATABASE='jobhub-staging'
 readonly BUCKET='jobhub-files-staging'
 fail() { printf 'STOP: %s\n' "$*" >&2; exit 1; }
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'Run from the Job Hub checkout.'
 cd "$ROOT"
-[[ "$(git branch --show-current)" == "$BRANCH" ]] || fail "Branch must be exactly $BRANCH."
+BRANCH="$(git branch --show-current)"
+case "$BRANCH" in
+  codex/jobhub-staging-migrations-0015-0018|codex/jobhub-solar-operations-workflow) ;;
+  *) fail "Branch $BRANCH is not an explicitly approved staging branch." ;;
+esac
 git diff --quiet HEAD -- . || fail 'Tracked files have local changes. Review them; do not discard them.'
 git fetch --quiet origin "$BRANCH" || fail 'Cannot confirm latest branch.'
 [[ "$(git rev-parse HEAD)" == "$(git rev-parse FETCH_HEAD)" ]] || fail 'Checkout is behind. Run git pull --ff-only first.'
