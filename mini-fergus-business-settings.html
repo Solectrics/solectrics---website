@@ -16,6 +16,11 @@ button{margin-top:16px;background:#173f3f;color:white;border:0;border-radius:8px
 <div class="top"><div><div class="muted">Job Hub</div><h1>Business settings</h1></div><a href="/mini-fergus">← JOB HUB</a></div>
 <p class="muted">Configure business ownership, books and optional modules. Existing Solectrics workflows are not permission-enforced by this screen yet.</p>
 <div id="status" class="card">Loading business context…</div>
+<section id="claimBusinesses" class="card" hidden>
+<h2>Claim an existing business</h2>
+<p class="muted">Available only while a seeded business has no active members. Claiming makes your verified Access identity its first owner.</p>
+<div id="claimList"></div>
+</section>
 <section id="bootstrap" class="card" hidden>
 <h2>Create first business</h2><p class="muted">This is only available to a verified Cloudflare Access identity with no existing business membership.</p>
 <label>Business name</label><input id="businessName" placeholder="Solectrics">
@@ -32,12 +37,18 @@ button{margin-top:16px;background:#173f3f;color:white;border:0;border-radius:8px
 </section>
 </main>
 <script>
-const statusEl=document.getElementById("status"), bootstrap=document.getElementById("bootstrap"), settings=document.getElementById("settings");
+const statusEl=document.getElementById("status"), bootstrap=document.getElementById("bootstrap"), settings=document.getElementById("settings"), claimBusinesses=document.getElementById("claimBusinesses");
 let data=null, selected=null;
 const moduleLabels={core_accounting:"Core accounting",jobs_trades:"Jobs / Trades",events:"Events",pos:"POS",electrical_solar:"Electrical / Solar"};
 async function request(body){const r=await fetch("/api/business-config",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Request failed");return j}
+function renderClaims(){
+  const list=data?.available_unclaimed_businesses||[];
+  claimBusinesses.hidden=!list.length;
+  document.getElementById("claimList").innerHTML=list.map(b=>`<div style="border-top:1px solid #eee;padding:12px 0"><strong>${escapeHtml(b.legal_name||b.name)}</strong><div class="muted">${escapeHtml(b.business_type)}</div><button type="button" class="claimBusiness" data-business-id="${escapeHtml(b.id)}">CLAIM BUSINESS</button></div>`).join("");
+}
 function render(){
-  if(!data.user){statusEl.innerHTML="<strong>Verified identity found, but Job Hub is not configured yet.</strong>";bootstrap.hidden=false;settings.hidden=true;return}
+  renderClaims();
+  if(!data.user){statusEl.innerHTML="<strong>Verified identity found, but Job Hub is not configured yet.</strong>";bootstrap.hidden=!(data.available_unclaimed_businesses||[]).length;settings.hidden=true;return}
   statusEl.innerHTML="<strong>"+escapeHtml(data.user.display_name||data.user.primary_email)+"</strong><div class='muted'>Verified Job Hub user</div>";
   bootstrap.hidden=true;
   if(!data.businesses.length){settings.hidden=true;bootstrap.hidden=false;return}
@@ -56,6 +67,7 @@ async function load(){
  catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>";}
 }
 document.getElementById("businessSelect").addEventListener("change",e=>{selected=data.businesses.find(b=>b.id===e.target.value);renderSelected()});
+document.addEventListener("click",async e=>{if(!e.target.classList.contains("claimBusiness"))return;try{await request({action:"claim_business",business_id:e.target.dataset.businessId});await load()}catch(err){statusEl.innerHTML="<span class='error'>"+escapeHtml(err.message)+"</span>"}});
 document.getElementById("createBusiness").addEventListener("click",async()=>{try{await request({action:"bootstrap_business",name:document.getElementById("businessName").value,legal_name:document.getElementById("legalName").value,business_type:document.getElementById("businessType").value});await load()}catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>"}});
 document.getElementById("saveModules").addEventListener("click",async()=>{try{const modules=[...document.querySelectorAll("[data-module]")].map(el=>({module_code:el.dataset.module,enabled:el.checked}));await request({action:"set_modules",business_id:selected.id,modules});statusEl.innerHTML="<span class='ok'>Modules saved.</span>";await load()}catch(e){statusEl.innerHTML="<span class='error'>"+escapeHtml(e.message)+"</span>"}});
 function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
