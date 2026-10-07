@@ -95,6 +95,6 @@ read -r confirmation || fail 'No deployment confirmation.'
  cd "$RUN/site"
  "${WRANGLER[@]}" pages deploy public --project-name "$PROJECT" --branch "$BRANCH" --commit-hash "$(git -C "$ROOT" rev-parse HEAD)"
 ) || fail 'Staging deployment failed. Do not rerun migrations or change database resources.'
-printf '\nDeployment command completed. Test only the Access-protected URL:\n'
-printf 'https://solectrics-jobhub-staging.pages.dev/mini-fergus\n'
+printf '\nDeployment command completed for branch %s.\n' "$BRANCH"
+printf 'Open the branch preview URL printed by Wrangler and verify Cloudflare Access intercepts it before using the Job Hub.\n'
 printf 'No D1 migrations, database resets, R2 object operations, email-worker deployment, or Hnry/Zapier changes were run.\n'
