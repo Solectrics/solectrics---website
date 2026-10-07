@@ -9,15 +9,17 @@ PRAGMA foreign_keys = ON;
 INSERT INTO jobhub_businesses
   (id, slug, name, legal_name, business_type, currency, timezone, settings_json)
 VALUES
-  ('business-solectrics', 'solectrics', 'Solectrics', NULL, 'other', 'NZD', 'Pacific/Auckland',
+  ('business-solectrics', 'solectrics', 'Solectrics', 'Solectrics Limited', 'company', 'NZD', 'Pacific/Auckland',
    '{"seed":"initial-businesses-v1","legal_entity_pending_confirmation":true}'),
-  ('business-sol-espresso', 'sol-espresso', 'Sol Espresso', NULL, 'other', 'NZD', 'Pacific/Auckland',
+  ('business-sol-espresso', 'sol-espresso', 'Sol Espresso', 'Sol Espresso Limited', 'company', 'NZD', 'Pacific/Auckland',
    '{"seed":"initial-businesses-v1","legal_entity_pending_confirmation":true}'),
   ('business-yogacamp', 'yogacamp', 'YOGACAMP', NULL, 'other', 'GBP', 'Europe/London',
    '{"seed":"initial-businesses-v1","legal_entity_pending_confirmation":true}')
 ON CONFLICT(id) DO UPDATE SET
   slug = excluded.slug,
   name = excluded.name,
+  legal_name = excluded.legal_name,
+  business_type = excluded.business_type,
   currency = excluded.currency,
   timezone = excluded.timezone,
   updated_at = CURRENT_TIMESTAMP;
