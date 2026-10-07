@@ -1,4 +1,5 @@
 import { calculateBalanceSheet, calculateProfitAndLoss, calculateTrialBalance, toMappedCsv, validateJournalLines } from "./bookkeeping-core.js";
+import { assertAccountingDateOpen } from "./bookkeeping-controls.js";
 
 function fail(error, status = 400) {
   return Response.json({ ok: false, error }, { status });
@@ -169,6 +170,7 @@ export async function onRequestPost(context) {
       const validKinds = new Set(["sales_invoice", "supplier_bill", "expense", "payment_received", "payment_made", "tax_payment", "payroll_liability", "shareholder_transaction", "fixed_asset", "opening_balance", "adjustment"]);
       const date = safeDate(transaction.transaction_date);
       if (!validKinds.has(transaction.kind) || !date) return fail("Transaction kind and a valid transaction_date are required");
+      await assertAccountingDateOpen(db, bookId, date);
       const reference = String(transaction.reference_number || "").trim().slice(0, 100) || null;
       const contactName = String(transaction.contact_name || "").trim().slice(0, 200) || null;
       const description = String(transaction.description || "").trim().slice(0, 1000);
