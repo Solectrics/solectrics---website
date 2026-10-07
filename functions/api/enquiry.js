@@ -1,5 +1,6 @@
 import { ensureJobFileRoleColumn, ensureJobTypeColumn } from "./_schema.js";
 import { identifyEnergyDataDetail } from "./job-files.js";
+import { sendHomeEnergyCheckEmail } from "./_home-energy-check-document.js";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif", "pdf", "csv", "xls", "xlsx"]);
@@ -229,12 +230,17 @@ export async function onRequestPost(context) {
       }
     }
 
-    return Response.json({
-      ok: true,
-      enquiryRef: enquiryId,
-      jobId: jobId,
-      receivedAt: createdAt
-    });
+    let customerCopy = { requested: Boolean(answers.customerCopyOptIn), sent: false };
+    if (customerCopy.requested) {
+      try {
+        await sendHomeEnergyCheckEmail(context.env, answers, email);
+        customerCopy.sent = true;
+      } catch (emailError) {
+        console.error("Customer Home Energy Check copy could not be emailed:", emailError);
+      }
+    }
+
+    return Response.json({ ok: true, enquiryRef: enquiryId, jobId: jobId, receivedAt: createdAt, customerCopy });
 
   } catch (error) {
     console.error("Home Energy Check submission error:", error);

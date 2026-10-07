@@ -428,7 +428,7 @@ Prepare for future energy needs
 <section class="screen" data-stage="your plans"><div class="eyebrow">today and tomorrow</div><h2>What is already there—and what might change?</h2><label class="field" for="existingSolar">Existing solar</label><select id="existingSolar" onchange="answers.existingSolar=this.value"><option>No existing solar</option><option>Solar already installed</option><option>Solar and battery already installed</option><option>Not sure</option></select><label class="field" for="batteryInterest">How do you feel about a battery?</label><select id="batteryInterest" onchange="answers.batteryInterest=this.value"><option>Open to advice</option><option>Interested if the numbers support it</option><option>Backup power is important</option><option>Prefer solar without a battery</option><option>Not sure</option></select><div class="detail-panel"><h3>Any planned changes?</h3><p class="muted">Choose everything that may happen in the next few years.</p><button class="choice" onclick="multi('plannedChanges','EV or another EV',this)">EV or another EV</button><button class="choice" onclick="multi('plannedChanges','Hot-water heat pump',this)">Hot-water heat pump</button><button class="choice" onclick="multi('plannedChanges','More electric heating',this)">More electric heating</button><button class="choice" onclick="multi('plannedChanges','Pool or spa',this)">Pool or spa</button><button class="choice" onclick="multi('plannedChanges','Home extension or more occupants',this)">Home extension or more occupants</button><button class="choice" onclick="multi('plannedChanges','No major changes planned',this)">No major changes planned</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="savePlans();next()">CONTINUE →</button></div></section>
 <section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
-<section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
+<section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field" for="address">Property address</label><input id="address" type="text" autocomplete="street-address" oninput="handlePropertyAddressEdit()"><div id="addressBillNotice" class="bill-status" aria-live="polite"></div><label id="addressConfirmationRow" class="hidden" style="display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-size:14px;line-height:1.45"><input id="confirmPropertyAddress" type="checkbox" style="width:auto;margin-top:3px" onchange="confirmPropertyAddress()"><span>I confirm this is the property address for the solar assessment.</span></label><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
 
 <section class="screen" data-stage="your result" id="resultScreen">
   <div class="eyebrow">your smart solar home</div>
@@ -489,6 +489,7 @@ Prepare for future energy needs
 </div>
 </section>
 
+<script type="module">import { resolvePropertyAddress } from '/assets/hec-address.mjs'; window.resolvePropertyAddress=resolvePropertyAddress;</script>
 <script>
 const PERSONAS={
   'just-us':'Just Us / low-energy',
@@ -584,6 +585,7 @@ async function readBill(season){
 
     answers.bills[season]=data;
     renderBillFields(season,data);
+    updatePropertyAddressFromBills();
     document.getElementById(season+'Review').classList.remove('hidden');
 
     status.className='bill-status good';
@@ -621,6 +623,60 @@ function renderBillFields(season,data){
     wrap.appendChild(input);
     box.appendChild(wrap);
   });
+}
+
+function handlePropertyAddressEdit(){
+  const input=document.getElementById('address');
+  answers.address=input.value.trim();
+  answers.propertyAddressManuallyEntered=true;
+  if(answers.propertyAddressConfirmationRequired){
+    const checkbox=document.getElementById('confirmPropertyAddress');
+    if(checkbox)checkbox.checked=false;
+    answers.propertyAddressConfirmed=false;
+  }
+}
+function confirmPropertyAddress(){
+  answers.propertyAddressConfirmed=Boolean(document.getElementById('confirmPropertyAddress')?.checked);
+}
+function updatePropertyAddressFromBills(){
+  const input=document.getElementById('address');
+  const notice=document.getElementById('addressBillNotice');
+  if(!input||!notice||typeof window.resolvePropertyAddress!=='function')return;
+  const bills=['summer','winter'].map(season=>answers.bills?.[season]).filter(Boolean);
+  const result=window.resolvePropertyAddress(bills,input.value,Boolean(answers.propertyAddressManuallyEntered),answers.extractedPropertyAddress);
+  const confirmationRow=document.getElementById('addressConfirmationRow');
+  answers.propertyAddressConfirmationRequired=result.hasExtractedAddress||result.uncertain||result.conflicting;
+  if(confirmationRow)confirmationRow.classList.toggle('hidden',!answers.propertyAddressConfirmationRequired);
+  if(result.conflicting){
+    notice.className='bill-status bad';
+    notice.textContent=result.billConflict
+      ? 'The uploaded bills show different supply addresses. Please confirm or correct the property address above before sending your Home Energy Check.'
+      : `The bill shows “${result.address}”, which differs from the address you entered. Please confirm or correct the property address above.`;
+    answers.propertyAddressNeedsConfirmation=true;
+    return;
+  }
+  if(result.address){
+    if(result.canUseExtracted){
+      input.value=result.address;
+      answers.address=result.address;
+      answers.extractedPropertyAddress=result.address;
+    }
+    notice.className=result.uncertain?'bill-status':'bill-status good';
+    notice.textContent=result.uncertain
+      ? `A bill shows “${result.address}”, but another address could not be confirmed. Please check or correct the address above.`
+      : `We found this supply address on your electricity bill: “${result.address}”. Please confirm or correct it.`;
+    answers.propertyAddressNeedsConfirmation=result.uncertain;
+    return;
+  }
+  if(result.uncertain){
+    notice.className='bill-status bad';
+    notice.textContent='We could not confidently identify the supply address on the bill. Please enter and confirm the property address above.';
+    answers.propertyAddressNeedsConfirmation=true;
+  }else{
+    notice.className='bill-status';
+    notice.textContent='No supply address was identified from the uploaded bills. Please enter the property address manually.';
+    answers.propertyAddressNeedsConfirmation=false;
+  }
 }
 
 function saveBillEdits(){
@@ -743,6 +799,7 @@ async function submitHomeEnergyCheck(){
     const oversized=allFiles.find(file=>file.size>12*1024*1024);
     if(oversized) throw new Error(`${oversized.name} is over the 12 MB file limit`);
 
+    answers.customerCopyOptIn=Boolean(document.getElementById('customerCopyConsent')?.checked);
     answers.energyDataUploads={
       recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'})),
       annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
@@ -802,6 +859,12 @@ async function submitHomeEnergyCheck(){
   const status =
     document.getElementById('sendCheckStatus');
 
+  if (answers.propertyAddressConfirmationRequired && !answers.propertyAddressConfirmed) {
+    status.className = 'bill-status bad';
+    status.textContent = 'Please confirm the property address before sending your Home Energy Check.';
+    return;
+  }
+
   if (!consent || !consent.checked) {
     status.className = 'bill-status bad';
     status.textContent =
@@ -818,11 +881,14 @@ async function submitHomeEnergyCheck(){
 
   try {
 
-    await submitHomeEnergyCheck();
+    const saved = await submitHomeEnergyCheck();
 
     status.className = 'bill-status good';
-    status.textContent =
-      'Sent ✓ Solectrics has received your Home Energy Check.';
+    status.textContent = saved.customerCopy?.requested
+      ? (saved.customerCopy.sent
+        ? 'Sent ✓ Solectrics has received your Home Energy Check, and a copy has been emailed to you.'
+        : 'Sent ✓ Solectrics has received your Home Energy Check. We could not email your copy just now; please contact us and we will send it to you.')
+      : 'Sent ✓ Solectrics has received your Home Energy Check.';
 
     button.textContent =
       'HOME ENERGY CHECK SENT ✓';
@@ -4664,6 +4730,11 @@ ${
       I'm happy for Solectrics to receive and use my Home Energy Check
       information for this enquiry.
     </span>
+  </label>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
+    <input id="customerCopyConsent" type="checkbox" style="width:auto;margin-top:3px">
+    <span>Email me a copy of my completed Home Energy Check</span>
   </label>
 
   <button

@@ -52,7 +52,8 @@ Extract structured information from this New Zealand residential electricity bil
 
 Only return values actually visible or clearly inferable.
 Use null when a value is not shown.
-Do NOT return customer name, street address, email, phone, bank details or account number.
+Do NOT return the customer name, email, phone, bank details or account number.
+Return the supply/property address only when it is clearly identified as the service address for this electricity connection; do not use a postal or mailing address. If the supply address is absent, unclear, or conflicts with another address on the bill, return null and mark property_address in needs_review_fields.
 ICP may be returned because it is useful for electricity connection identification.
 
 Return ONLY valid JSON with exactly these keys:
@@ -79,6 +80,7 @@ Return ONLY valid JSON with exactly these keys:
   "other_tariff_information": string|null,
   "gst_nzd": number|null,
   "icp": string|null,
+  "property_address": string|null,
   "notes": string|null,
   "needs_review_fields": string[],
   "confidence": number
@@ -161,7 +163,7 @@ function getOutputText(response) {
   return "";
 }
 
-function sanitise(x) {
+export function sanitise(x) {
   const numeric = [
     "billing_days","total_import_kwh","average_daily_kwh","total_export_kwh",
     "total_bill_nzd","daily_fixed_charge_cents","import_rate_cents",
@@ -170,7 +172,7 @@ function sanitise(x) {
     "exit_cost_nzd","gst_nzd","confidence"
   ];
   const strings = [
-    "retailer","plan_name","billing_period_start","billing_period_end","icp","notes",
+    "retailer","plan_name","billing_period_start","billing_period_end","icp","property_address","notes",
     "fixed_term","other_tariff_information"
   ];
 

@@ -482,6 +482,25 @@ if (accountantViewLink && jobId) accountantViewLink.href = `/mini-fergus-account
   let currentAnswers = {};
   let currentJobType = "solar";
 
+async function emailHomeEnergyCheck(jobId, button) {
+  const message = document.getElementById("hecEmailMessage");
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "EMAILING…";
+  message.textContent = "Sending the customer-facing Home Energy Check to the email address on this job…";
+  try {
+    const response = await fetch("/api/home-energy-check-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId }) });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.error || "Email was not sent");
+    message.textContent = "Home Energy Check emailed to the customer address on this job.";
+  } catch (error) {
+    message.textContent = error.message || "Could not email the Home Energy Check.";
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
 async function loadJob() {
   const page = document.getElementById("page");
 
@@ -636,6 +655,13 @@ window.currentAnswers = answers;
 
 <section class="card solar-only">
             <h2>Home Energy Check</h2>
+            <p class="placeholder">This is the original Home Energy Check submitted for this enquiry. It remains linked to this solar job.</p>
+            <div class="grid" style="align-items:center;margin:16px 0">
+              <a class="button-link" href="/api/home-energy-check-document?job_id=${encodeURIComponent(job.job_id)}" target="_blank" rel="noopener">VIEW HOME ENERGY CHECK</a>
+              <a class="button-link" href="/api/home-energy-check-document?job_id=${encodeURIComponent(job.job_id)}&amp;print=1" target="_blank" rel="noopener">DOWNLOAD / PRINT HOME ENERGY CHECK</a>
+              <button class="button-link" type="button" onclick="emailHomeEnergyCheck(${Number(job.job_id)},this)" ${job.email ? "" : "disabled"}>EMAIL HOME ENERGY CHECK TO CUSTOMER</button>
+            </div>
+            <div id="hecEmailMessage" class="placeholder" aria-live="polite"></div>
 
             <h3>Home & energy use</h3>
 
