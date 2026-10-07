@@ -10,7 +10,7 @@ INSERT INTO jobhub_businesses
   (id, slug, name, legal_name, business_type, currency, timezone, settings_json)
 VALUES
   ('business-solectrics', 'solectrics', 'Solectrics', 'Solectrics Limited', 'company', 'NZD', 'Pacific/Auckland',
-   'undefined'),
+   '{"seed":"initial-businesses-v1","legal_entity_pending_confirmation":false}'),
   ('business-sol-espresso', 'sol-espresso', 'Sol Espresso', 'Sol Espresso Limited', 'company', 'NZD', 'Pacific/Auckland',
    '{"seed":"initial-businesses-v1","legal_entity_pending_confirmation":false}'),
   ('business-yogacamp', 'yogacamp', 'YOGACAMP', NULL, 'other', 'GBP', 'Europe/London',
