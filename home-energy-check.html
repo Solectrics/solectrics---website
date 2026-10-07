@@ -85,38 +85,31 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 
 <section class="screen" data-stage="your energy">
 <div class="eyebrow">your power bills</div>
-<h2>Let’s read your electricity bills.</h2>
-<p>Upload one electricity bill to get started. Your recent bill helps us understand your retailer, plan, rates and fixed charges. If you have both a summer and winter bill, we can give you a better first picture of your annual energy use.</p>
+<h2>Get more personalised advice from your electricity bills</h2>
+<p>If you upload your electricity bills, we can give you more tailored advice and prepare a more accurate, bespoke solar recommendation and quote for your home.</p>
+<p>Electricity bills are usually emailed to the account holder as a PDF. Simply download the bill from your email or electricity retailer account and upload it here.</p>
+<p><strong>This step is optional — you can continue with the Home Energy Check without uploading any bills.</strong></p>
 
 <div class="upload">
-
-  <label>☀️ Summer power bill</label>
-
-  <span class="muted">
-    January or February is ideal.
-  </span>
-
-  <br><br>
-
-  <input
-    type="file"
-    id="summerBill"
-    accept="image/*,.pdf"
-  >
-
-  <div
-    id="summerStatus"
-    class="bill-status">
-  </div>
-
+  <h3><label for="summerBill">Summer bill</label></h3>
+  <p class="upload-note">A January bill is ideal for showing your typical summer electricity use.</p>
+  <input type="file" id="summerBill" accept="image/*,.pdf">
+  <div id="summerStatus" class="bill-status"></div>
 </div>
 
+<div class="upload">
+  <h3><label for="winterBill">Winter bill</label></h3>
+  <p class="upload-note">A June bill is ideal for showing your typical winter electricity use.</p>
+  <input type="file" id="winterBill" accept="image/*,.pdf">
+  <div id="winterStatus" class="bill-status"></div>
+</div>
+<p class="upload-note">Uploading both gives us a useful summer/winter comparison.</p>
+
 <div class="upload" id="annualUsageUpload">
-  <label>Help us make your solar estimate more accurate</label>
-  <p class="upload-note">Your latest electricity bill tells us what you pay. Your 12-month electricity usage helps us understand how much power your home uses throughout the year and, where detailed information is available, when you use it.</p>
-  <label class="upload-file-button" for="annualUsageFiles">UPLOAD 12-MONTH USAGE DATA</label>
-  <input class="file-input-hidden" type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
-  <div id="annualUsageStatus" class="bill-status">Recommended for a more accurate solar and battery assessment — but you can still continue without it. You can upload one usage file or several electricity bills.</div>
+  <h3><label for="annualUsageFiles">12 months of electricity use — optional</label></h3>
+  <p class="upload-note">If you have access to 12 months of your electricity-use data, you can upload it here. This gives us the clearest picture of your electricity use throughout the year.</p>
+  <input type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
+  <div id="annualUsageStatus" class="bill-status">You can upload one usage file or several electricity bills. This is optional — you can continue without it.</div>
   <details class="usage-help">
     <summary>I don’t know how to get this</summary>
     <h3>How to get your electricity usage</h3>
@@ -136,31 +129,6 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
     <p><strong>You don’t need to understand the spreadsheet — that’s our job.</strong></p>
   </details>
 </div>
-
-
-<div class="upload">
-
-  <label>❄️ Winter power bill</label>
-
-  <span class="muted">
-    July or August is ideal.
-  </span>
-
-  <br><br>
-
-  <input
-    type="file"
-    id="winterBill"
-    accept="image/*,.pdf"
-  >
-
-  <div
-    id="winterStatus"
-    class="bill-status">
-  </div>
-
-</div>
-
 
 <!-- Keep these hidden because the existing readBill()
      code may refer to these button IDs -->
