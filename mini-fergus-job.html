@@ -394,7 +394,94 @@
       Loading job...
     </div>
 
-  </main>
+        <section class="card" id="jobOperationsPanel" style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+        <div><h2 style="margin-bottom:4px">Installation workflow & tasks</h2><p class="placeholder" style="margin-top:0">This job and the Operations screen use the same task records.</p></div>
+        <a class="button-link" href="/mini-fergus-operations">OPEN OPERATIONS →</a>
+      </div>
+      <div id="jobReadiness" class="placeholder" role="status"></div>
+      <div class="grid" style="margin-top:14px">
+        <div><label for="opsInstallDate">Planned installation date</label><input id="opsInstallDate" type="date"></div>
+        <div style="align-self:end"><button type="button" onclick="saveInstallDate()">SAVE INSTALL DATE</button></div>
+      </div>
+      <h3>Finance, deposit & equipment</h3>
+      <div class="grid">
+        <div><label for="opsFinanceType">Customer finance</label><select id="opsFinanceType"><option value="unknown">To confirm</option><option value="customer_funded">Customer funded</option><option value="green_loan">Green Loan</option><option value="other_finance">Other finance</option><option value="westpac">Westpac</option><option value="asb">ASB</option><option value="anz">ANZ</option><option value="bnz">BNZ</option><option value="kiwibank">Kiwibank</option></select></div>
+        <div><label for="opsFinanceProvider">Lender</label><input id="opsFinanceProvider"></div>
+        <div><label for="opsFinanceStatus">Finance status</label><select id="opsFinanceStatus"><option value="not_applicable">Not required</option><option value="customer_investigating">Customer investigating</option><option value="application_submitted">Application submitted</option><option value="awaiting_documents">Awaiting documents</option><option value="approved">Approved</option><option value="declined">Declined</option></select></div>
+        <div class="toggle"><label><input id="opsFinanceRequired" type="checkbox"> Approval required before proceeding</label></div>
+        <div><label for="opsDepositRequired">Deposit required ($)</label><input id="opsDepositRequired" type="number" step="0.01"></div>
+        <div><label for="opsDepositStatus">Deposit status</label><select id="opsDepositStatus"><option value="not_requested">Not requested</option><option value="awaiting">Awaiting</option><option value="received">Received</option><option value="not_required">Not required</option></select></div>
+        <div><label for="opsEquipmentSupplier">Equipment supplier</label><input id="opsEquipmentSupplier"></div>
+        <div><label for="opsEquipmentOrder">Equipment order reference</label><input id="opsEquipmentOrder"></div>
+        <div><label for="opsEquipmentInvoice">Supplier invoice reference</label><input id="opsEquipmentInvoice"></div>
+        <div><label for="opsEquipmentPaidAmount">Equipment amount paid ($)</label><input id="opsEquipmentPaidAmount" type="number" step="0.01"></div>
+        <div><label for="opsEquipmentPaidDate">Equipment paid date</label><input id="opsEquipmentPaidDate" type="date"></div>
+        <div><label for="opsEquipmentExpected">Expected delivery</label><input id="opsEquipmentExpected" type="date"></div>
+        <div><label for="opsEquipmentStatus">Equipment status</label><select id="opsEquipmentStatus"><option value="not_ordered">Not ordered</option><option value="ordered">Ordered</option><option value="paid">Paid</option><option value="in_transit">In transit</option><option value="received">Received / available</option><option value="part_received">Part received</option><option value="issue">Issue</option></select></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button type="button" onclick="saveWorkflowFields()">SAVE WORKFLOW DETAILS</button>
+        <button type="button" onclick="recordDepositReceived()">RECORD DEPOSIT RECEIVED → CREATE EQUIPMENT ORDER & PAYMENT TASKS</button>
+      </div>
+      <h3>Site, design & access</h3>
+      <div class="grid">
+        <div><label for="opsSiteVerified">Final site verified</label><input id="opsSiteVerified" type="date"></div>
+        <div><label for="opsDesignConfirmed">Final design confirmed</label><input id="opsDesignConfirmed" type="date"></div>
+        <div><label for="opsTeamConfirmed">Installation team/date confirmed</label><input id="opsTeamConfirmed" type="date"></div>
+        <div><label for="opsScaffoldRequired">Scaffolding required?</label><select id="opsScaffoldRequired"><option value="to_be_confirmed">To be confirmed</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div><label for="opsScaffoldProvider">Scaffold provider</label><input id="opsScaffoldProvider"></div>
+        <div><label for="opsScaffoldCost">Scaffold quote/cost ($)</label><input id="opsScaffoldCost" type="number" step="0.01"></div>
+        <div><label for="opsScaffoldArrangedBy">Who arranges it?</label><input id="opsScaffoldArrangedBy" placeholder="Jane, customer, builder…"></div>
+        <div><label for="opsScaffoldBooked">Scaffold booking date</label><input id="opsScaffoldBooked" type="date"></div>
+        <div><label for="opsScaffoldErection">Erection date</label><input id="opsScaffoldErection" type="date"></div>
+        <div><label for="opsScaffoldRemoval">Removal date</label><input id="opsScaffoldRemoval" type="date"></div>
+        <div class="wide"><label for="opsAccessNotes">Access / parking / site notes</label><textarea id="opsAccessNotes" rows="2"></textarea></div>
+      </div>
+      <h3>Vector / retailer / export</h3>
+      <div class="grid">
+        <div><label for="opsVectorStatus">Vector / DG status</label><select id="opsVectorStatus"><option value="not_started">Not started</option><option value="submitted">Submitted</option><option value="information_required">Information required</option><option value="approved">Approved</option><option value="not_required">Not required</option></select></div>
+        <div><label for="opsRetailerStatus">Retailer / export status</label><select id="opsRetailerStatus"><option value="not_contacted">Not contacted</option><option value="contacted">Contacted</option><option value="awaiting_vector">Awaiting Vector</option><option value="vector_document_received">Vector document received</option><option value="sent_to_retailer">Sent to retailer</option><option value="processing">Processing</option><option value="complete">Complete</option><option value="not_required">Not required</option></select></div>
+        <div><label for="opsRetailer">Current retailer</label><input id="opsRetailer"></div>
+        <div><label for="opsRetailerPlan">Current tariff / plan</label><input id="opsRetailerPlan"></div>
+        <div><label for="opsIcp">ICP</label><input id="opsIcp"></div>
+        <div><label for="opsMeterStatus">Meter / controlled-load arrangement</label><input id="opsMeterStatus"></div>
+        <div class="wide"><label for="opsRetailerRequirements">Retailer requirements / export-credit notes</label><textarea id="opsRetailerRequirements" rows="2" placeholder="Keep controlled hot-water or ripple arrangements in view before changing tariff/meter setup."></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button type="button" onclick="saveWorkflowFields()">SAVE WORKFLOW DETAILS</button>
+        <button type="button" onclick="recordVectorDocumentReceived()">RECORD VECTOR DOCUMENT RECEIVED → PROMPT RETAILER FOLLOW-UP</button>
+        <button type="button" onclick="completeHandover()">RECORD HANDOVER → SCHEDULE 2-WEEK & 1-MONTH CHECKS</button>
+      </div>
+      <div id="jobScopeItems"></div>
+      <h3>Accepted extras / future opportunities</h3>
+      <p class="placeholder">Accepted additions create a linked design/costing/install task; deferred choices stay visible for future follow-up.</p>
+      <form id="scopeItemForm" class="grid">
+        <div><label for="scopeTitle">Item</label><input id="scopeTitle" required placeholder="e.g. Hot-water heat pump, EV charger"></div>
+        <div><label for="scopeCategory">Category</label><select id="scopeCategory"><option value="solar_battery">Solar / battery</option><option value="hot_water_heat_pump">Hot-water heat pump</option><option value="hot_water_control">Hot-water timer / controller</option><option value="load_control">Solar diversion / load control</option><option value="ev_charger">EV charger</option><option value="solar_ev_charging">Solar-aware EV charging</option><option value="heating_cooling">Heating / cooling</option><option value="pool_spa">Pool / spa</option><option value="other">Other / future load</option></select></div>
+        <div><label for="scopeDecision">Customer decision</label><select id="scopeDecision"><option value="pending">To confirm</option><option value="accepted">Accepted</option><option value="deferred">Deferred</option><option value="declined">Declined</option></select></div>
+        <div class="wide"><label for="scopeDetails">Details / costing notes</label><input id="scopeDetails"></div>
+        <div><button type="submit">ADD LINKED JOB ITEM</button></div>
+      </form>
+      <h3>Shared job tasks</h3><form id="jobTaskForm" class="grid">
+        <div class="wide"><label for="jobTaskTitle">Task</label><input id="jobTaskTitle" required></div>
+        <div><label for="jobTaskDue">Due date</label><input id="jobTaskDue" type="date"></div>
+        <div><label for="jobTaskStage">Stage</label><input id="jobTaskStage" value="Operations"></div>
+        <div><label for="jobTaskAssignee">Assigned to</label><select id="jobTaskAssignee"><option>Jane</option><option>Tom</option><option>Ben</option><option>External</option><option>Unassigned</option></select></div>
+        <div><label><input id="jobTaskBlocker" type="checkbox"> Blocker</label></div>
+        <div><label><input id="jobTaskEvidence" type="checkbox"> Requires evidence</label></div>
+        <div class="wide"><label for="jobTaskBlockerReason">Blocker reason</label><input id="jobTaskBlockerReason"></div>
+        <div><button type="submit">ADD TASK</button></div>
+      </form>
+      <div id="jobTaskList" class="task-list"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button type="button" onclick="updateInstallStatus('in_progress')">MARK INSTALLATION STARTED</button>
+        <button type="button" onclick="updateInstallStatus('completed')">MARK INSTALLATION COMPLETE</button>
+        <button type="button" onclick="closeOperationsJob()">CLOSE JOB (AFTER HANDOVER & PAYMENT)</button>
+      </div>
+      <div id="jobOperationsMessage" aria-live="polite"></div>
+    </section>
+</main>
 
   <script>
     function formatStatus(status) {
@@ -4715,6 +4802,155 @@ loadJob().then(() => {
     calculateEstimatedGeneration();
   });
 });
+  </script>
+  <script>
+let jobOperationData=null;
+async function jobOperationsPost(payload){
+  const response=await fetch("/api/job-tasks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({job_id:Number(jobId),...payload})});
+  const data=await response.json();
+  if(!response.ok||!data.ok){const error=new Error(data.error||"Could not save operations data");error.status=response.status;error.payload=data;throw error;}
+  return data;
+}
+function setOpsValue(id,value){const field=document.getElementById(id);if(field)field.value=value??"";}
+function setOpsChecked(id,value){const field=document.getElementById(id);if(field)field.checked=Number(value)===1||value===true;}
+async function loadJobOperations(){
+  const panel=document.getElementById("jobOperationsPanel");if(!panel||!jobId)return;
+  try{
+    const response=await fetch(`/api/job-tasks?job_id=${encodeURIComponent(jobId)}&include_completed=1`);
+    const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Could not load workflow");
+    jobOperationData=data;const job=data.jobs?.[0]||{};
+    setOpsValue("opsInstallDate",job.install_date);
+    setOpsValue("opsFinanceType",job.finance_type||"unknown");setOpsValue("opsFinanceProvider",job.finance_provider);
+    setOpsValue("opsFinanceStatus",job.finance_status||"not_applicable");setOpsChecked("opsFinanceRequired",job.finance_approval_required);
+    setOpsValue("opsDepositRequired",job.deposit_required);setOpsValue("opsDepositStatus",job.deposit_status||"not_requested");
+    setOpsValue("opsEquipmentSupplier",job.equipment_supplier);setOpsValue("opsEquipmentOrder",job.equipment_order_reference);
+    setOpsValue("opsEquipmentInvoice",job.equipment_invoice_reference);setOpsValue("opsEquipmentPaidAmount",job.equipment_amount_paid);
+    setOpsValue("opsEquipmentPaidDate",job.equipment_paid_at);setOpsValue("opsEquipmentExpected",job.equipment_expected_delivery_date);
+    setOpsValue("opsEquipmentStatus",job.materials_status||"not_ordered");
+    setOpsValue("opsSiteVerified",job.final_site_verified_at);setOpsValue("opsDesignConfirmed",job.final_design_confirmed_at);
+    setOpsValue("opsTeamConfirmed",job.installation_team_confirmed_at);setOpsValue("opsScaffoldRequired",job.scaffolding_required||"to_be_confirmed");
+    setOpsValue("opsScaffoldProvider",job.scaffold_provider);setOpsValue("opsScaffoldCost",job.scaffold_quote_cost);
+    setOpsValue("opsScaffoldArrangedBy",job.scaffold_arranged_by);setOpsValue("opsScaffoldBooked",job.scaffold_booked_at);
+    setOpsValue("opsScaffoldErection",job.scaffold_erection_date);setOpsValue("opsScaffoldRemoval",job.scaffold_removal_date);
+    setOpsValue("opsAccessNotes",job.site_access_notes);setOpsValue("opsVectorStatus",job.vector_dg_status||"not_started");
+    setOpsValue("opsRetailerStatus",job.retailer_export_status||"not_contacted");setOpsValue("opsRetailer",job.retailer);
+    setOpsValue("opsRetailerPlan",job.retailer_plan);setOpsValue("opsIcp",job.icp);setOpsValue("opsMeterStatus",job.meter_status);
+    setOpsValue("opsRetailerRequirements",job.retailer_requirements);
+    renderJobReadiness(job);renderJobTaskList(data.tasks||[]);renderJobScopeItems(data.scope_items||[]);
+  }catch(error){document.getElementById("jobOperationsMessage").textContent=error.message;}
+}
+function renderJobReadiness(job){
+ const issues=[];
+ if(!job.install_date)issues.push("installation date");
+ if(Number(job.finance_approval_required)&&job.finance_status!=="approved")issues.push("finance approval");
+ if(Number(job.deposit_required||0)>0&&job.deposit_status!=="received")issues.push("deposit");
+ if(!job.equipment_order_reference||!job.equipment_paid_at||Number(job.equipment_amount_paid||0)<=0)issues.push("equipment order/payment");
+ if(job.materials_status!=="received")issues.push("equipment delivery");
+ if(!job.final_site_verified_at)issues.push("final site verification");
+ if(!job.final_design_confirmed_at)issues.push("final design");
+ if(!["approved","not_required"].includes(job.vector_dg_status))issues.push("Vector / DG");
+ if(!["contacted","awaiting_vector","vector_document_received","sent_to_retailer","processing","complete","not_required"].includes(job.retailer_export_status))issues.push("retailer/export process");
+ if(job.scaffolding_required==="to_be_confirmed")issues.push("scaffolding decision");
+ if(job.scaffolding_required==="yes"&&!job.scaffold_booked_at)issues.push("scaffolding booking");
+ if(!job.installation_team_confirmed_at)issues.push("installation team/date");
+ const el=document.getElementById("jobReadiness");
+ el.innerHTML=issues.length?`<strong style="color:#a42e21">NOT READY TO INSTALL — ${issues.length} blocker(s)</strong><div>${issues.map(escapeHtml).join(" · ")}</div>`:'<strong style="color:#17643a">READY TO INSTALL ✓</strong>';
+}
+function renderJobTaskList(tasks){
+ const el=document.getElementById("jobTaskList");
+ el.innerHTML=tasks.length?tasks.map(t=>`<div class="card" style="padding:12px;margin:8px 0;opacity:${t.status==="completed" ? 0.62 : 1}">
+ <label style="display:flex;gap:9px;align-items:flex-start"><input type="checkbox" ${t.status==="completed"?"checked":""} onchange="toggleJobTask(${t.id},this.checked)" style="width:auto;margin-top:3px"><span><strong>${escapeHtml(t.title)}</strong><br><small>${escapeHtml(t.stage)} · Due: ${escapeHtml(t.due_date||"Not set")} · ${escapeHtml(t.assigned_to||"Unassigned")}${Number(t.is_blocker)?" · BLOCKER":""}${t.date_review_required?" · DATE REVIEW NEEDED":""}${t.completed_by?" · Completed by "+escapeHtml(t.completed_by):""}</small></span></label>
+ </div>`).join(""):'<div class="placeholder">No tasks yet. Accepted quotes and workflow events will create the relevant tasks here.</div>';
+}
+function renderJobScopeItems(items){
+ const el=document.getElementById("jobScopeItems");
+ el.innerHTML=items.length?`<div class="grid">${items.map(item=>`<div class="card" style="padding:12px;margin:8px 0"><strong>${escapeHtml(item.title)}</strong><div>${escapeHtml(item.category)} · <strong>${escapeHtml(item.decision)}</strong></div><div>${escapeHtml(item.details||"")}</div>${item.decision==="deferred"?'<small>Future opportunity</small>':""}</div>`).join("")}</div>`:"";
+}
+async function saveInstallDate(){
+ const install_date=document.getElementById("opsInstallDate").value;
+ try{
+  await jobOperationsPost({action:"set_install_date",install_date});
+  await loadJobOperations();
+  document.getElementById("jobOperationsMessage").textContent="Installation date saved; anchored tasks created.";
+ }catch(error){
+  if(error.status===409&&error.payload?.needs_confirmation){
+    const rows=error.payload.tasks||[];
+    const summary=rows.map(t=>t.title+": "+(t.due_date||"no date")+" → "+(t.proposed_date||"review")).join("\n");
+    if(window.confirm("The installation date changed. Move these open installation-linked task dates?\n\n"+summary+"\n\nCancel leaves the installation date unchanged.")){
+      try{
+        await jobOperationsPost({action:"set_install_date",install_date,confirm_reschedule:true,move_task_ids:rows.map(t=>t.id)});
+        await loadJobOperations();
+        document.getElementById("jobOperationsMessage").textContent="Installation date and confirmed task dates updated.";
+      }catch(second){document.getElementById("jobOperationsMessage").textContent=second.message;}
+    }
+    return;
+  }
+  document.getElementById("jobOperationsMessage").textContent=error.message;
+ }
+
+async function saveWorkflowFields(){
+ const num=id=>document.getElementById(id).value===""?null:Number(document.getElementById(id).value);
+ const value={
+  action:"update_job_stage",finance_type:document.getElementById("opsFinanceType").value,
+  finance_provider:document.getElementById("opsFinanceProvider").value,finance_status:document.getElementById("opsFinanceStatus").value,
+  finance_approval_required:document.getElementById("opsFinanceRequired").checked,deposit_required:num("opsDepositRequired"),
+  deposit_status:document.getElementById("opsDepositStatus").value,equipment_supplier:document.getElementById("opsEquipmentSupplier").value,
+  equipment_order_reference:document.getElementById("opsEquipmentOrder").value,equipment_invoice_reference:document.getElementById("opsEquipmentInvoice").value,
+  equipment_amount_paid:num("opsEquipmentPaidAmount"),equipment_paid_at:document.getElementById("opsEquipmentPaidDate").value,
+  equipment_expected_delivery_date:document.getElementById("opsEquipmentExpected").value,materials_status:document.getElementById("opsEquipmentStatus").value,
+  final_site_verified_at:document.getElementById("opsSiteVerified").value,final_design_confirmed_at:document.getElementById("opsDesignConfirmed").value,
+  installation_team_confirmed_at:document.getElementById("opsTeamConfirmed").value,scaffolding_required:document.getElementById("opsScaffoldRequired").value,
+  scaffold_provider:document.getElementById("opsScaffoldProvider").value,scaffold_quote_cost:num("opsScaffoldCost"),
+  scaffold_arranged_by:document.getElementById("opsScaffoldArrangedBy").value,scaffold_booked_at:document.getElementById("opsScaffoldBooked").value,
+  scaffold_erection_date:document.getElementById("opsScaffoldErection").value,scaffold_removal_date:document.getElementById("opsScaffoldRemoval").value,
+  site_access_notes:document.getElementById("opsAccessNotes").value,vector_dg_status:document.getElementById("opsVectorStatus").value,
+  retailer_export_status:document.getElementById("opsRetailerStatus").value,retailer:document.getElementById("opsRetailer").value,
+  retailer_plan:document.getElementById("opsRetailerPlan").value,icp:document.getElementById("opsIcp").value,
+  meter_status:document.getElementById("opsMeterStatus").value,retailer_requirements:document.getElementById("opsRetailerRequirements").value
+ };
+ try{await jobOperationsPost(value);await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Workflow details saved.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function recordDepositReceived(){
+ const amount=Number(document.getElementById("opsDepositRequired").value);
+ if(!Number.isFinite(amount)||amount<=0){alert("Enter the deposit amount before recording receipt.");return;}
+ if(!window.confirm("Confirm the deposit has actually cleared. Job Hub will immediately create separate equipment order and payment tasks."))return;
+ try{await jobOperationsPost({action:"record_deposit",amount});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Deposit recorded. Equipment ordering and payment tasks are now due.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function recordVectorDocumentReceived(){
+ if(!window.confirm("Confirm the Vector approval/report is available. Job Hub will create a task to send it to the retailer."))return;
+ try{await jobOperationsPost({action:"vector_document_received"});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Vector document recorded; retailer follow-up task created.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function completeHandover(){
+ if(!window.confirm("Record the customer handover as complete? This schedules the 2-week and 1-month customer check-ins."))return;
+ try{await jobOperationsPost({action:"handover_complete",actor:"Jane"});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Handover recorded; aftercare check-ins scheduled.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function toggleJobTask(id,checked){
+ const task=(jobOperationData?.tasks||[]).find(t=>Number(t.id)===Number(id));let evidence_note;
+ if(checked&&task?.requires_evidence){evidence_note=prompt("Add the required evidence or document reference:");if(!evidence_note){await loadJobOperations();return;}}
+ try{await jobOperationsPost({action:"update_task",task_id:id,status:checked?"completed":"open",actor:"Jane",evidence_note});await loadJobOperations();}catch(e){alert(e.message);await loadJobOperations();}
+}
+async function submitJobTask(event){
+ event.preventDefault();
+ try{await jobOperationsPost({action:"create_task",title:document.getElementById("jobTaskTitle").value,due_date:document.getElementById("jobTaskDue").value,stage:document.getElementById("jobTaskStage").value,assigned_to:document.getElementById("jobTaskAssignee").value,is_blocker:document.getElementById("jobTaskBlocker").checked,blocker_reason:document.getElementById("jobTaskBlockerReason").value,requires_evidence:document.getElementById("jobTaskEvidence").checked});document.getElementById("jobTaskForm").reset();document.getElementById("jobTaskStage").value="Operations";await loadJobOperations();}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function submitScopeItem(event){
+ event.preventDefault();
+ try{await jobOperationsPost({action:"add_scope_item",title:document.getElementById("scopeTitle").value,category:document.getElementById("scopeCategory").value,decision:document.getElementById("scopeDecision").value,details:document.getElementById("scopeDetails").value});document.getElementById("scopeItemForm").reset();await loadJobOperations();}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+async function updateInstallStatus(status){
+ try{await jobOperationsPost({action:"update_job_stage",install_status:status});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Installation status updated.";}catch(e){alert(e.message);}
+}
+async function closeOperationsJob(){
+ if(!window.confirm("Close this job only after handover, compliance and final payment are complete?"))return;
+ try{await jobOperationsPost({action:"close_job"});document.getElementById("jobOperationsMessage").textContent="Job closed. Its customer and system history remain in Job Hub; open aftercare tasks stay visible in Operations.";}catch(e){alert(e.message);}
+}
+async function logAftercareIssue(){
+ const title=prompt("What issue or maintenance follow-up needs action?");if(!title)return;
+ try{await jobOperationsPost({action:"aftercare_issue",title});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Aftercare task added.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+}
+document.getElementById("jobTaskForm")?.addEventListener("submit",submitJobTask);
+document.getElementById("scopeItemForm")?.addEventListener("submit",submitScopeItem);
+
   </script>
   <script src="/assets/fletcher-quote-import.js"></script>
   <script src="/assets/jobhub-materials.js?v=20261001-4"></script>

@@ -230,7 +230,7 @@ export async function onRequestPost(context) {
           accounting = { posted: false, reason: "accounting_post_error" };
         }
       } else if (status === "paid") {
-        await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Payment received' WHERE id = ?").bind(existing.job_id).run();
+        await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Payment received', final_payment_status = 'paid', final_payment_received_at = CURRENT_TIMESTAMP WHERE id = ?").bind(existing.job_id).run();
       }
       return Response.json({ ok: true, accounting });
     }
