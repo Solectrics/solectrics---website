@@ -1,4 +1,8 @@
 const CANONICAL_HOSTNAME = "solectrics.co.nz";
+const STAGING_ALLOWED_HOSTNAMES = new Set([
+  "solectrics-jobhub-staging.pages.dev",
+  "codex-jobhub-solar-operation.solectrics-jobhub-staging.pages.dev"
+]);
 
 function isPagesHostname(hostname) {
   return hostname === "pages.dev" || hostname.endsWith(".pages.dev");
@@ -7,10 +11,11 @@ function isPagesHostname(hostname) {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
-  // Staging deployments must not expose the shared staging DB through an
-  // unprotected per-deployment/preview alias. Use only the Access-protected host.
+  // The staging project has a shared staging database. Permit only its
+  // Access-protected project hostname and the one reviewed Operations preview;
+  // never allow preview aliases by suffix or wildcard.
   if (context.env.JOBHUB_STAGING_ONLY === "true" &&
-      url.hostname !== "solectrics-jobhub-staging.pages.dev") {
+      !STAGING_ALLOWED_HOSTNAMES.has(url.hostname)) {
     return new Response("Staging hostname is not allowed", {
       status: 403, headers: { "Cache-Control": "no-store" }
     });
@@ -20,8 +25,8 @@ export async function onRequest(context) {
     return context.next();
   }
 
-  // The isolated staging Pages project may opt into its own Access-protected
-  // pages.dev hostname. Production keeps the canonical-host redirect unless
+  // The isolated staging Pages project may opt into its explicitly allowed
+  // pages.dev hostnames. Production keeps the canonical-host redirect unless
   // this explicit Pages environment variable is set.
   if (context.env.ALLOW_PAGES_DEV_HOST === "true") {
     return context.next();
