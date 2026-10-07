@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Hub | Accounting</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f7f5ef;color:#263a36}.wrap{max-width:1050px;margin:auto;padding:32px 22px 70px}
+a{color:#ef9c20;font-weight:800;text-decoration:none}h1{margin:8px 0}.muted{color:#68716e;line-height:1.5}.card{background:#fff;border:1px solid #dedbd3;border-radius:18px;padding:20px;margin-top:18px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.reports{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+button,.button{background:#173f3f;color:#fff;border:0;border-radius:8px;padding:11px 14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
+label{font-size:12px;font-weight:800;display:block;margin:10px 0 5px}select,input,textarea{width:100%;padding:10px;border:1px solid #cfcac0;border-radius:8px;font:inherit}
+.row{border-top:1px solid #eee;padding:10px 0}.good{color:#276749}.warn{color:#9a6700}.bad{color:#a33}.num{font-size:26px;font-weight:800}
+@media(max-width:720px){.grid,.reports{grid-template-columns:1fr}}
+</style></head><body><main class="wrap"><a href="/mini-fergus">← JOB HUB</a><div class="muted" style="margin-top:20px">Standalone small-business accounting</div>
+<h1>Accounting & Accountant Centre</h1><p class="muted">Job Hub is the source of the operational records. This area exposes the accounting records, controls and accountant-ready reports without requiring Xero.</p>
+
+<section class="card"><div class="grid">
+<div><label>Accounting book</label><select id="book"></select></div>
+<div><label>Report period from</label><input id="from" type="date"><label>to</label><input id="to" type="date"></div>
+</div><div class="reports" style="margin-top:16px">
+<button data-report="gst">GST REPORT</button><button data-report="general_ledger">GENERAL LEDGER</button><button data-report="trial_balance">TRIAL BALANCE</button>
+<button data-report="profit_and_loss">P&L</button><button data-report="balance_sheet">BALANCE SHEET</button><button id="refreshControls">ACCOUNTANT CONTROLS</button>
+</div></section>
+
+<section class="card" id="report"><div class="muted">Choose a report.</div></section>
+
+<section class="grid">
+<div class="card"><h2>Lock accounting period</h2><p class="muted">Prevents ordinary posting into a signed-off month, GST period or year.</p>
+<label>Lock type</label><select id="lockType"><option value="month">Month</option><option value="gst">GST period</option><option value="year">Year</option><option value="accountant">Accountant lock</option></select>
+<label>Locked through</label><input id="lockedThrough" type="date"><label>Reason</label><textarea id="lockReason"></textarea><button id="lockPeriod">LOCK PERIOD</button><div id="lockMessage"></div></div>
+<div class="card"><h2>Current controls</h2><div id="locks" class="muted">Load a book to view locks.</div><h3>Accountant adjustments</h3><div id="adjustments" class="muted"></div><h3>Customer credit notes</h3><div id="credits" class="muted"></div></div>
+</section>
+</main><script>
+const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const money=(v,c="NZD")=>new Intl.NumberFormat("en-NZ",{style:"currency",currency:c}).format(Number(v||0));
+const book=document.getElementById("book");
+function dates(){return {from:document.getElementById("from").value,to:document.getElementById("to").value}}
+function defaultDates(){const now=new Date(),from=new Date(now.getFullYear(),now.getMonth(),1);document.getElementById("from").value=from.toISOString().slice(0,10);document.getElementById("to").value=now.toISOString().slice(0,10)}
+async function get(url){const r=await fetch(url),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Request failed");return d}
+async function post(body){const r=await fetch("/api/accountant-controls",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Request failed");return d}
+async function loadBooks(){const d=await get("/api/bookkeeping?view=books");book.innerHTML=(d.books||[]).map(b=>`<option value="${esc(b.id)}" data-currency="${esc(b.currency||"NZD")}">${esc(b.legal_name||b.name)}</option>`).join("");await loadControls()}
+async function loadReport(type){const id=book.value,{from,to}=dates(),report=document.getElementById("report");if(!id)return;
+try{
+ if(type==="gst"){const d=await get(`/api/accountant-controls?view=gst&book_id=${encodeURIComponent(id)}&from=${from}&to=${to}`);report.innerHTML=`<h2>GST report</h2><div class="grid"><div><div class="muted">Output GST</div><div class="num">${money(d.output_gst)}</div></div><div><div class="muted">Allowable input GST</div><div class="num">${money(d.allowable_input_gst)}</div></div></div><div class="row"><strong>Net GST payable: ${money(d.net_gst_payable)}</strong></div><div class="muted">Basis: ${esc(d.book.gst_basis)} · ${esc(from)} to ${esc(to)}</div>`;return}
+ const params=new URLSearchParams({view:type,book_id:id});if(type==="balance_sheet"||type==="trial_balance")params.set("as_at",to);else{params.set("from",from);params.set("to",to)}
+ const d=await get("/api/bookkeeping?"+params.toString());const rows=d.rows||d.transactions||[];report.innerHTML=`<h2>${esc(type.replaceAll("_"," "))}</h2><div class="muted">Report generated from posted Job Hub journals.</div><pre style="white-space:pre-wrap;overflow:auto">${esc(JSON.stringify(d,null,2))}</pre>`
+}catch(e){report.innerHTML='<span class="bad">'+esc(e.message)+'</span>'}}
+async function loadControls(){if(!book.value)return;try{const id=encodeURIComponent(book.value);const [l,a,c]=await Promise.all([get("/api/accountant-controls?view=locks&book_id="+id),get("/api/accountant-controls?view=adjustments&book_id="+id),get("/api/accountant-controls?view=credit_notes&book_id="+id)]);
+document.getElementById("locks").innerHTML=(l.locks||[]).length?(l.locks||[]).map(x=>`<div class="row"><strong>${esc(x.lock_type)}</strong> through ${esc(x.locked_through)} · ${x.active?"ACTIVE":"released"}<div class="muted">${esc(x.reason)}</div></div>`).join(""):"No period locks.";
+document.getElementById("adjustments").innerHTML=(a.adjustments||[]).length?a.adjustments.map(x=>`<div class="row">${esc(x.transaction_date)} · ${esc(x.adjustment_type)} · <strong>${esc(x.review_status)}</strong><div class="muted">${esc(x.reason)}</div></div>`).join(""):"No accountant adjustments.";
+document.getElementById("credits").innerHTML=(c.credit_notes||[]).length?c.credit_notes.map(x=>`<div class="row"><strong>${esc(x.credit_number)}</strong> · ${money(x.total_incl_gst)}<div class="muted">${esc(x.reason)}</div></div>`).join(""):"No customer credit notes."}catch(e){document.getElementById("locks").innerHTML='<span class="bad">'+esc(e.message)+'</span>'}}
+document.addEventListener("click",e=>{if(e.target.dataset.report)loadReport(e.target.dataset.report)});
+document.getElementById("refreshControls").addEventListener("click",loadControls);book.addEventListener("change",loadControls);
+document.getElementById("lockPeriod").addEventListener("click",async()=>{const m=document.getElementById("lockMessage");try{await post({action:"lock_period",book_id:book.value,lock_type:document.getElementById("lockType").value,locked_through:document.getElementById("lockedThrough").value,reason:document.getElementById("lockReason").value});m.className="good";m.textContent="Period locked.";await loadControls()}catch(e){m.className="bad";m.textContent=e.message}});
+defaultDates();loadBooks();
+</script></body></html>
