@@ -34,9 +34,17 @@ export async function onRequestGet(context) {
     const auth = await requireIdentity(context);
     if (auth.error) return auth.error;
     const user = await findVerifiedUser(db, auth.identity);
-    if (!user) return Response.json({ ok: true, identity: auth.identity, user: null, businesses: [] });
+    const available = await db.prepare(`SELECT b.id, b.slug, b.name, b.legal_name, b.business_type
+      FROM jobhub_businesses b
+      WHERE b.active = 1
+        AND NOT EXISTS (
+          SELECT 1 FROM jobhub_business_memberships m
+          WHERE m.business_id = b.id AND m.status = 'active'
+        )
+      ORDER BY b.name`).all();
+    if (!user) return Response.json({ ok: true, identity: auth.identity, user: null, businesses: [], available_unclaimed_businesses: available.results || [] });
     const businesses = await loadBusinessContexts(db, user.id);
-    return Response.json({ ok: true, identity: auth.identity, user, businesses });
+    return Response.json({ ok: true, identity: auth.identity, user, businesses, available_unclaimed_businesses: available.results || [] });
   } catch (error) {
     console.error("Business config GET error:", error);
     if (/no such table|no such column/i.test(String(error?.message || error))) return fail("Business configuration migration is not applied", 409);
@@ -52,6 +60,39 @@ export async function onRequestPost(context) {
     if (auth.error) return auth.error;
     const body = await context.request.json();
     const action = clean(body.action, 80);
+
+    if (action === "claim_business") {
+      const businessId = clean(body.business_id, 100);
+      if (!businessId) return fail("business_id is required");
+      const business = await db.prepare(`SELECT id FROM jobhub_businesses
+        WHERE id = ? AND active = 1 LIMIT 1`).bind(businessId).first();
+      if (!business) return fail("Business not found", 404);
+      const activeMembership = await db.prepare(`SELECT id FROM jobhub_business_memberships
+        WHERE business_id = ? AND status = 'active' LIMIT 1`).bind(businessId).first();
+      if (activeMembership) return fail("This business already has an active owner or member", 409);
+
+      let user = await findVerifiedUser(db, auth.identity);
+      const userId = user?.id || crypto.randomUUID();
+      if (!user) {
+        await db.prepare(`INSERT INTO jobhub_users (id, primary_email, display_name)
+          VALUES (?, ?, ?)`).bind(userId, auth.identity.email, clean(body.display_name, 160) || null).run();
+        await db.prepare(`INSERT INTO jobhub_user_identities
+          (id, user_id, provider, provider_subject, email, email_verified, verified_at, last_seen_at)
+          VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`)
+          .bind(crypto.randomUUID(), userId, auth.identity.provider, auth.identity.subject, auth.identity.email).run();
+      }
+      await db.batch([
+        db.prepare(`INSERT INTO jobhub_business_memberships
+          (id, business_id, user_id, role, status, joined_at)
+          VALUES (?, ?, ?, 'owner', 'active', CURRENT_TIMESTAMP)`)
+          .bind(crypto.randomUUID(), businessId, userId),
+        db.prepare(`INSERT INTO jobhub_business_owners
+          (id, business_id, user_id, ownership_percent, ownership_type, is_primary)
+          VALUES (?, ?, ?, NULL, 'owner', 1)`)
+          .bind(crypto.randomUUID(), businessId, userId)
+      ]);
+      return Response.json({ ok: true, business_id: businessId, user_id: userId }, { status: 201 });
+    }
 
     if (action === "bootstrap_business") {
       let user = await findVerifiedUser(db, auth.identity);
