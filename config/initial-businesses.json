@@ -5,8 +5,8 @@
       "id": "business-solectrics",
       "slug": "solectrics",
       "name": "Solectrics",
-      "legal_name": null,
-      "business_type": "other",
+      "legal_name": "Solectrics Limited",
+      "business_type": "company",
       "currency": "NZD",
       "timezone": "Pacific/Auckland",
       "modules": {
@@ -24,14 +24,14 @@
         "use_as_supplier_inbox_book": true,
         "use_as_sales_book": true
       },
-      "notes": "Initial Job Hub business. Preserve the existing bookkeeping book and all existing Solectrics operational records."
+      "notes": "Separate New Zealand limited company. Preserve the existing Solectrics bookkeeping book and all existing Solectrics operational records; never mix its books or transactions with another business."
     },
     {
       "id": "business-sol-espresso",
       "slug": "sol-espresso",
       "name": "Sol Espresso",
-      "legal_name": null,
-      "business_type": "other",
+      "legal_name": "Sol Espresso Limited",
+      "business_type": "company",
       "currency": "NZD",
       "timezone": "Pacific/Auckland",
       "modules": {
@@ -46,7 +46,7 @@
         "create_book_later": true,
         "book_code": "SOL-ESPRESSO"
       },
-      "notes": "Seasonal mobile coffee business. POS and event profitability sit above the shared accounting core."
+      "notes": "Separate New Zealand limited company. Seasonal mobile coffee business; POS and event profitability sit above its own accounting book and must remain financially separate from Solectrics."
     },
     {
       "id": "business-yogacamp",
