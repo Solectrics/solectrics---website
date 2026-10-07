@@ -1,4 +1,5 @@
 import { ensureCustomerInvoiceSchema, ensureInternalCostingSchema } from "./_schema.js";
+import { postIssuedCustomerInvoiceToBook } from "./customer-invoice-accounting.js";
 
 const INVOICE_STATUSES = new Set(["draft", "issued", "paid", "void"]);
 const SOLECTRICS_GST_NUMBER = "137-174-537";
@@ -219,12 +220,19 @@ export async function onRequestPost(context) {
           voided_at = CASE WHEN ? = 'void' AND voided_at IS NULL THEN CURRENT_TIMESTAMP ELSE voided_at END
         WHERE id = ?
       `).bind(status, status, status, status, invoiceId).run();
+      let accounting = null;
       if (status === "issued") {
         await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Await customer payment' WHERE id = ?").bind(existing.job_id).run();
+        try {
+          accounting = await postIssuedCustomerInvoiceToBook(db, invoiceId, cleanText(body.actor || "Job Hub user", 160));
+        } catch (error) {
+          console.warn("Invoice issued; accounting post needs review:", error.message);
+          accounting = { posted: false, reason: "accounting_post_error" };
+        }
       } else if (status === "paid") {
         await db.prepare("UPDATE jobs SET job_status = 'invoiced', next_action = 'Payment received' WHERE id = ?").bind(existing.job_id).run();
       }
-      return Response.json({ ok: true });
+      return Response.json({ ok: true, accounting });
     }
 
     if (body.action !== "generate") return errorResponse("Unknown invoice action", 400);
