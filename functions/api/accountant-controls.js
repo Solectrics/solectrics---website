@@ -111,6 +111,26 @@ export async function onRequestPost(context){
       return Response.json({ok:true});
     }
 
+    if(action==="review_adjustment"){
+      const adjustmentId=clean(body.adjustment_id,100);
+      const status=new Set(["reviewed","rejected"]).has(body.review_status)?body.review_status:null;
+      const reviewer=clean(body.reviewed_by||body.actor||"",160);
+      if(!adjustmentId||!status||!reviewer) return fail("adjustment_id, review_status and reviewed_by are required");
+      const adjustment=await db.prepare(`SELECT * FROM bookkeeping_accountant_adjustments
+        WHERE id=? AND book_id=?`).bind(adjustmentId,bookId).first();
+      if(!adjustment) return fail("Accountant adjustment not found",404);
+      await db.batch([
+        db.prepare(`UPDATE bookkeeping_accountant_adjustments
+          SET review_status=?,reviewed_by=?,reviewed_at=CURRENT_TIMESTAMP WHERE id=?`)
+          .bind(status,reviewer,adjustmentId),
+        db.prepare(`INSERT INTO bookkeeping_audit_events
+          (id,book_id,transaction_id,entity_type,entity_id,action,actor,after_json)
+          VALUES (?,?,?,'accountant_adjustment',?,?,?,?)`)
+          .bind(crypto.randomUUID(),bookId,adjustment.transaction_id,adjustmentId,`review_${status}`,reviewer,JSON.stringify({review_status:status}))
+      ]);
+      return Response.json({ok:true,adjustment_id:adjustmentId,review_status:status});
+    }
+
     if(action==="customer_credit_note"){
       const originalId=clean(body.original_transaction_id,100);
       const creditDate=safeAccountingDate(body.credit_date);
