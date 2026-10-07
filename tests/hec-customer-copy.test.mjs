@@ -53,7 +53,7 @@ async function submit(optIn, env = {}) {
   return { response, data: await response.json(), db };
 }
 
-test("copy choice is separate and optional; privacy consent remains the submission gate", () => {
+test("copy choice is separate; unticked copy sends to Solectrics, while privacy remains required", async () => {
   const section = html.slice(html.indexOf('id="sendToSolectrics"'));
   const privacy = section.indexOf('id="privacyConsent"');
   const copy = section.indexOf('id="customerCopyConsent"');
@@ -62,12 +62,33 @@ test("copy choice is separate and optional; privacy consent remains the submissi
   assert.match(section.slice(copy, button), /type="checkbox"/);
   assert.doesNotMatch(section.slice(copy, button), /required/);
   assert.match(section, /I'm happy for Solectrics to receive and use my Home Energy Check/);
-  const handler = html.slice(html.indexOf("async function sendHomeEnergyCheck()"), html.indexOf("function showResult()"));
-  assert.ok(handler.indexOf("if (!consent || !consent.checked)") < handler.indexOf("await submitHomeEnergyCheck()"));
-  assert.match(html, /customerCopyOptIn = Boolean\(document\.getElementById\('customerCopyConsent'\)\?\.checked\)/);
-  assert.equal((html.match(/fetch\s*\(\s*['"]\/api\/enquiry['"]/g) || []).length, 1);
-});
+  assert.ok(html.includes("answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);"));
+  assert.equal(html.split("'/api/enquiry'").length - 1, 1);
 
+  const handlerStart = html.indexOf("async function sendHomeEnergyCheck()");
+  const handlerEnd = html.indexOf("function showResult()", handlerStart);
+  const handler = html.slice(handlerStart, handlerEnd);
+  const runHandler = (privacyChecked, submit) => new Function(
+    "document", "submitHomeEnergyCheck", "console",
+    `${handler}; return sendHomeEnergyCheck();`
+  )({
+    getElementById(id) {
+      return ({
+        privacyConsent: { checked: privacyChecked, disabled: false },
+        sendCheckButton: { disabled: false, textContent: "" },
+        sendCheckStatus: { className: "", textContent: "" }
+      })[id];
+    }
+  }, submit, { error() {} });
+
+  let submitCalls = 0;
+  await runHandler(false, async () => { submitCalls++; });
+  assert.equal(submitCalls, 0, "privacy consent unchecked must block submission");
+
+  const result = { customerCopy: { requested: false, sent: false } };
+  await runHandler(true, async () => { submitCalls++; return result; });
+  assert.equal(submitCalls, 1, "privacy consent alone must allow HEC submission when customer copy is unticked");
+});
 test("unticked customer copy still creates exactly one enquiry and one linked solar job", async () => {
   const originalFetch = globalThis.fetch;
   let emailCalls = 0;
