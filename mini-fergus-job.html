@@ -477,6 +477,8 @@ if (typeof value === "object" && value !== null) {
     }
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
+const accountantViewLink = document.getElementById("accountantViewLink");
+if (accountantViewLink && jobId) accountantViewLink.href = `/mini-fergus-accountant-demo?job_id=${encodeURIComponent(jobId)}`;
   let currentAnswers = {};
   let currentJobType = "solar";
 
