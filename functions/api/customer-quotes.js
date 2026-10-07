@@ -298,7 +298,7 @@ export async function onRequestPost(context) {
       visuals: isSolar && body.include_roof_layout !== false ? assets : {},
       energy_graph: energyGraph,
       payment: {
-        deposit_wording: "A deposit covering the equipment, materials, freight and supplier commitments will be invoiced through Hnry once an option is accepted."
+        deposit_wording: "A deposit covering the equipment, materials, freight and supplier commitments will be invoiced once an option is accepted."
       },
       currency: "NZD",
       gst_rate: 0.15
