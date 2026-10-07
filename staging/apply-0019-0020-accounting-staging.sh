@@ -11,7 +11,9 @@ readonly -a MIGRATIONS=(
 )
 
 fail(){ printf 'STOP: %s\n' "$*" >&2; exit 1; }
-confirm(){ local a; read -r -p "$1" a; [[ "$a" == 'yes' ]] || fail 'Confirmation did not match.'; }
+
+[[ "${1:-}" == '--apply-staging' && $# -eq 1 ]] ||
+  fail 'Usage: bash staging/apply-0019-0020-accounting-staging.sh --apply-staging'
 
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'Run from the Job Hub checkout.'
 cd "$ROOT"
@@ -67,7 +69,7 @@ printf '\nMigration history:\n'
 npx wrangler d1 migrations list "$DATABASE" --remote --config "$RUN_DIR/wrangler.toml"
 
 if printf '%s\n' "$PRE" | grep -Eq '"has_0019"[[:space:]]*:[[:space:]]*0|"has_0020"[[:space:]]*:[[:space:]]*0'; then
-  confirm 'Type yes to apply only pending 0019/0020 migrations to jobhub-staging: '
+  printf 'Explicit --apply-staging authorization present. Applying only pending 0019/0020 migrations.\n'
   npx wrangler d1 migrations apply "$DATABASE" --remote --config "$RUN_DIR/wrangler.toml"
 else
   printf '0019 and 0020 signatures already present; no schema migration write needed.\n'
@@ -86,7 +88,7 @@ done
 
 printf '\nExisting active books before seed:\n'
 exec_sql --command "SELECT id,name,legal_name,business_id,book_code,book_role FROM bookkeeping_books WHERE active=1 ORDER BY created_at,id;"
-confirm 'Type yes to seed/update only Solectrics Limited, Sol Espresso Limited and YOGACAMP business configuration: '
+printf 'Applying only the committed initial-business seed to jobhub-staging.\n'
 exec_sql --file "$ROOT/$SEED"
 
 printf '\nRead-only business/book verification:\n'
