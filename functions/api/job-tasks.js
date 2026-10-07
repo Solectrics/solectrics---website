@@ -1,4 +1,5 @@
 import { insertTask, seedAcceptedQuoteTasks, generateAftercareTasks, generatePostInstallTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
+import { loadElectricityDetails } from "./_job-electricity-details.js";
 
 const ASSIGNEES = new Set(["Jane", "Tom", "Ben", "External", "Unassigned"]);
 const TASK_STATUSES = new Set(["open", "completed", "cancelled"]);
@@ -100,7 +101,7 @@ export async function onRequestGet(context) {
         j.deposit_required, j.deposit_received, j.deposit_received_at, j.materials_status, j.materials_received_at,
         j.equipment_supplier, j.equipment_order_reference, j.equipment_amount_paid,
         j.equipment_paid_at, j.equipment_expected_delivery_date, j.vector_dg_status,
-        j.retailer_export_status, j.retailer, j.retailer_plan, j.scaffolding_required,
+        j.retailer_export_status, j.retailer, j.retailer_plan, j.icp, j.meter_status, j.scaffolding_required,
         j.scaffold_provider, j.scaffold_booked_at, j.final_site_verified_at,
         j.final_design_confirmed_at, j.installation_team_confirmed_at, j.install_status,
         j.supervision_status, j.inspection_status, j.coc_status, j.final_payment_status,
@@ -122,7 +123,7 @@ export async function onRequestGet(context) {
         j.finance_approval_required, j.deposit_status, j.deposit_required, j.deposit_received,
         j.materials_status, j.materials_received_at, j.equipment_supplier, j.equipment_order_reference, j.equipment_amount_paid,
         j.equipment_paid_at, j.equipment_expected_delivery_date, j.vector_dg_status,
-        j.retailer_export_status, j.retailer, j.retailer_plan, j.scaffolding_required,
+        j.retailer_export_status, j.retailer, j.retailer_plan, j.icp, j.meter_status, j.scaffolding_required,
         j.scaffold_provider, j.scaffold_booked_at, j.final_site_verified_at, j.final_design_confirmed_at,
         j.installation_team_confirmed_at, j.install_status, j.supervision_status, j.supervisor_approval_status,
         j.inspection_status, j.coc_status, j.final_payment_status, j.handover_completed_at, j.job_closed_at,
@@ -140,6 +141,7 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
+      electricity_details: jobId ? await loadElectricityDetails(db, jobId) : null,
       tasks: taskResult.results || [],
       jobs: (jobsResult.results || []).filter(job => !jobId || Number(job.job_id) === jobId),
       scope_items: scopeResult.results || [],
@@ -392,3 +394,4 @@ export async function onRequestPost(context) {
     return jsonError(error.message || "Unable to save operations task");
   }
 }
+

@@ -1,4 +1,5 @@
 import { compareTariffs } from "./_energy-calculator.js";
+import { loadElectricityDetails } from "./_job-electricity-details.js";
 
 const REVIEW_TABLE = `
   CREATE TABLE IF NOT EXISTS energy_reviews (
@@ -247,7 +248,8 @@ function decodeTariff(row) {
 
 async function loadBundle(db, jobId) {
   const job = await optionalFirst(db, `
-    SELECT jobs.id AS job_id, enquiries.customer_name, enquiries.address, enquiries.answers_json
+    SELECT jobs.id AS job_id, jobs.icp, jobs.retailer, jobs.retailer_plan,
+      enquiries.customer_name, enquiries.address, enquiries.answers_json
     FROM jobs JOIN enquiries ON jobs.enquiry_id = enquiries.id WHERE jobs.id = ?`, jobId);
   if (!job) return null;
   const answers = object(job.answers_json);
@@ -264,6 +266,7 @@ async function loadBundle(db, jobId) {
     proposed_system: deriveProposedSystem(answers, assessment || {}, object(designRow?.data_json))
   };
   const saved = decodeReview(reviewRow);
+  const electricityDetails = await loadElectricityDetails(db, jobId, job);
   const review = saved || {
     job_id: jobId,
     status: "draft",
@@ -279,9 +282,12 @@ async function loadBundle(db, jobId) {
     post_install_review_due: ""
   };
   const tariffs = tariffRows.map(decodeTariff);
+  review.current_plan = { ...review.current_plan, icp: electricityDetails.icp,
+    retailer: electricityDetails.retailer, plan_name: electricityDetails.retailer_plan };
   const comparisons = review.model?.model_ready ? compareTariffs(review.model, tariffs) : [];
   return {
     customer: { name: job.customer_name, address: job.address },
+    electricity_details: electricityDetails,
     review,
     derived,
     files,
@@ -366,6 +372,14 @@ export async function onRequestPost(context) {
 
     if (body.action === "save_review") {
       const review = sanitiseReview(body.review);
+      // Identity is edited once on the job. Retain legacy source values without
+      // letting a tariff form create or overwrite another independent copy.
+      const previous = await optionalFirst(db, "SELECT current_plan_json FROM energy_reviews WHERE job_id = ?", jobId);
+      const oldPlan = object(previous?.current_plan_json);
+      for (const key of ["icp", "retailer", "plan_name"]) {
+        delete review.current_plan[key];
+        if (oldPlan[key] !== undefined) review.current_plan[key] = oldPlan[key];
+      }
       const requestedReady = Boolean(review.model.model_ready);
       review.model.model_ready = requestedReady;
       if (requestedReady) {
@@ -470,3 +484,4 @@ export async function onRequestPost(context) {
     return error("Unable to save energy review", 500, cause.message);
   }
 }
+

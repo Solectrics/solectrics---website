@@ -17,6 +17,8 @@
       <h2>1. Your current electricity plan</h2>
       <p class="muted">Values extracted from customer bills are brought in automatically. Blank or unclear information stays marked “Needs review”—Job Hub will not invent a tariff value.</p>
       <div class="grid three" id="currentPlanFields"></div>
+      <p class="muted">ICP, retailer and current plan are shared with the job. <a id="editElectricityDetails" href="#">Correct the job electricity details</a></p>
+      <div id="electricityDetailsWarnings" role="status"></div>
     </section>
 
     <section class="card">
@@ -143,7 +145,16 @@ function kwh(v){return v===null||v===undefined?'Needs review':`${Number(v).toLoc
 function inputMarkup(prefix,[key,label,type],value){const id=`${prefix}_${key}`;if(type==='select'){const options=key==='pricing_type'?[['needs_review','Needs review'],['flat','Flat / anytime rate'],['time_of_use','Time-of-use']]:[['needs_review','Needs review'],['yes','Yes'],['no','No']];return `<div><label class="field" for="${id}">${esc(label)}</label><select id="${id}" data-key="${key}">${options.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>`}if(type==='textarea')return `<div class="full"><label class="field" for="${id}">${esc(label)}</label><textarea id="${id}" data-key="${key}" placeholder="Needs review">${esc(value??'')}</textarea></div>`;if(type==='checkbox')return `<label class="check full"><input id="${id}" data-key="${key}" type="checkbox" ${value?'checked':''}> ${esc(label)}</label>`;return `<div><label class="field" for="${id}">${esc(label)}</label><input class="needs-review" id="${id}" data-key="${key}" type="${type}" ${type==='number'?'min="0" step="any"':''} value="${esc(value??'')}" placeholder="Needs review"></div>`}
 function buildFields(container,prefix,fields,values){container.innerHTML=fields.map(field=>inputMarkup(prefix,field,values?.[field[0]])).join('');fields.filter(f=>f[2]==='select').forEach(([key])=>{const el=document.getElementById(`${prefix}_${key}`);if(el)el.value=values?.[key]||'needs_review'})}
 function readFields(prefix,fields){const out={};fields.forEach(([key,,type])=>{const el=document.getElementById(`${prefix}_${key}`);if(!el)return;if(type==='checkbox')out[key]=el.checked;else if(type==='number')out[key]=n(el.value);else out[key]=el.value.trim()});return out}
-function renderCurrentPlan(){buildFields(document.getElementById('currentPlanFields'),'current',currentPlanFields,state.review.current_plan)}
+function renderCurrentPlan(){
+  buildFields(document.getElementById('currentPlanFields'),'current',currentPlanFields,state.review.current_plan);
+  for(const key of ['icp','retailer','plan_name']){
+    const field=document.getElementById(`current_${key}`);
+    field.readOnly=true;
+    field.placeholder='Confirm in job electricity details';
+  }
+  document.getElementById('editElectricityDetails').href=`/mini-fergus-job.html?id=${encodeURIComponent(jobId)}#jobElectricityDetails`;
+  document.getElementById('electricityDetailsWarnings').textContent=(state.bundle.electricity_details?.conflicts||[]).map(item=>`${item.field}: ${item.confirmed?'saved job value is used; older records differ':'conflicting values — confirm on the job'}. ${item.candidates.map(c=>`${c.source}: ${c.value}`).join('; ')}`).join('\n');
+}
 function renderBaseline(){const b=state.review.baseline||{};document.getElementById('qualityLine').innerHTML=`<strong>Data quality:</strong> ${esc(b.data_quality||'Needs review')}`;document.getElementById('baselineSummary').innerHTML=[['Annual use',kwh(b.annual_consumption_kwh)],['Annual spend',money(b.annual_expenditure_nzd)],['Average daily use',b.average_daily_consumption_kwh==null?'Needs review':`${b.average_daily_consumption_kwh} kWh/day`],['Annual fixed charges',money(b.annual_fixed_charges_nzd)]].map(([l,v])=>`<div class="metric"><small>${l}</small><strong>${v}</strong></div>`).join('');document.querySelectorAll('.baseline-number').forEach(el=>el.value=b[el.dataset.key]??'');document.getElementById('baseline_seasonal_pattern').value=b.seasonal_pattern||'';document.getElementById('baseline_notes').value=b.notes||'';document.getElementById('consumption_period_start').value=state.review.consumption_period_start||b.consumption_period_start||'';document.getElementById('consumption_period_end').value=state.review.consumption_period_end||b.consumption_period_end||''}
 function renderProposed(){const p=state.review.proposed_system||{};buildFields(document.getElementById('proposedSystemFields'),'proposed',proposedFields,p);document.getElementById('smartOptions').innerHTML=smartFields.map(([key,label])=>`<label class="check"><input type="checkbox" data-smart="${key}" ${p[key]?'checked':''}> ${esc(label)}</label>`).join('')+`<div class="full"><label class="field">EV charging strategy</label><input id="ev_charging_strategy" value="${esc(p.ev_charging_strategy||'')}" placeholder="Needs review"></div><div class="full"><label class="field">Other smart / flexible loads</label><textarea id="other_flexible_loads">${esc(p.other_flexible_loads||'')}</textarea></div>`}
 function currentProposed(){return {...readFields('proposed',proposedFields),...Object.fromEntries([...document.querySelectorAll('[data-smart]')].map(el=>[el.dataset.smart,el.checked])),ev_charging_strategy:document.getElementById('ev_charging_strategy').value.trim(),other_flexible_loads:document.getElementById('other_flexible_loads').value.trim()}}
@@ -168,3 +179,4 @@ document.getElementById('saveReview').addEventListener('click',saveReview);docum
 </script>
 </body>
 </html>
+

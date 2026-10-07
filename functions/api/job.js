@@ -1,4 +1,5 @@
 import { ensureJobTypeColumn } from "./_schema.js";
+import { loadElectricityDetails } from "./_job-electricity-details.js";
 
 function errorResponse(message, status = 500, detail) {
   return Response.json(
@@ -36,6 +37,9 @@ export async function onRequestGet(context) {
         jobs.next_action,
         jobs.job_type,
         jobs.supplier_reference,
+        jobs.icp,
+        jobs.retailer,
+        jobs.retailer_plan,
         enquiries.*
       FROM jobs
       JOIN enquiries ON jobs.enquiry_id = enquiries.id
@@ -51,7 +55,8 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
-      job: job
+      job: job,
+      electricity_details: await loadElectricityDetails(db, jobId, job)
     });
 
   } catch (error) {
@@ -113,3 +118,4 @@ export async function onRequestPost(context) {
     return errorResponse("Unable to update job", 500, error.message);
   }
 }
+

@@ -438,7 +438,9 @@
         <div><label for="opsScaffoldRemoval">Removal date</label><input id="opsScaffoldRemoval" type="date"></div>
         <div class="wide"><label for="opsAccessNotes">Access / parking / site notes</label><textarea id="opsAccessNotes" rows="2"></textarea></div>
       </div>
-      <h3>Vector / retailer / export</h3>
+      <h3 id="jobElectricityDetails">Vector / retailer / export</h3>
+      <p class="placeholder">Enter or correct ICP, retailer and current plan here once. Site Visit, Design and Tariff Review use these shared details.</p>
+      <div id="electricityDetailsWarnings" role="status"></div>
       <div class="grid">
         <div><label for="opsVectorStatus">Vector / DG status</label><select id="opsVectorStatus"><option value="not_started">Not started</option><option value="submitted">Submitted</option><option value="information_required">Information required</option><option value="approved">Approved</option><option value="not_required">Not required</option></select></div>
         <div><label for="opsRetailerStatus">Retailer / export status</label><select id="opsRetailerStatus"><option value="not_contacted">Not contacted</option><option value="contacted">Contacted</option><option value="awaiting_vector">Awaiting Vector</option><option value="vector_document_received">Vector document received</option><option value="sent_to_retailer">Sent to retailer</option><option value="processing">Processing</option><option value="complete">Complete</option><option value="not_required">Not required</option></select></div>
@@ -569,6 +571,35 @@ const accountantViewLink = document.getElementById("accountantViewLink");
 if (accountantViewLink && jobId) accountantViewLink.href = `/mini-fergus-accountant-demo?job_id=${encodeURIComponent(jobId)}`;
   let currentAnswers = {};
   let currentJobType = "solar";
+  let sharedElectricityDetails = null;
+  let loadedAssessmentRetailer = null;
+
+function applySharedElectricityDetails() {
+  if (!sharedElectricityDetails) return;
+  const fields = { icp: ["visit_icp", "design_icp"], retailer: ["visit_retailer", "design_retailer", "current_retailer"] };
+  for (const [key, ids] of Object.entries(fields)) {
+    for (const id of ids) {
+      const field = document.getElementById(id);
+      if (!field) continue;
+      field.value = sharedElectricityDetails[key] || "";
+      field.readOnly = true;
+      field.placeholder = "Enter once in job electricity details";
+      field.title = "Shared job detail — correct it in Vector / retailer / export";
+      if (!document.getElementById(id + "_sharedLink")) {
+        const link = document.createElement("a");
+        link.id = id + "_sharedLink";
+        link.href = "#jobElectricityDetails";
+        link.textContent = "Shared job detail · edit here";
+        field.insertAdjacentElement("afterend", link);
+      }
+    }
+  }
+  const warning = document.getElementById("electricityDetailsWarnings");
+  if (warning) warning.textContent = (sharedElectricityDetails.conflicts || []).map(item =>
+    `${item.field === "retailer_plan" ? "Current plan" : item.field.toUpperCase()}: ${item.confirmed ? "using the saved job value; older records differ" : "conflicting saved values — confirm here"}. ` +
+    item.candidates.map(candidate => `${candidate.source}: ${candidate.value}`).join("; ")
+  ).join("\n");
+}
 
 async function loadJob() {
   const page = document.getElementById("page");
@@ -591,6 +622,7 @@ async function loadJob() {
         }
 
         const job = data.job;
+        sharedElectricityDetails = data.electricity_details;
         currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
         
@@ -2164,242 +2196,10 @@ window.currentAnswers = answers;
 </section>
 
           <section class="card solar-only">
-  <h2>Quote</h2>
-
-  <p class="placeholder">
-    Build the customer quote from the recommended solar-smart solution above.
-  </p>
-
-  <h3>Recommended system</h3>
-
-  <div class="grid">
-
-    <div>
-      <label>Solar system</label>
-      <input type="text" id="quote_solar_system"
-        placeholder="e.g. 6.67 kWp solar — 15 × 445 W panels">
-    </div>
-
-    <div>
-      <label>Inverter</label>
-      <input type="text" id="quote_inverter">
-    </div>
-
-    <div>
-      <label>Battery</label>
-      <input type="text" id="quote_battery"
-        placeholder="e.g. Start without battery — battery-ready">
-    </div>
-
-    <div>
-      <label>Smart energy additions</label>
-      <input type="text" id="quote_smart_energy"
-        placeholder="e.g. Solar-smart hot-water control">
-    </div>
-
-  </div>
-
-  <h3>Price build-up</h3>
-
-  <div class="grid">
-
-    <div>
-      <label>Materials cost — ex GST ($)</label>
-      <input type="number" step="0.01" id="quote_materials">
-    </div>
-
-    <div>
-      <label>Materials mark-up (%)</label>
-      <input type="number" step="0.1" id="quote_markup" value="30">
-    </div>
-
-    <div>
-      <label>Tom labour ($)</label>
-      <input type="number" step="0.01" id="quote_tom_labour">
-    </div>
-
-    <div>
-      <label>Helper labour ($)</label>
-      <input type="number" step="0.01" id="quote_helper_labour">
-    </div>
-
-    <div>
-      <label>Supervision / CoC ($)</label>
-      <input type="number" step="0.01" id="quote_supervision">
-    </div>
-
-    <div>
-      <label>Other costs ($)</label>
-      <input type="number" step="0.01" id="quote_other">
-    </div>
-
-  </div>
-
-  <h3>Customer price</h3>
-
-  <div class="grid">
-
-    <div>
-      <label>Price ex GST ($)</label>
-      <input type="number" step="0.01" id="quote_ex_gst" readonly>
-    </div>
-
-    <div>
-      <label>GST ($)</label>
-      <input type="number" step="0.01" id="quote_gst" readonly>
-    </div>
-
-    <div>
-      <label>Price incl GST ($)</label>
-      <input type="number" step="0.01" id="quote_total" readonly>
-    </div>
-
-  </div>
-
-  <button type="button" id="calculateQuote">
-    CALCULATE QUOTE
-  </button>
-<!-- QUOTE & ACCEPTANCE -->
-
-<hr style="margin:32px 0;border:0;border-top:1px solid #ddd;">
-
-<h3>Quote & acceptance</h3>
-
-<div class="placeholder">
-  Track the quote from preparation through customer acceptance,
-  finance and deposit payment.
-</div>
-
-<div class="grid">
-
-  <div>
-    <label>Quote number</label>
-    <input type="text" id="quote_number"
-      placeholder="e.g. SOL-2026-001">
-  </div>
-
-  <div>
-    <label>Quote status</label>
-    <select id="quote_status">
-      <option value="">Select...</option>
-      <option value="draft">Draft</option>
-      <option value="sent">Sent</option>
-      <option value="accepted">Accepted</option>
-      <option value="declined">Declined</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Quote sent</label>
-    <input type="date" id="quote_sent_date">
-  </div>
-
-  <div>
-    <label>Quote expiry</label>
-    <input type="date" id="quote_expiry_date">
-  </div>
-
-</div>
-
-
-<h3>Customer acceptance</h3>
-
-<div class="grid">
-
-  <div>
-    <label>Accepted date</label>
-    <input type="date" id="quote_accepted_date">
-  </div>
-
-  <div>
-    <label>Deposit required (%)</label>
-    <input type="number"
-      id="quote_deposit_percent"
-      min="0"
-      max="100"
-      step="1"
-      value="50">
-  </div>
-
-  <div>
-    <label>Deposit amount ($)</label>
-    <input type="number"
-      id="quote_deposit_amount"
-      step="0.01"
-      readonly>
-  </div>
-
-  <div>
-    <label>Deposit status</label>
-    <select id="quote_deposit_status">
-      <option value="">Select...</option>
-      <option value="not_required">Not required</option>
-      <option value="awaiting">Awaiting deposit</option>
-      <option value="received">Deposit received</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Deposit received date</label>
-    <input type="date" id="quote_deposit_received_date">
-  </div>
-
-</div>
-
-
-<h3>Payment & finance</h3>
-
-<div class="grid">
-
-  <div>
-    <label>How is the customer paying?</label>
-    <select id="quote_finance_type">
-      <option value="">Select...</option>
-      <option value="self_funded">Self-funded</option>
-      <option value="westpac">Westpac Green Loan</option>
-      <option value="asb">ASB</option>
-      <option value="anz">ANZ</option>
-      <option value="bnz">BNZ</option>
-      <option value="kiwibank">Kiwibank</option>
-      <option value="other_finance">Other finance</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Finance status</label>
-    <select id="quote_finance_status">
-      <option value="">Select...</option>
-      <option value="not_required">Not required</option>
-      <option value="customer_investigating">Customer investigating</option>
-      <option value="application_submitted">Application submitted</option>
-      <option value="approved">Approved</option>
-      <option value="declined">Declined</option>
-    </select>
-  </div>
-
-</div>
-
-
-<div style="margin-top:20px;">
-  <label>Quote / acceptance notes</label>
-  <textarea
-    id="quote_acceptance_notes"
-    rows="4"
-    placeholder="Variations, customer requests, finance notes or anything that needs following up."></textarea>
-</div>
-
-
-<div id="preinstallReadiness"
-     style="
-       margin-top:24px;
-       padding:18px;
-       border-radius:12px;
-       background:#f5f5f5;
-       font-weight:700;
-     ">
-  NOT READY FOR PRE-INSTALL
-</div>
-
+  <h2>Quote &amp; acceptance</h2>
+  <p class="placeholder">Use the saved costing and customer quote versions above. Finance, deposit and installation progress are managed once in Operations.</p>
+  <a class="button-link" href="#customerQuoteTools">VIEW / PREPARE CUSTOMER QUOTE</a>
+  <a class="button-link" href="#jobOperationsPanel">VIEW / UPDATE FINANCE &amp; DEPOSIT</a>
 </section>
         `;
         const roofOrientationField = document.getElementById("roof_orientation");
@@ -2546,6 +2346,7 @@ async function saveGeneralJobDetails() {
     if (!data.ok || !data.assessment) return;
 
     const a = data.assessment;
+    loadedAssessmentRetailer = a.current_retailer || null;
 
     document.getElementById("panel_wattage").value =
       a.panel_wattage ?? 445;
@@ -3024,7 +2825,7 @@ async function saveAssessment() {
       document.getElementById("battery_reason").value,
 
     current_retailer:
-      document.getElementById("current_retailer").value,
+      loadedAssessmentRetailer,
 
     import_rate:
       document.getElementById("import_rate").value,
@@ -3074,7 +2875,7 @@ async function saveAssessment() {
 
 const siteVisitFieldIds = [
   "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
-  "visit_icp", "visit_retailer", "visit_network", "visit_switchboard",
+  "visit_network", "visit_switchboard",
   "visit_supply_notes", "visit_roof_length", "visit_roof_width",
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
@@ -3107,8 +2908,6 @@ function applySiteVisitToSystemDesign(visit) {
   const fieldMap = {
     visit_connection_type: "design_connection_type",
     visit_main_supply: "design_main_supply",
-    visit_icp: "design_icp",
-    visit_retailer: "design_retailer",
     visit_network: "design_network",
     visit_switchboard: "design_switchboard",
     visit_supply_notes: "design_supply_notes"
@@ -3217,6 +3016,7 @@ async function saveSiteVisit() {
 
     loadedSiteVisit = { ...siteVisit };
     applySiteVisitToSystemDesign(siteVisit);
+    applySharedElectricityDetails();
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
       ? " ✓ Site visit saved and System Design updated"
@@ -3772,8 +3572,8 @@ function startNewWorkLog() {
 
 
 const systemDesignFieldIds = [
-  "design_connection_type", "design_main_supply", "design_icp",
-  "design_retailer", "design_network", "design_switchboard",
+  "design_connection_type", "design_main_supply",
+  "design_network", "design_switchboard",
   "design_supply_notes", "design_environment_notes", "design_panel_model",
   "design_panel_wattage", "design_panel_count", "design_array_kw",
   "design_inverter_model", "design_inverter_kw", "design_battery_model",
@@ -3797,8 +3597,9 @@ const roofFieldClasses = [
   "roof_notes"
 ];
 
+let loadedSystemDesign = {};
 function collectSystemDesign() {
-  const design = {};
+  const design = { ...loadedSystemDesign };
 
   systemDesignFieldIds.forEach(id => {
     design[id] = document.getElementById(id)?.value ?? "";
@@ -3850,6 +3651,7 @@ async function loadSystemDesign() {
 
     if (!data.system_design) return;
     const design = data.system_design;
+    loadedSystemDesign = { ...design };
 
     systemDesignFieldIds.forEach(id => {
       const field = document.getElementById(id);
@@ -4784,9 +4586,10 @@ resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers(), loadJobOperations()
   ]).then(() => {
     restoreWorkLogDraft();
+    applySharedElectricityDetails();
 
     const roofOrientationField =
       document.getElementById("roof_orientation");
@@ -4837,6 +4640,13 @@ async function loadJobOperations(){
     setOpsValue("opsRetailerStatus",job.retailer_export_status||"not_contacted");setOpsValue("opsRetailer",job.retailer);
     setOpsValue("opsRetailerPlan",job.retailer_plan);setOpsValue("opsIcp",job.icp);setOpsValue("opsMeterStatus",job.meter_status);
     setOpsValue("opsRetailerRequirements",job.retailer_requirements);
+    if (data.electricity_details) {
+      sharedElectricityDetails = data.electricity_details;
+      setOpsValue("opsIcp", sharedElectricityDetails.icp);
+      setOpsValue("opsRetailer", sharedElectricityDetails.retailer);
+      setOpsValue("opsRetailerPlan", sharedElectricityDetails.retailer_plan);
+      applySharedElectricityDetails();
+    }
     renderJobReadiness(job);renderJobTaskList(data.tasks||[]);renderJobScopeItems(data.scope_items||[]);
   }catch(error){document.getElementById("jobOperationsMessage").textContent=error.message;}
 }
@@ -4888,6 +4698,7 @@ async function saveInstallDate(){
   }
   document.getElementById("jobOperationsMessage").textContent=error.message;
  }
+}
 
 async function saveWorkflowFields(){
  const num=id=>document.getElementById(id).value===""?null:Number(document.getElementById(id).value);
@@ -4957,3 +4768,4 @@ document.getElementById("scopeItemForm")?.addEventListener("submit",submitScopeI
   <script src="/assets/jobhub-materials.js?v=20261001-4"></script>
 </body>
 </html>
+
