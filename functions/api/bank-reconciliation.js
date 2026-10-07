@@ -1,3 +1,4 @@
+import { assertAccountingDateOpen } from "./bookkeeping-controls.js";
 import { normalizeBankFeedRows, buildImportFingerprint } from "./bank-feed-adapters.js";
 import { rankReconciliationCandidates, decideReconciliationMatch, remainingBalance } from "./bank-reconciliation-core.js";
 
@@ -39,6 +40,7 @@ async function candidatesFor(db, bankRow) {
 }
 
 async function postMatch(db, bankRow, target, { method, confidence, actor }) {
+  await assertAccountingDateOpen(db, bankRow.book_id, bankRow.transaction_date);
   const expectedKind = bankRow.direction === "inflow" ? "sales_invoice" : "supplier_bill";
   if (!target || target.kind !== expectedKind) throw new Error("Selected transaction is not a matching open invoice or supplier bill");
   const fresh = (await outstandingTransactions(db, bankRow.book_id, bankRow.direction)).find(row => row.id === target.id);
