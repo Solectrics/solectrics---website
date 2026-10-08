@@ -181,7 +181,7 @@ function getOutputText(response) {
   return "";
 }
 
-function sanitise(x) {
+export function sanitise(x) {
   const numeric = [
     "billing_days","total_import_kwh","average_daily_kwh","total_export_kwh",
     "total_bill_nzd","electricity_charges_nzd","non_electricity_charges_nzd",
