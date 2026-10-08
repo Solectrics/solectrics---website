@@ -105,7 +105,7 @@ const state={bundle:null,review:null,tariffs:[],comparisons:[]};
 const currentPlanFields=[
  ['retailer','Electricity retailer','text'],['plan_name','Plan / tariff name','text'],['icp','ICP number','text'],
  ['billing_period_start','Billing period start','date'],['billing_period_end','Billing period end','date'],
- ['daily_charge_cents','Daily / fixed charge (c/day)','number'],['standard_import_rate_cents','Standard import rate (c/kWh)','number'],
+ ['daily_charge_cents','Daily / fixed charge incl GST (c/day)','number'],['standard_import_rate_cents','Standard import rate incl GST (c/kWh)','number'],
  ['peak_import_rate_cents','Peak import rate (c/kWh)','number'],['offpeak_import_rate_cents','Off-peak import rate (c/kWh)','number'],
  ['controlled_import_rate_cents','Controlled hot-water rate (c/kWh)','number'],['ev_night_rate_cents','EV / night rate (c/kWh)','number'],
  ['solar_export_rate_cents','Solar export rate (c/kWh)','number'],['fixed_term','Fixed-term plan','select'],
@@ -130,7 +130,7 @@ const modelFields=[
 ];
 const tariffFields=[
  ['retailer','Retailer','text'],['plan_name','Plan name','text'],['product_code','Product / tariff code','text'],['pricing_type','Pricing structure','select'],['network_region','Region / network eligibility','text'],
- ['daily_charge_cents','Daily charge (c/day)','number'],['standard_import_rate_cents','Standard import (c/kWh)','number'],['peak_import_rate_cents','Peak import (c/kWh)','number'],
+ ['daily_charge_cents','Daily charge incl GST (c/day)','number'],['standard_import_rate_cents','Standard import incl GST (c/kWh)','number'],['peak_import_rate_cents','Peak import (c/kWh)','number'],
  ['offpeak_import_rate_cents','Off-peak import (c/kWh)','number'],['controlled_import_rate_cents','Controlled rate (c/kWh)','number'],['ev_night_rate_cents','EV / night rate (c/kWh)','number'],
  ['solar_export_rate_cents','Solar export (c/kWh)','number'],['peak_solar_export_rate_cents','Peak solar export (c/kWh)','number'],
  ['peak_import_periods','Peak periods','text'],['offpeak_import_periods','Off-peak periods','text'],['peak_export_periods','Peak export window','text'],
