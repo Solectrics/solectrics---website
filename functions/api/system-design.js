@@ -1,3 +1,5 @@
+import { assertSiteVisitComplete } from "./_site-visit-completion.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS system_designs (
     job_id INTEGER PRIMARY KEY,
@@ -60,6 +62,11 @@ export async function onRequestPost(context) {
 
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
+    }
+
+    const prerequisite = await assertSiteVisitComplete(db, jobId);
+    if (!prerequisite.ok) {
+      return errorResponse(prerequisite.message, prerequisite.status || 409, prerequisite.detail);
     }
 
     const systemDesign = data.system_design;
