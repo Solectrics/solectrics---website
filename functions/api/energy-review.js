@@ -160,7 +160,7 @@ function firstKnown(bills, key) {
   return bills.map(bill => bill?.[key]).find(value => value !== null && value !== undefined && value !== "") ?? null;
 }
 
-function deriveCurrentPlan(answers = {}) {
+export function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
   return {
     retailer: firstKnown(bills, "retailer") || "",
@@ -186,7 +186,7 @@ function deriveCurrentPlan(answers = {}) {
   };
 }
 
-function deriveBaseline(answers = {}, files = []) {
+export function deriveBaseline(answers = {}, files = []) {
   const bills = billValues(answers);
   const dailyUse = bills.map(bill => number(bill.average_daily_kwh)).filter(value => value !== null);
   const dailySpend = bills.map(bill => {
