@@ -129,6 +129,29 @@ async function optionalAll(db, sql, value) {
   catch { return []; }
 }
 
+
+function rateInclGstCents(bill, rateKey, basisKey) {
+  const rate = number(bill?.[rateKey]);
+  if (rate === null) return null;
+  return String(bill?.[basisKey] || "").toLowerCase() === "exclusive"
+    ? Number((rate * 1.15).toFixed(6))
+    : rate;
+}
+
+function electricityChargeNzd(bill) {
+  const separated = number(bill?.electricity_charges_nzd);
+  if (separated !== null) return separated;
+  const status = String(bill?.electricity_cost_separation_status || "").toLowerCase();
+  if (status === "needs_review" || status === "separated") return null;
+  const other = number(bill?.non_electricity_charges_nzd);
+  if (other !== null && other > 0) return null;
+  return number(bill?.total_bill_nzd);
+}
+
+function billHasFreeImport(bill) {
+  return (number(bill?.free_import_kwh) || 0) > 0 || Boolean(String(bill?.free_import_schedule || "").trim());
+}
+
 function billValues(answers) {
   return [answers?.bills?.summer, answers?.bills?.winter].filter(Boolean);
 }
@@ -145,8 +168,8 @@ function deriveCurrentPlan(answers = {}) {
     icp: firstKnown(bills, "icp") || "",
     billing_period_start: firstKnown(bills, "billing_period_start") || "",
     billing_period_end: firstKnown(bills, "billing_period_end") || "",
-    daily_charge_cents: firstKnown(bills, "daily_fixed_charge_cents"),
-    standard_import_rate_cents: firstKnown(bills, "import_rate_cents"),
+    daily_charge_cents: bills.map(bill => rateInclGstCents(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis")).find(value => value !== null) ?? null,
+    standard_import_rate_cents: bills.map(bill => rateInclGstCents(bill, "import_rate_cents", "import_rate_gst_basis")).find(value => value !== null) ?? null,
     peak_import_rate_cents: firstKnown(bills, "peak_rate_cents"),
     offpeak_import_rate_cents: firstKnown(bills, "offpeak_rate_cents"),
     controlled_import_rate_cents: firstKnown(bills, "controlled_rate_cents"),
@@ -154,7 +177,11 @@ function deriveCurrentPlan(answers = {}) {
     solar_export_rate_cents: firstKnown(bills, "export_rate_cents"),
     fixed_term: firstKnown(bills, "fixed_term") || "needs_review",
     exit_cost_nzd: firstKnown(bills, "exit_cost_nzd"),
-    other_tariff_information: firstKnown(bills, "other_tariff_information") || "",
+    other_tariff_information: [
+      firstKnown(bills, "tariff_description"),
+      firstKnown(bills, "free_import_schedule") ? `Free electricity: ${firstKnown(bills, "free_import_schedule")}` : null,
+      firstKnown(bills, "other_tariff_information")
+    ].filter(Boolean).join(" · "),
     notes: bills.map(bill => bill?.notes).filter(Boolean).join(" ")
   };
 }
@@ -163,7 +190,7 @@ function deriveBaseline(answers = {}, files = []) {
   const bills = billValues(answers);
   const dailyUse = bills.map(bill => number(bill.average_daily_kwh)).filter(value => value !== null);
   const dailySpend = bills.map(bill => {
-    const total = number(bill.total_bill_nzd);
+    const total = electricityChargeNzd(bill);
     const days = number(bill.billing_days);
     return total !== null && days ? total / days : null;
   }).filter(value => value !== null);
@@ -175,8 +202,13 @@ function deriveBaseline(answers = {}, files = []) {
     annual_consumption_kwh: dailyUse.length ? Math.round((dailyUse.reduce((a, b) => a + b, 0) / dailyUse.length) * 365) : null,
     annual_expenditure_nzd: dailySpend.length ? Math.round((dailySpend.reduce((a, b) => a + b, 0) / dailySpend.length) * 365) : null,
     average_daily_consumption_kwh: dailyUse.length ? Number((dailyUse.reduce((a, b) => a + b, 0) / dailyUse.length).toFixed(2)) : null,
-    annual_fixed_charges_nzd: number(firstKnown(bills, "daily_fixed_charge_cents")) !== null
-      ? Number((number(firstKnown(bills, "daily_fixed_charge_cents")) * 3.65).toFixed(2)) : null,
+    annual_fixed_charges_nzd: bills
+      .map(bill => rateInclGstCents(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis"))
+      .find(value => value !== null) !== undefined
+      ? Number(((bills
+          .map(bill => rateInclGstCents(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis"))
+          .find(value => value !== null) || 0) * 3.65).toFixed(2))
+      : null,
     monthly_consumption: [],
     seasonal_pattern: bills.length > 1 ? "Summer and winter bills supplied" : "Needs review",
     controlled_load_consumption_kwh: null,
@@ -184,13 +216,15 @@ function deriveBaseline(answers = {}, files = []) {
     offpeak_consumption_kwh: null,
     data_quality: interval
       ? "Interval consumption data uploaded — validate before detailed modelling"
-      : bills.length > 1
-        ? "Seasonal electricity bills supplied — indicative modelling"
-        : bills.length === 1
-          ? "Single billing period supplied — indicative modelling"
-        : annualFiles.length
-          ? "Annual usage file uploaded — needs review"
-          : "Needs review",
+      : bills.some(billHasFreeImport)
+        ? "Free-electricity tariff identified — monthly charged/free split retained; interval timing still needs review before precise savings modelling"
+        : bills.length > 1
+          ? "Seasonal electricity bills supplied — indicative modelling"
+          : bills.length === 1
+            ? "Single billing period supplied — indicative modelling"
+          : annualFiles.length
+            ? "Annual usage file uploaded — needs review"
+            : "Needs review",
     data_quality_code: interval ? "interval_uploaded" : bills.length ? "billing_indicative" : "needs_review",
     consumption_period_start: startDates[0] || "",
     consumption_period_end: endDates[endDates.length - 1] || ""
