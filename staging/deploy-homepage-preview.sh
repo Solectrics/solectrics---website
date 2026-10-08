@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 # Static homepage visual review only. No Functions, HEC API, migrations or R2 operations.
-readonly BRANCH='codex/homepage-mobile-hero-staging'
+readonly BRANCH='codex/homepage-whole-home-staging'
 readonly PROJECT='solectrics-jobhub-staging'
 readonly DATABASE='jobhub-staging'
 readonly DATABASE_UUID='717a0f5a-1527-4072-b3c8-f3a86e9d017e'
