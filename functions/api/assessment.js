@@ -1,3 +1,5 @@
+import { assertSiteVisitComplete } from "./_site-visit-completion.js";
+
 export async function onRequestGet(context) {
   try {
     const db = context.env.DB;
@@ -56,6 +58,14 @@ export async function onRequestPost(context) {
       return Response.json(
         { error: "job_id is required" },
         { status: 400 }
+      );
+    }
+
+    const prerequisite = await assertSiteVisitComplete(db, jobId);
+    if (!prerequisite.ok) {
+      return Response.json(
+        { error: prerequisite.message, detail: prerequisite.detail, missing_required_fields: prerequisite.missing || [] },
+        { status: prerequisite.status || 409 }
       );
     }
 
