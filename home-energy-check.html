@@ -615,6 +615,10 @@ function saveBillEditsNoLoop(){
       answers.bills[season][key]=type==='number'
         ? (el.value===''?null:Number(el.value))
         : el.value.trim();
+      if(el.value!==''&&Array.isArray(answers.bills[season].needs_review_fields)){
+        answers.bills[season].needs_review_fields=
+          answers.bills[season].needs_review_fields.filter(field=>field!==key);
+      }
     });
   });
 }
