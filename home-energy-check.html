@@ -503,9 +503,17 @@ const BILL_FIELDS=[
  ['total_import_kwh','Electricity imported (kWh)','number',''],
  ['average_daily_kwh','Average daily use (kWh)','number',''],
  ['total_export_kwh','Solar exported (kWh)','number',''],
- ['total_bill_nzd','Total bill ($)','number',''],
- ['daily_fixed_charge_cents','Daily fixed charge (c/day)','number',''],
- ['import_rate_cents','Main import rate (c/kWh)','number',''],
+ ['total_bill_nzd','Whole invoice total incl GST ($)','number',''],
+ ['electricity_charges_nzd','Electricity charges only incl GST ($)','number',''],
+ ['non_electricity_charges_nzd','Other services incl GST ($)','number',''],
+ ['electricity_cost_separation_status','Electricity cost separation','text','full'],
+ ['charged_import_kwh','Charged imported electricity (kWh)','number',''],
+ ['free_import_kwh','Free / zero-price imported electricity (kWh)','number',''],
+ ['free_import_schedule','Free electricity period','text','full'],
+ ['daily_fixed_charge_cents','Daily fixed charge as printed (c/day)','number',''],
+ ['daily_fixed_charge_gst_basis','Daily charge GST basis','text',''],
+ ['import_rate_cents','Main import rate as printed (c/kWh)','number',''],
+ ['import_rate_gst_basis','Import rate GST basis','text',''],
  ['peak_rate_cents','Peak rate (c/kWh)','number',''],
  ['offpeak_rate_cents','Off-peak rate (c/kWh)','number',''],
  ['controlled_rate_cents','Controlled / hot-water rate (c/kWh)','number',''],
@@ -515,7 +523,9 @@ const BILL_FIELDS=[
  ['fixed_term','Fixed-term plan','text',''],
  ['exit_cost_nzd','Known exit / switching cost ($)','number',''],
  ['other_tariff_information','Other tariff information','text','full'],
- ['gst_nzd','GST ($)','number',''],
+ ['tariff_description','Confirmed tariff description','text','full'],
+ ['gst_nzd','Whole invoice GST ($)','number',''],
+ ['electricity_gst_nzd','Electricity-only GST ($)','number',''],
  ['icp','ICP (if shown)','text','full']
 ];
 
@@ -611,6 +621,48 @@ function saveBillEditsNoLoop(){
 
 function validNumber(v){
   return typeof v==='number' && Number.isFinite(v);
+}
+
+function billText(bill,key){
+  const value=bill&&bill[key];
+  return value===null||value===undefined?'':String(value).trim();
+}
+
+function rateInclGstNzd(bill,rateKey,basisKey){
+  const cents=billNumber(bill,[rateKey]);
+  if(cents===null||cents<=0) return null;
+  const dollars=cents>2?cents/100:cents;
+  const basis=billText(bill,basisKey).toLowerCase();
+  if(basis==='exclusive') return dollars*1.15;
+  return dollars;
+}
+
+function electricityBillTotal(bill){
+  if(!bill) return null;
+  const electricity=billNumber(bill,['electricity_charges_nzd']);
+  if(electricity!==null) return electricity;
+
+  const status=billText(bill,'electricity_cost_separation_status').toLowerCase();
+  if(status==='needs_review'||status==='separated') return null;
+
+  const other=billNumber(bill,['non_electricity_charges_nzd']);
+  if(other!==null&&other>0) return null;
+
+  return billNumber(bill,['total_bill_nzd','total_bill','bill_total']);
+}
+
+function chargedImportShare(bill){
+  const total=billNumber(bill,['total_import_kwh','import_kwh']);
+  const charged=billNumber(bill,['charged_import_kwh']);
+  const free=billNumber(bill,['free_import_kwh']);
+  if(total===null||total<=0||charged===null||free===null) return null;
+  if(Math.abs((charged+free)-total)>0.05) return null;
+  return Math.max(0,Math.min(1,charged/total));
+}
+
+function hasFreeImportTariff(bill){
+  const free=billNumber(bill,['free_import_kwh']);
+  return (free!==null&&free>0)||Boolean(billText(bill,'free_import_schedule'));
 }
 
 function makeInsights(){
@@ -1912,13 +1964,8 @@ function monthlyBillCost(
 
 
   const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill",
-        "bill_total"
-      ]
+    electricityBillTotal(
+      bill
     );
 
 
@@ -1956,12 +2003,10 @@ function importRateFromBill(
 
 
   const explicit =
-    billNumber(
+    rateInclGstNzd(
       bill,
-      [
-        "import_rate_cents",
-        "import_rate"
-      ]
+      "import_rate_cents",
+      "import_rate_gst_basis"
     );
 
 
@@ -1970,9 +2015,10 @@ function importRateFromBill(
     explicit > 0
   ){
 
-    return explicit > 2
-      ? explicit / 100
-      : explicit;
+    const paidShare=chargedImportShare(bill);
+    return paidShare===null
+      ? explicit
+      : explicit*paidShare;
 
   }
 
@@ -1984,12 +2030,8 @@ function importRateFromBill(
   */
 
   const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill"
-      ]
+    electricityBillTotal(
+      bill
     );
 
 
@@ -2003,12 +2045,11 @@ function importRateFromBill(
     );
 
 
-  const fixedCents =
-    billNumber(
+  const fixedRate =
+    rateInclGstNzd(
       bill,
-      [
-        "daily_fixed_charge_cents"
-      ]
+      "daily_fixed_charge_cents",
+      "daily_fixed_charge_gst_basis"
     );
 
 
@@ -2019,11 +2060,8 @@ function importRateFromBill(
   ){
 
     const fixedCost =
-      fixedCents !== null
-        ? (
-            fixedCents /
-            100
-          ) *
+      fixedRate !== null
+        ? fixedRate *
           billingDays(
             bill
           )
@@ -2101,18 +2139,16 @@ function fixedMonthlyCharge(){
 
 
   const rates = [
-    billNumber(
+    rateInclGstNzd(
       summer,
-      [
-        "daily_fixed_charge_cents"
-      ]
+      "daily_fixed_charge_cents",
+      "daily_fixed_charge_gst_basis"
     ),
 
-    billNumber(
+    rateInclGstNzd(
       winter,
-      [
-        "daily_fixed_charge_cents"
-      ]
+      "daily_fixed_charge_cents",
+      "daily_fixed_charge_gst_basis"
     )
   ]
   .filter(
@@ -2131,12 +2167,9 @@ function fixedMonthlyCharge(){
   }
 
 
-  return (
-    average(
-      rates,
-      0
-    ) /
-    100
+  return average(
+    rates,
+    0
   ) *
   30.4375;
 
@@ -3559,6 +3592,10 @@ function buildModel(){
     estimateSource:
       estimateSource,
 
+    freePeriodTariffLimited:
+      hasFreeImportTariff(summer) ||
+      hasFreeImportTariff(winter),
+
     existingSolar:
       (
         billHasExport(
@@ -4391,6 +4428,14 @@ function renderFinalSmartSolarReport(){
       `
       : ""
     }
+
+    ${model.freePeriodTariffLimited ? `
+      <div class="ss-context">
+        <strong>FREE-ELECTRICITY TARIFF — SAVINGS ARE INDICATIVE</strong>
+        <br><br>
+        Your bill includes some imported electricity charged at $0. We keep that energy in your usage total, but do not value every imported kWh at the paid rate. Without validated interval data showing exactly when your household used electricity, we cannot know how much future solar would overlap the free period. Dollar savings are therefore an estimate for review, not a precise tariff simulation.
+      </div>
+    ` : ""}
 
 
     <h3>
