@@ -104,3 +104,61 @@ test("production custom domains still reach the app even if only ALLOW_PAGES_DEV
     }
   }
 });
+
+test("temporary exact-host diagnostic reports only flag presence and strict string enablement", async () => {
+  const cases = [
+    [{}, [false, false, false, false]],
+    [{ JOBHUB_STAGING_ONLY: "true" }, [true, true, false, false]],
+    [STAGING_ENV, [true, true, true, true]],
+    [{ JOBHUB_STAGING_ONLY: true, ALLOW_PAGES_DEV_HOST: "false" }, [true, false, true, false]]
+  ];
+  for (const [flags, expected] of cases) {
+    const env = new Proxy(flags, {
+      get(target, key) {
+        if (!["JOBHUB_STAGING_ONLY", "ALLOW_PAGES_DEV_HOST"].includes(key)) {
+          throw new Error("Diagnostic read an unrelated binding");
+        }
+        return target[key];
+      }
+    });
+    const { response, nextCalls } = await request(PREVIEW, { env, path: "/__staging/hec-host-flags" });
+    assert.equal(response.status, 200);
+    assert.equal(nextCalls, 0, "must not invoke app, database or email handlers");
+    assert.equal(response.headers.get("Location"), null);
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+    assert.deepEqual(await response.json(), {
+      JOBHUB_STAGING_ONLY: { present: expected[0], enabled: expected[1] },
+      ALLOW_PAGES_DEV_HOST: { present: expected[2], enabled: expected[3] }
+    });
+  }
+});
+
+test("temporary diagnostic handles HEAD and refuses write methods without invoking the app", async () => {
+  const head = await request(PREVIEW, { method: "HEAD", path: "/__staging/hec-host-flags" });
+  assert.equal(head.response.status, 200);
+  assert.equal(await head.response.text(), "");
+  assert.equal(head.nextCalls, 0);
+  for (const method of ["POST", "PUT", "DELETE", "PATCH", "OPTIONS"]) {
+    const { response, nextCalls } = await request(PREVIEW, {
+      method, env: STAGING_ENV, path: "/__staging/hec-host-flags"
+    });
+    assert.equal(response.status, 405);
+    assert.equal(response.headers.get("Allow"), "GET, HEAD");
+    assert.equal(nextCalls, 0);
+  }
+});
+
+test("temporary diagnostic never exposes flags on production or another staging hostname", async () => {
+  for (const hostname of ["solectrics.co.nz", "solectrics---website.pages.dev",
+    "solectrics-jobhub-staging.pages.dev",
+    "codex-hec-customer-copy-prod.solectrics-jobhub-staging.pages.dev",
+    PREVIEW + ".example.com"]) {
+    for (const env of [{}, STAGING_ENV]) {
+      const { response, nextCalls } = await request(hostname, { env, path: "/__staging/hec-host-flags" });
+      assert.notEqual(response.headers.get("Content-Type"), "application/json; charset=utf-8");
+      assert.equal(nextCalls, !hostname.endsWith(".pages.dev") && env !== STAGING_ENV ? 1 : 0);
+      if (env === STAGING_ENV) assert.equal(response.status, 403);
+      else if (hostname.endsWith(".pages.dev")) assert.equal(response.status, 308);
+    }
+  }
+});

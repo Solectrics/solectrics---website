@@ -9,6 +9,33 @@ function isPagesHostname(hostname) {
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
+
+  // TEMPORARY: inspect only these two non-secret flags on the reviewed alias.
+  // Keep this before the staging gate so missing flags can be diagnosed.
+  if (STAGING_ALLOWED_HOSTNAMES.has(url.hostname) &&
+      url.pathname === "/__staging/hec-host-flags") {
+    if (context.request.method !== "GET" && context.request.method !== "HEAD") {
+      return new Response(null, {
+        status: 405,
+        headers: { "Allow": "GET, HEAD", "Cache-Control": "no-store" }
+      });
+    }
+    const flagStatus = name => ({
+      present: typeof context.env?.[name] !== "undefined",
+      enabled: context.env?.[name] === "true"
+    });
+    const body = JSON.stringify({
+      JOBHUB_STAGING_ONLY: flagStatus("JOBHUB_STAGING_ONLY"),
+      ALLOW_PAGES_DEV_HOST: flagStatus("ALLOW_PAGES_DEV_HOST")
+    });
+    return new Response(context.request.method === "HEAD" ? null : body, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow"
+      }
+    });
+  }
   const stagingOnly = context.env?.JOBHUB_STAGING_ONLY === "true";
 
   // Only the reviewed HEC preview may use this staging-only bypass.
