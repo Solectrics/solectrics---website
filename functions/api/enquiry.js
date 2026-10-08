@@ -1,5 +1,6 @@
 import { ensureJobFileRoleColumn, ensureJobTypeColumn } from "./_schema.js";
 import { identifyEnergyDataDetail } from "./job-files.js";
+import { sendHomeEnergyCheckCopy } from "./_hec-customer-copy.js";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif", "pdf", "csv", "xls", "xlsx"]);
@@ -223,11 +224,22 @@ export async function onRequestPost(context) {
       }
     }
 
+    const customerCopy = { requested: Boolean(answers.customerCopyOptIn), sent: false };
+    if (customerCopy.requested) {
+      try {
+        await sendHomeEnergyCheckCopy(context.env, answers, email);
+        customerCopy.sent = true;
+      } catch (emailError) {
+        console.error("Home Energy Check was saved, but the customer copy email failed:", emailError);
+      }
+    }
+
     return Response.json({
       ok: true,
       enquiryRef: enquiryId,
       jobId: jobId,
-      receivedAt: createdAt
+      receivedAt: createdAt,
+      customerCopy
     });
 
   } catch (error) {

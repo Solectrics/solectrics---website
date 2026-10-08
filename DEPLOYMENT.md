@@ -7,7 +7,7 @@ The Pages project uses:
 - `DB` — D1 database
 - `JOB_FILES` — R2 bucket for job files
 - `OPENAI_API_KEY` — secret used by power-bill reading
-- `RESEND_API_KEY` — secret used to email Fletcher packages
+- `RESEND_API_KEY` — secret used to email Fletcher packages and opted-in Home Energy Check customer copies
 
 Optional:
 
@@ -45,3 +45,24 @@ Before testing email:
 4. Redeploy so Pages Functions receive the new secret.
 
 Do not commit a Resend key to this repository.
+
+## Home Energy Check customer copy
+
+The optional customer copy uses `RESEND_API_KEY` in the Production Pages
+Functions environment. The key must permit sending from the verified
+`solectrics.co.nz` domain. Confirm this separately before an approved deployment;
+a working preview does not establish Production configuration.
+
+The sender is fixed to `Jane at Solectrics <jane@solectrics.co.nz>`, matching
+the validated customer email. `HEC_FROM_EMAIL` is not required or read by this
+implementation, and `FLETCHER_FROM_EMAIL` does not change this sender.
+
+The email contains the allowlisted customer answers and uploaded file names,
+without attaching the uploaded files or exposing storage URLs. Its only image
+is the public Solectrics logo. Confirm Resend open/click tracking is disabled
+for the sending domain so the provider does not insert a tracking pixel or
+tracking links. No provider settings are changed by the application.
+
+An email failure is reported separately after the enquiry, linked job and
+uploads have saved; it does not retry or undo the saved submission. No new
+database migration or file-storage configuration is required for this feature.
