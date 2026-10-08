@@ -19,6 +19,69 @@ function numberFrom(source, keys, fallback = 0) {
   return fallback;
 }
 
+
+function nullableNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function billRateNzdInclGst(bill, rateKey, basisKey) {
+  const cents = nullableNumber(bill?.[rateKey]);
+  if (cents === null || cents <= 0) return null;
+  const nzd = cents > 2 ? cents / 100 : cents;
+  return String(bill?.[basisKey] || "").toLowerCase() === "exclusive" ? nzd * 1.15 : nzd;
+}
+
+function billElectricityCost(bill) {
+  const separated = nullableNumber(bill?.electricity_charges_nzd);
+  if (separated !== null) return separated;
+  const status = String(bill?.electricity_cost_separation_status || "").toLowerCase();
+  if (status === "needs_review" || status === "separated") return null;
+  const other = nullableNumber(bill?.non_electricity_charges_nzd);
+  if (other !== null && other > 0) return null;
+  return nullableNumber(bill?.total_bill_nzd ?? bill?.total_bill ?? bill?.bill_total);
+}
+
+function billPaidImportShare(bill) {
+  const total = nullableNumber(bill?.total_import_kwh);
+  const charged = nullableNumber(bill?.charged_import_kwh);
+  const free = nullableNumber(bill?.free_import_kwh);
+  if (total === null || total <= 0 || charged === null || free === null) return null;
+  if (Math.abs(charged + free - total) > .05) return null;
+  return Math.max(0, Math.min(1, charged / total));
+}
+
+function billEffectiveImportRate(bill) {
+  const explicit = billRateNzdInclGst(bill, "import_rate_cents", "import_rate_gst_basis");
+  if (explicit !== null) {
+    const share = billPaidImportShare(bill);
+    return share === null ? explicit : explicit * share;
+  }
+  const imported = numberFrom(bill, ["total_import_kwh", "import_kwh", "total_kwh", "usage_kwh"]);
+  const cost = billElectricityCost(bill);
+  if (!imported || cost === null) return null;
+  const fixed = billRateNzdInclGst(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis");
+  const days = numberFrom(bill, ["billing_days", "billingDays", "days"], 30);
+  const variable = Math.max(0, cost - (fixed || 0) * days);
+  return variable > 0 ? variable / imported : null;
+}
+
+function monthlyElectricityCost(bill) {
+  const cost = billElectricityCost(bill);
+  if (cost === null) return 0;
+  const days = numberFrom(bill, ["billing_days", "billingDays", "days"], 30);
+  return cost / days * 30.4375;
+}
+
+function monthlyFixedCharge(answers) {
+  const rates = [answers?.bills?.summer, answers?.bills?.winter]
+    .map(bill => billRateNzdInclGst(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis"))
+    .filter(value => value !== null);
+  if (!rates.length) return 0;
+  return rates.reduce((a, b) => a + b, 0) / rates.length * 30.4375;
+}
+
 function twelve(values) {
   return Array.isArray(values) && values.length === 12 && values.every(value => Number.isFinite(Number(value)))
     ? values.map(value => money(value))
@@ -37,13 +100,12 @@ function monthlyBillUse(bill) {
 }
 
 function inferredImportRate(answers, assessment) {
-  const saved = Number(assessment?.import_rate);
-  if (Number.isFinite(saved) && saved > 0) return saved;
   for (const bill of [answers?.bills?.summer, answers?.bills?.winter]) {
-    const imported = numberFrom(bill, ["total_import_kwh", "import_kwh", "total_kwh", "usage_kwh"]);
-    const cost = numberFrom(bill, ["total_bill_nzd", "total_bill", "bill_total"]);
-    if (imported && cost) return Math.min(.8, Math.max(.15, cost / imported));
+    const rate = billEffectiveImportRate(bill);
+    if (rate !== null && rate > 0) return Math.min(.8, Math.max(.01, rate));
   }
+  const saved = Number(assessment?.import_rate);
+  if (Number.isFinite(saved) && saved > 0) return saved > 2 ? saved / 100 : saved;
   return .34;
 }
 
@@ -73,17 +135,23 @@ export function buildEnergyComparison(answers = {}, assessment = {}) {
   const solarWeights = [.125, .115, .1, .075, .055, .04, .035, .045, .065, .09, .115, .14];
   const weightTotal = solarWeights.reduce((sum, value) => sum + value, 0);
   const generation = solarWeights.map(weight => annualGeneration * weight / weightTotal);
+  const fixedMonthly = monthlyFixedCharge(answers);
+  let summerCost = monthlyElectricityCost(summerBill);
+  let winterCost = monthlyElectricityCost(winterBill);
+  if (!summerCost) summerCost = summerUse * importRate + fixedMonthly;
+  if (!winterCost) winterCost = winterUse * importRate + fixedMonthly;
+  const currentProfile = seasonalProfile(summerCost, winterCost);
   const current = [];
   const solar = [];
   const battery = [];
   for (let month = 0; month < 12; month += 1) {
     const load = use[month];
     const pv = generation[month];
-    current.push(money(load * importRate));
+    current.push(money(currentProfile[month]));
     const direct = Math.min(load, pv * .55);
-    solar.push(money((load - direct) * importRate - Math.max(0, pv - direct) * exportRate));
+    solar.push(money(fixedMonthly + (load - direct) * importRate - Math.max(0, pv - direct) * exportRate));
     const batteryDirect = Math.min(load, pv * .82);
-    battery.push(money((load - batteryDirect) * importRate - Math.max(0, pv - batteryDirect) * exportRate));
+    battery.push(money(fixedMonthly + (load - batteryDirect) * importRate - Math.max(0, pv - batteryDirect) * exportRate));
   }
   return { current, solar, battery, source: summerBill && winterBill ? "two-bills" : "one-bill" };
 }
