@@ -1,3 +1,5 @@
+import { siteVisitCompletion } from "./_site-visit-completion.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS site_visits (
     job_id INTEGER PRIMARY KEY,
@@ -29,11 +31,16 @@ export async function onRequestGet(context) {
       .bind(jobId)
       .first();
 
+    const siteVisit = row
+      ? { ...JSON.parse(row.data_json), updated_at: row.updated_at }
+      : null;
+    const completion = siteVisitCompletion(siteVisit);
+
     return Response.json({
       ok: true,
-      site_visit: row
-        ? { ...JSON.parse(row.data_json), updated_at: row.updated_at }
-        : null
+      site_visit: siteVisit,
+      site_visit_complete: completion.complete,
+      missing_required_fields: completion.missing
     });
   } catch (error) {
     console.error("Site visit GET error:", error);
@@ -66,7 +73,13 @@ export async function onRequestPost(context) {
       .bind(jobId, JSON.stringify(data.site_visit))
       .run();
 
-    return Response.json({ ok: true, message: "Site visit saved" });
+    const completion = siteVisitCompletion(data.site_visit);
+    return Response.json({
+      ok: true,
+      message: "Site visit saved",
+      site_visit_complete: completion.complete,
+      missing_required_fields: completion.missing
+    });
   } catch (error) {
     console.error("Site visit POST error:", error);
     return errorResponse("Unable to save site visit", 500, error.message);
