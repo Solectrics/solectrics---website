@@ -41,7 +41,7 @@
   <section id="preliminaryProposal" class="card proposal" hidden>
     <h2>Job Hub preliminary proposal</h2>
     <div id="proposalSummary"></div>
-    <p class="hint">This is a starting point calculated from the Home Energy Check and Tom's site visit. Jane should review it before creating the OpenSolar layout and SLD.</p>
+    <p class="hint">This is a starting point calculated from the Home Energy Check and Tom's site visit. Use OpenSolar to confirm the measured roof layout and exact equipment before requesting final supplier pricing. This preliminary estimate is not the final design.</p>
     <button type="button" id="useProposal">USE THIS PROPOSAL ON THE FORM</button>
   </section>
 
@@ -103,7 +103,7 @@
   <section class="card">
     <h2>Additional notes</h2>
     <textarea id="additionalNotes"></textarea>
-    <p class="hint">Equipment models, panel quantities, stringing, battery option and design notes are assembled here automatically.</p>
+    <p class="hint">Reviewed equipment models, panel quantities, stringing, battery option and supplier-facing notes are assembled here. Check this entire section before generating the supplier PDF; internal design notes are not copied.</p>
   </section>
 
   <section class="card">
@@ -296,8 +296,7 @@ function buildNotes(design, assessment, icp) {
   if (inverterModel || design.design_inverter_kw) items.push(`Inverter: ${inverterModel || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
   if (design.design_battery_model || batteryCapacity) items.push(`Battery: ${design.design_battery_model || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
   if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
-  if (design.design_environment_notes) items.push(design.design_environment_notes);
-  if (design.design_electrical_notes) items.push(design.design_electrical_notes);
+  if (design.design_supplier_notes) items.push(design.design_supplier_notes);
   return items.join("\n");
 }
 
@@ -363,7 +362,7 @@ async function loadData() {
   setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
   const files = filesData.files || [];
   const roles = new Set(files.map(inferredDocumentRole));
-  setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || roles.has("sld") || roles.has("roof_layout")));
+  setChecked("plansAttached", Boolean(roles.has("sld") || roles.has("roof_layout")));
   setChecked("powerBillAttached", Boolean(roles.has("power_bill") || answers.billFileName || answers.bill_filename || answers.billUploaded));
   setValue("additionalNotes", buildNotes(design, assessment, icp));
   preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
@@ -493,3 +492,4 @@ loadData().catch(error => { console.error(error); $("missingPanel").className = 
 </script>
 </body>
 </html>
+

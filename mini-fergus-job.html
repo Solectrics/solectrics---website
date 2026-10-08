@@ -1283,6 +1283,20 @@ window.currentAnswers = answers;
 
   <h2>SYSTEM DESIGN</h2>
   <div id="systemDesignPrerequisite" class="prerequisite-blocked" role="status">Complete Tom's Site Visit before starting System Design.</div>
+  <div id="openSolarHandoff">
+    <h3>Next: OpenSolar design → supplier quote</h3>
+    <ol>
+      <li>Use Tom's measured roof dimensions in OpenSolar. Scale from a known measured roof edge, model the roof and check obstructions/shading.</li>
+      <li>Select the exact panel make/model, confirm the layout and panel count, then export a clear roof/panel layout image.</li>
+      <li>Upload that image to this job using the button below. Record the panel, inverter and optional battery selections in System Design.</li>
+      <li>Review the design, save it, then generate the Fletcher form below. Jane reviews the supplier package before forwarding it to Fletch/J.A. Russell.</li>
+    </ol>
+    <button type="button" id="uploadOpenSolarLayout">UPLOAD OPENSOLAR LAYOUT</button>
+    <p id="openSolarLayoutStatus" role="status">Checking this job's layout documents…</p>
+    <label for="design_supplier_notes">Supplier-facing notes — mounting/BOS requirements and purchasing information only</label>
+    <textarea id="design_supplier_notes" rows="3" placeholder="Only information approved for the supplier. Exclude internal pricing, markup, profit and private notes."></textarea>
+  </div>
+
 
   <div class="placeholder">
     Build the installation design from the Home Energy Check, site survey
@@ -3226,6 +3240,11 @@ async function loadJobFiles() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    const layouts = data.files.filter(file => file.document_role === "roof_layout");
+    const layoutStatus = document.getElementById("openSolarLayoutStatus");
+    if (layoutStatus) layoutStatus.textContent = layouts.length
+      ? `✓ ${layouts.length} roof/panel layout document(s) on this job. The supplier package uses the latest; check it before forwarding.`
+      : "No roof/panel layout uploaded yet. Upload the confirmed OpenSolar image to this job.";
     renderJobPhotoChecklist(data.files);
     renderEnergyData(data.files);
 
@@ -3645,7 +3664,7 @@ const systemDesignFieldIds = [
   "design_mppt", "design_dc_cable", "design_ac_cable",
   "design_ac_protection", "design_dc_protection", "design_export_control",
   "design_earthing", "design_electrical_notes", "design_reference",
-  "design_revision", "design_designer", "design_date", "design_standards"
+  "design_revision", "design_designer", "design_date", "design_standards", "design_supplier_notes"
 ];
 
 const systemDesignCheckboxIds = [
@@ -4016,6 +4035,14 @@ document.addEventListener("click", function(event) {
 
   if (event.target.id === "saveGeneralJobDetails") {
     saveGeneralJobDetails();
+  }
+
+  if (event.target.id === "uploadOpenSolarLayout") {
+    if (!siteVisitPrerequisiteComplete) return;
+    document.getElementById("jobFileCategory").value = "drawing";
+    document.getElementById("jobFileRole").value = "roof_layout";
+    document.getElementById("jobFilesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById("jobFileInput").click();
   }
 
   if (event.target.id === "generateSupplierRequest") {
@@ -4837,4 +4864,5 @@ document.getElementById("scopeItemForm")?.addEventListener("submit",submitScopeI
   <script src="/assets/jobhub-materials.js?v=20261001-4"></script>
 </body>
 </html>
+
 
