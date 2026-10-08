@@ -688,10 +688,12 @@ function makeInsights(){
     }
   }
 
-  if(validNumber(b.import_rate_cents)&&validNumber(b.export_rate_cents)){
-    const spread=b.import_rate_cents-b.export_rate_cents;
+  const importRateIncl=rateInclGstNzd(b,'import_rate_cents','import_rate_gst_basis');
+  if(importRateIncl!==null&&validNumber(b.export_rate_cents)){
+    const importCents=importRateIncl*100;
+    const spread=importCents-b.export_rate_cents;
     if(spread>0){
-      out.push(`You pay about ${b.import_rate_cents.toFixed(1)}c/kWh to import electricity and receive about ${b.export_rate_cents.toFixed(1)}c/kWh for exported solar. Using a solar kWh directly in the home is therefore worth about ${spread.toFixed(1)}c more than exporting it.`);
+      out.push(`Your main import rate is about ${importCents.toFixed(1)}c/kWh including GST, and the bill shows about ${b.export_rate_cents.toFixed(1)}c/kWh for exported solar. Using a paid grid kWh directly from solar can therefore be worth about ${spread.toFixed(1)}c more than exporting it.`);
     }
   }
 
@@ -703,13 +705,21 @@ function makeInsights(){
     }
   }
 
-  if(validNumber(b.daily_fixed_charge_cents)){
-    const yearly=(b.daily_fixed_charge_cents/100)*365;
-    out.push(`Your fixed electricity charge is about $${yearly.toFixed(0)} a year before any electricity is used.`);
+  const fixedDailyIncl=rateInclGstNzd(b,'daily_fixed_charge_cents','daily_fixed_charge_gst_basis');
+  if(fixedDailyIncl!==null){
+    const yearly=fixedDailyIncl*365;
+    out.push(`Your fixed electricity charge is about ${yearly.toFixed(0)} a year including GST, before any electricity is used.`);
+  }
+
+  if(hasFreeImportTariff(b)){
+    const free=billNumber(b,['free_import_kwh']);
+    const charged=billNumber(b,['charged_import_kwh']);
+    out.push(`This tariff includes free electricity${billText(b,'free_import_schedule')?' during '+billText(b,'free_import_schedule'):''}. ${free!==null&&charged!==null?`This bill records ${charged.toFixed(0)} kWh charged and ${free.toFixed(0)} kWh free.`:''} We will not treat every imported kWh as paid electricity when estimating savings.`);
   }
 
   if(b.retailer){
-    out.push(`You’re currently with ${b.retailer}${b.plan_name?' on '+b.plan_name:''}. That gives us a real tariff to compare with solar, EV or alternative retailer plans.`);
+    const tariffLabel=b.tariff_description||b.plan_name||'';
+    out.push(`You’re currently with ${b.retailer}${tariffLabel?' — '+tariffLabel:''}. That gives us a real tariff structure to review against solar, EV or alternative retailer plans.`);
   }
 
   return out;
