@@ -147,7 +147,7 @@ export async function sendHomeEnergyCheckCopy(env, answers, recipient = answers?
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      from: env.HEC_FROM_EMAIL || DEFAULT_HEC_FROM,
+      from: DEFAULT_HEC_FROM,
       to: [recipient],
       subject: "Your completed Home Energy Check",
       html: renderHomeEnergyCheckCopy(answers)
