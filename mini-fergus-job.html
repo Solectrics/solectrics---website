@@ -343,6 +343,28 @@
       color: #a12d2d;
     }
 
+    .prerequisite-blocked {
+      background: #fff4df;
+      border-left: 4px solid #d88b00;
+      border-radius: 8px;
+      color: #6f4d12;
+      margin: 0 0 18px;
+      padding: 12px 14px;
+    }
+
+    .prerequisite-ready {
+      background: #eef7ed;
+      border-left: 4px solid #287a45;
+      border-radius: 8px;
+      color: #17643a;
+      margin: 0 0 18px;
+      padding: 12px 14px;
+    }
+
+    .prerequisite-locked {
+      opacity: .62;
+    }
+
     @media (max-width: 700px) {
       .grid,
       .quote-grid {
@@ -787,7 +809,90 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card solar-only">
+<!-- TOM'S SITE VISIT -->
+
+<section class="card site-visit solar-only" id="siteVisitSection">
+  <h2>Tom's Site Visit</h2>
+  <div class="placeholder">
+    Record the onsite facts once. Saving this form also copies the matching
+    information into System Design. Phone dictation can be used in the notes fields.
+  </div>
+
+  <h3>1. Visit and electrical supply</h3>
+  <div class="grid">
+    <div><label>Visit date</label><input type="date" id="visit_date"></div>
+    <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
+    <div>
+      <label>Electrical connection</label>
+      <select id="visit_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
+    <div><label>ICP</label><input type="text" id="visit_icp"></div>
+    <div><label>Electricity retailer</label><input type="text" id="visit_retailer"></div>
+    <div><label>Distribution network</label><input type="text" id="visit_network"></div>
+    <div>
+      <label>Existing switchboard</label>
+      <select id="visit_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
+
+  <h3>2. Main roof face</h3>
+  <div class="grid">
+    <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
+    <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
+    <div><label>Pitch (degrees)</label><input type="number" step="0.1" id="visit_roof_pitch"></div>
+    <div>
+      <label>Orientation</label>
+      <select id="visit_roof_orientation">
+        <option value="">Select...</option><option>North</option><option>North-east</option>
+        <option>East</option><option>South-east</option><option>South</option>
+        <option>South-west</option><option>West</option><option>North-west</option>
+      </select>
+    </div>
+    <div><label>Roof material / profile</label><input type="text" id="visit_roof_material"></div>
+    <div><label>Roof access</label><input type="text" id="visit_roof_access"></div>
+  </div>
+  <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
+  <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
+
+  <h3>3. Site conditions</h3>
+  <div class="grid">
+    <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
+    <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
+    <label><input type="checkbox" id="visit_trees"> Trees / vegetation</label>
+    <label><input type="checkbox" id="visit_chimneys"> Chimneys</label>
+    <label><input type="checkbox" id="visit_buildings"> Nearby buildings</label>
+    <label><input type="checkbox" id="visit_aerials"> TV aerials</label>
+    <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
+    <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
+  </div>
+
+  <h3>4. Locations and dictated notes</h3>
+  <div class="grid">
+    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
+    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
+    <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
+  </div>
+  <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
+
+  <br>
+  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+</section>
+
+          <section class="card solar-only" id="assessmentSection">
+  <div id="assessmentPrerequisite" class="prerequisite-blocked" role="status">Complete Tom's Site Visit before starting Assessment &amp; Design.</div>
   <h2>Assessment & design</h2>
 
   <div class="placeholder">
@@ -964,87 +1069,6 @@ window.currentAnswers = answers;
   </form>
 </section>
 
-<!-- TOM'S SITE VISIT -->
-
-<section class="card site-visit solar-only" id="siteVisitSection">
-  <h2>Tom's Site Visit</h2>
-  <div class="placeholder">
-    Record the onsite facts once. Saving this form also copies the matching
-    information into System Design. Phone dictation can be used in the notes fields.
-  </div>
-
-  <h3>1. Visit and electrical supply</h3>
-  <div class="grid">
-    <div><label>Visit date</label><input type="date" id="visit_date"></div>
-    <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
-    <div>
-      <label>Electrical connection</label>
-      <select id="visit_connection_type">
-        <option value="">Select...</option>
-        <option value="single_phase">Single phase</option>
-        <option value="dual_phase">Dual phase</option>
-        <option value="three_phase">Three phase</option>
-      </select>
-    </div>
-    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
-    <div><label>ICP</label><input type="text" id="visit_icp"></div>
-    <div><label>Electricity retailer</label><input type="text" id="visit_retailer"></div>
-    <div><label>Distribution network</label><input type="text" id="visit_network"></div>
-    <div>
-      <label>Existing switchboard</label>
-      <select id="visit_switchboard">
-        <option value="">Select...</option>
-        <option value="suitable">Appears suitable</option>
-        <option value="upgrade">Upgrade likely required</option>
-        <option value="review">Needs further review</option>
-      </select>
-    </div>
-  </div>
-  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
-
-  <h3>2. Main roof face</h3>
-  <div class="grid">
-    <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
-    <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
-    <div><label>Pitch (degrees)</label><input type="number" step="0.1" id="visit_roof_pitch"></div>
-    <div>
-      <label>Orientation</label>
-      <select id="visit_roof_orientation">
-        <option value="">Select...</option><option>North</option><option>North-east</option>
-        <option>East</option><option>South-east</option><option>South</option>
-        <option>South-west</option><option>West</option><option>North-west</option>
-      </select>
-    </div>
-    <div><label>Roof material / profile</label><input type="text" id="visit_roof_material"></div>
-    <div><label>Roof access</label><input type="text" id="visit_roof_access"></div>
-  </div>
-  <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
-  <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
-
-  <h3>3. Site conditions</h3>
-  <div class="grid">
-    <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
-    <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
-    <label><input type="checkbox" id="visit_trees"> Trees / vegetation</label>
-    <label><input type="checkbox" id="visit_chimneys"> Chimneys</label>
-    <label><input type="checkbox" id="visit_buildings"> Nearby buildings</label>
-    <label><input type="checkbox" id="visit_aerials"> TV aerials</label>
-    <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
-    <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
-  </div>
-
-  <h3>4. Locations and dictated notes</h3>
-  <div class="grid">
-    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
-    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
-    <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
-    <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
-  </div>
-  <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
-
-  <br>
-  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
-</section>
 
 <!-- JOB PHOTOS & DOCUMENTS -->
 
@@ -1258,6 +1282,7 @@ window.currentAnswers = answers;
 <section class="card solar-only" id="systemDesignSection">
 
   <h2>SYSTEM DESIGN</h2>
+  <div id="systemDesignPrerequisite" class="prerequisite-blocked" role="status">Complete Tom's Site Visit before starting System Design.</div>
 
   <div class="placeholder">
     Build the installation design from the Home Energy Check, site survey
@@ -2891,6 +2916,36 @@ const siteVisitCheckboxIds = [
   "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
 ];
 
+
+let siteVisitPrerequisiteComplete = false;
+
+function setSiteVisitPrerequisiteState(complete, missing = []) {
+  siteVisitPrerequisiteComplete = Boolean(complete);
+  const missingLabels = (missing || []).map(item => item?.label || item).filter(Boolean);
+  const detail = missingLabels.length
+    ? ` Still required: ${missingLabels.join(", ")}.`
+    : "";
+
+  [
+    ["assessmentSection", "assessmentPrerequisite", "Assessment & Design"],
+    ["systemDesignSection", "systemDesignPrerequisite", "System Design"]
+  ].forEach(([sectionId, messageId, label]) => {
+    const section = document.getElementById(sectionId);
+    const message = document.getElementById(messageId);
+    if (!section || !message) return;
+
+    message.className = complete ? "prerequisite-ready" : "prerequisite-blocked";
+    message.textContent = complete
+      ? `Site Visit complete — ${label} is available.`
+      : `Not ready — complete Tom's Site Visit before ${label}.${detail}`;
+
+    section.classList.toggle("prerequisite-locked", !complete);
+    section.querySelectorAll("input, select, textarea, button").forEach(control => {
+      control.disabled = !complete;
+    });
+  });
+}
+
 function collectSiteVisit() {
   // Retain legacy fields that are no longer shown, without asking Tom to
   // enter them again or wiping them from an older saved site visit.
@@ -2978,6 +3033,8 @@ async function loadSiteVisit() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    setSiteVisitPrerequisiteState(Boolean(data.site_visit_complete), data.missing_required_fields || []);
+
     if (!data.site_visit) {
       const date = document.getElementById("visit_date");
       if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
@@ -3015,12 +3072,19 @@ async function saveSiteVisit() {
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
     loadedSiteVisit = { ...siteVisit };
-    applySiteVisitToSystemDesign(siteVisit);
+    setSiteVisitPrerequisiteState(Boolean(data.site_visit_complete), data.missing_required_fields || []);
     applySharedElectricityDetails();
+
+    if (!data.site_visit_complete) {
+      message.textContent = " ✓ Site Visit progress saved — complete the required onsite fields to unlock Assessment & Design";
+      return;
+    }
+
+    applySiteVisitToSystemDesign(siteVisit);
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
-      ? " ✓ Site visit saved and System Design updated"
-      : " Site visit saved, but System Design could not be updated";
+      ? " ✓ Site Visit complete — Assessment & Design unlocked and System Design updated"
+      : " ✓ Site Visit complete — design sections unlocked, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
     message.textContent = " Could not save site visit";
@@ -3688,6 +3752,10 @@ async function loadSystemDesign() {
 
 async function saveSystemDesign() {
   const message = document.getElementById("systemDesignMessage");
+  if (!siteVisitPrerequisiteComplete) {
+    if (message) message.textContent = " Complete Tom's Site Visit before saving System Design";
+    return false;
+  }
   message.textContent = " Saving...";
 
   try {
@@ -4585,6 +4653,7 @@ document.addEventListener("change", scheduleSectionAutosave);
 resetWorkLogDates();
 
 loadJob().then(() => {
+  setSiteVisitPrerequisiteState(false, []);
   Promise.all([
     loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers(), loadJobOperations()
   ]).then(() => {
