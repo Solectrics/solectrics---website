@@ -716,6 +716,8 @@ async function submitHomeEnergyCheck(){
       annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
     };
 
+    answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);
+
     formData.append(
       'answers',
       JSON.stringify(answers)
@@ -786,11 +788,14 @@ async function submitHomeEnergyCheck(){
 
   try {
 
-    await submitHomeEnergyCheck();
+    const result = await submitHomeEnergyCheck();
 
     status.className = 'bill-status good';
-    status.textContent =
-      'Sent ✓ Solectrics has received your Home Energy Check.';
+    status.textContent = result.customerCopy?.requested
+      ? (result.customerCopy.sent
+        ? 'Sent ✓ Solectrics has received your Home Energy Check, and a copy has been emailed to you.'
+        : 'Sent ✓ Solectrics has received your Home Energy Check. We could not email your copy, but your submission is complete.')
+      : 'Sent ✓ Solectrics has received your Home Energy Check.';
 
     button.textContent =
       'HOME ENERGY CHECK SENT ✓';
@@ -4632,6 +4637,15 @@ ${
       I'm happy for Solectrics to receive and use my Home Energy Check
       information for this enquiry.
     </span>
+  </label>
+
+  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
+    <input
+      id="customerCopyConsent"
+      type="checkbox"
+      style="width:auto;margin-top:3px"
+    >
+    <span>Email me a copy of my completed Home Energy Check</span>
   </label>
 
   <button
