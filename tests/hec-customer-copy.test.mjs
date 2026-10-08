@@ -135,7 +135,15 @@ test("ticked customer copy emails the safe HEC and still creates one enquiry/job
     assert.equal(db.writes.length, 2);
     assert.equal(emailRequests[0].url, "https://api.resend.com/emails");
     assert.deepEqual(emailRequests[0].body.to, ["alex@example.com"]);
+    assert.equal(emailRequests[0].body.from, "Jane at Solectrics <jane@solectrics.co.nz>");
     assert.match(emailRequests[0].body.html, /12 Example Road/);
+    assert.match(emailRequests[0].body.html, /Your completed Home Energy Check/);
+    assert.match(emailRequests[0].body.html, /EFEC3451-B808-452A-8EA2-64B22E36C363\.png/);
+    assert.match(emailRequests[0].body.html, /#17332d|#3c876c/i);
+    assert.match(emailRequests[0].body.html, /#ef9c20/i);
+    assert.match(emailRequests[0].body.html, /Jane, Solectrics/);
+    assert.match(emailRequests[0].body.html, /What happens next\?/);
+    assert.doesNotMatch(emailRequests[0].body.html, /tracking|pixel|utm_|google-analytics|marketing automation/i);
     assert.doesNotMatch(emailRequests[0].body.html, /SECRET JOB HUB NOTE|SECRET SUPPLIER PRICE|SECRET COSTING|internalNotes|supplierPricing/);
   } finally {
     globalThis.fetch = originalFetch;
@@ -252,3 +260,22 @@ test("submission payload passes the actual customer-copy choice without adding a
   }
 });
 
+
+
+test("branded customer copy retains the existing safe-field allowlist", () => {
+  const rendered = renderHomeEnergyCheckCopy({
+    name: "Alex Customer",
+    email: "alex@example.com",
+    phone: "0210000000",
+    address: "12 Example Road",
+    goals: ["Lower bills", "More resilience"],
+    internalNotes: "INTERNAL ONLY",
+    costing: { margin: 99 },
+    supplierPricing: "SUPPLIER ONLY",
+    jobHubStatus: "DO NOT EXPOSE"
+  });
+  assert.match(rendered, /Alex Customer/);
+  assert.match(rendered, /Lower bills, More resilience/);
+  assert.doesNotMatch(rendered, /INTERNAL ONLY|SUPPLIER ONLY|DO NOT EXPOSE|jobHubStatus/);
+  assert.doesNotMatch(rendered, /mini-fergus|Job Hub/i);
+});
