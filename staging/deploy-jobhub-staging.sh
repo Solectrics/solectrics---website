@@ -8,7 +8,7 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'Run from the Job Hu
 cd "$ROOT"
 BRANCH="$(git branch --show-current)"
 case "$BRANCH" in
-  codex/jobhub-staging-migrations-0015-0018|codex/jobhub-solar-operations-workflow) ;;
+  codex/jobhub-staging-migrations-0015-0018|codex/jobhub-solar-operations-workflow|codex/hec-bill-accuracy-staging) ;;
   *) fail "Branch $BRANCH is not an explicitly approved staging branch." ;;
 esac
 git diff --quiet HEAD -- . || fail 'Tracked files have local changes. Review them; do not discard them.'

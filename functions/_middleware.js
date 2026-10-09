@@ -1,4 +1,5 @@
 const CANONICAL_HOSTNAME = "solectrics.co.nz";
+const BILL_ACCURACY_PREVIEW_HOSTNAME = "codex-hec-bill-accuracy-stag.solectrics-jobhub-staging.pages.dev";
 const STAGING_ALLOWED_HOSTNAMES = new Set([
   "solectrics-jobhub-staging.pages.dev",
   "codex-jobhub-solar-operation.solectrics-jobhub-staging.pages.dev"
@@ -10,6 +11,12 @@ function isPagesHostname(hostname) {
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
+  const isBillAccuracyPreview = url.hostname === BILL_ACCURACY_PREVIEW_HOSTNAME;
+  // Temporary bill-accuracy preview: exact host and both explicit staging flags.
+  if (isBillAccuracyPreview && context.env.JOBHUB_STAGING_ONLY === "true" &&
+      context.env.ALLOW_PAGES_DEV_HOST === "true") {
+    return context.next();
+  }
 
   // The staging project has a shared staging database. Permit only its
   // Access-protected project hostname and the one reviewed Operations preview;
@@ -28,7 +35,7 @@ export async function onRequest(context) {
   // The isolated staging Pages project may opt into its explicitly allowed
   // pages.dev hostnames. Production keeps the canonical-host redirect unless
   // this explicit Pages environment variable is set.
-  if (context.env.ALLOW_PAGES_DEV_HOST === "true") {
+  if (context.env.ALLOW_PAGES_DEV_HOST === "true" && !isBillAccuracyPreview) {
     return context.next();
   }
 
