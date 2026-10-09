@@ -7,6 +7,16 @@ function isPagesHostname(hostname) {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
+  if (context.env?.JOBHUB_STAGING_ONLY === "true") {
+    if (context.env.ALLOW_PAGES_DEV_HOST === "true" &&
+        url.hostname === "fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev") {
+      return context.next();
+    }
+    return new Response("Staging hostname is not allowed", {
+      status: 403, headers: { "Cache-Control": "no-store" }
+    });
+  }
+
   if (!isPagesHostname(url.hostname)) {
     return context.next();
   }
