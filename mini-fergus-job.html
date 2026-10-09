@@ -383,6 +383,8 @@
 <script src="/assets/job-document-library.js"></script>
 <link rel="stylesheet" href="/assets/workspace-navigation.css">
 <script src="/assets/workspace-navigation.js" defer></script>
+<link rel="stylesheet" href="/assets/site-visit-photos.css">
+<script src="/assets/site-visit-photos.js" defer></script>
 </head>
 
 <body>
@@ -3117,6 +3119,8 @@ async function loadSiteVisit() {
     console.error("Could not load site visit:", error);
     const message = document.getElementById("siteVisitMessage");
     if (message) message.textContent = " Could not load saved site visit";
+  } finally {
+    window.SiteVisitPhotos?.init(jobId, loadJobFiles);
   }
 }
 
@@ -3281,6 +3285,7 @@ async function loadJobFiles() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    window.SiteVisitPhotos?.renderSaved(data.files);
     renderJobPhotoChecklist(data.files);
     renderEnergyData(data.files);
 
@@ -3307,14 +3312,14 @@ async function loadJobFiles() {
           · ${escapeHtml(formatFileSize(file.size_bytes))}
           · ${escapeHtml(file.uploaded_at || "")}
         </div>
-        ${file.caption ? `<div>${escapeHtml(file.caption)}</div>` : ""}
+        ${file.caption ? `<div>${escapeHtml(window.SiteVisitPhotos?.displayCaption(file) ?? file.caption)}</div>` : ""}
       </div>
     `);
     const groups = new Map(["Energy & HEC", "Site Visit", "Design & OpenSolar", "Supplier Quotes", "Installation", "Compliance", "Handover", "Other / Unclassified"].map(name => [name, []]));
     data.files.forEach((file, index) => {
       const group = JobDocumentLibrary.group(file);
       if (!groups.has(group)) groups.set(group, []);
-      groups.get(group).push(`<div data-document-search="${escapeHtml((file.original_name + " " + (file.caption || "")).toLowerCase())}">${fileRows[index]}</div>`);
+      groups.get(group).push(`<div data-document-search="${escapeHtml((file.original_name + " " + (window.SiteVisitPhotos?.displayCaption(file) ?? file.caption ?? "")).toLowerCase())}">${fileRows[index]}</div>`);
     });
     list.innerHTML = [...groups].map(([name, rows]) => `<details class="doc-group"><summary>${escapeHtml(name)} (${rows.length})</summary>${rows.join("") || '<p class="doc-verify-note">No classified files in this group. Requirement depends on the job.</p>'}</details>`).join("");
     await verifyDocumentSummary();
@@ -4726,7 +4731,7 @@ const autosavePending = new Set();
 
 function autosaveTarget(event) {
   const target = event.target;
-  if (!target || target.disabled || target.readOnly) return null;
+  if (!target || target.disabled || target.readOnly || target.closest(".svp-control")) return null;
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
