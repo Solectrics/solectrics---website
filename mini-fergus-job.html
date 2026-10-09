@@ -387,6 +387,8 @@
 <script src="/assets/site-visit-photos.js" defer></script>
 <link rel="stylesheet" href="/assets/job-data-review.css">
 <script src="/assets/job-data-review.js"></script>
+<link rel="stylesheet" href="/assets/system-design-save.css">
+<script src="/assets/system-design-save.js"></script>
 </head>
 
 <body>
@@ -853,8 +855,8 @@ window.currentAnswers = answers;
 <section class="card site-visit solar-only" id="siteVisitSection">
   <h2>Tom's Site Visit</h2>
   <div class="placeholder">
-    Record the onsite facts once. Saving this form also copies the matching
-    information into System Design. Phone dictation can be used in the notes fields.
+    Record the onsite facts once. Saved information is available for review in
+    System Design; it does not overwrite the design. Phone dictation can be used in the notes fields.
   </div>
 
   <h3>1. Visit and electrical supply</h3>
@@ -1147,9 +1149,15 @@ window.currentAnswers = answers;
 <!-- SYSTEM DESIGN -->
 
 <section class="card solar-only" id="systemDesignSection">
-<div id="jobDataReview" aria-live="polite"></div>
-
-  <h2>SYSTEM DESIGN</h2>
+<header class="design-save-bar">
+    <h2>SYSTEM DESIGN</h2>
+    <div class="design-save-actions">
+      <button type="button" id="saveSystemDesign" disabled>Save System Design</button>
+      <span id="systemDesignMessage" class="autosave-status" role="status" aria-live="polite">Loading saved design…</span>
+    </div>
+  </header>
+  <p class="placeholder">Changes still save automatically. Use Save System Design to save now or retry a failed save. Use Selected Values in Design is a separate review action.</p>
+  <div id="jobDataReview" aria-live="polite"></div>
 
   <div class="placeholder">
     Build the installation design from the Home Energy Check, site survey
@@ -1620,7 +1628,7 @@ window.currentAnswers = answers;
 
   <br>
 
-  <span id="systemDesignMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+
 
 </section>
 
@@ -3024,6 +3032,37 @@ let assessmentLoaded = false;
 let systemDesignLoaded = false;
 let hasSavedSiteVisit = false;
 let designDataReview;
+let systemDesignSaveController;
+
+function showSystemDesignSaveState(state, error) {
+  const message = document.getElementById("systemDesignMessage");
+  const button = document.getElementById("saveSystemDesign");
+  const labels = { dirty: "Unsaved changes", saving: "Saving…", saved: "Saved successfully", failed: "Save failed — retry" };
+  message.textContent = labels[state] || "Unsaved changes";
+  message.classList.toggle("error", state === "failed");
+  if (error && !systemDesignLoaded) message.textContent += ". Reload the saved design first.";
+  button.disabled = state === "saving" || !systemDesignLoaded;
+  button.textContent = state === "failed" && systemDesignLoaded ? "Retry — Save System Design" : "Save System Design";
+}
+
+function designSaveController() {
+  if (!systemDesignSaveController) {
+    systemDesignSaveController = window.SystemDesignSave.create({
+      read: collectSystemDesign,
+      write: async system_design => {
+        const response = await fetch("/api/system-design", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: jobId, system_design })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
+      },
+      state: showSystemDesignSaveState,
+      saved: () => { clearTimeout(autosaveTimers.get("systemDesign")); updateSystemDesignReadiness(); refreshDesignDataReview(); }
+    });
+  }
+  return systemDesignSaveController;
+}
 
 function refreshDesignDataReview() { designDataReview?.refresh(); }
 function initialiseDesignDataReview() {
@@ -3831,7 +3870,10 @@ async function loadSystemDesign() {
     }
 
     systemDesignLoaded = true;
-    if (!data.system_design) return;
+    if (!data.system_design) {
+      designSaveController().initialise(false);
+      return;
+    }
     const design = data.system_design;
 
     systemDesignFieldIds.forEach(id => {
@@ -3860,46 +3902,23 @@ async function loadSystemDesign() {
     }
 
     updateSystemDesignReadiness();
+    designSaveController().initialise(true);
   } catch (error) {
     systemDesignLoaded = false;
     console.error("Could not load system design:", error);
-    const message = document.getElementById("systemDesignMessage");
-    if (message) message.textContent = " Could not load saved system design";
+    showSystemDesignSaveState("failed", error);
   }
 }
 
 async function saveSystemDesign() {
   const message = document.getElementById("systemDesignMessage");
   if (!systemDesignLoaded) {
-    message.textContent = " Could not save: reload the saved System Design first.";
+    message.textContent = "Save failed — retry. Please reload the saved System Design first.";
+    message.classList?.add("error");
     return false;
   }
-  message.textContent = " Saving...";
-
-  try {
-    const response = await fetch("/api/system-design", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        job_id: jobId,
-        system_design: collectSystemDesign()
-      })
-    });
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || "Save failed");
-    }
-
-    message.textContent = " ✓ System design saved";
-    updateSystemDesignReadiness();
-    refreshDesignDataReview();
-    return true;
-  } catch (error) {
-    console.error("Could not save system design:", error);
-    message.textContent = " Could not save system design";
-    return false;
-  }
+  clearTimeout(autosaveTimers.get("systemDesign"));
+  return designSaveController().save();
 }
 
 
@@ -4702,6 +4721,12 @@ function scheduleSectionAutosave(event) {
   const target = autosaveTarget(event);
   if (!target) return;
   const [key, save, messageId] = target;
+  if (key === "systemDesign") {
+    designSaveController().dirty();
+    clearTimeout(autosaveTimers.get(key));
+    autosaveTimers.set(key, setTimeout(saveSystemDesign, 1100));
+    return;
+  }
   const message = document.getElementById(messageId);
   if (message) message.textContent = "Changes pending…";
   clearTimeout(autosaveTimers.get(key));

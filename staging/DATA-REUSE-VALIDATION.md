@@ -42,3 +42,10 @@ Do not describe local browser emulation as real Safari acceptance. No staging da
 ## Limits / later approved increments
 
 This correction does not introduce a design revision archive or server-side concurrent-edit protection. Direct edits to legacy design controls retain their existing behavior. Issued quote snapshots and costing calculations are unchanged; Assessment versus Design proposal discrepancies still need the separately scoped readiness work described in the approved design roadmap. Guided visit completion, warranty packs, communications and voice transcription have not been implemented in this increment.
+
+
+## System Design save control
+
+The heading now includes a sticky, mobile-friendly Save System Design button and an accessible status message. Manual save and the existing debounce autosave share one serial request path. Use Selected Values in Design remains a separate review action. Existing saved-design load guards, payloads and reviewed-status rules remain unchanged.
+
+Local validation: 84/84 tests passed. Browser checks at 375px, 390px, 430px and 1440px passed for manual save, autosave, all four status messages, failure/retry, edits during an in-flight save, no overlapping requests, sticky visibility and no horizontal overflow. Source-change review regression checks passed at the same widths. These checks used synthetic local API responses, not staging or production data. Actual iPhone Safari and authenticated staging acceptance remain pending after deployment through the guarded staging script.
