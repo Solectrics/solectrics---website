@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const html = await readFile(new URL('../mini-fergus-fletcher-form.html', import.meta.url), 'utf8');
 const script = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
-function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_role:'power_bill'}]) {
+function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_role:'power_bill'}], realValidation = false) {
   const events = [], elements = new Map();
   const get = id => {
     if (!elements.has(id)) elements.set(id, { value: id === 'customerName' ? 'Synthetic Customer' : '', checked:false, disabled:false, textContent:'', href:'', addEventListener(){} });
@@ -23,7 +23,7 @@ function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_ro
   });
   context.window = context;
   vm.runInContext(script.slice(0, script.indexOf('document.querySelectorAll("input,select,textarea")')), context);
-  vm.runInContext('updateMissing = () => [];', context);
+  if (!realValidation) vm.runInContext('updateMissing = () => [];', context);
   return {context, events, get, run:code=>vm.runInContext(code, context)};
 }
 const ok = data => ({ok:true,status:200,redirected:false,json:async()=>data});
@@ -94,4 +94,31 @@ test('missing layout or power bill stops before PDF save and email',async()=>{
 });
 test('address starts inside the white field rather than on its title',()=>{
   assert.match(html,/drawText\(p1, \$\("siteAddress"\).value, 132, 626, \{ maxWidth:416 \}\)/);
+});
+
+const completeForm = h => {
+  for (const [id, value] of Object.entries({customerName:'Synthetic Customer',siteAddress:'Synthetic address',connectionType:'single_phase',inverterType:'hybrid_ready',roofType:'corrugated_steel',roofPitch:'3',arrayLayout:'20 panels',systemSize:'9'})) h.get(id).value=value;
+};
+test('real form validation allows PDF download with only a power bill and no layout or SLD', async()=>{
+  const h=harness(url=>url.includes('/assets/')?template:ok({ok:true}),[{document_role:'power_bill'}],true);
+  completeForm(h); h.run('renderPackageDocuments([{document_role:"power_bill"}], {})');
+  await h.run('createAndSavePdf(true)');
+  assert.equal(h.events.includes('download'),true);
+  assert.equal(h.events.includes('/api/fletcher-email'),false);
+  assert.match(h.get('emailRequirements').textContent,/missing OpenSolar roof \/ panel layout/);
+  assert.match(h.get('downloadRequirements').textContent,/PDF ready/);
+});
+test('real form validation names missing details beside the buttons without a write', async()=>{
+  const h=harness(()=>{throw Error('No request expected');},[],true);
+  await h.run('createAndSavePdf(true)');
+  assert.deepEqual(h.events,[]);
+  assert.match(h.get('status').textContent,/Site address.*Roof pitch/);
+  assert.match(h.get('downloadRequirements').textContent,/Attachments are not required/);
+  assert.equal(h.get('downloadPdf').disabled,false);
+});
+test('email with real valid form works without an SLD when bill and layout exist',async()=>{
+  const h=harness(url=>url.includes('/assets/')?template:ok({ok:true,recipient:'jane@solectrics.co.nz'}),undefined,true);
+  completeForm(h); await h.run('emailPackage()');
+  assert.equal(h.events.filter(url=>url==='/api/fletcher-email').length,1);
+  assert.equal(h.events.includes('download'),false);
 });

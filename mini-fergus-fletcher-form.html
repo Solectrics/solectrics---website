@@ -114,6 +114,8 @@
     <p class="hint">Use Drawing / design and Roof / panel layout before choosing the image. Return here after the upload finishes.</p>
   </section>
 
+  <p id="downloadRequirements" class="hint"></p>
+  <p id="emailRequirements" class="hint" role="status" aria-live="polite">Checking email attachments…</p>
   <button type="button" id="downloadPdf">DOWNLOAD COMPLETED PDF</button>
   <button type="button" id="emailPackage">EMAIL PACKAGE TO JANE</button>
   <span id="status" role="status" aria-live="polite"></span>
@@ -304,7 +306,7 @@ function renderPackageDocuments(files, answers) {
   setChecked("powerBillAttached", roles.has("power_bill"));
   const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
   const items = [
-    ["sld", "Single-line diagram (SLD)", roles.has("sld")],
+    ["sld", "Single-line diagram (SLD) — optional", roles.has("sld")],
     ["roof_layout", "Roof / panel layout", roles.has("roof_layout")],
     ["power_bill", "Customer power bill", roles.has("power_bill")]
   ];
@@ -314,6 +316,10 @@ function renderPackageDocuments(files, answers) {
       : "";
     return `<div>${present ? "✓" : "○"} ${label}${note}</div>`;
   }).join("");
+  const missing = missingRequiredPackageDocuments();
+  $("emailRequirements").textContent = missing.length
+    ? `Email unavailable: missing ${missing.join(", ")}. Upload the missing attachment to this job. An SLD is optional. PDF download does not require these attachments.`
+    : "Required email attachments are present. An SLD is optional; the files are checked again before sending.";
 }
 
 function buildArrayLayout(roofs) {
@@ -358,6 +364,9 @@ function updateMissing() {
   panel.innerHTML = missing.length
     ? `<strong>Please complete before downloading:</strong> ${missing.join(", ")}.`
     : "<strong>Ready:</strong> the required Fletcher form details are complete.";
+  $("downloadRequirements").textContent = missing.length
+    ? `Before downloading, complete: ${missing.join(", ")}. Attachments are not required to download the PDF.`
+    : "PDF ready to download. The power bill, OpenSolar layout and SLD are not required for download.";
   return missing;
 }
 
@@ -443,7 +452,7 @@ function drawText(page, text, x, y, options = {}) {
 async function createAndSavePdf(download = true, emailOperation = false) {
   if (packageBusy && !emailOperation) return;
   const missing = updateMissing();
-  if (missing.length) { $("status").textContent = "Please complete the missing details above."; return; }
+  if (missing.length) { $("status").textContent = `Please complete: ${missing.join(", ")}. No PDF was saved or downloaded.`; return; }
   setPackageBusy(true); $("status").textContent = "Creating PDF…";
   try {
     if (!window.PDFLib) throw new Error("PDF generator did not load. Check the internet connection and refresh.");
