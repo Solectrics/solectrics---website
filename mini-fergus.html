@@ -215,6 +215,8 @@
     }
   </style>
 <link rel="stylesheet" href="/assets/job-document-library.css"><script src="/assets/job-document-library.js"></script>
+<link rel="stylesheet" href="/assets/workspace-navigation.css">
+<script src="/assets/workspace-navigation.js" defer></script>
 </head>
 
 <body>
@@ -230,14 +232,16 @@
       Keep solar and everyday electrical jobs moving from enquiry to completion.
     </div>
 
-    <div class="pipeline">
-      <span>New enquiries</span>
-      <span>Assess & design</span>
-      <span>Quote sent</span>
-      <span>Accepted</span>
-      <span>Ready to install</span>
-      <span>Installed / finishing</span>
-    </div>
+    <section id="jh-dashboard" aria-live="polite"><h2>Jobs overview</h2><p>Loading saved job statuses…</p></section>
+    <nav class="jh-dashboard-actions" aria-label="Quick actions">
+      <a href="#newElectricalJobPanel" id="jh-create-job">Create electrical job</a>
+      <a href="/home-energy-check">New solar enquiry / HEC</a>
+      <a href="#jobs-container">Open existing job</a>
+      <a href="/mini-fergus?open_section=siteVisitSection#jobs-container">Site Visit</a>
+      <a href="/mini-fergus?open_section=workLogSection#jobs-container">Daily Work</a>
+      <a href="/mini-fergus?open_section=jobFilesSection#jobs-container">Upload document</a>
+    </nav>
+    <section id="jh-next-actions" aria-live="polite"></section>
 
     <div class="section-head">
       <h2>Jobs</h2>
@@ -312,6 +316,8 @@ async function loadJobs() {
       throw new Error(data.error || "Could not load jobs");
     }
 
+    window.jobHubJobsForNavigation = data.jobs || [];
+    document.dispatchEvent(new CustomEvent("workspace:jobs-loaded"));
     if (!data.jobs || data.jobs.length === 0) {
       container.innerHTML = `
         <div class="job-card">
@@ -349,9 +355,12 @@ async function loadJobs() {
 
       </div>
     `).join("");
+    document.dispatchEvent(new CustomEvent("workspace:jobs-loaded"));
 
   } catch (error) {
     console.error(error);
+    document.getElementById("jh-dashboard").textContent = "Job overview could not be verified. Refresh to try again.";
+    document.getElementById("jh-next-actions").textContent = "Saved next actions could not be loaded.";
 
     container.innerHTML = `
       <div class="job-card">
@@ -376,6 +385,7 @@ document.getElementById("showNewElectricalJob").addEventListener("click", () => 
   newJobPanel.hidden = false;
   document.getElementById("newCustomerName").focus();
 });
+document.getElementById("jh-create-job").addEventListener("click", () => { newJobPanel.hidden = false; document.getElementById("newCustomerName").focus(); });
 document.getElementById("cancelNewElectricalJob").addEventListener("click", () => {
   newJobPanel.hidden = true;
 });

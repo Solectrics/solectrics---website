@@ -381,6 +381,8 @@
   </style>
 <link rel="stylesheet" href="/assets/job-document-library.css">
 <script src="/assets/job-document-library.js"></script>
+<link rel="stylesheet" href="/assets/workspace-navigation.css">
+<script src="/assets/workspace-navigation.js" defer></script>
 </head>
 
 <body>
@@ -3326,6 +3328,7 @@ async function loadJobFiles() {
 }
 
 function revealDocumentUpload(role = "general") {
+  window.WorkspaceNavigation?.openSection("jobFilesSection");
   const panel = document.getElementById("documentUploadControls");
   if (!panel) return;
   panel.hidden = false;
@@ -4774,6 +4777,7 @@ document.addEventListener("change", scheduleSectionAutosave);
 resetWorkLogDates();
 
 loadJob().then(() => {
+  window.WorkspaceNavigation?.enhanceJob();
   Promise.all([
     loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
   ]).then(() => {
