@@ -1851,6 +1851,9 @@ function billNumber(
 }
 
 
+// The bill-review script uses the same numeric helper as the final report.
+window.billNumber = billNumber;
+
 function average(
   values,
   fallback
@@ -5513,3 +5516,4 @@ setTimeout(
 
 </body>
 </html>
+
