@@ -385,6 +385,8 @@
 <script src="/assets/workspace-navigation.js" defer></script>
 <link rel="stylesheet" href="/assets/site-visit-photos.css">
 <script src="/assets/site-visit-photos.js" defer></script>
+<link rel="stylesheet" href="/assets/job-data-review.css">
+<script src="/assets/job-data-review.js"></script>
 </head>
 
 <body>
@@ -1145,6 +1147,7 @@ window.currentAnswers = answers;
 <!-- SYSTEM DESIGN -->
 
 <section class="card solar-only" id="systemDesignSection">
+<div id="jobDataReview" aria-live="polite"></div>
 
   <h2>SYSTEM DESIGN</h2>
 
@@ -2464,9 +2467,12 @@ async function saveGeneralJobDetails() {
     const response = await fetch(`/api/assessment?job_id=${jobId}`);
     const data = await response.json();
 
-    if (!data.ok || !data.assessment) return;
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+    assessmentLoaded = true;
+    if (!data.assessment) return;
 
     const a = data.assessment;
+    loadedAssessmentForReview = { ...a };
 
     document.getElementById("panel_wattage").value =
       a.panel_wattage ?? 445;
@@ -2512,6 +2518,7 @@ async function saveGeneralJobDetails() {
       a.recommendation ?? "";
 
   } catch (error) {
+    assessmentLoaded = false;
     console.error("Could not load assessment:", error);
   }
 }
@@ -2906,6 +2913,10 @@ async function saveAssessment() {
   const message =
     document.getElementById("assessmentMessage");
 
+  if (!assessmentLoaded) {
+    message.textContent = " Could not save: reload the saved Assessment first.";
+    return;
+  }
   message.textContent = " Saving...";
 
   const assessment = {
@@ -2984,6 +2995,8 @@ async function saveAssessment() {
       throw new Error(data.error || "Save failed");
     }
 
+    loadedAssessmentForReview = { ...assessment };
+    refreshDesignDataReview();
     message.textContent = " ✓ Assessment saved";
 
   } catch (error) {
@@ -3005,6 +3018,40 @@ const siteVisitFieldIds = [
 ];
 
 let loadedSiteVisit = {};
+let loadedAssessmentForReview = {};
+let siteVisitLoaded = false;
+let assessmentLoaded = false;
+let systemDesignLoaded = false;
+let hasSavedSiteVisit = false;
+let designDataReview;
+
+function refreshDesignDataReview() { designDataReview?.refresh(); }
+function initialiseDesignDataReview() {
+  if (!document.getElementById("systemDesignSection")) return;
+  designDataReview = window.JobDataReview.mount({
+    document,
+    getSources: () => ({ visit: loadedSiteVisit, assessment: loadedAssessmentForReview }),
+    getDesign: collectSystemDesign,
+    canReview: () => siteVisitLoaded && assessmentLoaded && systemDesignLoaded,
+    onApplied: () => {
+      updateSystemDesignReadiness();
+      scheduleSectionAutosave({ target: document.getElementById("design_panel_count") });
+    }
+  });
+  designDataReview.refresh();
+  if (!hasSavedSiteVisit && siteVisitLoaded && systemDesignLoaded) {
+    const field = document.getElementById("visit_icp");
+    const suggestion = window.JobDataReview.icpSuggestion(currentAnswers, collectSystemDesign());
+    const note = document.createElement("p");
+    note.className = "data-source-note";
+    if (suggestion.conflict) note.textContent = "HEC and System Design have different ICP values. Confirm the correct meter ICP before entering it.";
+    else if (field && !field.value && suggestion.value) {
+      field.value = suggestion.value;
+      note.textContent = "ICP reused from existing HEC / design information. Confirm it onsite; it saves with your Site Visit changes.";
+    }
+    if (field && note.textContent) field.after(note);
+  }
+}
 
 const siteVisitCheckboxIds = [
   "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
@@ -3024,75 +3071,6 @@ function collectSiteVisit() {
   return visit;
 }
 
-function applySiteVisitToSystemDesign(visit) {
-  const fieldMap = {
-    visit_connection_type: "design_connection_type",
-    visit_main_supply: "design_main_supply",
-    visit_icp: "design_icp",
-    visit_retailer: "design_retailer",
-    visit_network: "design_network",
-    visit_switchboard: "design_switchboard",
-    visit_supply_notes: "design_supply_notes"
-  };
-
-  Object.entries(fieldMap).forEach(([sourceId, targetId]) => {
-    const target = document.getElementById(targetId);
-    if (target) target.value = visit[sourceId] ?? "";
-  });
-
-  const checkboxMap = {
-    visit_salt_spray: "design_salt_spray",
-    visit_high_wind: "design_high_wind",
-    visit_trees: "design_trees",
-    visit_chimneys: "design_chimneys",
-    visit_buildings: "design_buildings",
-    visit_aerials: "design_aerials",
-    visit_vents: "design_vents",
-    visit_satellite: "design_satellite"
-  };
-
-  Object.entries(checkboxMap).forEach(([sourceId, targetId]) => {
-    const target = document.getElementById(targetId);
-    if (target) target.checked = Boolean(visit[sourceId]);
-  });
-
-  const firstRoof = document.querySelector("#designRoofs .design-roof");
-  const roofMap = {
-    visit_roof_length: "roof_length",
-    visit_roof_width: "roof_width",
-    visit_roof_pitch: "roof_pitch",
-    visit_roof_orientation: "roof_orientation_design",
-    visit_roof_material: "roof_material",
-    visit_roof_shading: "roof_shading",
-    visit_roof_notes: "roof_notes"
-  };
-
-  Object.entries(roofMap).forEach(([sourceId, targetClass]) => {
-    const target = firstRoof?.querySelector(`.${targetClass}`);
-    if (target) target.value = visit[sourceId] ?? "";
-  });
-
-  const environmentNotes = [
-    visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
-    visit.visit_inverter_location && `Possible inverter location: ${visit.visit_inverter_location}`,
-    visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
-    visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
-    visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
-    visit.visit_general_notes
-  ].filter(Boolean).join("\n");
-
-  const environmentField = document.getElementById("design_environment_notes");
-  if (environmentField) environmentField.value = environmentNotes;
-
-  const wattage = Number(document.getElementById("design_panel_wattage")?.value) || 0;
-  const panelCount = Number(document.getElementById("design_panel_count")?.value) || 0;
-  const arraySize = document.getElementById("design_array_kw");
-  if (arraySize) {
-    arraySize.value = wattage > 0 && panelCount > 0
-      ? ((wattage * panelCount) / 1000).toFixed(3)
-      : "";
-  }
-}
 
 async function loadSiteVisit() {
   try {
@@ -3100,6 +3078,8 @@ async function loadSiteVisit() {
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
 
+    siteVisitLoaded = true;
+    hasSavedSiteVisit = Boolean(data.site_visit);
     if (!data.site_visit) {
       const date = document.getElementById("visit_date");
       if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
@@ -3116,6 +3096,7 @@ async function loadSiteVisit() {
       if (field) field.checked = Boolean(data.site_visit[id]);
     });
   } catch (error) {
+    siteVisitLoaded = false;
     console.error("Could not load site visit:", error);
     const message = document.getElementById("siteVisitMessage");
     if (message) message.textContent = " Could not load saved site visit";
@@ -3126,6 +3107,10 @@ async function loadSiteVisit() {
 
 async function saveSiteVisit() {
   const message = document.getElementById("siteVisitMessage");
+  if (!siteVisitLoaded) {
+    message.textContent = " Could not save: reload the saved Site Visit first.";
+    return;
+  }
   const siteVisit = collectSiteVisit();
   message.textContent = " Saving...";
 
@@ -3139,11 +3124,9 @@ async function saveSiteVisit() {
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
     loadedSiteVisit = { ...siteVisit };
-    applySiteVisitToSystemDesign(siteVisit);
-    const designSaved = await saveSystemDesign();
-    message.textContent = designSaved
-      ? " ✓ Site visit saved and System Design updated"
-      : " Site visit saved, but System Design could not be updated";
+    hasSavedSiteVisit = true;
+    refreshDesignDataReview();
+    message.textContent = " ✓ Site Visit saved. System Design is unchanged; review saved information in System Design.";
   } catch (error) {
     console.error("Could not save site visit:", error);
     message.textContent = " Could not save site visit";
@@ -3847,6 +3830,7 @@ async function loadSystemDesign() {
       throw new Error(data.error || "Load failed");
     }
 
+    systemDesignLoaded = true;
     if (!data.system_design) return;
     const design = data.system_design;
 
@@ -3877,6 +3861,7 @@ async function loadSystemDesign() {
 
     updateSystemDesignReadiness();
   } catch (error) {
+    systemDesignLoaded = false;
     console.error("Could not load system design:", error);
     const message = document.getElementById("systemDesignMessage");
     if (message) message.textContent = " Could not load saved system design";
@@ -3885,6 +3870,10 @@ async function loadSystemDesign() {
 
 async function saveSystemDesign() {
   const message = document.getElementById("systemDesignMessage");
+  if (!systemDesignLoaded) {
+    message.textContent = " Could not save: reload the saved System Design first.";
+    return false;
+  }
   message.textContent = " Saving...";
 
   try {
@@ -3904,6 +3893,7 @@ async function saveSystemDesign() {
 
     message.textContent = " ✓ System design saved";
     updateSystemDesignReadiness();
+    refreshDesignDataReview();
     return true;
   } catch (error) {
     console.error("Could not save system design:", error);
@@ -3937,41 +3927,7 @@ document.addEventListener("input", function(event) {
   ) {
     updateDesignSuggestions();
 
-    const assessmentWattage =
-      document.getElementById("panel_wattage");
-
-    const assessmentCount =
-      document.getElementById("panel_count");
-
-    const designWattage =
-      document.getElementById("design_panel_wattage");
-
-    const designCount =
-      document.getElementById("design_panel_count");
-
-    if (assessmentWattage && designWattage) {
-      designWattage.value = assessmentWattage.value || "";
-    }
-
-    if (assessmentCount && designCount) {
-      designCount.value = assessmentCount.value || "";
-    }
-    
-const designArraySize =
-  document.getElementById("design_array_kw");
-
-if (designArraySize && designWattage && designCount) {
-  const wattage = Number(designWattage.value) || 0;
-  const panelCount = Number(designCount.value) || 0;
-
-  if (wattage > 0 && panelCount > 0) {
-    designArraySize.value =
-      ((wattage * panelCount) / 1000).toFixed(3);
-  } else {
-    designArraySize.value = "";
-  }
-}
-
+    // Assessment is a separate source; explicit review applies changes to Design.
   }
 
   /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
@@ -4731,7 +4687,7 @@ const autosavePending = new Set();
 
 function autosaveTarget(event) {
   const target = event.target;
-  if (!target || target.disabled || target.readOnly || target.closest(".svp-control")) return null;
+  if (!target || target.disabled || target.readOnly || target.closest(".svp-control, #jobDataReview")) return null;
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
@@ -4786,6 +4742,7 @@ loadJob().then(() => {
   Promise.all([
     loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
   ]).then(() => {
+    initialiseDesignDataReview();
     restoreWorkLogDraft();
 
     const roofOrientationField =
