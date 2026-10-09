@@ -53,7 +53,7 @@ test('successful bill extraction finishes review across the real script scopes',
   assert.doesNotMatch(r.element('winterStatus').textContent, /couldn.t read/);
   assert.equal(r.requests(), 1);
   assert.equal(r.context.answers.bills.winter, r.bill);
-  assert.match(r.element('insights').innerHTML, /630 a year including GST/);
+  assert.match(r.element('insights').innerHTML, /Your fixed electricity charge is about \$630 a year including GST, before any electricity is used\./);
   assert.match(r.element('insights').innerHTML, /781 kWh charged and 96 kWh free/);
 });
 

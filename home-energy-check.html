@@ -708,7 +708,7 @@ function makeInsights(){
   const fixedDailyIncl=rateInclGstNzd(b,'daily_fixed_charge_cents','daily_fixed_charge_gst_basis');
   if(fixedDailyIncl!==null){
     const yearly=fixedDailyIncl*365;
-    out.push(`Your fixed electricity charge is about ${yearly.toFixed(0)} a year including GST, before any electricity is used.`);
+    out.push(`Your fixed electricity charge is about $${yearly.toFixed(0)} a year including GST, before any electricity is used.`);
   }
 
   if(hasFreeImportTariff(b)){
@@ -5516,4 +5516,3 @@ setTimeout(
 
 </body>
 </html>
-
