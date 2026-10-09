@@ -214,6 +214,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/assets/job-document-library.css"><script src="/assets/job-document-library.js"></script>
 </head>
 
 <body>
@@ -267,6 +268,7 @@
       </form>
     </section>
 
+   <section id="documents-home" class="doc-attention-home" hidden aria-live="polite"></section>
    <div id="jobs-container">
   <div class="job-card">
     <div class="job-name">Loading jobs…</div>
@@ -281,6 +283,24 @@
 
   </main>
 <script>
+async function loadDocumentAttention(jobs) {
+  const panel=document.getElementById("documents-home");
+  const visible=jobs.filter(job=>job.job_type!=="general_electrical" && job.job_status!=="completed").slice(0,50);
+  if(!visible.length)return;
+  panel.hidden=false;panel.textContent="Checking document attention…";
+  try {
+    const response=await fetch(`/api/job-document-inventory?job_ids=${visible.map(job=>job.job_id).join(",")}`);
+    if(response.redirected)throw new Error();
+    const data=await response.json();if(!response.ok||!data.ok)throw new Error();
+    const rows=data.jobs.flatMap(job=>{
+      if(!job.files.some(file=>file.document_role==='fletcher_assessment'))return [];
+      const outstanding=JobDocumentLibrary.packageStatus(job.files,true).filter(check=>['missing','review'].includes(check.status));
+      const customer=visible.find(item=>Number(item.job_id)===Number(job.id));
+      return outstanding.map(check=>`<p><a href="/mini-fergus-job?id=${job.id}&document_use=${check.role}&document_context=fletcher#jobFilesSection">${escapeHtml(customer?.customer_name||'Job '+job.id)} — ${check.status==='missing'?'Missing':'Needs review'}: ${escapeHtml(check.label)}</a></p>`);
+    });
+    panel.innerHTML='<h2>Documents needing attention</h2>'+ (rows.join('')||'<p>No verified Fletcher package attention items found.</p>')+'<p class="doc-verify-note">Fletcher package checks for up to 50 active solar jobs. Other-stage requirements are not yet configured.</p>';
+  } catch {panel.textContent='Document attention could not be verified. Open a job to check its files.';}
+}
 async function loadJobs() {
   const container = document.getElementById("jobs-container");
 
@@ -301,6 +321,7 @@ async function loadJobs() {
       return;
     }
 
+    loadDocumentAttention(data.jobs);
     container.innerHTML = data.jobs.map(job => `
       <div class="job-card">
 

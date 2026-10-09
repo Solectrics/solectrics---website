@@ -122,7 +122,7 @@
 <script>
 const jobId = new URLSearchParams(location.search).get("job_id");
 document.getElementById("backLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}`;
-document.getElementById("layoutUploadLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}#jobFilesSection`;
+document.getElementById("layoutUploadLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}&document_use=roof_layout&document_context=fletcher#jobFilesSection`;
 const $ = id => document.getElementById(id);
 const setValue = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
 const setChecked = (id, value) => { if ($(id)) $(id).checked = Boolean(value); };

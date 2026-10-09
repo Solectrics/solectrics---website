@@ -79,7 +79,7 @@ test('provider rejection retains the specific returned error',async()=>{
 });
 test('layout shortcut reuses the same job documents and flags reflect actual files',()=>{
   const h=harness(()=>{});
-  assert.equal(h.get('layoutUploadLink').href,'/mini-fergus-job?id=7#jobFilesSection');
+  assert.equal(h.get('layoutUploadLink').href,'/mini-fergus-job?id=7&document_use=roof_layout&document_context=fletcher#jobFilesSection');
   assert.match(html,/setChecked\("plansAttached", roles.has\("sld"\) \|\| roles.has\("roof_layout"\)\)/);
   assert.match(html,/setChecked\("powerBillAttached", roles.has\("power_bill"\)\)/);
   assert.doesNotMatch(html,/setChecked\("plansAttached", Boolean\(design/);

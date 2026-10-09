@@ -379,6 +379,8 @@
       .costing-table td:last-child { display: block; padding-left: 151px; }
     }
   </style>
+<link rel="stylesheet" href="/assets/job-document-library.css">
+<script src="/assets/job-document-library.js"></script>
 </head>
 
 <body>
@@ -931,13 +933,17 @@ window.currentAnswers = answers;
     and certificates. Each file stays attached to this Job Hub record.
   </div>
 
-  <div class="energy-data-panel solar-only" id="energyDataPanel">
+  <details class="energy-data-panel solar-only" id="energyDataPanel"><summary>Energy Usage / Bills details</summary>
     <h3>Energy Usage / Bills</h3>
     <div class="placeholder">Electricity evidence received through the Home Energy Check or uploaded to this job for energy modelling and quote preparation.</div>
     <div id="energyDataStatus" class="energy-status-grid"></div>
     <div id="energyFilesList" class="placeholder">No energy files received yet.</div>
-  </div>
+  </details>
 
+  <div id="documentSummary" aria-live="polite"></div>
+  <div id="documentAttention"></div>
+  <div class="doc-toolbar"><input id="documentSearch" type="search" placeholder="Search filenames or captions" aria-label="Search job files"><button type="button" id="showDocumentUpload">UPLOAD</button></div>
+  <div id="documentUploadControls" class="doc-upload-controls" hidden>
   <div class="grid" style="margin-top:20px;">
     <div>
       <label>File category</label>
@@ -985,9 +991,12 @@ window.currentAnswers = answers;
   <button type="button" id="uploadJobFile" hidden>RETRY UPLOAD</button>
   <span id="jobFileMessage" aria-live="polite">Files upload automatically after selection.</span>
 
+  </div>
+  <details><summary>Photo evidence inventory</summary>
   <h3>Photo evidence checklist</h3>
   <div class="placeholder">This updates automatically when files are uploaded.</div>
   <div id="jobPhotoChecklist" class="photo-checklist"></div>
+  </details>
 
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
@@ -3225,7 +3234,7 @@ function renderJobPhotoChecklist(files) {
       <div class="photo-checklist-row">
         <span>${escapeHtml(jobFileCategoryLabels[category])}</span>
         <span class="photo-checklist-status ${count ? "complete" : "missing"}">
-          ${count ? `✓ Uploaded (${count})` : "○ Missing"}
+          ${count ? `✓ Uploaded (${count})` : "○ Not uploaded — requirement not confirmed"}
         </span>
       </div>
     `;
@@ -3276,11 +3285,12 @@ async function loadJobFiles() {
     if (!data.files.length) {
       list.className = "placeholder";
       list.textContent = "No files uploaded yet.";
+      await verifyDocumentSummary();
       return;
     }
 
     list.className = "";
-    list.innerHTML = data.files.map(file => `
+    const fileRows = data.files.map(file => `
       <div class="job-file-row">
         <a href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">
           ${escapeHtml(file.original_name)}
@@ -3297,7 +3307,15 @@ async function loadJobFiles() {
         </div>
         ${file.caption ? `<div>${escapeHtml(file.caption)}</div>` : ""}
       </div>
-    `).join("");
+    `);
+    const groups = new Map(["Energy & HEC", "Site Visit", "Design & OpenSolar", "Supplier Quotes", "Installation", "Compliance", "Handover", "Other / Unclassified"].map(name => [name, []]));
+    data.files.forEach((file, index) => {
+      const group = JobDocumentLibrary.group(file);
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(`<div data-document-search="${escapeHtml((file.original_name + " " + (file.caption || "")).toLowerCase())}">${fileRows[index]}</div>`);
+    });
+    list.innerHTML = [...groups].map(([name, rows]) => `<details class="doc-group"><summary>${escapeHtml(name)} (${rows.length})</summary>${rows.join("") || '<p class="doc-verify-note">No classified files in this group. Requirement depends on the job.</p>'}</details>`).join("");
+    await verifyDocumentSummary();
   } catch (error) {
     console.error("Could not load job files:", error);
     document.getElementById("jobPhotoChecklist").innerHTML =
@@ -3306,6 +3324,71 @@ async function loadJobFiles() {
     list.textContent = "Could not load job files.";
   }
 }
+
+function revealDocumentUpload(role = "general") {
+  const panel = document.getElementById("documentUploadControls");
+  if (!panel) return;
+  panel.hidden = false;
+  const use = document.getElementById("jobFileRole");
+  const category = document.getElementById("jobFileCategory");
+  if ([...use.options].some(option => option.value === role)) use.value = role;
+  category.value = ["roof_layout", "sld"].includes(role) ? "drawing" : role === "power_bill" ? "other" : role === "fletcher_assessment" ? "supplier" : "other";
+  panel.scrollIntoView({block:"start"});
+  use.focus({preventScroll:true});
+}
+function applyDocumentShortcut() {
+  if (location.hash !== "#jobFilesSection") return;
+  const role = new URLSearchParams(location.search).get("document_use") || "general";
+  revealDocumentUpload(role);
+}
+async function verifyDocumentSummary() {
+  const summary = document.getElementById("documentSummary");
+  const attention = document.getElementById("documentAttention");
+  try {
+    const response = await fetch(`/api/job-document-inventory?job_id=${encodeURIComponent(jobId)}`);
+    if (response.redirected) throw new Error("Authentication required");
+    const data = await response.json();
+    if (!response.ok || !data.ok || !data.jobs?.[0]) throw new Error("Inventory unavailable");
+    const files = data.jobs[0].files;
+    const packageRequired = files.some(file => file.document_role === "fletcher_assessment") || new URLSearchParams(location.search).get("document_context") === "fletcher";
+    const checks = JobDocumentLibrary.packageStatus(files, packageRequired && currentJobType !== "general_electrical");
+    const counts = {received:0, missing:0, review:0};
+    checks.forEach(check => { if (check.status in counts) counts[check.status]++; });
+    const checkedIds = new Set(checks.filter(check => check.file).map(check => check.file.id));
+    files.filter(file => !checkedIds.has(file.id)).forEach(file => {
+      counts[file.accessibility === "accessible" && !(file.document_role === "general" && ["other", "drawing"].includes(file.category)) ? "received" : "review"]++;
+    });
+    summary.innerHTML = `<div class="doc-stats">${[["Received",counts.received],["Missing",counts.missing],["Needs review",counts.review],["Not due yet","—"]].map(([label,count]) => `<div class="doc-stat"><strong>${count}</strong>${label}</div>`).join("")}</div><p class="doc-verify-note">Counts cover files and confirmed unmet package requirements. Missing requirements are currently verified for the Fletcher package only. Later-stage document requirements are not yet configured. Optional documents are excluded from missing totals.</p>`;
+    const outstanding = checks.filter(check => ["missing","review"].includes(check.status));
+    files.filter(file => !checkedIds.has(file.id) && (file.accessibility !== "accessible" || (file.document_role === "general" && ["other", "drawing"].includes(file.category)))).forEach(file => outstanding.push({status:"review",label:file.original_name,file,reason:file.accessibility === "accessible" ? "Document use needs checking" : "Stored file could not be verified"}));
+    attention.innerHTML = `<h3>Documents needing attention</h3>${outstanding.map(check => `<div class="doc-attention-row"><span class="doc-state">${check.status === "missing" ? "Missing" : "Needs review"}: ${escapeHtml(check.label)}</span><div>${escapeHtml(check.reason)}</div>${check.file ? `<a href="/api/job-file?id=${encodeURIComponent(check.file.id)}" target="_blank" rel="noopener">Open and check existing file</a>` : check.role === "fletcher_assessment" ? `<a href="/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}">Generate completed Fletcher PDF</a>` : `<a href="#jobFilesSection" data-upload-role="${check.role}">Upload ${escapeHtml(check.label)}</a>`}</div>`).join("") || '<p>No confirmed package documents need attention.</p>'}<p class="doc-verify-note">Other unclassified or unverified files are available in the groups below. Receipt does not mean design or compliance approval.</p>`;
+  } catch {
+    summary.textContent = "Document verification unavailable — received/missing status cannot be confirmed.";
+    attention.textContent = "You can still open existing files below. No document absence or completion is assumed.";
+  }
+}
+document.addEventListener("click", event => {
+  const upload = event.target.closest("[data-upload-role]");
+  if (upload) {event.preventDefault();revealDocumentUpload(upload.dataset.uploadRole);}
+  if (event.target.id === "showDocumentUpload") revealDocumentUpload();
+});
+document.addEventListener("input", event => {
+  if (event.target.id !== "documentSearch") return;
+  const term = event.target.value.toLowerCase();
+  document.querySelectorAll("#jobFilesList details").forEach(group => {
+    let matches = 0;
+    group.querySelectorAll("[data-document-search]").forEach(row => {row.hidden = !row.dataset.documentSearch.includes(term);if (!row.hidden) matches++;});
+    group.hidden = !!term && !matches;
+    if (term) group.open = !!matches;
+  });
+});
+document.addEventListener("click", event => {
+  if (event.target.id === "uploadMaterialsInvoice") {
+    const panel = document.getElementById("documentUploadControls");
+    if (panel) panel.hidden = false;
+  }
+}, true);
+window.addEventListener("hashchange", applyDocumentShortcut);
 
 async function updateJobFileCategory(fileId, category, select) {
   select.disabled = true;
@@ -4709,6 +4792,7 @@ loadJob().then(() => {
 
     calculateSolarSize();
     calculateEstimatedGeneration();
+    applyDocumentShortcut();
   });
 });
   </script>
