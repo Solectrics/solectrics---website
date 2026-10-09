@@ -101,6 +101,14 @@ export async function onRequestPost(context) {
     if (!selected.has(REQUIRED_ROLE)) {
       return errorResponse("Generate the Fletcher form before emailing the package", 400);
     }
+    const requiredDocuments = new Map([
+      [REQUIRED_ROLE, "Completed Fletcher form"],
+      ["roof_layout", "OpenSolar roof / panel layout"],
+      ["power_bill", "Customer power bill"]
+    ]);
+    for (const [role, label] of requiredDocuments) {
+      if (!selected.has(role)) return errorResponse(`Upload the ${label} before emailing the package`, 400);
+    }
 
     const roleLabels = {
       fletcher_assessment: "Completed Fletcher solar site assessment",
@@ -120,13 +128,13 @@ export async function onRequestPost(context) {
         continue;
       }
       if (totalBytes + Number(file.size_bytes || 0) > MAX_TOTAL_ATTACHMENT_BYTES) {
-        if (role === REQUIRED_ROLE) return errorResponse("The completed form is too large to email", 400);
+        if (requiredDocuments.has(role)) return errorResponse(`${requiredDocuments.get(role)} cannot be included because the package is too large. Reduce the file size before emailing.`, 400);
         missing.push(`${roleLabels[role]} (omitted because the package was too large)`);
         continue;
       }
       const object = await bucket.get(file.storage_key);
       if (!object) {
-        if (role === REQUIRED_ROLE) return errorResponse("The saved Fletcher form could not be opened", 500);
+        if (requiredDocuments.has(role)) return errorResponse(`${requiredDocuments.get(role)} could not be opened. No email was sent.`, 500);
         missing.push(`${roleLabels[role]} (stored file unavailable)`);
         continue;
       }

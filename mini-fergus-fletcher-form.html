@@ -108,21 +108,62 @@
 
   <section class="card">
     <h2>Package documents</h2>
-    <p class="hint">Job Hub will reuse the latest SLD, roof layout and power bill already attached to this job. Missing optional documents will be listed but will not stop the email.</p>
+    <p class="hint">The customer power bill and OpenSolar roof / panel layout must be uploaded to this job before emailing. The latest file of each type is attached automatically. An SLD is also attached when available.</p>
     <div id="packageDocuments">Checking job documents…</div>
+    <p><a id="layoutUploadLink" href="#">UPLOAD / CHECK OPENSOLAR LAYOUT ON THIS JOB</a></p>
+    <p class="hint">Use Drawing / design and Roof / panel layout before choosing the image. Return here after the upload finishes.</p>
   </section>
 
   <button type="button" id="downloadPdf">DOWNLOAD COMPLETED PDF</button>
   <button type="button" id="emailPackage">EMAIL PACKAGE TO JANE</button>
-  <span id="status"></span>
+  <span id="status" role="status" aria-live="polite"></span>
 </main>
 
 <script>
 const jobId = new URLSearchParams(location.search).get("job_id");
 document.getElementById("backLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}`;
+document.getElementById("layoutUploadLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}#jobFilesSection`;
 const $ = id => document.getElementById(id);
 const setValue = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
 const setChecked = (id, value) => { if ($(id)) $(id).checked = Boolean(value); };
+let packageBusy = false;
+let packageDocumentRoles = new Set();
+
+function missingRequiredPackageDocuments() {
+  return [["power_bill", "Customer power bill"], ["roof_layout", "OpenSolar roof / panel layout"]]
+    .filter(([role]) => !packageDocumentRoles.has(role)).map(([, label]) => label);
+}
+
+async function refreshPackageDocuments() {
+  const data = await packageRequest(`/api/job-files?job_id=${encodeURIComponent(jobId)}`, {}, "documents");
+  renderPackageDocuments(data.files || [], {});
+}
+
+function setPackageBusy(busy) {
+  packageBusy = busy;
+  $("downloadPdf").disabled = busy;
+  $("emailPackage").disabled = busy;
+}
+
+async function packageRequest(url, options, stage) {
+  const label = stage === "email" ? "Email request" : stage === "documents" ? "Document check" : "PDF save";
+  let response;
+  try { response = await fetch(url, options); }
+  catch {
+    const result = stage === "email"
+      ? "Delivery is unconfirmed. Check Jane's inbox or the email delivery log before sending again."
+      : stage === "documents" ? "No email request was made. Reopen the job and check its documents." : "Saving is unconfirmed. Check the job documents before trying again.";
+    throw new Error(`${label} lost its connection. ${result}`);
+  }
+  if (response.redirected) {
+    throw new Error(`${label} was redirected. Open Job Hub in Safari and sign in there; check the previous result before retrying.`);
+  }
+  let data;
+  try { data = await response.json(); }
+  catch { throw new Error(`${label} returned an unreadable response (HTTP ${response.status}). Check the previous result before retrying.`); }
+  if (!response.ok || !data.ok) throw new Error(data.detail || data.error || `Request failed (HTTP ${response.status})`);
+  return data;
+}
 
 function parseAnswers(raw) {
   if (!raw) return {};
@@ -258,6 +299,9 @@ function inferredDocumentRole(file) {
 
 function renderPackageDocuments(files, answers) {
   const roles = new Set(files.map(inferredDocumentRole));
+  packageDocumentRoles = roles;
+  setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
+  setChecked("powerBillAttached", roles.has("power_bill"));
   const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
   const items = [
     ["sld", "Single-line diagram (SLD)", roles.has("sld")],
@@ -363,8 +407,8 @@ async function loadData() {
   setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
   const files = filesData.files || [];
   const roles = new Set(files.map(inferredDocumentRole));
-  setChecked("plansAttached", Boolean(design.design_roof_plan || design.design_sld || roles.has("sld") || roles.has("roof_layout")));
-  setChecked("powerBillAttached", Boolean(roles.has("power_bill") || answers.billFileName || answers.bill_filename || answers.billUploaded));
+  setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
+  setChecked("powerBillAttached", roles.has("power_bill"));
   setValue("additionalNotes", buildNotes(design, assessment, icp));
   preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
   renderPreliminaryProposal(preliminaryProposal);
@@ -396,11 +440,11 @@ function drawText(page, text, x, y, options = {}) {
   if (line) page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
 }
 
-async function createAndSavePdf(download = true) {
+async function createAndSavePdf(download = true, emailOperation = false) {
+  if (packageBusy && !emailOperation) return;
   const missing = updateMissing();
   if (missing.length) { $("status").textContent = "Please complete the missing details above."; return; }
-  const button = download ? $("downloadPdf") : $("emailPackage");
-  button.disabled = true; $("status").textContent = "Creating PDF…";
+  setPackageBusy(true); $("status").textContent = "Creating PDF…";
   try {
     if (!window.PDFLib) throw new Error("PDF generator did not load. Check the internet connection and refresh.");
     const template = await fetch("/assets/fletcher-solar-site-checklist.pdf");
@@ -409,7 +453,7 @@ async function createAndSavePdf(download = true) {
     const [p1, p2] = pdf.getPages();
 
     drawText(p1, $("customerName").value, 144, 661, { maxWidth:395 });
-    drawText(p1, $("siteAddress").value, 63, 626, { maxWidth:480 });
+    drawText(p1, $("siteAddress").value, 132, 626, { maxWidth:416 });
     drawText(p1, $("suburb").value, 103, 591, { maxWidth:260 });
     drawText(p1, $("cityPostcode").value, 461, 591, { maxWidth:90 });
     const connection = $("connectionType").value;
@@ -435,53 +479,53 @@ async function createAndSavePdf(download = true) {
     const filename = `${safeName || "Customer"}_Fletcher_Solar_Site_Checklist.pdf`;
     const bytes = await pdf.save();
     const blob = new Blob([bytes], { type:"application/pdf" });
-    if (download) {
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    }
-
     const form = new FormData();
     form.append("job_id", jobId);
     form.append("file", new File([bytes], filename, { type:"application/pdf" }));
     form.append("category", "supplier");
     form.append("caption", "Generated Fletcher / J.A. Russell Solar Site Checklist");
     form.append("document_role", "fletcher_assessment");
-    const saved = await fetch("/api/job-files", { method:"POST", body:form });
-    const savedData = await saved.json();
-    if (!saved.ok || !savedData.ok) throw new Error(savedData.detail || savedData.error || "PDF downloaded but could not be saved to the job");
+    $("status").textContent = "Saving the completed PDF to this job…";
+    const savedData = await packageRequest("/api/job-files", { method:"POST", body:form }, "save");
     $("status").textContent = download
       ? "✓ PDF downloaded and saved to this job"
       : "✓ Completed form prepared and saved";
+    if (download) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    }
     return savedData;
   } catch (error) {
     console.error(error); $("status").textContent = `Could not create PDF: ${error.message}`;
-  } finally { button.disabled = false; }
+  } finally { if (!emailOperation) setPackageBusy(false); }
 }
 
 async function emailPackage() {
-  const button = $("emailPackage");
-  button.disabled = true;
+  if (packageBusy) return;
+  setPackageBusy(true);
   try {
-    const saved = await createAndSavePdf(false);
+    $("status").textContent = "Checking the power bill and OpenSolar layout…";
+    await refreshPackageDocuments();
+    const missingDocuments = missingRequiredPackageDocuments();
+    if (missingDocuments.length) throw new Error(`Upload these documents to the job before emailing: ${missingDocuments.join(", ")}.`);
+    const saved = await createAndSavePdf(false, true);
     if (!saved) return;
     $("status").textContent = "Emailing the package to Jane…";
-    const response = await fetch("/api/fletcher-email", {
+    const data = await packageRequest("/api/fletcher-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ job_id: Number(jobId) })
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Email failed");
+    }, "email");
     const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
-    $("status").textContent = `✓ Package emailed to ${data.recipient}.${missing}`;
+    $("status").textContent = `✓ Email provider accepted the package for ${data.recipient}. Inbox delivery is not yet confirmed.${missing}`;
   } catch (error) {
     console.error(error);
     $("status").textContent = `Could not email package: ${error.message}`;
   } finally {
-    button.disabled = false;
+    setPackageBusy(false);
   }
 }
 
