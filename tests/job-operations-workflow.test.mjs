@@ -37,13 +37,13 @@ test("deposit receipt creates idempotent equipment order and supplier payment ta
   assert.ok(db.statements.some(row => row.sql.includes("deposit_status = 'received'") && row.values[0] === 5000));
 });
 
-test("handover creates two linked aftercare checks at 14 and 30 days", async () => {
+test("handover creates two linked aftercare checks at 14 days and one calendar month", async () => {
   const db = fakeDb();
   await generateAftercareTasks(db, 17, "2026-10-01");
   const rows = db.statements.filter(row => row.sql.includes("INSERT OR IGNORE INTO job_tasks"));
   assert.deepEqual(rows.map(row => [row.values[1], row.values[5], row.values[13], row.values[14]]), [
     ["aftercare-2-week", "2026-10-15", "handover", 14],
-    ["aftercare-1-month", "2026-10-31", "handover", 30]
+    ["aftercare-1-month", "2026-11-01", "handover", null]
   ]);
 });
 

@@ -1,5 +1,6 @@
-import { insertTask, seedAcceptedQuoteTasks, generateAftercareTasks, generatePostInstallTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
+import { insertTask, seedAcceptedQuoteTasks, generatePostInstallTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
 import { loadElectricityDetails } from "./_job-electricity-details.js";
+import { AFTERCARE_KEYS, HANDOVER_ITEMS, saveHandover, validDate, nzToday, handoverSchemaReady } from './handover-aftercare.js';
 
 const ASSIGNEES = new Set(["Jane", "Tom", "Ben", "External", "Unassigned"]);
 const TASK_STATUSES = new Set(["open", "completed", "cancelled"]);
@@ -43,8 +44,7 @@ const WORKFLOW_FIELDS = {
   inspection_status: "text",
   coc_status: "text",
   final_payment_status: ["not_due", "issued", "outstanding", "paid"],
-  install_status: ["not_scheduled", "scheduled", "in_progress", "completed"],
-  handover_completed_at: "date"
+  install_status: ["not_scheduled", "scheduled", "in_progress", "completed"]
 };
 
 function jsonError(error, status = 500) {
@@ -95,6 +95,7 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const jobId = Number(url.searchParams.get("job_id") || 0);
     const includeCompleted = url.searchParams.get("include_completed") === "1";
+    const handoverEnabled = await handoverSchemaReady(db);
     let taskSql = `
       SELECT t.*, j.install_date, j.job_type, j.job_status, j.next_action,
         j.finance_type, j.finance_status, j.finance_approval_required, j.deposit_status,
@@ -127,6 +128,7 @@ export async function onRequestGet(context) {
         j.scaffold_provider, j.scaffold_booked_at, j.final_site_verified_at, j.final_design_confirmed_at,
         j.installation_team_confirmed_at, j.install_status, j.supervision_status, j.supervisor_approval_status,
         j.inspection_status, j.coc_status, j.final_payment_status, j.handover_completed_at, j.job_closed_at,
+        ${handoverEnabled ? 'j.handover_checklist_json, j.handover_notes,' : ''}
         e.customer_name, e.address
       FROM jobs j JOIN enquiries e ON e.id = j.enquiry_id
       ORDER BY j.install_date, j.id DESC
@@ -141,6 +143,7 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
+      handover_enabled: handoverEnabled,
       electricity_details: jobId ? await loadElectricityDetails(db, jobId) : null,
       tasks: taskResult.results || [],
       jobs: (jobsResult.results || []).filter(job => !jobId || Number(job.job_id) === jobId),
@@ -229,6 +232,20 @@ export async function onRequestPost(context) {
       const task = await db.prepare("SELECT * FROM job_tasks WHERE id = ? AND job_id = ?").bind(taskId, jobId).first();
       if (!task) return jsonError("Task not found", 404);
       const nextStatus = TASK_STATUSES.has(body.status) ? body.status : task.status;
+      if (task.task_key === 'customer-handover' && nextStatus !== task.status) {
+        return jsonError('Use Handover & Aftercare to record the checklist and actual date.', 409);
+      }
+      const aftercare = AFTERCARE_KEYS.includes(task.task_key);
+      if (aftercare && !(await handoverSchemaReady(db))) return jsonError('Handover & Aftercare needs staging migration 0022 before editing.',503);
+      const contactDate = body.contact_date === undefined ? task.contact_date : (body.contact_date === '' ? null : validDate(body.contact_date));
+      const contactNotes = body.contact_notes === undefined ? task.contact_notes : clean(body.contact_notes, 4000);
+      const outstandingIssues = body.outstanding_issues === undefined ? task.outstanding_issues : clean(body.outstanding_issues, 4000);
+      if (aftercare) {
+        if (nextStatus === 'cancelled') return jsonError('Keep the follow-up open until completed.', 400);
+        if ((body.contact_date && !contactDate) || (contactDate && contactDate > nzToday())) return jsonError('Enter a valid contact date, not a future date.', 400);
+        if (nextStatus === 'completed' && !contactDate) return jsonError('Record the actual customer contact date before completing this follow-up.', 400);
+        if (body.due_date !== undefined && !validDate(body.due_date)) return jsonError('A follow-up must retain a valid due date.', 400);
+      }
       if (nextStatus === "completed" && task.task_key?.startsWith("final-invoice-payment-")) {
         const payment=await db.prepare("SELECT final_payment_status FROM jobs WHERE id=?").bind(jobId).first();
         if(payment?.final_payment_status!=="paid") return Response.json({ok:false,error:"Record the customer invoice as paid in the invoice section before completing this follow-up."},{status:409});
@@ -248,16 +265,18 @@ export async function onRequestPost(context) {
       const isBlocker = body.is_blocker === undefined ? task.is_blocker : (body.is_blocker ? 1 : 0);
       const reason = body.blocker_reason === undefined ? task.blocker_reason : clean(body.blocker_reason, 500);
       const title = body.title === undefined ? task.title : clean(body.title, 240);
-      const completionDate = nextStatus === "completed" ? new Date().toISOString() : null;
+      const completionDate = nextStatus === "completed" ? (task.completed_at || new Date().toISOString()) : null;
       const resolveDateReview = body.due_date === undefined ? 0 : 1;
       await db.prepare(`
         UPDATE job_tasks SET title = ?, due_date = ?, assigned_to = ?, status = ?,
           is_blocker = ?, blocker_reason = ?, evidence_note = ?,
-          completed_at = ?, completed_by = ?, updated_at = CURRENT_TIMESTAMP,
+          completed_at = ?, completed_by = ?, ${aftercare ? 'contact_date = ?, contact_notes = ?, outstanding_issues = ?,' : ''} updated_at = CURRENT_TIMESTAMP,
           date_review_required = CASE WHEN ? = 1 OR ? IS NOT NULL THEN 0 ELSE date_review_required END
         WHERE id = ? AND job_id = ?
       `).bind(title, dueDate, assigned, nextStatus, isBlocker, reason, evidenceNote,
-        completionDate, nextStatus === "completed" ? actor : null, resolveDateReview, completionDate, taskId, jobId).run();
+        completionDate, nextStatus === "completed" ? (task.completed_by || actor) : null,
+        ...(aftercare ? [contactDate??null, contactNotes??null, outstandingIssues??null] : []),
+        resolveDateReview, completionDate, taskId, jobId).run();
 
       if (nextStatus === "completed" && task.task_key === "order-equipment") {
         const orderDate = new Date().toISOString().slice(0, 10);
@@ -274,11 +293,6 @@ export async function onRequestPost(context) {
       if (nextStatus === "completed" && task.task_key === "pay-equipment") {
         const paidDate = new Date().toISOString().slice(0, 10);
         await db.prepare("UPDATE jobs SET materials_status = 'paid', equipment_paid_at = ? WHERE id = ?").bind(paidDate, jobId).run();
-      }
-      if (nextStatus === "completed" && task.task_key === "customer-handover") {
-        const today = new Date().toISOString().slice(0, 10);
-        await db.prepare("UPDATE jobs SET handover_completed_at = ? WHERE id = ?").bind(today, jobId).run();
-        await generateAftercareTasks(db, jobId, today);
       }
       await db.prepare("UPDATE jobs SET next_action = (SELECT title FROM job_tasks WHERE job_id = ? AND status = 'open' ORDER BY is_blocker DESC, CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date, id LIMIT 1), next_action_date = (SELECT due_date FROM job_tasks WHERE job_id = ? AND status = 'open' ORDER BY is_blocker DESC, CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date, id LIMIT 1), assigned_to = (SELECT assigned_to FROM job_tasks WHERE job_id = ? AND status = 'open' ORDER BY is_blocker DESC, CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date, id LIMIT 1) WHERE id = ?").bind(jobId,jobId,jobId,jobId).run();
       return Response.json({ ok: true });
@@ -353,10 +367,17 @@ export async function onRequestPost(context) {
     }
 
     if (action === "handover_complete") {
-      const date = isoDate(body.completed_date) || new Date().toISOString().slice(0,10);
-      await db.prepare("UPDATE jobs SET handover_completed_at = ? WHERE id = ?").bind(date,jobId).run();
-      await db.prepare("UPDATE job_tasks SET status='completed', completed_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE job_id=? AND task_key='customer-handover' AND status='open'").bind(jobId).run();
-      await generateAftercareTasks(db,jobId,date);
+      if (!(await handoverSchemaReady(db))) return jsonError('Handover & Aftercare needs staging migration 0022 before editing.',503);
+      try { return Response.json({ok:true,...await saveHandover(db,jobId,body)}); }
+      catch (error) { return jsonError(error.message, 400); }
+    }
+    if (action === 'save_handover_checklist') {
+      if (!(await handoverSchemaReady(db))) return jsonError('Handover & Aftercare needs staging migration 0022 before editing.',503);
+      if (job.job_type !== 'solar') return jsonError('Handover is available for solar jobs only.',400);
+      const checklist = Object.fromEntries(HANDOVER_ITEMS.map(key => [key,body.checklist?.[key] === true]));
+      const existing = await db.prepare('SELECT handover_completed_at FROM jobs WHERE id=?').bind(jobId).first();
+      if (existing?.handover_completed_at && !HANDOVER_ITEMS.every(key => checklist[key])) return jsonError('A completed handover must retain a complete checklist.',400);
+      await db.prepare('UPDATE jobs SET handover_checklist_json=?, handover_notes=? WHERE id=?').bind(JSON.stringify(checklist),clean(body.notes,4000),jobId).run();
       return Response.json({ok:true});
     }
     if (action === "aftercare_issue") {

@@ -342,6 +342,9 @@
     .error {
       color: #a12d2d;
     }
+    #handoverAftercare input[type="checkbox"] { width:auto; margin-right:8px; }
+    #handoverAftercare fieldset label { display:block; margin:12px 0; }
+    #handoverAftercare { scroll-margin-top:20px; }
 
     .prerequisite-blocked {
       background: #fff4df;
@@ -411,10 +414,42 @@
 
     <a class="back" href="/mini-fergus">← Back to Job Hub</a>
     <a class="button-link" id="accountantViewLink" href="#">ACCOUNTANT VIEW →</a>
+    <nav aria-label="Job shortcuts" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
+      <a class="button-link" href="/mini-fergus-operations">OPERATIONS →</a>
+      <a class="button-link" id="handoverShortcut" href="#handoverAftercare" hidden>HANDOVER &amp; AFTERCARE →</a>
+    </nav>
 
     <div id="page">
       Loading job...
     </div>
+
+    <section class="card" id="handoverAftercare" hidden tabindex="-1" style="margin-top:18px">
+      <h2>Handover &amp; Aftercare</h2>
+      <p>Uses this customer's existing job and Operations tasks. No customer email is sent.</p>
+      <p id="handoverStatus" role="status"></p>
+      <form id="handoverForm">
+        <fieldset><legend>Handover checklist</legend>
+          <label><input type="checkbox" id="handoverDocuments"> Customer documents, warranties and relevant certificates provided</label>
+          <label><input type="checkbox" id="handoverOperation"> System operation and any backup limitations explained</label>
+          <label><input type="checkbox" id="handoverMonitoring"> Monitoring access demonstrated, or alternative agreed</label>
+          <label><input type="checkbox" id="handoverSupport"> Support contact and follow-up arrangements explained</label>
+        </fieldset>
+        <p class="placeholder">This records customer handover only; it does not grant export permission or replace electrical certification.</p>
+        <div class="grid">
+          <div><label for="handoverDate">Actual handover date</label><input id="handoverDate" type="date"></div>
+          <div><label for="handoverActor">Recorded by</label><select id="handoverActor"><option>Jane</option><option>Tom</option><option>Ben</option></select></div>
+          <div class="wide"><label for="handoverNotes">Handover notes</label><textarea id="handoverNotes" maxlength="4000" rows="3"></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">
+          <button type="button" onclick="saveHandoverChecklist()">SAVE CHECKLIST / NOTES</button>
+          <button type="submit">RECORD HANDOVER &amp; SCHEDULE FOLLOW-UPS</button>
+        </div>
+      </form>
+      <p>Follow-ups are due 14 days and one calendar month after handover (month-end where necessary). Date corrections move open follow-ups only.</p>
+      <div id="handoverMessage" aria-live="polite"></div>
+      <div id="aftercareFollowups"></div>
+      <button type="button" onclick="logAftercareIssue()">ADD OUTSTANDING ISSUE TASK</button>
+    </section>
 
         <section class="card" id="jobOperationsPanel" style="margin-top:18px">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
@@ -475,7 +510,7 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
         <button type="button" onclick="saveWorkflowFields()">SAVE WORKFLOW DETAILS</button>
         <button type="button" onclick="recordVectorDocumentReceived()">RECORD VECTOR DOCUMENT RECEIVED → PROMPT RETAILER FOLLOW-UP</button>
-        <button type="button" onclick="completeHandover()">RECORD HANDOVER → SCHEDULE 2-WEEK & 1-MONTH CHECKS</button>
+        <a class="button-link" href="#handoverAftercare">HANDOVER &amp; AFTERCARE →</a>
       </div>
       <div id="jobScopeItems"></div>
       <h3>Accepted extras / future opportunities</h3>
@@ -4719,6 +4754,7 @@ async function loadJobOperations(){
     const response=await fetch(`/api/job-tasks?job_id=${encodeURIComponent(jobId)}&include_completed=1`);
     const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Could not load workflow");
     jobOperationData=data;const job=data.jobs?.[0]||{};
+    renderHandoverAftercare(job,data.tasks||[],data.handover_enabled);
     setOpsValue("opsInstallDate",job.install_date);
     setOpsValue("opsFinanceType",job.finance_type||"unknown");setOpsValue("opsFinanceProvider",job.finance_provider);
     setOpsValue("opsFinanceStatus",job.finance_status||"not_applicable");setOpsChecked("opsFinanceRequired",job.finance_approval_required);
@@ -4828,12 +4864,55 @@ async function recordVectorDocumentReceived(){
  if(!window.confirm("Confirm the Vector approval/report is available. Job Hub will create a task to send it to the retailer."))return;
  try{await jobOperationsPost({action:"vector_document_received"});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Vector document recorded; retailer follow-up task created.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
 }
-async function completeHandover(){
- if(!window.confirm("Record the customer handover as complete? This schedules the 2-week and 1-month customer check-ins."))return;
- try{await jobOperationsPost({action:"handover_complete",actor:"Jane"});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Handover recorded; aftercare check-ins scheduled.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+const handoverFields={documents:'handoverDocuments',operation:'handoverOperation',monitoring:'handoverMonitoring',support:'handoverSupport'};
+function aftercareToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Pacific/Auckland',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function isAftercareTask(task){return ['aftercare-2-week','aftercare-1-month'].includes(task?.task_key);}
+function renderHandoverAftercare(job,tasks,enabled){
+ const solar=job.job_type==='solar';
+ document.getElementById('handoverAftercare').hidden=!solar;document.getElementById('handoverShortcut').hidden=!solar;
+ if(!solar)return;
+ document.getElementById('handoverForm').hidden=!enabled;
+ document.getElementById('aftercareFollowups').hidden=!enabled;
+ if(!enabled){document.getElementById('handoverStatus').textContent='Handover & Aftercare is awaiting staging migration 0022. Existing Operations tasks remain available.';return;}
+ let checklist={};try{checklist=JSON.parse(job.handover_checklist_json||'{}');}catch{}
+ for(const [key,id] of Object.entries(handoverFields))setOpsChecked(id,checklist[key]);
+ setOpsValue('handoverDate',job.handover_completed_at);document.getElementById('handoverDate').max=aftercareToday();
+ setOpsValue('handoverNotes',job.handover_notes);
+ document.getElementById('handoverStatus').textContent=job.handover_completed_at?'Handover recorded: '+job.handover_completed_at:'Handover not yet recorded.';
+ const rows=tasks.filter(isAftercareTask);
+ document.getElementById('aftercareFollowups').innerHTML=rows.map(t=>{
+ const id=Number(t.id),overdue=t.status==='open'&&t.due_date&&t.due_date<aftercareToday();
+ return `<form class="card" onsubmit="saveAftercareContact(event,${id})" style="margin:14px 0;padding:16px">
+ <h3>${escapeHtml(t.title)}</h3><p>${overdue?'<strong style="color:#a12d2d">OVERDUE — </strong>':''}Due ${escapeHtml(t.due_date||'Not set')} · ${escapeHtml(t.status)}</p>
+ <label for="contactDate-${id}">Actual contact date</label><input id="contactDate-${id}" type="date" max="${aftercareToday()}" value="${escapeHtml(t.contact_date||'')}">
+ <label for="contactNotes-${id}">Contact notes</label><textarea id="contactNotes-${id}" maxlength="4000" rows="3">${escapeHtml(t.contact_notes||'')}</textarea>
+ <label for="contactIssues-${id}">Outstanding issues</label><textarea id="contactIssues-${id}" maxlength="4000" rows="2">${escapeHtml(t.outstanding_issues||'')}</textarea>
+ <p class="placeholder">Leave open while follow-up is needed, or create a separate issue task before completing this contact.</p>
+ <label><input id="contactComplete-${id}" type="checkbox" ${t.status==='completed'?'checked':''}> Follow-up completed</label>
+ ${t.completed_at?`<p>Completed ${escapeHtml(t.completed_at)} · ${escapeHtml(t.completed_by||'')}</p>`:''}
+ <button type="submit">SAVE FOLLOW-UP</button></form>`;
+ }).join('')||'<p>Record handover to schedule the two follow-ups.</p>';
 }
+function handoverPayload(){return {checklist:Object.fromEntries(Object.entries(handoverFields).map(([key,id])=>[key,document.getElementById(id).checked])),notes:document.getElementById('handoverNotes').value,actor:document.getElementById('handoverActor').value};}
+async function saveHandoverChecklist(){
+ try{await jobOperationsPost({action:'save_handover_checklist',...handoverPayload()});await loadJobOperations();document.getElementById('handoverMessage').textContent='Checklist and notes saved.';}catch(e){document.getElementById('handoverMessage').textContent=e.message;}
+}
+async function completeHandover(event){
+ event?.preventDefault();const date=document.getElementById('handoverDate').value;
+ const previous=jobOperationData?.jobs?.[0]?.handover_completed_at;
+ const changed=Boolean(previous&&previous!==date);
+ if(!date){document.getElementById('handoverMessage').textContent='Enter the actual handover date.';return;}
+ if(!window.confirm(changed?'Correct the handover date and move open follow-ups? Completed records stay unchanged.':'Record handover and schedule the two follow-ups? No email will be sent.'))return;
+ try{await jobOperationsPost({action:'handover_complete',completed_date:date,confirm_date_change:changed,...handoverPayload()});await loadJobOperations();document.getElementById('handoverMessage').textContent='Handover saved. Follow-ups are available here and in Operations.';}catch(e){document.getElementById('handoverMessage').textContent=e.message;}
+}
+async function saveAftercareContact(event,id){
+ event.preventDefault();
+ try{await jobOperationsPost({action:'update_task',task_id:id,contact_date:document.getElementById('contactDate-'+id).value,contact_notes:document.getElementById('contactNotes-'+id).value,outstanding_issues:document.getElementById('contactIssues-'+id).value,status:document.getElementById('contactComplete-'+id).checked?'completed':'open',actor:document.getElementById('handoverActor').value});await loadJobOperations();document.getElementById('handoverMessage').textContent='Follow-up saved.';}catch(e){document.getElementById('handoverMessage').textContent=e.message;}
+}
+document.getElementById('handoverForm').addEventListener('submit',completeHandover);
 async function toggleJobTask(id,checked){
  const task=(jobOperationData?.tasks||[]).find(t=>Number(t.id)===Number(id));let evidence_note;
+ if(isAftercareTask(task)||task?.task_key==='customer-handover'){location.hash='handoverAftercare';document.getElementById('handoverAftercare').focus();renderJobTaskList(jobOperationData.tasks);return;}
  if(checked&&task?.requires_evidence){evidence_note=prompt("Add the required evidence or document reference:");if(!evidence_note){await loadJobOperations();return;}}
  try{await jobOperationsPost({action:"update_task",task_id:id,status:checked?"completed":"open",actor:"Jane",evidence_note});await loadJobOperations();}catch(e){alert(e.message);await loadJobOperations();}
 }
@@ -4854,7 +4933,7 @@ async function closeOperationsJob(){
 }
 async function logAftercareIssue(){
  const title=prompt("What issue or maintenance follow-up needs action?");if(!title)return;
- try{await jobOperationsPost({action:"aftercare_issue",title});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Aftercare task added.";}catch(e){document.getElementById("jobOperationsMessage").textContent=e.message;}
+ try{await jobOperationsPost({action:"aftercare_issue",title});await loadJobOperations();document.getElementById("jobOperationsMessage").textContent="Aftercare task added.";document.getElementById('handoverMessage').textContent='Outstanding issue task added to Operations.';}catch(e){document.getElementById('handoverMessage').textContent=e.message;}
 }
 document.getElementById("jobTaskForm")?.addEventListener("submit",submitJobTask);
 document.getElementById("scopeItemForm")?.addEventListener("submit",submitScopeItem);

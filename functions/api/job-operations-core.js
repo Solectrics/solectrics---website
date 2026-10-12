@@ -51,8 +51,10 @@ function offsetDate(date, days) {
 }
 
 export async function generateAftercareTasks(db, jobId, handoverDate) {
+  const { aftercareDates } = await import('./handover-aftercare.js');
+  const dates = aftercareDates(handoverDate);
   await insertTask(db, { job_id: jobId, task_key: "aftercare-2-week", title: "Two-week customer check-in", stage: "Aftercare", category: "aftercare", due_date: offsetDate(handoverDate, 14), assigned_to: "Jane", date_anchor: "handover", anchor_offset_days: 14, source: "handover" });
-  await insertTask(db, { job_id: jobId, task_key: "aftercare-1-month", title: "One-month performance and customer review", stage: "Aftercare", category: "aftercare", due_date: offsetDate(handoverDate, 30), assigned_to: "Jane", date_anchor: "handover", anchor_offset_days: 30, source: "handover" });
+  await insertTask(db, { job_id: jobId, task_key: "aftercare-1-month", title: "One-month performance and customer review", stage: "Aftercare", category: "aftercare", due_date: dates[1], assigned_to: "Jane", date_anchor: "handover", anchor_offset_days: null, source: "handover" });
 }
 
 export async function recordDepositReceived(db, jobId, amount, receivedDate) {
