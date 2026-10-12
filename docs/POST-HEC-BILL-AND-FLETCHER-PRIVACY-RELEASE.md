@@ -89,3 +89,25 @@ Current intended preview: `https://hec-fletcher-privacy.solectrics-jobhub-stagin
 Remaining live acceptance: verified document states and upload shortcut; full supplier-package preview/cancellation without sending; synthetic post-HEC extraction/review/approval/persistence, unchanged job/attachment identity and dependent Energy Review/proposal refresh; desktop and actual iPhone use. Do not send email during this acceptance. Production remains blocked by live acceptance, the separately required security containment and application-authorisation verification, and explicit production approval.
 
 Correction validation: 101/101 local tests passed, including exact-host denial before storage, verified/inferred/unavailable attachment states, SLD-only distinction and verification failure without blocking PDF download. Inline/function syntax and diff checks passed. Local Chromium checks at 375, 390, 430 and 1440px passed with synthetic mocked services, no overflow or page errors; no real email was sent. Live correction acceptance and actual iPhone Safari remain pending.
+
+## 12 October — acceptance follow-up and blocked release
+
+The owner confirmed that job 7's document verification now succeeds. Independent synthetic browser acceptance then confirmed the disabled plans indicator reflected verified saved layout/SLD attachments, and the complete package preview contained the generated PDF, layout and optional SLD, with no electricity bill. The preview was cancelled; no email was sent.
+
+A confirmed preview defect used the first label in a shared container for multiple different checkboxes. The correction uses an explicit field allowlist, readable selected option labels, independent Yes/No answers, and opt-in ICP. Tests cover every checkbox and displayed form field, including opposing Salt spray / No shading answers. PDF generation, attachment selection and email delivery logic are unchanged.
+
+The synthetic bill remains attached to **job 7**, file **69d9be19-4b2e-4772-b173-396fb5a30525**. It was uploaded once. One extraction attempt returned the provider-rejection path before any draft/approved energy update. No second upload, extraction retry, job/enquiry creation or existing record deletion was performed. A generated Fletcher PDF also remains saved after cancellation.
+
+### Provider diagnosis: known and unknown
+
+- Confirmed: provider rejection is distinct from the missing-secret branch. Key presence does not establish validity, permission or available quota.
+- Confirmed from official provider documentation: `gpt-5.6` is a supported alias. No model change is justified by the evidence.
+- Unknown: exact upstream HTTP status/category for the earlier request. The previously deployed handler discarded those details and logged only a generic message. Authenticated Cloudflare historical/runtime logs and provider account configuration are unavailable in this workspace.
+- Correction: future failures log only numeric status and an allowlisted category, and provide a corresponding safe error. Provider error text, keys and customer content are never reflected.
+- Temporary diagnostic: authenticated staging-only GET `/api/read-bill?diagnostic=provider`, exact hostname `hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev`, both staging flags required. It reads provider model metadata only. It sends no bill, performs no inference and accesses no D1/R2. Results reveal only key presence, model metadata access, controlled category and HTTP status. A successful metadata result **does not prove Responses permission, billing or quota**. Remove this GET diagnostic after diagnosis; it is excluded from the production review candidate.
+
+### Checks and remaining acceptance
+
+108/108 staging local tests passed. Desktop 1440px and iPhone-sized 375/390/430px browser checks passed, including the corrected preview labels, cancellation without email, bill correction preservation and approval UI. Browser tests use intercepted synthetic responses; they are not live provider acceptance or actual iPhone Safari verification.
+
+Remaining: deploy corrected staging revision through the guarded script, inspect the metadata diagnostic once, establish likely provider rejection cause, then resume extraction on the existing synthetic attachment only when justified. Live correction/difference approval/save/reload and Energy Review/new proposal reuse remain blocked by extraction. Independently verify deployment SHA from Cloudflare metadata. Actual iPhone checks and production security clearance remain required.

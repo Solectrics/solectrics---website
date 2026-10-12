@@ -150,3 +150,30 @@ test('verification outage clears plan receipt without preventing PDF download',a
  await h.run('createAndSavePdf(true)');assert.equal(h.events.includes('download'),true);
  assert.equal(h.events.includes('/api/fletcher-email'),false);
 });
+
+test('supplier preview maps every checkbox to its own answer, including opposing shading values',()=>{
+  const h=harness(()=>{});
+  const expected={plansAttached:'Verified plan attachment available',saltSpray:'Salt spray',snowIce:'Snow and ice',highWind:'High wind area',trees:'Trees and vegetation',chimneys:'Chimneys',buildings:'Buildings',aerials:'TV aerials',vents:'Vent pipes',satellite:'Satellite dish',noShading:'No shading issues'};
+  for(const selected of Object.keys(expected)) {
+    for(const id of Object.keys(expected)) h.get(id).checked=id===selected;
+    const answers=h.run('supplierPreviewAnswers()');
+    for(const [id,label] of Object.entries(expected)) {
+      const answer=answers.find(a=>a.id===id);
+      assert.equal(answer.label,label);assert.equal(answer.value,id===selected?'Yes':'No');
+    }
+  }
+  assert.match(html,/supplierPreviewAnswers\(\)\.forEach/);
+  assert.doesNotMatch(html,/field\.closest\("div"\)/);
+});
+test('supplier preview includes only explicit form fields and opt-in ICP, with readable select answers',()=>{
+  const h=harness(()=>{});
+  const expected={installerCode:'Installer account code',customerName:'Customer name',siteAddress:'Site address',suburb:'Suburb',cityPostcode:'City and postcode',connectionType:'Electrical connection type',inverterType:'Inverter type',roofType:'Roof type',roofOther:'Other roof type / profile',roofPitch:'Roof pitch',arrayLayout:'Proposed array layout',systemSize:'Proposed system size (kW)',otherEnvironment:'Other environment / shading issue',additionalNotes:'Additional supplier notes'};
+  for(const id of Object.keys(expected)) h.get(id).value=`synthetic-${id}`;
+  h.get('roofType').tagName='SELECT';h.get('roofType').selectedOptions=[{textContent:'Corrugated steel'}];
+  h.get('icp').value='000000000AA000A';h.get('powerBillAttached').checked=true;h.get('internalProfit').value='PRIVATE';
+  let answers=h.run('supplierPreviewAnswers()');
+  for(const [id,label] of Object.entries(expected)) {const a=answers.find(a=>a.id===id);assert.equal(a.label,label);assert.equal(a.value,id==='roofType'?'Corrugated steel':`synthetic-${id}`);}
+  assert.equal(answers.some(a=>['icp','powerBillAttached','internalProfit'].includes(a.id)),false);
+  h.get('includeIcpInPackage').checked=true;answers=h.run('supplierPreviewAnswers()');
+  assert.equal(answers.find(a=>a.id==='icp').value,'000000000AA000A');
+});

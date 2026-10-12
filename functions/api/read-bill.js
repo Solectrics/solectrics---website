@@ -137,8 +137,9 @@ Rules:
     const apiJson = await apiResponse.json();
 
     if (!apiResponse.ok) {
-      console.error("Bill-reading provider rejected the request.");
-      return json({ error: "The bill-reading service returned an error." }, 502);
+      const failure = providerFailure(apiResponse.status, apiJson?.error?.code);
+      console.error("Bill-reading provider rejected the request.", {status: apiResponse.status, category: failure.category});
+      return json({ error: failure.message }, 502);
     }
 
     const outputText = getOutputText(apiJson);
@@ -250,4 +251,34 @@ function json(obj, status = 200) {
       "Cache-Control": "no-store"
     }
   });
+}
+
+// Only controlled categories are returned/logged; provider messages can contain private data.
+export function providerFailure(status, code) {
+  if (status === 401) return {category:"credentials",message:"The bill-reading provider rejected its credentials. Ask Jane to check the staging provider key; do not upload again yet."};
+  if (status === 403) return {category:"permissions",message:"The bill-reading provider denied permission. Provider project permissions need checking before retrying."};
+  if (status === 429 && code === "insufficient_quota") return {category:"quota",message:"The bill-reading provider has no available quota. Provider billing or project limits need checking before retrying."};
+  if (status === 429) return {category:"rate_limit",message:"The bill-reading provider is rate limited. No automatic retry has been made."};
+  if (status === 404) return {category:"model_access",message:"The bill-reading provider could not access the configured model. Provider project access needs checking."};
+  if (status === 400) return {category:"request",message:"The bill-reading provider rejected the request format. This needs investigation before retrying."};
+  return {category:status >= 500 ? "provider_unavailable" : "unclassified",message:"The bill-reading service returned an error. No automatic retry has been made."};
+}
+
+// Temporary exact-host staging diagnostic. No bill, inference, database or storage access.
+export async function onRequestGet({request,env}) {
+  const url = new URL(request.url);
+  if (url.hostname !== "hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev" ||
+      env.JOBHUB_STAGING_ONLY !== "true" || env.ALLOW_PAGES_DEV_HOST !== "true" ||
+      url.searchParams.get("diagnostic") !== "provider") return json({error:"Not found"},404);
+  if (!env.OPENAI_API_KEY) return json({key_present:false,model_metadata_access:false,category:"missing_configuration"},200);
+  try {
+    const response = await fetch("https://api.openai.com/v1/models/gpt-5.6", {
+      headers:{Authorization:`Bearer ${env.OPENAI_API_KEY}`}
+    });
+    if (response.ok) return json({key_present:true,model_metadata_access:true,category:"metadata_access_confirmed",limitation:"Does not verify Responses permission, billing or quota."},200);
+    let data = {}; try {data = await response.json();} catch {}
+    return json({key_present:true,model_metadata_access:false,provider_status:response.status,category:providerFailure(response.status,data?.error?.code).category},200);
+  } catch {
+    return json({key_present:true,model_metadata_access:false,category:"connection_failure"},200);
+  }
 }

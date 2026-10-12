@@ -550,6 +550,32 @@ async function createAndSavePdf(download = true, emailOperation = false) {
   } finally { if (!emailOperation) setPackageBusy(false); }
 }
 
+// Explicit field mapping: neighbouring labels must never label another answer.
+function supplierPreviewAnswers() {
+  const textFields = [
+    ["installerCode", "Installer account code"], ["customerName", "Customer name"],
+    ["siteAddress", "Site address"], ["suburb", "Suburb"], ["cityPostcode", "City and postcode"],
+    ["connectionType", "Electrical connection type"], ["inverterType", "Inverter type"],
+    ["roofType", "Roof type"], ["roofOther", "Other roof type / profile"], ["roofPitch", "Roof pitch"],
+    ["arrayLayout", "Proposed array layout"], ["systemSize", "Proposed system size (kW)"],
+    ["otherEnvironment", "Other environment / shading issue"], ["additionalNotes", "Additional supplier notes"]
+  ];
+  const checkFields = [
+    ["plansAttached", "Verified plan attachment available"], ["saltSpray", "Salt spray"],
+    ["snowIce", "Snow and ice"], ["highWind", "High wind area"], ["trees", "Trees and vegetation"],
+    ["chimneys", "Chimneys"], ["buildings", "Buildings"], ["aerials", "TV aerials"],
+    ["vents", "Vent pipes"], ["satellite", "Satellite dish"], ["noShading", "No shading issues"]
+  ];
+  const answers = textFields.flatMap(([id,label]) => {
+    const field = $(id);
+    const value = field.tagName === "SELECT" ? field.selectedOptions?.[0]?.textContent || field.value : field.value;
+    return field.value ? [{id,label,value}] : [];
+  });
+  checkFields.forEach(([id,label]) => answers.push({id,label,value:$(id).checked ? "Yes" : "No"}));
+  if ($("includeIcpInPackage").checked && $("icp").value) answers.push({id:"icp",label:"Approved optional ICP",value:$("icp").value});
+  return answers;
+}
+
 async function confirmPackagePreview(data) {
   if (!data.preview || !data.preview_id) throw new Error("Package preview is unavailable. No email was sent.");
   return new Promise(resolve=>{
@@ -561,13 +587,7 @@ async function confirmPackagePreview(data) {
     add("h3","Documents included");
     data.preview.attachments.forEach(file=>{const p=add("p",`${file.name} (${file.role})`);const link=document.createElement("a");link.textContent=" — Open and check";link.href=`/api/job-file?id=${encodeURIComponent(file.id)}`;link.target="_blank";link.rel="noopener";p.append(link);});
     add("h3","Information in the completed form");
-    const excluded=new Set(["powerBillAttached","icp","includeIcpInPackage"]);
-    document.querySelectorAll("input,select,textarea").forEach(field=>{
-      if(excluded.has(field.id) || !field.id || field.type==='checkbox' && !field.checked || !field.value && field.type!=='checkbox')return;
-      const label=field.closest("div")?.querySelector("label")?.textContent?.trim() || field.id;
-      add("p",`${label}: ${field.type==='checkbox'?'Yes':field.value}`);
-    });
-    if($("includeIcpInPackage").checked && $("icp").value) add("p",`Approved optional ICP: ${$("icp").value}`);
+    supplierPreviewAnswers().forEach(({label,value}) => add("p",`${label}: ${value}`));
     add("p","Excluded: customer electricity bills, extracted energy data, internal costing and unrelated job notes. Check the PDF, layout and any SLD for unintended personal information before approving.");
     const label=add("label","");const check=document.createElement("input");check.type="checkbox";label.append(check,document.createTextNode(" I have checked the information and documents above and approve this package."));
     const send=add("button","APPROVE EMAIL TO JANE");send.type="button";send.disabled=true;send.style.cssText="min-height:44px;padding:12px;background:#ef9c20;margin:12px";
