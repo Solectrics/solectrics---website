@@ -9,7 +9,7 @@ cd "$ROOT"
 BRANCH="$(git branch --show-current)"
 case "$BRANCH" in
   codex/fletcher-package-mobile-fix) DEPLOYMENT_ALIAS='fletcher-package-mobile-fix' ;;
-  codex/post-hec-bill-fletcher-privacy-staging) DEPLOYMENT_ALIAS='post-hec-bill-fletcher-privacy' ;;
+  codex/post-hec-bill-fletcher-privacy-staging) DEPLOYMENT_ALIAS='post-hec-bill-fletcher-priva' ;;
   *) fail "Branch $BRANCH is not an explicitly approved staging branch." ;;
 esac
 git diff --quiet HEAD -- . || fail 'Tracked files have local changes. Review them; do not discard them.'

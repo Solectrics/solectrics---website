@@ -10,7 +10,7 @@ export async function onRequest(context) {
   if (context.env?.JOBHUB_STAGING_ONLY === "true") {
     if (context.env.ALLOW_PAGES_DEV_HOST === "true" &&
         ["fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev",
-         "post-hec-bill-fletcher-privacy.solectrics-jobhub-staging.pages.dev"].includes(url.hostname)) {
+         "post-hec-bill-fletcher-priva.solectrics-jobhub-staging.pages.dev"].includes(url.hostname)) {
       return context.next();
     }
     return new Response("Staging hostname is not allowed", {
