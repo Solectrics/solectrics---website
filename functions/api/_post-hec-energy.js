@@ -66,7 +66,7 @@ export function applyReviewedBill(answers, {file, draft, bill, slot, now}) {
 export function stagingEnergyEnabled(context) {
   return context.env.JOBHUB_STAGING_ONLY === "true" && context.env.ALLOW_PAGES_DEV_HOST === "true" &&
     ["fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev",
-     "post-hec-bill-fletcher-priva.solectrics-jobhub-staging.pages.dev"].includes(new URL(context.request.url).hostname);
+     "hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev"].includes(new URL(context.request.url).hostname);
 }
 
 // Extend the already-private /api/job-files route. No new API path or schema.

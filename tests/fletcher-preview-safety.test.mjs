@@ -27,7 +27,7 @@ test('deployment wrapper keeps single branch, staging identity checks, and no mi
  assert.match(script,/DEPLOY STAGING/);
 });
 test('dedicated privacy preview is exact and still needs both staging flags',async()=>{
- const privacy='post-hec-bill-fletcher-priva.solectrics-jobhub-staging.pages.dev';
+ const privacy='hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev';
  assert.equal(await (await invoke(privacy,{JOBHUB_STAGING_ONLY:'true',ALLOW_PAGES_DEV_HOST:'true'})).text(),'allowed');
  assert.equal((await invoke(privacy,{JOBHUB_STAGING_ONLY:'true'})).status,403);
  assert.equal((await invoke(privacy+'.example.test',{JOBHUB_STAGING_ONLY:'true',ALLOW_PAGES_DEV_HOST:'true'})).status,403);
@@ -35,15 +35,15 @@ test('dedicated privacy preview is exact and still needs both staging flags',asy
 });
 test('dedicated branch uses a separate staging alias without changing resources or remote-tip guard',async()=>{
  const script=await readFile(new URL('../staging/deploy-fletcher-preview.sh',import.meta.url),'utf8');
- assert.match(script,/codex\/post-hec-bill-fletcher-privacy-staging\) DEPLOYMENT_ALIAS='post-hec-bill-fletcher-priva'/);
+ assert.match(script,/codex\/post-hec-bill-fletcher-privacy-staging\) DEPLOYMENT_ALIAS='hec-fletcher-privacy'/);
  assert.match(script,/git fetch --quiet origin "\$BRANCH"/);
  assert.match(script,/git rev-parse FETCH_HEAD/);
  assert.match(script,/--project-name "\$PROJECT"/);
  assert.doesNotMatch(script,/solectrics---website|secret put|d1 migrations|r2 object/);
 });
 
-test('deployed shortened alias enables energy only with both flags; obsolete alias stays blocked',async()=>{
- const approved='post-hec-bill-fletcher-priva.solectrics-jobhub-staging.pages.dev';
+test('short dedicated alias enables energy only with both flags; collision aliases stay blocked',async()=>{
+ const approved='hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev';
  const obsolete='post-hec-bill-fletcher-privacy.solectrics-jobhub-staging.pages.dev';
  const env={JOBHUB_STAGING_ONLY:'true',ALLOW_PAGES_DEV_HOST:'true'};
  const energy=(hostname,flags)=>stagingEnergyEnabled({request:new Request(`https://${hostname}/api/job-files`),env:flags});
@@ -51,6 +51,10 @@ test('deployed shortened alias enables energy only with both flags; obsolete ali
  assert.equal(energy(approved,{JOBHUB_STAGING_ONLY:'true'}),false);
  assert.equal(energy(approved,{ALLOW_PAGES_DEV_HOST:'true'}),false);
  assert.equal(energy(obsolete,env),false);
+ assert.ok(approved.split('.')[0].length < 28);
+ const collision='post-hec-bill-fletcher-priva-9uno.solectrics-jobhub-staging.pages.dev';
+ assert.equal(energy(collision,env),false);
+ assert.equal((await invoke(collision,env)).status,403);
  assert.equal((await invoke(obsolete,env)).status,403);
  assert.equal(energy('solectrics.co.nz',env),false);
 });
