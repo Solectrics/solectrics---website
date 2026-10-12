@@ -55,7 +55,7 @@
       <div><label>Site address</label><input id="siteAddress"></div>
       <div><label>Suburb</label><input id="suburb"></div>
       <div><label>City and postcode</label><input id="cityPostcode"></div>
-      <div><label>ICP</label><input id="icp"></div>
+      <div><label>ICP (optional supplier note)</label><input id="icp"><button type="button" id="saveSharedIcp" hidden>SAVE REVIEWED ICP TO JOB</button><p id="icpSaveStatus" role="status"></p><label><input type="checkbox" id="includeIcpInPackage"> Include this ICP in supplier notes</label><p class="hint">The original checklist has no dedicated ICP field. Save corrections once here; existing Site Visit / Design differences require review.</p></div>
       <div>
         <label>Electrical connection</label>
         <select id="connectionType"><option value="">Select…</option><option value="single_phase">Single phase</option><option value="dual_phase">Dual phase</option><option value="three_phase">Three phase</option></select>
@@ -80,7 +80,7 @@
       <div><label>Proposed system size (kW)</label><input id="systemSize"></div>
     </div>
     <div class="checks" style="margin-top:16px;">
-      <label><input type="checkbox" id="powerBillAttached"> Power bill attached</label>
+      <label><input type="checkbox" id="powerBillAttached" disabled> Power bill is not included in this supplier package</label>
       <label><input type="checkbox" id="plansAttached"> Plans attached</label>
     </div>
   </section>
@@ -110,7 +110,7 @@
 
   <section class="card">
     <h2>Package documents</h2>
-    <p class="hint">The customer power bill and OpenSolar roof / panel layout must be uploaded to this job before emailing. The latest file of each type is attached automatically. An SLD is also attached when available.</p>
+    <p class="hint">The OpenSolar roof / panel layout is required. An SLD is optional. Customer electricity bills stay private in Job Hub and are never included in this package. Review every attachment and supplier note before approving email to Jane.</p>
     <div id="packageDocuments">Checking job documents…</div>
     <p><a id="layoutUploadLink" href="#">UPLOAD / CHECK OPENSOLAR LAYOUT ON THIS JOB</a></p>
     <p class="hint">Use Drawing / design and Roof / panel layout before choosing the image. Return here after the upload finishes.</p>
@@ -132,9 +132,10 @@ const setValue = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
 const setChecked = (id, value) => { if ($(id)) $(id).checked = Boolean(value); };
 let packageBusy = false;
 let packageDocumentRoles = new Set();
+let savedAnswersRevision = null;
 
 function missingRequiredPackageDocuments() {
-  return [["power_bill", "Customer power bill"], ["roof_layout", "OpenSolar roof / panel layout"]]
+  return [["roof_layout", "OpenSolar roof / panel layout"]]
     .filter(([role]) => !packageDocumentRoles.has(role)).map(([, label]) => label);
 }
 
@@ -305,12 +306,12 @@ function renderPackageDocuments(files, answers) {
   const roles = new Set(files.map(inferredDocumentRole));
   packageDocumentRoles = roles;
   setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
-  setChecked("powerBillAttached", roles.has("power_bill"));
+  setChecked("powerBillAttached", false);
   const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
   const items = [
     ["sld", "Single-line diagram (SLD) — optional", roles.has("sld")],
     ["roof_layout", "Roof / panel layout", roles.has("roof_layout")],
-    ["power_bill", "Customer power bill", roles.has("power_bill")]
+    ["power_bill", "Customer power bill — private, excluded from supplier package", roles.has("power_bill")]
   ];
   $("packageDocuments").innerHTML = items.map(([role, label, present]) => {
     const note = role === "power_bill" && !present && hasBillData
@@ -348,8 +349,8 @@ function buildNotes(design, assessment, icp) {
   if (inverterModel || design.design_inverter_kw) items.push(`Inverter: ${inverterModel || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
   if (design.design_battery_model || batteryCapacity) items.push(`Battery: ${design.design_battery_model || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
   if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
-  if (design.design_environment_notes) items.push(design.design_environment_notes);
-  if (design.design_electrical_notes) items.push(design.design_electrical_notes);
+  // Supplier notes are reviewed explicitly; unrelated internal design notes
+  // must not be copied into a purchasing request automatically.
   return items.join("\n");
 }
 
@@ -391,7 +392,12 @@ async function loadData() {
   setValue("siteAddress", address.site);
   setValue("suburb", address.suburb);
   setValue("cityPostcode", address.city);
-  const icp = firstValue(design.design_icp, visit.visit_icp, answers.icp, answers.ICP);
+  const bill = answers.bills?.[answers.energy_data?.active_slot] || answers.bills?.summer || answers.bills?.winter || {};
+  const candidates = [...new Set([answers.icp, bill.icp, design.design_icp, visit.visit_icp, answers.ICP].map(value=>String(value || "").trim()).filter(Boolean))];
+  const icp = answers.icp || (candidates.length === 1 ? candidates[0] : "");
+  savedAnswersRevision = jobData.answers_revision;
+  $("saveSharedIcp").hidden = !jobData.post_hec_bill_processing;
+  if(candidates.length > 1) $("icpSaveStatus").textContent = "Existing sources differ. Confirm and save the correct ICP; no source is silently overwritten.";
   setValue("icp", icp);
   setValue("connectionType", design.design_connection_type || visit.visit_connection_type);
   const inverterDesign = {
@@ -419,8 +425,8 @@ async function loadData() {
   const files = filesData.files || [];
   const roles = new Set(files.map(inferredDocumentRole));
   setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
-  setChecked("powerBillAttached", roles.has("power_bill"));
-  setValue("additionalNotes", buildNotes(design, assessment, icp));
+  setChecked("powerBillAttached", false);
+  setValue("additionalNotes", buildNotes(design, assessment, ""));
   preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
   renderPreliminaryProposal(preliminaryProposal);
   applyPreliminaryProposal(false);
@@ -477,13 +483,14 @@ async function createAndSavePdf(download = true, emailOperation = false) {
     drawText(p1, $("roofPitch").value, 154, 174, { maxWidth:390 });
     drawText(p1, $("arrayLayout").value, 175, 126, { size:9, maxWidth:195 });
     drawText(p1, $("systemSize").value, 509, 126, { maxWidth:40 });
-    drawTick(p1, 432, 92, $("powerBillAttached").checked);
+    drawTick(p1, 432, 92, false); // Customer bills are not disclosed.
 
     drawTick(p2, 192, 681, $("saltSpray").checked); drawTick(p2, 358, 681, $("snowIce").checked); drawTick(p2, 192, 648, $("highWind").checked);
     drawTick(p2, 192, 615, $("trees").checked); drawTick(p2, 358, 615, $("chimneys").checked); drawTick(p2, 192, 582, $("buildings").checked); drawTick(p2, 358, 582, $("aerials").checked);
     drawTick(p2, 192, 549, $("vents").checked); drawTick(p2, 358, 549, $("satellite").checked); drawTick(p2, 358, 516, $("noShading").checked);
     drawText(p2, $("otherEnvironment").value, 257, 517, { maxWidth:90 });
-    drawText(p2, $("additionalNotes").value, 63, 455, { size:9, maxWidth:480 });
+    const supplierNotes = [$("includeIcpInPackage").checked && $("icp").value ? `ICP: ${$("icp").value.trim()}` : "", $("additionalNotes").value].filter(Boolean).join("\n");
+    drawText(p2, supplierNotes, 63, 455, { size:9, maxWidth:480 });
     drawTick(p2, 192, 253, $("plansAttached").checked);
 
     const safeName = $("customerName").value.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
@@ -514,21 +521,52 @@ async function createAndSavePdf(download = true, emailOperation = false) {
   } finally { if (!emailOperation) setPackageBusy(false); }
 }
 
+async function confirmPackagePreview(data) {
+  if (!data.preview || !data.preview_id) throw new Error("Package preview is unavailable. No email was sent.");
+  return new Promise(resolve=>{
+    const dialog=document.createElement("dialog");dialog.style.cssText="max-width:700px;width:calc(100% - 32px);max-height:90svh;overflow:auto;border-radius:12px;padding:20px";
+    const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;dialog.append(el);return el;};
+    add("h2","Review supplier package before approval");
+    add("p",`Recipient: ${data.preview.recipient}. This sends to Jane for review; it does not send directly to Fletcher.`);
+    add("p",`Email introduction: ${data.preview.information.customer_name} — ${data.preview.information.address}`);
+    add("h3","Documents included");
+    data.preview.attachments.forEach(file=>{const p=add("p",`${file.name} (${file.role})`);const link=document.createElement("a");link.textContent=" — Open and check";link.href=`/api/job-file?id=${encodeURIComponent(file.id)}`;link.target="_blank";link.rel="noopener";p.append(link);});
+    add("h3","Information in the completed form");
+    const excluded=new Set(["powerBillAttached","icp","includeIcpInPackage"]);
+    document.querySelectorAll("input,select,textarea").forEach(field=>{
+      if(excluded.has(field.id) || !field.id || field.type==='checkbox' && !field.checked || !field.value && field.type!=='checkbox')return;
+      const label=field.closest("div")?.querySelector("label")?.textContent?.trim() || field.id;
+      add("p",`${label}: ${field.type==='checkbox'?'Yes':field.value}`);
+    });
+    if($("includeIcpInPackage").checked && $("icp").value) add("p",`Approved optional ICP: ${$("icp").value}`);
+    add("p","Excluded: customer electricity bills, extracted energy data, internal costing and unrelated job notes. Check the PDF, layout and any SLD for unintended personal information before approving.");
+    const label=add("label","");const check=document.createElement("input");check.type="checkbox";label.append(check,document.createTextNode(" I have checked the information and documents above and approve this package."));
+    const send=add("button","APPROVE EMAIL TO JANE");send.type="button";send.disabled=true;send.style.cssText="min-height:44px;padding:12px;background:#ef9c20;margin:12px";
+    const cancel=add("button","CANCEL — DO NOT EMAIL");cancel.type="button";cancel.style.minHeight="44px";
+    const finish=value=>{dialog.close();dialog.remove();resolve(value);};
+    check.onchange=()=>send.disabled=!check.checked;send.onclick=()=>finish(true);cancel.onclick=()=>finish(false);
+    dialog.addEventListener("cancel",event=>{event.preventDefault();finish(false);});
+    document.body.append(dialog);dialog.showModal();
+  });
+}
+
 async function emailPackage() {
   if (packageBusy) return;
   setPackageBusy(true);
   try {
-    $("status").textContent = "Checking the power bill and OpenSolar layout…";
+    $("status").textContent = "Checking the OpenSolar layout; customer bills are excluded…";
     await refreshPackageDocuments();
     const missingDocuments = missingRequiredPackageDocuments();
     if (missingDocuments.length) throw new Error(`Upload these documents to the job before emailing: ${missingDocuments.join(", ")}.`);
     const saved = await createAndSavePdf(false, true);
     if (!saved) return;
+    const preview = await packageRequest("/api/fletcher-email", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({job_id:Number(jobId),action:"preview"})}, "preview");
+    if (!await confirmPackagePreview(preview)) { $("status").textContent = "Email cancelled. The PDF remains saved; no email was sent."; return; }
     $("status").textContent = "Emailing the package to Jane…";
     const data = await packageRequest("/api/fletcher-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id: Number(jobId) })
+      body: JSON.stringify({ job_id: Number(jobId), approved_preview:preview.preview_id })
     }, "email");
     const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
     $("status").textContent = `✓ Email provider accepted the package for ${data.recipient}. Inbox delivery is not yet confirmed.${missing}`;
@@ -543,6 +581,15 @@ async function emailPackage() {
 document.querySelectorAll("input,select,textarea").forEach(field => field.addEventListener("input", updateMissing));
 $("downloadPdf").addEventListener("click", () => createAndSavePdf(true));
 $("emailPackage").addEventListener("click", emailPackage);
+$("saveSharedIcp").addEventListener("click", async()=>{
+  const button=$("saveSharedIcp");button.disabled=true;$("icpSaveStatus").textContent="Saving reviewed ICP…";
+  try {
+    const response=await fetch("/api/job",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save_shared_icp",job_id:Number(jobId),icp:$("icp").value,revision:savedAnswersRevision})});
+    const data=await response.json();if(!response.ok || !data.ok)throw new Error(data.error || "Save failed");
+    savedAnswersRevision=data.answers_revision;$("icp").value=data.icp;
+    $("icpSaveStatus").textContent="Reviewed ICP saved once to this job. Existing Site Visit / Design differences remain for review.";
+  }catch(e){$("icpSaveStatus").textContent="Save failed — "+e.message;}finally{button.disabled=false;}
+});
 $("useProposal").addEventListener("click", () => applyPreliminaryProposal(true));
 loadData().catch(error => { console.error(error); $("missingPanel").className = "card missing"; $("missingPanel").textContent = `Could not load job details: ${error.message}`; });
 </script>

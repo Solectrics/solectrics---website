@@ -21,7 +21,7 @@
   ];
   const flags = ['salt_spray', 'high_wind', 'trees', 'chimneys', 'buildings', 'aerials', 'vents', 'satellite'];
   function text(value) { return value == null ? '' : String(value).trim(); }
-  function differences(visit, assessment, design, roofIndex) {
+  function differences(visit, assessment, design, roofIndex, energy = {}) {
     const rows = [];
     function add(source, target, label, value, current, boolean = false) {
       if (boolean ? typeof value !== 'boolean' : text(value) === '') return;
@@ -29,6 +29,8 @@
       rows.push({source, target, label, value, current, boolean});
     }
     fieldMap.forEach(([from, to, label]) => add('Saved Site Visit', to, label, visit[from], design[to]));
+    add('Shared reviewed energy information', 'design_icp', 'ICP', energy.icp, design.design_icp);
+    add('Shared reviewed energy information', 'design_retailer', 'Retailer', energy.retailer, design.design_retailer);
     flags.forEach(flag => add('Saved Site Visit', 'design_' + flag, flag.replace(/_/g, ' '), visit['visit_' + flag], design['design_' + flag], true));
     const notes = [
       visit.visit_roof_access && 'Roof access: ' + visit.visit_roof_access,
@@ -80,7 +82,7 @@
         if (select.value === '') roofIndex = null;
         select.addEventListener('change', () => { roofIndex = select.value === '' ? null : Number(select.value); refresh(); });
       }
-      const rows = differences(sources.visit, sources.assessment, design, roofIndex).filter(row => !kept.has(key(row)));
+      const rows = differences(sources.visit, sources.assessment, design, roofIndex, sources.energy).filter(row => !kept.has(key(row)));
       if (!rows.length) { node('p', roofs.length > 1 && roofIndex == null ? 'Choose a roof to review its measurements. No other differences need review.' : 'No saved-source differences need review.', host); return; }
       const selected = [];
       const show = (value, boolean) => boolean ? (value ? 'Yes' : 'No') : (text(value) || 'Not entered');
@@ -103,7 +105,7 @@
         const changes = selected.filter(item => item.check.checked);
         if (!changes.length) { status.textContent = 'Select the source values you want to use.'; return; }
         // Compare again: never apply a stale proposal to a changed design.
-        const latest = differences(getSources().visit, getSources().assessment, getDesign(), roofIndex);
+        const latest = differences(getSources().visit, getSources().assessment, getDesign(), roofIndex, getSources().energy);
         if (changes.some(item => !latest.some(row => key(row) === key(item.row)))) {
           status.textContent = 'The source or design changed. Review the current values again.'; return;
         }

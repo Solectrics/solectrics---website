@@ -8,7 +8,7 @@ const {packageStatus,group}=sandbox.JobDocumentLibrary;
 const file=(role,props={})=>({id:role,document_role:role,original_name:role+'.pdf',category:'other',accessibility:'accessible',...props});
 test('package requirements depend on explicit request context; SLD is optional',()=>{
  assert.ok(packageStatus([],false).every(c=>c.status==='optional'));
- const required=packageStatus([],true);assert.equal(required.filter(c=>c.status==='missing').length,3);assert.equal(required.find(c=>c.role==='sld').status,'optional');
+ const required=packageStatus([],true);assert.equal(required.filter(c=>c.status==='missing').length,2);assert.equal(required.find(c=>c.role==='sld').status,'optional');
 });
 test('accessible explicit attachment is received; ticked design fields cannot satisfy absence',()=>{
  const checks=packageStatus([file('power_bill')],true);assert.equal(checks[0].status,'received');assert.equal(checks.find(c=>c.role==='roof_layout').status,'missing');

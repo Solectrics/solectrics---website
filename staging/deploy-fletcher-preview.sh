@@ -8,7 +8,8 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'Run from the Job Hu
 cd "$ROOT"
 BRANCH="$(git branch --show-current)"
 case "$BRANCH" in
-  codex/fletcher-package-mobile-fix) ;;
+  codex/fletcher-package-mobile-fix) DEPLOYMENT_ALIAS='fletcher-package-mobile-fix' ;;
+  codex/post-hec-bill-fletcher-privacy-staging) DEPLOYMENT_ALIAS='post-hec-bill-fletcher-privacy' ;;
   *) fail "Branch $BRANCH is not an explicitly approved staging branch." ;;
 esac
 git diff --quiet HEAD -- . || fail 'Tracked files have local changes. Review them; do not discard them.'
@@ -93,7 +94,7 @@ read -r confirmation || fail 'No deployment confirmation.'
  # Pages reads the isolated site/wrangler.json from this working directory.
  # Pages rejects --config; never run this command from the repository root.
  cd "$RUN/site"
- "${WRANGLER[@]}" pages deploy public --project-name "$PROJECT" --branch "fletcher-package-mobile-fix" --commit-hash "$(git -C "$ROOT" rev-parse HEAD)"
+ "${WRANGLER[@]}" pages deploy public --project-name "$PROJECT" --branch "$DEPLOYMENT_ALIAS" --commit-hash "$(git -C "$ROOT" rev-parse HEAD)"
 ) || fail 'Staging deployment failed. Do not rerun migrations or change database resources.'
 printf '\nDeployment command completed for branch %s.\n' "$BRANCH"
 printf 'Open the branch preview URL printed by Wrangler and verify Cloudflare Access intercepts it before using the Job Hub.\n'

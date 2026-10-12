@@ -19,10 +19,11 @@ function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_ro
     Blob: class {}, File: class {}, FormData: class {append(){}},
     setTimeout(){}, console: {error(){}},
     PDFLib: {rgb(){}, PDFDocument:{load:async()=>({getPages:()=>[page,page], save:async()=>new Uint8Array([1,2])})}},
-    fetch: async (url, options) => {events.push(url);if(url.startsWith('/api/job-files?'))return ok({ok:true,files});return fetchImpl(url, options);}
+    fetch: async (url, options) => {if(options?.body && typeof options.body === 'string' && JSON.parse(options.body).action==='preview')return ok({ok:true,preview_id:'synthetic-preview',preview:{}});events.push(url);if(url.startsWith('/api/job-files?'))return ok({ok:true,files});return fetchImpl(url, options);}
   });
   context.window = context;
-  vm.runInContext(script.slice(0, script.indexOf('document.querySelectorAll("input,select,textarea")')), context);
+  vm.runInContext(script.slice(0, script.lastIndexOf('document.querySelectorAll("input,select,textarea").forEach')), context);
+  vm.runInContext('confirmPackagePreview = async () => true;',context);
   if (!realValidation) vm.runInContext('updateMissing = () => [];', context);
   return {context, events, get, run:code=>vm.runInContext(code, context)};
 }
@@ -81,11 +82,11 @@ test('layout shortcut reuses the same job documents and flags reflect actual fil
   const h=harness(()=>{});
   assert.equal(h.get('layoutUploadLink').href,'/mini-fergus-job?id=7&document_use=roof_layout&document_context=fletcher#jobFilesSection');
   assert.match(html,/setChecked\("plansAttached", roles.has\("sld"\) \|\| roles.has\("roof_layout"\)\)/);
-  assert.match(html,/setChecked\("powerBillAttached", roles.has\("power_bill"\)\)/);
+  assert.match(html,/setChecked\("powerBillAttached", false\)/);
   assert.doesNotMatch(html,/setChecked\("plansAttached", Boolean\(design/);
 });
-test('missing layout or power bill stops before PDF save and email',async()=>{
-  for(const files of [[],[{document_role:'power_bill'}],[{document_role:'roof_layout'}]]) {
+test('missing layout stops before PDF save and email',async()=>{
+  for(const files of [[],[{document_role:'power_bill'}]]) {
     const h=harness(()=>{throw Error('No write expected');},files);
     await h.run('emailPackage()');
     assert.deepEqual(h.events,['/api/job-files?job_id=7']);

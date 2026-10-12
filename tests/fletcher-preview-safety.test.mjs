@@ -20,7 +20,23 @@ test('deployment wrapper keeps single branch, staging identity checks, and no mi
  assert.match(script,/codex\/fletcher-package-mobile-fix\)/);
  assert.match(script,/readonly PROJECT='solectrics-jobhub-staging'/);
  assert.match(script,/d1 info "\$DATABASE"/);
- assert.match(script,/--branch "fletcher-package-mobile-fix"/);
+ assert.match(script,/DEPLOYMENT_ALIAS='fletcher-package-mobile-fix'/);
+ assert.match(script,/--branch "\$DEPLOYMENT_ALIAS"/);
  assert.doesNotMatch(script,/d1 execute|d1 migrations|r2 object|secret put/);
  assert.match(script,/DEPLOY STAGING/);
+});
+test('dedicated privacy preview is exact and still needs both staging flags',async()=>{
+ const privacy='post-hec-bill-fletcher-privacy.solectrics-jobhub-staging.pages.dev';
+ assert.equal(await (await invoke(privacy,{JOBHUB_STAGING_ONLY:'true',ALLOW_PAGES_DEV_HOST:'true'})).text(),'allowed');
+ assert.equal((await invoke(privacy,{JOBHUB_STAGING_ONLY:'true'})).status,403);
+ assert.equal((await invoke(privacy+'.example.test',{JOBHUB_STAGING_ONLY:'true',ALLOW_PAGES_DEV_HOST:'true'})).status,403);
+ assert.equal((await invoke(privacy)).status,308);
+});
+test('dedicated branch uses a separate staging alias without changing resources or remote-tip guard',async()=>{
+ const script=await readFile(new URL('../staging/deploy-fletcher-preview.sh',import.meta.url),'utf8');
+ assert.match(script,/codex\/post-hec-bill-fletcher-privacy-staging\) DEPLOYMENT_ALIAS='post-hec-bill-fletcher-privacy'/);
+ assert.match(script,/git fetch --quiet origin "\$BRANCH"/);
+ assert.match(script,/git rev-parse FETCH_HEAD/);
+ assert.match(script,/--project-name "\$PROJECT"/);
+ assert.doesNotMatch(script,/solectrics---website|secret put|d1 migrations|r2 object/);
 });

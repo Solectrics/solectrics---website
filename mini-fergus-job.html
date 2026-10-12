@@ -389,6 +389,8 @@
 <script src="/assets/job-data-review.js"></script>
 <link rel="stylesheet" href="/assets/system-design-save.css">
 <script src="/assets/system-design-save.js"></script>
+<link rel="stylesheet" href="/assets/post-hec-bill.css">
+<script src="/assets/post-hec-bill.js"></script>
 </head>
 
 <body>
@@ -487,6 +489,7 @@ if (typeof value === "object" && value !== null) {
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
   let currentAnswers = {};
+  let postHecBillEnabled = false;
   let currentJobType = "solar";
 
 async function loadJob() {
@@ -512,6 +515,7 @@ async function loadJob() {
         const job = data.job;
         currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
+        postHecBillEnabled = data.post_hec_bill_processing === true;
         
 const answers = currentAnswers;
         
@@ -946,6 +950,7 @@ window.currentAnswers = answers;
     <div class="placeholder">Electricity evidence received through the Home Energy Check or uploaded to this job for energy modelling and quote preparation.</div>
     <div id="energyDataStatus" class="energy-status-grid"></div>
     <div id="energyFilesList" class="placeholder">No energy files received yet.</div>
+    <div id="sharedEnergyInformation"></div>
   </details>
 
   <div id="documentSummary" aria-live="polite"></div>
@@ -3069,7 +3074,7 @@ function initialiseDesignDataReview() {
   if (!document.getElementById("systemDesignSection")) return;
   designDataReview = window.JobDataReview.mount({
     document,
-    getSources: () => ({ visit: loadedSiteVisit, assessment: loadedAssessmentForReview }),
+    getSources: () => ({ visit: loadedSiteVisit, assessment: loadedAssessmentForReview, energy: sharedJobElectricity() }),
     getDesign: collectSystemDesign,
     canReview: () => siteVisitLoaded && assessmentLoaded && systemDesignLoaded,
     onApplied: () => {
@@ -3208,6 +3213,7 @@ function renderEnergyData(files) {
   const status = document.getElementById("energyDataStatus");
   const list = document.getElementById("energyFilesList");
   if (!status || !list) return;
+  renderSharedEnergyInformation();
   const recent = files.filter(file => file.document_role === "power_bill");
   const annual = files.filter(file => file.document_role === "annual_usage");
   const extra = files.filter(file => file.document_role === "additional_power_bill");
@@ -3234,8 +3240,43 @@ function renderEnergyData(files) {
     return;
   }
   list.className = "";
-  list.innerHTML = groups.map(([heading, groupFiles]) => `<div class="energy-file-group"><h4>${escapeHtml(heading)}</h4>${groupFiles.map(file => `<a class="energy-file-link" href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.original_name)}</a><div class="placeholder">${escapeHtml(file.content_type || "File")} · uploaded ${escapeHtml(file.uploaded_at || "")}${file.energy_data_detail === "half_hourly" ? " · detailed / half-hourly data identified" : ""}</div>`).join("")}</div>`).join("");
+  list.innerHTML = groups.map(([heading, groupFiles]) => `<div class="energy-file-group"><h4>${escapeHtml(heading)}</h4>${groupFiles.map(file => `<a class="energy-file-link" href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.original_name)}</a><div class="placeholder">${escapeHtml(file.content_type || "File")} · uploaded ${escapeHtml(file.uploaded_at || "")}${file.energy_data_detail === "half_hourly" ? " · detailed / half-hourly data identified" : ""}</div>${billReadButton(file)}`).join("")}</div>`).join("");
 }
+
+function billReadButton(file) {
+  return postHecBillEnabled && ["power_bill", "additional_power_bill"].includes(file.document_role)
+    ? `<button type="button" data-read-energy-bill="${escapeHtml(file.id)}" data-bill-name="${escapeHtml(file.original_name)}">Read bill and update energy information</button>` : "";
+}
+function sharedJobElectricity() {
+  const slot = currentAnswers.energy_data?.active_slot;
+  const bill = currentAnswers.bills?.[slot] || currentAnswers.bills?.summer || currentAnswers.bills?.winter || {};
+  const gstRate = (key, basis) => bill[key] == null ? "" : Number(bill[key]) * (bill[basis] === "exclusive" ? 1.15 : 1);
+  return {icp:currentAnswers.icp || bill.icp || "", retailer:bill.retailer || "", plan_name:bill.plan_name || "",
+    import_rate:gstRate("import_rate_cents", "import_rate_gst_basis") === "" ? "" : Number((gstRate("import_rate_cents", "import_rate_gst_basis") / 100).toFixed(6)),
+    tariff_description:[bill.tariff_description, bill.free_import_schedule, bill.other_tariff_information].filter(Boolean).join(" · ")};
+}
+function renderSharedEnergyInformation() {
+  const host = document.getElementById("sharedEnergyInformation");
+  if (!host) return;
+  const source = sharedJobElectricity();
+  host.innerHTML = `<h3>Shared electricity information</h3><p>This comes from the saved, reviewed energy answers. Existing Site Visit and Design values remain unchanged until you choose to use a difference.</p>${[
+    ["ICP",source.icp,"visit_icp"],["Retailer",source.retailer,"visit_retailer"],
+    ["Assessment retailer",source.retailer,"current_retailer"],["Import rate incl GST ($/kWh)",source.import_rate,"import_rate"]
+  ].map(([label,value,target]) => `<div class="shared-energy-row">${escapeHtml(label)}: <strong>${escapeHtml(value === "" ? "Unknown / needs review" : value)}</strong>${value !== "" ? `<button type="button" data-use-shared-energy="${target}">Use this saved value</button>` : ""}</div>`).join("")}<p>${escapeHtml(source.tariff_description)}</p><p>${escapeHtml(currentAnswers.energy_data?.limitation || "Bill-based estimates require review before use in a proposal.")}</p>`;
+  host.querySelectorAll("[data-use-shared-energy]").forEach(button => button.onclick = () => {
+    const target = button.dataset.useSharedEnergy, field = document.getElementById(target);
+    const values = {visit_icp:source.icp, visit_retailer:source.retailer, current_retailer:source.retailer, import_rate:source.import_rate};
+    if (!field || field.disabled) return;
+    field.value = values[target];field.dispatchEvent(new Event("input",{bubbles:true}));
+    button.textContent = "Value applied — check save status";
+  });
+}
+window.PostHecBill.mount({document,jobId,onSaved:async()=>{
+  const response=await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);const data=await response.json();
+  if(!response.ok || !data.ok)throw new Error("Reload needed");
+  currentAnswers=parseAnswers(data.job.answers_json);window.currentAnswers=currentAnswers;
+  renderSharedEnergyInformation();refreshDesignDataReview();
+}});
 
 const solarPhotoChecklistItems = [
   "site_photo", "switchboard", "meter", "cable_route", "fixings",
@@ -3335,6 +3376,7 @@ async function loadJobFiles() {
           · ${escapeHtml(file.uploaded_at || "")}
         </div>
         ${file.caption ? `<div>${escapeHtml(window.SiteVisitPhotos?.displayCaption(file) ?? file.caption)}</div>` : ""}
+        ${billReadButton(file)}
       </div>
     `);
     const groups = new Map(["Energy & HEC", "Site Visit", "Design & OpenSolar", "Supplier Quotes", "Installation", "Compliance", "Handover", "Other / Unclassified"].map(name => [name, []]));

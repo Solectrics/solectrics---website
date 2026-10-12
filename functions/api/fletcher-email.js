@@ -3,7 +3,7 @@ import { ensureJobFileRoleColumn } from "./_schema.js";
 const RECIPIENT = "jane@solectrics.co.nz";
 const MAX_TOTAL_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const REQUIRED_ROLE = "fletcher_assessment";
-const PACKAGE_ROLES = [REQUIRED_ROLE, "sld", "roof_layout", "power_bill"];
+const PACKAGE_ROLES = [REQUIRED_ROLE, "sld", "roof_layout"];
 
 const CREATE_EMAIL_LOGS = `
   CREATE TABLE IF NOT EXISTS email_logs (
@@ -61,14 +61,6 @@ export async function onRequestPost(context) {
     const apiKey = context.env.RESEND_API_KEY;
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!bucket) return errorResponse("Cloudflare R2 job-file storage is not available", 503);
-    if (!apiKey) {
-      return errorResponse(
-        "Email is not connected yet",
-        503,
-        "Add the RESEND_API_KEY secret to the Cloudflare Pages project and redeploy"
-      );
-    }
-
     const body = await context.request.json();
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) {
@@ -76,7 +68,6 @@ export async function onRequestPost(context) {
     }
 
     await ensureJobFileRoleColumn(db);
-    await db.prepare(CREATE_EMAIL_LOGS).run();
 
     const job = await db.prepare(`
       SELECT jobs.id AS job_id, enquiries.customer_name, enquiries.address
@@ -95,6 +86,8 @@ export async function onRequestPost(context) {
 
     const selected = new Map();
     for (const file of result.results || []) {
+      const text = `${file.original_name || ""} ${file.caption || ""}`.toLowerCase();
+      if (["power_bill", "additional_power_bill", "annual_usage"].includes(file.document_role) || /(power|electricity).*bill|bill.*(power|electricity)/.test(text)) continue;
       const role = inferRole(file);
       if (PACKAGE_ROLES.includes(role) && !selected.has(role)) selected.set(role, file);
     }
@@ -103,12 +96,26 @@ export async function onRequestPost(context) {
     }
     const requiredDocuments = new Map([
       [REQUIRED_ROLE, "Completed Fletcher form"],
-      ["roof_layout", "OpenSolar roof / panel layout"],
-      ["power_bill", "Customer power bill"]
+      ["roof_layout", "OpenSolar roof / panel layout"]
     ]);
     for (const [role, label] of requiredDocuments) {
       if (!selected.has(role)) return errorResponse(`Upload the ${label} before emailing the package`, 400);
     }
+
+    const manifest = {
+      recipient:RECIPIENT,
+      information:{customer_name:job.customer_name || "",address:job.address || ""},
+      attachments:PACKAGE_ROLES.filter(role=>selected.has(role)).map(role=>{
+        const f=selected.get(role);return {role,id:f.id,name:f.original_name,size_bytes:f.size_bytes,uploaded_at:f.uploaded_at || null};
+      }),
+      excluded:["Customer electricity bills", "Energy usage records", "Internal costing", "Unrelated job notes"]
+    };
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify({job_id:jobId,...manifest})));
+    const previewId=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
+    if(body.action === "preview") return Response.json({ok:true,preview:manifest,preview_id:previewId},{headers:{"Cache-Control":"no-store"}});
+    if(body.approved_preview !== previewId) return errorResponse("Review and approve the current package preview before emailing. If attachments changed, preview it again.",409);
+    if (!apiKey) return errorResponse("Email is not connected yet",503);
+    await db.prepare(CREATE_EMAIL_LOGS).run();
 
     const roleLabels = {
       fletcher_assessment: "Completed Fletcher solar site assessment",

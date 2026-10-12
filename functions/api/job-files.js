@@ -1,4 +1,5 @@
 import { ensureJobFileRoleColumn } from "./_schema.js";
+import { postHecEnergyAction } from "./_post-hec-energy.js";
 
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS job_files (
@@ -111,6 +112,7 @@ export async function onRequestPatch(context) {
 
 export async function onRequestPost(context) {
   try {
+    if ((context.request.headers.get("content-type") || "").includes("application/json")) return await postHecEnergyAction(context);
     const db = context.env.DB;
     const bucket = getBucket(context.env);
     if (!db) return errorResponse("D1 database binding DB is not available");

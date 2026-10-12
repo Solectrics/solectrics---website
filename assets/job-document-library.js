@@ -12,7 +12,7 @@
     return Object.entries(roleNames).map(([role,label])=>{
       const matches=files.filter(f=>inferredRole(f).role===role);
       const latest=matches[0]; // Inventory is newest first, as the Fletcher selector is.
-      const must=required && ['power_bill','roof_layout','fletcher_assessment'].includes(role);
+      const must=required && ['roof_layout','fletcher_assessment'].includes(role);
       const status=latest?(latest.accessibility==='accessible'&&!inferredRole(latest).inferred?'received':'review'):(must?'missing':'optional');
       return {role,label,status,file:latest,reason:latest?inferredRole(latest).inferred?'Document use inferred from name; check classification':latest.accessibility!=='accessible'?'Stored file could not be verified':'Accessible attachment confirmed':must?'Required for the Fletcher package':'Optional / no current requirement confirmed'};
     });

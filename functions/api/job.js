@@ -1,4 +1,5 @@
 import { ensureJobTypeColumn } from "./_schema.js";
+import { energyRevision, parseEnergyAnswers, stagingEnergyEnabled } from "./_post-hec-energy.js";
 
 function errorResponse(message, status = 500, detail) {
   return Response.json(
@@ -50,6 +51,8 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
+      post_hec_bill_processing: stagingEnergyEnabled(context),
+      answers_revision: await energyRevision(job.answers_json),
       job: job
     });
 
@@ -75,6 +78,22 @@ export async function onRequestPost(context) {
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
+    }
+
+    if (body.action === "save_shared_icp") {
+      if (!stagingEnergyEnabled(context)) return errorResponse("Shared ICP correction is enabled in the approved staging preview only", 403);
+      const row = await db.prepare("SELECT e.id AS enquiry_id, e.answers_json FROM jobs j JOIN enquiries e ON e.id = j.enquiry_id WHERE j.id = ?").bind(jobId).first();
+      if (!row) return errorResponse("Job not found", 404);
+      if (body.revision !== await energyRevision(row.answers_json)) return errorResponse("Saved information changed. Reload before correcting the ICP.", 409);
+      const icp = String(body.icp || "").replace(/\s+/g, "").toUpperCase();
+      if (!/^[A-Z0-9]{15}$/.test(icp)) return errorResponse("Enter the complete 15-character ICP from the bill or meter record", 400);
+      const answers = parseEnergyAnswers(row.answers_json);
+      const updated = {...answers, icp, energy_data:{...(answers.energy_data || {}), revision:crypto.randomUUID(),
+        identity_history:[...(answers.energy_data?.identity_history || []), {field:"icp",previous:answers.icp || null,value:icp,source:"staff_review",reviewed_at:new Date().toISOString()}]}};
+      const json = JSON.stringify(updated);
+      const changed = await db.prepare("UPDATE enquiries SET answers_json = ? WHERE id = ? AND answers_json IS ?").bind(json,row.enquiry_id,row.answers_json).run();
+      if (changed.meta?.changes !== 1) return errorResponse("Saved information changed. Nothing was overwritten.", 409);
+      return Response.json({ok:true,icp,answers_revision:await energyRevision(json)});
     }
 
     await ensureJobTypeColumn(db);
