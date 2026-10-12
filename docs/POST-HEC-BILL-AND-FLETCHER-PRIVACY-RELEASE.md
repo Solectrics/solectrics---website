@@ -76,3 +76,16 @@ An approved energy update refreshes derived Energy Review values and pauses obso
 ## Limits requiring separate work/verification
 
 Current source-level authentication/record-authorisation findings are not resolved by this feature. Bucket privacy and provider AI retention settings have not been checked here. Reading a bill continues to use the existing AI integration; the supplier exclusion does not mean bills are never processed by that provider. Multiple saved Site Visit/design identities can conflict; reviewed shared ICP wins for the Fletcher field, while legacy observations are retained for explicit review.
+
+
+## Staging acceptance checkpoint — 12 October 2026
+
+Jane reported that the deployed privacy preview loaded and that STAGING CONTACT BILL TEST passed visual checks for: customer bills remaining private/excluded, required OpenSolar layout, optional SLD and ICP, and separate PDF-download/email-package requirements. This is an owner-reported visual pass, not completed end-to-end acceptance.
+
+Two follow-up defects were identified from source and synthetic checks: inventory rejected the exact privacy preview hostname, and the editable Plans checkbox reflected inferred file metadata rather than confirmed accessibility. The narrowly approved correction enables SELECT/R2 HEAD inventory only on the exact current staging hostname (alongside the existing Fletcher preview), retaining both explicit true flags. The Fletcher indicator is now read-only and requires matching accessible, explicit attachment classification. Layout and optional SLD statuses are separate; SLD does not replace layout. Verification failures remain unconfirmed and do not prevent otherwise valid PDF download. Attachment selection, PDF storage, email approval/delivery and calculations are unchanged.
+
+Current intended preview: `https://hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev/mini-fergus`.
+
+Remaining live acceptance: verified document states and upload shortcut; full supplier-package preview/cancellation without sending; synthetic post-HEC extraction/review/approval/persistence, unchanged job/attachment identity and dependent Energy Review/proposal refresh; desktop and actual iPhone use. Do not send email during this acceptance. Production remains blocked by live acceptance, the separately required security containment and application-authorisation verification, and explicit production approval.
+
+Correction validation: 101/101 local tests passed, including exact-host denial before storage, verified/inferred/unavailable attachment states, SLD-only distinction and verification failure without blocking PDF download. Inline/function syntax and diff checks passed. Local Chromium checks at 375, 390, 430 and 1440px passed with synthetic mocked services, no overflow or page errors; no real email was sent. Live correction acceptance and actual iPhone Safari remain pending.

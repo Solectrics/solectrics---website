@@ -32,3 +32,19 @@ test('production hostname, absent flags and malformed IDs stop before any storag
 test('large inventories leave unchecked objects unverified and cap HEAD requests',async()=>{
  const e=environment(Array.from({length:205},(_,i)=>file('general',{id:String(i),job_id:7,storage_key:String(i)})));const d=await (await onRequestGet({request:new Request(host+'/api/job-document-inventory?job_id=7'),env:e.env})).json();assert.equal(e.heads.length,200);assert.equal(d.jobs[0].files.filter(f=>f.accessibility==='unknown').length,5);
 });
+
+
+test('current privacy preview supports inventory; both flags and exact approved hostname remain required',async()=>{
+ const privacy='https://hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev';
+ const e=environment([file('roof_layout',{job_id:7,storage_key:'ok'})]);
+ const r=await onRequestGet({request:new Request(privacy+'/api/job-document-inventory?job_id=7'),env:e.env});
+ assert.equal(r.status,200);assert.equal((await r.json()).jobs[0].files[0].accessibility,'accessible');
+ for(const hostname of ['https://solectrics.co.nz','https://other.solectrics-jobhub-staging.pages.dev',privacy+'.example.test']){
+  const blocked=environment([]);const response=await onRequestGet({request:new Request(hostname+'/api/job-document-inventory?job_id=7'),env:blocked.env});
+  assert.equal(response.status,404);assert.equal(blocked.statements.length,0);assert.equal(blocked.heads.length,0);
+ }
+ for(const flags of [{JOBHUB_STAGING_ONLY:'false'},{ALLOW_PAGES_DEV_HOST:'false'}]){
+  const blocked=environment([]);Object.assign(blocked.env,flags);const response=await onRequestGet({request:new Request(privacy+'/api/job-document-inventory?job_id=7'),env:blocked.env});
+  assert.equal(response.status,404);assert.equal(blocked.statements.length,0);
+ }
+});

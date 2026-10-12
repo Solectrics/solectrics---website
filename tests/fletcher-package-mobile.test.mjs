@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const html = await readFile(new URL('../mini-fergus-fletcher-form.html', import.meta.url), 'utf8');
 const script = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
-function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_role:'power_bill'}], realValidation = false) {
+function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_role:'power_bill'}], realValidation = false, inventoryResponse = ok({ok:true,jobs:[{id:7,files:[]}]})) {
   const events = [], elements = new Map();
   const get = id => {
     if (!elements.has(id)) elements.set(id, { value: id === 'customerName' ? 'Synthetic Customer' : '', checked:false, disabled:false, textContent:'', href:'', addEventListener(){} });
@@ -19,7 +19,7 @@ function harness(fetchImpl, files = [{document_role:'roof_layout'}, {document_ro
     Blob: class {}, File: class {}, FormData: class {append(){}},
     setTimeout(){}, console: {error(){}},
     PDFLib: {rgb(){}, PDFDocument:{load:async()=>({getPages:()=>[page,page], save:async()=>new Uint8Array([1,2])})}},
-    fetch: async (url, options) => {if(options?.body && typeof options.body === 'string' && JSON.parse(options.body).action==='preview')return ok({ok:true,preview_id:'synthetic-preview',preview:{}});events.push(url);if(url.startsWith('/api/job-files?'))return ok({ok:true,files});return fetchImpl(url, options);}
+    fetch: async (url, options) => {if(url.startsWith('/api/job-document-inventory?')) return inventoryResponse;if(options?.body && typeof options.body === 'string' && JSON.parse(options.body).action==='preview')return ok({ok:true,preview_id:'synthetic-preview',preview:{}});events.push(url);if(url.startsWith('/api/job-files?'))return ok({ok:true,files});return fetchImpl(url, options);}
   });
   context.window = context;
   vm.runInContext(script.slice(0, script.lastIndexOf('document.querySelectorAll("input,select,textarea").forEach')), context);
@@ -81,7 +81,8 @@ test('provider rejection retains the specific returned error',async()=>{
 test('layout shortcut reuses the same job documents and flags reflect actual files',()=>{
   const h=harness(()=>{});
   assert.equal(h.get('layoutUploadLink').href,'/mini-fergus-job?id=7&document_use=roof_layout&document_context=fletcher#jobFilesSection');
-  assert.match(html,/setChecked\("plansAttached", roles.has\("sld"\) \|\| roles.has\("roof_layout"\)\)/);
+  assert.match(html,/setChecked\("plansAttached", layout.verified \|\| sld.verified\)/);
+  assert.match(html,/<input type="checkbox" id="plansAttached" disabled>/);
   assert.match(html,/setChecked\("powerBillAttached", false\)/);
   assert.doesNotMatch(html,/setChecked\("plansAttached", Boolean\(design/);
 });
@@ -122,4 +123,30 @@ test('email with real valid form works without an SLD when bill and layout exist
   completeForm(h); await h.run('emailPackage()');
   assert.equal(h.events.filter(url=>url==='/api/fletcher-email').length,1);
   assert.equal(h.events.includes('download'),false);
+});
+
+
+test('Plans indicator requires accessible explicitly classified attachment; SLD never confirms layout',()=>{
+ const h=harness(()=>{});
+ const layout={id:1,document_role:'roof_layout',original_name:'OpenSolar layout.png'};
+ const sld={id:2,document_role:'sld',original_name:'design.png'};
+ const render=(files,verified)=>h.run(`renderPackageDocuments(${JSON.stringify(files)}, {}, ${JSON.stringify(verified)});`);
+ render([layout],undefined);assert.equal(h.get('plansAttached').checked,false);
+ render([layout],[{...layout,accessibility:'unavailable'}]);assert.equal(h.get('plansAttached').checked,false);
+ render([{...layout,document_role:'general',original_name:'roof layout.png'}],[{...layout,document_role:'general',accessibility:'accessible'}]);assert.equal(h.get('plansAttached').checked,false);
+ render([layout],[{...layout,id:99,accessibility:'accessible'}]);assert.equal(h.get('plansAttached').checked,false);
+ render([layout],[{...layout,accessibility:'accessible'}]);assert.equal(h.get('plansAttached').checked,true);
+ render([sld],[{...sld,accessibility:'accessible'}]);assert.equal(h.get('plansAttached').checked,true);
+ assert.match(h.get('packageDocuments').innerHTML,/Roof \/ panel layout — Not attached/);
+ assert.match(h.get('packageDocuments').innerHTML,/does not replace the required OpenSolar layout/);
+ render([{...layout,original_name:'electricity bill.pdf'}],[{...layout,accessibility:'accessible'}]);assert.equal(h.get('plansAttached').checked,false);
+});
+test('verification outage clears plan receipt without preventing PDF download',async()=>{
+ const h=harness(url=>url.includes('/assets/')?template:ok({ok:true}),[],true,{ok:false,status:503});completeForm(h);
+ h.get('plansAttached').checked=true;
+ await h.run('verifyPackagePlans([{id:1,document_role:"roof_layout"}], {})');
+ assert.equal(h.get('plansAttached').checked,false);
+ assert.match(h.get('packageDocuments').innerHTML,/Needs review/);
+ await h.run('createAndSavePdf(true)');assert.equal(h.events.includes('download'),true);
+ assert.equal(h.events.includes('/api/fletcher-email'),false);
 });

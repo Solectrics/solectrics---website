@@ -81,7 +81,7 @@
     </div>
     <div class="checks" style="margin-top:16px;">
       <label><input type="checkbox" id="powerBillAttached" disabled> Power bill is not included in this supplier package</label>
-      <label><input type="checkbox" id="plansAttached"> Plans attached</label>
+      <label><input type="checkbox" id="plansAttached" disabled> Verified plan attachment available</label>
     </div>
   </section>
 
@@ -142,6 +142,7 @@ function missingRequiredPackageDocuments() {
 async function refreshPackageDocuments() {
   const data = await packageRequest(`/api/job-files?job_id=${encodeURIComponent(jobId)}`, {}, "documents");
   renderPackageDocuments(data.files || [], {});
+  await verifyPackagePlans(data.files || [], {});
 }
 
 function setPackageBusy(busy) {
@@ -302,10 +303,34 @@ function inferredDocumentRole(file) {
   return "general";
 }
 
-function renderPackageDocuments(files, answers) {
+function verifiedPlanState(files, verifiedFiles, role) {
+  const latest = files.find(file => inferredDocumentRole(file) === role);
+  if (!latest) return {verified:false, label:"Not attached"};
+  const checked = (verifiedFiles || []).find(file => String(file.id) === String(latest.id));
+  const billName = /(power|electricity).*bill|bill.*(power|electricity)/i.test(`${latest.original_name || ""} ${latest.caption || ""}`);
+  const verified = !billName && latest.document_role === role && checked?.document_role === role && checked.accessibility === "accessible";
+  return {verified, label:verified ? "Verified attachment" : "Needs review — attachment not verified"};
+}
+
+async function verifyPackagePlans(files, answers) {
+  let verifiedFiles;
+  try {
+    const response = await fetch(`/api/job-document-inventory?job_id=${encodeURIComponent(jobId)}`);
+    if (!response.ok || response.redirected) throw new Error("Verification unavailable");
+    const data = await response.json();
+    const job = data.ok && data.jobs?.find(job => String(job.id) === String(jobId));
+    if (!job || !Array.isArray(job.files)) throw new Error("Verification unavailable");
+    verifiedFiles = job.files;
+  } catch { /* Keep receipt unconfirmed; PDF download and backend email checks remain independent. */ }
+  renderPackageDocuments(files, answers, verifiedFiles);
+}
+
+function renderPackageDocuments(files, answers, verifiedFiles) {
   const roles = new Set(files.map(inferredDocumentRole));
   packageDocumentRoles = roles;
-  setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
+  const layout = verifiedPlanState(files, verifiedFiles, "roof_layout");
+  const sld = verifiedPlanState(files, verifiedFiles, "sld");
+  setChecked("plansAttached", layout.verified || sld.verified);
   setChecked("powerBillAttached", false);
   const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
   const items = [
@@ -317,12 +342,16 @@ function renderPackageDocuments(files, answers) {
     const note = role === "power_bill" && !present && hasBillData
       ? " — bill information exists, but the original file is not stored"
       : "";
+    if (role === "roof_layout" || role === "sld") {
+      const state = role === "roof_layout" ? layout : sld;
+      return `<div>${state.verified ? "✓" : "○"} ${label} — ${state.label}${role === "sld" ? " (does not replace the required OpenSolar layout)" : ""}</div>`;
+    }
     return `<div>${present ? "✓" : "○"} ${label}${note}</div>`;
   }).join("");
   const missing = missingRequiredPackageDocuments();
   $("emailRequirements").textContent = missing.length
     ? `Email unavailable: missing ${missing.join(", ")}. Upload the missing attachment to this job. An SLD is optional. PDF download does not require these attachments.`
-    : "Required email attachments are present. An SLD is optional; the files are checked again before sending.";
+    : "Required layout record found. Review its verification status below. An SLD is optional; the files are checked again before sending.";
 }
 
 function buildArrayLayout(roofs) {
@@ -423,8 +452,7 @@ async function loadData() {
   const hasShading = ["trees","chimneys","buildings","aerials","vents","satellite"].some(id => $(id).checked);
   setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
   const files = filesData.files || [];
-  const roles = new Set(files.map(inferredDocumentRole));
-  setChecked("plansAttached", roles.has("sld") || roles.has("roof_layout"));
+  setChecked("plansAttached", false);
   setChecked("powerBillAttached", false);
   setValue("additionalNotes", buildNotes(design, assessment, ""));
   preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
@@ -432,6 +460,7 @@ async function loadData() {
   applyPreliminaryProposal(false);
   renderPackageDocuments(files, answers);
   updateMissing();
+  await verifyPackagePlans(files, answers);
 }
 
 function drawTick(page, x, y, checked) {
