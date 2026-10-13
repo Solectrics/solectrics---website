@@ -96,6 +96,7 @@ Rules:
 
     const payload = {
       model: "gpt-5.6",
+      store: false,
       input: [{
         role: "user",
         content: [
@@ -117,7 +118,7 @@ Rules:
     const apiJson = await apiResponse.json();
 
     if (!apiResponse.ok) {
-      console.error(apiJson);
+      console.error("Bill reader provider request failed", apiResponse.status);
       return json({ error: "The bill-reading service returned an error." }, 502);
     }
 
@@ -135,14 +136,14 @@ Rules:
           .trim()
       );
     } catch (e) {
-      console.error("Could not parse:", outputText);
+      console.error("Bill reader returned unparseable structured output");
       return json({ error: "We read the bill but could not structure the result." }, 502);
     }
 
     return json(sanitise(parsed), 200);
 
   } catch (err) {
-    console.error(err);
+    console.error("Bill reader unexpected error");
     return json({ error: "Unexpected bill-reading error." }, 500);
   }
 }
