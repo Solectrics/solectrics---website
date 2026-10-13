@@ -54,9 +54,9 @@ function staffSet(env) {
   );
 }
 
-async function loadJwks(issuer) {
+async function loadJwks(issuer, forceRefresh = false) {
   const now = Date.now();
-  if (jwksCache.issuer === issuer && jwksCache.expiresAt > now && jwksCache.keys.length) {
+  if (!forceRefresh && jwksCache.issuer === issuer && jwksCache.expiresAt > now && jwksCache.keys.length) {
     return jwksCache.keys;
   }
   const response = await fetch(`${issuer}/cdn-cgi/access/certs`, {
@@ -129,8 +129,12 @@ export async function authenticateAccessRequest(context) {
       return { ok: false, response: jsonError("Not authorised", 403) };
     }
 
-    const keys = await loadJwks(issuer);
-    const jwk = keys.find(key => key?.kid === header.kid && key?.kty === "RSA");
+    let keys = await loadJwks(issuer);
+    let jwk = keys.find(key => key?.kid === header.kid && key?.kty === "RSA");
+    if (!jwk) {
+      keys = await loadJwks(issuer, true);
+      jwk = keys.find(key => key?.kid === header.kid && key?.kty === "RSA");
+    }
     if (!jwk) return { ok: false, response: jsonError("Authentication required", 401) };
 
     const verified = await verifyRs256(
