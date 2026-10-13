@@ -1,3 +1,5 @@
+import { requireExistingJob, requireRelatedRecord } from "./_access-security.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS job_work_logs (
     id TEXT PRIMARY KEY,
@@ -75,6 +77,7 @@ export async function onRequestGet(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await ensureWorkLogColumns(db);
     const result = await db.prepare(`
@@ -138,9 +141,13 @@ export async function onRequestPost(context) {
     if (!workCompleted) {
       return errorResponse("Work completed is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await ensureWorkLogColumns(db);
     const requestedId = cleanText(body.id, 100);
+    if (requestedId && !await requireRelatedRecord(db, "job_work_logs", requestedId, { jobId })) {
+      return errorResponse("Work record not found", 404);
+    }
     const id = requestedId || crypto.randomUUID();
     if (requestedId) {
       const result = await db.prepare(`
