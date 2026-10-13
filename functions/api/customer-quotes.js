@@ -1,4 +1,5 @@
 import { ensureCustomerQuoteSchema, ensureInternalCostingSchema, ensureJobFileRoleColumn } from "./_schema.js";
+import { requireExistingJob, requireRelatedRecord } from "./_access-security.js";
 
 const QUOTE_STATUSES = new Set(["draft", "issued", "accepted"]);
 
@@ -186,12 +187,14 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const quoteId = url.searchParams.get("quote_id");
     if (quoteId) {
+      if (!await requireRelatedRecord(db, "customer_quote_versions", quoteId)) return errorResponse("Customer quote not found", 404);
       const row = await db.prepare(`SELECT id, job_id, version_number, status, snapshot_json, created_at, issued_at, accepted_at FROM customer_quote_versions WHERE id = ?`).bind(quoteId).first();
       if (!row) return errorResponse("Customer quote not found", 404);
       return Response.json({ ok: true, quote: { ...row, snapshot: parseSnapshot(row), snapshot_json: undefined } });
     }
     const jobId = Number(url.searchParams.get("job_id"));
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     const result = await db.prepare(`
       SELECT id, job_id, version_number, status, snapshot_json, source_hash, created_at, issued_at, accepted_at
       FROM customer_quote_versions WHERE job_id = ? ORDER BY version_number DESC
@@ -224,6 +227,7 @@ export async function onRequestPost(context) {
       const quoteId = String(body.quote_id || "");
       const status = String(body.status || "");
       if (!quoteId || !QUOTE_STATUSES.has(status)) return errorResponse("A valid quote and status are required", 400);
+      if (!await requireRelatedRecord(db, "customer_quote_versions", quoteId)) return errorResponse("Customer quote not found", 404);
       const existing = await db.prepare("SELECT status FROM customer_quote_versions WHERE id = ?").bind(quoteId).first();
       if (!existing) return errorResponse("Customer quote not found", 404);
       if (existing.status === "accepted" && status !== "accepted") return errorResponse("An accepted quote cannot be changed", 409);
@@ -239,6 +243,7 @@ export async function onRequestPost(context) {
     if (body.action !== "generate") return errorResponse("Unknown quote action", 400);
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     const costing = await loadApprovedCosting(db, jobId);
     if (!costing.options.length) return errorResponse("Approve and save at least one costing option before generating the customer quote", 400);
     const job = await db.prepare(`
