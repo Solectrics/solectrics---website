@@ -1,3 +1,5 @@
+import { requireExistingJob } from "./_access-security.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS general_job_details (
     job_id INTEGER PRIMARY KEY,
@@ -35,6 +37,7 @@ export async function onRequestGet(context) {
     const jobId = Number(new URL(context.request.url).searchParams.get("job_id"));
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await db.prepare(CREATE_TABLE).run();
     const row = await db.prepare(
@@ -58,6 +61,7 @@ export async function onRequestPost(context) {
     const body = await context.request.json();
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     const details = cleanDetails(body.details);
     await db.prepare(CREATE_TABLE).run();
