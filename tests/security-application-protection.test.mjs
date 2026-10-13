@@ -140,6 +140,50 @@ test("missing, forged, wrong-audience, wrong-issuer and unapproved-user assertio
   assert.equal(outsider.response.status, 403);
 });
 
+test("expired and not-yet-valid assertions fail closed", async () => {
+  clearAccessKeyCacheForTests();
+  const expired = await authenticateAccessRequest({
+    request: authRequest(await makeToken({ exp: Math.floor(Date.now() / 1000) - 1 })),
+    env: env()
+  });
+  assert.equal(expired.ok, false);
+  assert.equal(expired.response.status, 401);
+
+  clearAccessKeyCacheForTests();
+  const future = await authenticateAccessRequest({
+    request: authRequest(await makeToken({ nbf: Math.floor(Date.now() / 1000) + 120 })),
+    env: env()
+  });
+  assert.equal(future.ok, false);
+  assert.equal(future.response.status, 401);
+});
+
+test("JWKS cache refreshes once when a rotated signing key appears", async () => {
+  const rotatedPair = await crypto.subtle.generateKey(
+    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+    true,
+    ["sign", "verify"]
+  );
+  const rotatedJwk = await crypto.subtle.exportKey("jwk", rotatedPair.publicKey);
+  rotatedJwk.kid = "security-test-key";
+  rotatedJwk.alg = "RS256";
+
+  const staleJwk = { ...publicJwk, kid: "old-key" };
+  let requests = 0;
+  clearAccessKeyCacheForTests();
+  globalThis.fetch = async () => {
+    requests += 1;
+    return Response.json({ keys: requests === 1 ? [staleJwk] : [rotatedJwk] });
+  };
+
+  const result = await authenticateAccessRequest({
+    request: authRequest(await makeToken({}, rotatedPair.privateKey)),
+    env: env()
+  });
+  assert.equal(result.ok, true);
+  assert.equal(requests, 2);
+});
+
 test("unknown hostname or missing security configuration fails closed", async () => {
   const token = await makeToken();
   const unknown = await authenticateAccessRequest({
