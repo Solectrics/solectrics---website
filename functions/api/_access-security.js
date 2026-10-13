@@ -124,7 +124,8 @@ export async function authenticateAccessRequest(context) {
     }
 
     const email = String(payload.email || "").trim().toLowerCase();
-    if (!email || !staff.has(email)) {
+    const subject = String(payload.sub || "").trim();
+    if (!email || !subject || !staff.has(email)) {
       return { ok: false, response: jsonError("Not authorised", 403) };
     }
 
@@ -143,7 +144,7 @@ export async function authenticateAccessRequest(context) {
       ok: true,
       identity: {
         email,
-        subject: String(payload.sub || ""),
+        subject,
         audience
       }
     };
