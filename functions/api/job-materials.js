@@ -1,3 +1,5 @@
+import { requireExistingJob, requireJobFile, requireRelatedRecord } from "./_access-security.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS job_materials (
     id TEXT PRIMARY KEY,
@@ -45,6 +47,7 @@ export async function onRequestGet(context) {
     const jobId = Number(new URL(context.request.url).searchParams.get("job_id"));
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     await ensureSchema(db);
     const result = await db.prepare(`
       SELECT m.id, m.source, m.supplier_name, m.invoice_number, m.invoice_date,
@@ -76,20 +79,22 @@ export async function onRequestPost(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
     if (!description) return errorResponse("Enter a material description", 400);
     if (quantity <= 0) return errorResponse("Quantity must be greater than zero", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await ensureSchema(db);
     const invoiceFileId = source === "supplier_invoice" ? cleanText(body.invoice_file_id, 100) : "";
     if (source === "supplier_invoice" && invoiceFileId) {
-      const file = await db.prepare(
-        "SELECT id FROM job_files WHERE id = ? AND job_id = ? AND document_role = 'supplier_invoice'"
-      ).bind(invoiceFileId, jobId).first();
-      if (!file) return errorResponse("Choose a supplier invoice attached to this job", 400);
+      const file = await requireJobFile(db, invoiceFileId, jobId);
+      if (!file || file.document_role !== "supplier_invoice") return errorResponse("Choose a supplier invoice attached to this job", 400);
     }
     if (source === "supplier_invoice" && !invoiceFileId) {
       return errorResponse("Upload and select the supplier invoice first", 400);
     }
 
     const requestedId = cleanText(body.id, 100);
+    if (requestedId && !await requireRelatedRecord(db, "job_materials", requestedId, { jobId })) {
+      return errorResponse("Material item not found", 404);
+    }
     const id = requestedId || crypto.randomUUID();
     const values = [
       source, source === "stock" ? "Solectrics stock" : cleanText(body.supplier_name, 200),
@@ -130,7 +135,9 @@ export async function onRequestDelete(context) {
     const id = cleanText(url.searchParams.get("id"), 100);
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!Number.isInteger(jobId) || jobId <= 0 || !id) return errorResponse("job_id and id are required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     await ensureSchema(db);
+    if (!await requireRelatedRecord(db, "job_materials", id, { jobId })) return errorResponse("Material item not found", 404);
     const result = await db.prepare("DELETE FROM job_materials WHERE id = ? AND job_id = ?").bind(id, jobId).run();
     if (!(result.meta?.changes > 0)) return errorResponse("Material item not found", 404);
     return Response.json({ ok: true });
