@@ -1,3 +1,5 @@
+import { authenticateAccessRequest, withPrivateNoStore } from "./api/_access-security.js";
+
 const CANONICAL_HOSTNAME = "solectrics.co.nz";
 
 function isPagesHostname(hostname) {
@@ -8,6 +10,11 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
 
   if (!isPagesHostname(url.hostname)) {
+    if (url.pathname === "/mini-fergus" || url.pathname === "/mini-fergus.html" || url.pathname.startsWith("/mini-fergus-")) {
+      const auth = await authenticateAccessRequest(context);
+      if (!auth.ok) return auth.response;
+      return withPrivateNoStore(await context.next());
+    }
     return context.next();
   }
 
