@@ -1,4 +1,5 @@
 import { ensureJobFileRoleColumn } from "./_schema.js";
+import { requireExistingJob, requireJobFile } from "./_access-security.js";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ASSIGNMENTS = new Set(["shared", "battery_now"]);
@@ -114,13 +115,11 @@ export async function onRequestPost(context) {
     const jobId = Number(body.job_id);
     const fileId = cleanText(body.file_id, 100);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!fileId) return errorResponse("Choose a supplier quote", 400);
 
     await ensureJobFileRoleColumn(db);
-    const file = await db.prepare(`
-      SELECT id, job_id, storage_key, original_name, content_type, size_bytes, document_role
-      FROM job_files WHERE id = ? AND job_id = ?
-    `).bind(fileId, jobId).first();
+    const file = await requireJobFile(db, fileId, jobId);
     if (!file) return errorResponse("Supplier quote file not found", 404);
     if (file.document_role !== "supplier_quote") return errorResponse("Choose a file uploaded as Supplier quote", 400);
     if (file.content_type !== "application/pdf" && !String(file.original_name).toLowerCase().endsWith(".pdf")) {
@@ -177,6 +176,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
       },
       body: JSON.stringify({
         model: "gpt-5.6",
+        store: false,
         input: [{
           role: "user",
           content: [
@@ -192,7 +192,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     });
     const apiJson = await apiResponse.json();
     if (!apiResponse.ok) {
-      console.error("Fletcher quote reader error:", apiJson);
+      console.error("Fletcher quote reader provider request failed", apiResponse.status);
       return errorResponse("The Fletcher quote-reading service returned an error", 502);
     }
 
@@ -202,7 +202,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     try {
       parsed = JSON.parse(outputText.trim().replace(/^```json\s*/i, "").replace(/```$/i, "").trim());
     } catch (error) {
-      console.error("Could not parse Fletcher quote result:", outputText);
+      console.error("Fletcher quote reader returned unparseable structured output");
       return errorResponse("The quote was read but the result could not be structured", 502);
     }
 
@@ -210,7 +210,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     if (!quote.lines.length) return errorResponse("No priced product lines were found in this quote", 422);
     return Response.json({ ok: true, file_id: fileId, quote });
   } catch (error) {
-    console.error("Fletcher quote import error:", error);
+    console.error("Fletcher quote import failed");
     return errorResponse("Unable to read Fletcher quote", 500, error.message);
   }
 }
