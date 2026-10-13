@@ -1,3 +1,5 @@
+import { requireJobFile } from "./_access-security.js";
+
 function getBucket(env) {
   return env.JOB_FILES || env.UPLOADS || env.BUCKET || null;
 }
@@ -17,9 +19,7 @@ export async function onRequestGet(context) {
     }
     if (!id) return Response.json({ error: "File ID is required" }, { status: 400 });
 
-    const row = await db.prepare(`
-      SELECT storage_key, original_name, content_type FROM job_files WHERE id = ?
-    `).bind(id).first();
+    const row = await requireJobFile(db, id);
     if (!row) return Response.json({ error: "File not found" }, { status: 404 });
 
     const object = await bucket.get(row.storage_key);
@@ -32,13 +32,15 @@ export async function onRequestGet(context) {
       "Content-Disposition",
       `inline; filename="${safeDownloadName(row.original_name)}"`
     );
-    headers.set("Cache-Control", "private, max-age=300");
+    headers.set("Cache-Control", "private, no-store");
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("Content-Security-Policy", "sandbox");
     return new Response(object.body, { headers });
   } catch (error) {
-    console.error("Job file download error:", error);
+    console.error("Job file download failed");
     return Response.json(
-      { error: "Unable to open job file", detail: error.message },
-      { status: 500 }
+      { error: "Unable to open job file" },
+      { status: 500, headers: { "Cache-Control": "private, no-store" } }
     );
   }
 }
