@@ -197,7 +197,7 @@ test("job and child-record helpers enforce actual parent relationships", async (
   const db = mockDb(({ sql, params }) => {
     if (/FROM jobs WHERE id/.test(sql)) return Number(params[0]) === 6 ? { id: 6, enquiry_id: 6, job_type: "solar" } : null;
     if (/FROM customer_quote_versions related/.test(sql)) return String(params[0]) === "quote-6" ? { id: "quote-6", job_id: 6 } : null;
-    if (/FROM job_files/.test(sql)) return String(params[0]) === "file-6"
+    if (/FROM job_files/.test(sql)) return String(params[0]) === "file-6" && (params[1] === undefined || Number(params[1]) === 6)
       ? { id: "file-6", job_id: 6, storage_key: "jobs/6/server-key.pdf", original_name: "synthetic.pdf", content_type: "application/pdf", size_bytes: 12, document_role: "power_bill" }
       : null;
     return null;
