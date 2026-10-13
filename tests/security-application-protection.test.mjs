@@ -1,0 +1,272 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { webcrypto } from "node:crypto";
+
+if (!globalThis.crypto) globalThis.crypto = webcrypto;
+
+import {
+  authenticateAccessRequest,
+  clearAccessKeyCacheForTests,
+  requireExistingJob,
+  requireRelatedRecord,
+  requireJobFile
+} from "../functions/api/_access-security.js";
+import { onRequest as apiMiddleware } from "../functions/api/_middleware.js";
+import { onRequestGet as downloadJobFile } from "../functions/api/job-file.js";
+import { onRequestPost as saveAssessment } from "../functions/api/assessment.js";
+
+const ISSUER = "https://security-test.cloudflareaccess.com";
+const AUDIENCE = "security-test-audience";
+const STAFF = "staff@solectrics.test";
+const HOST = "solectrics.co.nz";
+
+let keyPair;
+let publicJwk;
+
+function base64url(value) {
+  const bytes = typeof value === "string" ? Buffer.from(value) : Buffer.from(value);
+  return bytes.toString("base64url");
+}
+
+async function makeToken(overrides = {}, signingKey = keyPair.privateKey) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", kid: "security-test-key", typ: "JWT" };
+  const payload = {
+    iss: ISSUER,
+    aud: AUDIENCE,
+    email: STAFF,
+    sub: "synthetic-user",
+    iat: now - 10,
+    nbf: now - 10,
+    exp: now + 300,
+    ...overrides
+  };
+  const encodedHeader = base64url(JSON.stringify(header));
+  const encodedPayload = base64url(JSON.stringify(payload));
+  const signingInput = `${encodedHeader}.${encodedPayload}`;
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    signingKey,
+    new TextEncoder().encode(signingInput)
+  );
+  return `${signingInput}.${base64url(new Uint8Array(signature))}`;
+}
+
+function env(extra = {}) {
+  return {
+    JOBHUB_ACCESS_ISSUER: ISSUER,
+    JOBHUB_ACCESS_AUDIENCES: JSON.stringify({
+      [HOST]: AUDIENCE,
+      "*.solectrics-jobhub-staging.pages.dev": "staging-audience"
+    }),
+    JOBHUB_STAFF_EMAILS: STAFF,
+    ...extra
+  };
+}
+
+function authRequest(token, url = `https://${HOST}/api/jobs`, method = "GET") {
+  return new Request(url, {
+    method,
+    headers: token ? { "Cf-Access-Jwt-Assertion": token } : {}
+  });
+}
+
+function mockDb(handler) {
+  return {
+    prepare(sql) {
+      return {
+        sql,
+        params: [],
+        bind(...params) { this.params = params; return this; },
+        async first() { return handler({ kind: "first", sql, params: this.params }); },
+        async all() { return handler({ kind: "all", sql, params: this.params }); },
+        async run() { return handler({ kind: "run", sql, params: this.params }); }
+      };
+    }
+  };
+}
+
+test.before(async () => {
+  keyPair = await crypto.subtle.generateKey(
+    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+    true,
+    ["sign", "verify"]
+  );
+  publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+  publicJwk.kid = "security-test-key";
+  publicJwk.alg = "RS256";
+});
+
+test.beforeEach(() => {
+  clearAccessKeyCacheForTests();
+  globalThis.fetch = async url => {
+    assert.equal(String(url), `${ISSUER}/cdn-cgi/access/certs`);
+    return Response.json({ keys: [publicJwk] });
+  };
+});
+
+test("valid signed Access assertion grants approved whole-business staff", async () => {
+  const token = await makeToken();
+  const result = await authenticateAccessRequest({ request: authRequest(token), env: env() });
+  assert.equal(result.ok, true);
+  assert.equal(result.identity.email, STAFF);
+});
+
+test("missing, forged, wrong-audience, wrong-issuer and unapproved-user assertions fail closed", async () => {
+  const missing = await authenticateAccessRequest({ request: authRequest(""), env: env() });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.response.status, 401);
+
+  const otherPair = await crypto.subtle.generateKey(
+    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+    true,
+    ["sign", "verify"]
+  );
+  clearAccessKeyCacheForTests();
+  const forged = await authenticateAccessRequest({ request: authRequest(await makeToken({}, otherPair.privateKey)), env: env() });
+  assert.equal(forged.ok, false);
+
+  clearAccessKeyCacheForTests();
+  const wrongAud = await authenticateAccessRequest({ request: authRequest(await makeToken({ aud: "wrong" })), env: env() });
+  assert.equal(wrongAud.ok, false);
+
+  clearAccessKeyCacheForTests();
+  const wrongIssuer = await authenticateAccessRequest({ request: authRequest(await makeToken({ iss: "https://wrong.example" })), env: env() });
+  assert.equal(wrongIssuer.ok, false);
+
+  clearAccessKeyCacheForTests();
+  const outsider = await authenticateAccessRequest({ request: authRequest(await makeToken({ email: "outsider@example.test" })), env: env() });
+  assert.equal(outsider.ok, false);
+  assert.equal(outsider.response.status, 403);
+});
+
+test("unknown hostname or missing security configuration fails closed", async () => {
+  const token = await makeToken();
+  const unknown = await authenticateAccessRequest({
+    request: authRequest(token, "https://unknown.example/api/jobs"),
+    env: env()
+  });
+  assert.equal(unknown.ok, false);
+
+  const noConfig = await authenticateAccessRequest({ request: authRequest(token), env: {} });
+  assert.equal(noConfig.ok, false);
+});
+
+test("API middleware preserves only the approved public HEC methods", async () => {
+  for (const path of ["/api/enquiry", "/api/read-bill"]) {
+    let called = 0;
+    const response = await apiMiddleware({
+      request: new Request(`https://${HOST}${path}`, { method: "POST" }),
+      env: {},
+      next: async () => { called += 1; return new Response("public"); }
+    });
+    assert.equal(called, 1);
+    assert.equal(await response.text(), "public");
+  }
+
+  let privateCalled = 0;
+  const denied = await apiMiddleware({
+    request: new Request(`https://${HOST}/api/jobs`),
+    env: {},
+    next: async () => { privateCalled += 1; return new Response("should not run"); }
+  });
+  assert.equal(denied.status, 401);
+  assert.equal(privateCalled, 0);
+  assert.equal(denied.headers.get("Cache-Control"), "private, no-store");
+
+  const publicGetDenied = await apiMiddleware({
+    request: new Request(`https://${HOST}/api/read-bill`),
+    env: {},
+    next: async () => new Response("should not run")
+  });
+  assert.equal(publicGetDenied.status, 401);
+});
+
+test("private middleware accepts a valid staff assertion and marks response no-store", async () => {
+  const token = await makeToken();
+  const response = await apiMiddleware({
+    request: authRequest(token),
+    env: env(),
+    next: async () => Response.json({ ok: true })
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+});
+
+test("job and child-record helpers enforce actual parent relationships", async () => {
+  const db = mockDb(({ sql, params }) => {
+    if (/FROM jobs WHERE id/.test(sql)) return Number(params[0]) === 6 ? { id: 6, enquiry_id: 6, job_type: "solar" } : null;
+    if (/FROM customer_quote_versions related/.test(sql)) return String(params[0]) === "quote-6" ? { id: "quote-6", job_id: 6 } : null;
+    if (/FROM job_files/.test(sql)) return String(params[0]) === "file-6"
+      ? { id: "file-6", job_id: 6, storage_key: "jobs/6/server-key.pdf", original_name: "synthetic.pdf", content_type: "application/pdf", size_bytes: 12, document_role: "power_bill" }
+      : null;
+    return null;
+  });
+
+  assert.equal((await requireExistingJob(db, 6)).id, 6);
+  assert.equal(await requireExistingJob(db, 99), null);
+
+  assert.equal((await requireRelatedRecord(db, "customer_quote_versions", "quote-6", { jobId: 6 })).job_id, 6);
+  assert.equal(await requireRelatedRecord(db, "customer_quote_versions", "quote-6", { jobId: 7 }), null);
+
+  assert.equal((await requireJobFile(db, "file-6", 6)).storage_key, "jobs/6/server-key.pdf");
+  assert.equal(await requireJobFile(db, "file-6", 7), null);
+});
+
+test("direct document download uses only the server-resolved storage key", async () => {
+  const bucketCalls = [];
+  const db = mockDb(({ sql, params }) => {
+    if (/FROM job_files/.test(sql) && String(params[0]) === "file-6") {
+      return { id: "file-6", job_id: 6, storage_key: "jobs/6/server-key.pdf", original_name: "synthetic.pdf", content_type: "application/pdf", size_bytes: 9, document_role: "power_bill" };
+    }
+    return null;
+  });
+  const bucket = {
+    async get(key) {
+      bucketCalls.push(key);
+      return {
+        body: "synthetic",
+        writeHttpMetadata() {}
+      };
+    }
+  };
+  const response = await downloadJobFile({
+    request: new Request(`https://${HOST}/api/job-file?id=file-6&storage_key=attacker-choice`),
+    env: { DB: db, JOB_FILES: bucket }
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(bucketCalls, ["jobs/6/server-key.pdf"]);
+  assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+  assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
+  assert.equal(response.headers.get("Content-Security-Policy"), "sandbox");
+});
+
+test("unknown document ID is denied before any R2 object read", async () => {
+  let bucketReads = 0;
+  const db = mockDb(() => null);
+  const response = await downloadJobFile({
+    request: new Request(`https://${HOST}/api/job-file?id=missing`),
+    env: { DB: db, JOB_FILES: { async get() { bucketReads += 1; return null; } } }
+  });
+  assert.equal(response.status, 404);
+  assert.equal(bucketReads, 0);
+});
+
+test("job-scoped writes reject nonexistent parent jobs before child writes", async () => {
+  let assessmentWrites = 0;
+  const db = mockDb(({ sql }) => {
+    if (/SELECT id, enquiry_id, job_type FROM jobs/.test(sql)) return null;
+    if (/INSERT INTO assessments/.test(sql)) assessmentWrites += 1;
+    return { meta: { changes: 1 } };
+  });
+  const response = await saveAssessment({
+    request: new Request(`https://${HOST}/api/assessment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: 999, panel_count: 12 })
+    }),
+    env: { DB: db }
+  });
+  assert.equal(response.status, 404);
+  assert.equal(assessmentWrites, 0);
+});
