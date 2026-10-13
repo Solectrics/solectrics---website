@@ -1,4 +1,5 @@
 import { ensureJobFileRoleColumn } from "./_schema.js";
+import { requireExistingJob, requireJobFile } from "./_access-security.js";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 
@@ -114,13 +115,11 @@ export async function onRequestPost(context) {
     const jobId = Number(body.job_id);
     const fileId = cleanText(body.file_id, 100);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!fileId) return errorResponse("Choose an uploaded supplier invoice", 400);
 
     await ensureJobFileRoleColumn(db);
-    const file = await db.prepare(`
-      SELECT id, job_id, storage_key, original_name, content_type, size_bytes, document_role
-      FROM job_files WHERE id = ? AND job_id = ?
-    `).bind(fileId, jobId).first();
+    const file = await requireJobFile(db, fileId, jobId);
     if (!file) return errorResponse("Supplier invoice file not found", 404);
     if (file.document_role !== "supplier_invoice") {
       return errorResponse("Choose a file uploaded as Supplier invoice", 400);
@@ -174,6 +173,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
       },
       body: JSON.stringify({
         model: "gpt-5.6",
+        store: false,
         input: [{
           role: "user",
           content: [
@@ -189,7 +189,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     });
     const apiJson = await apiResponse.json();
     if (!apiResponse.ok) {
-      console.error("Supplier invoice reader error:", apiJson);
+      console.error("Supplier invoice reader provider request failed", apiResponse.status);
       return errorResponse("The supplier invoice-reading service returned an error", 502);
     }
 
@@ -199,7 +199,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     try {
       parsed = JSON.parse(outputText.trim().replace(/^```json\s*/i, "").replace(/```$/i, "").trim());
     } catch (error) {
-      console.error("Could not parse supplier invoice result:", outputText);
+      console.error("Supplier invoice reader returned unparseable structured output");
       return errorResponse("The invoice was read but the result could not be structured", 502);
     }
 
@@ -209,7 +209,7 @@ Check that the line extensions approximately reconcile to the printed subtotal. 
     }
     return Response.json({ ok: true, file_id: fileId, invoice });
   } catch (error) {
-    console.error("Supplier invoice reading error:", error);
+    console.error("Supplier invoice reading failed");
     return errorResponse("Unable to read supplier invoice", 500, error.message);
   }
 }
