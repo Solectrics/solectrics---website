@@ -1,3 +1,5 @@
+import { requireExistingJob, requireRelatedRecord } from "./_access-security.js";
+
 import { compareTariffs } from "./_energy-calculator.js";
 
 const REVIEW_TABLE = `
@@ -297,6 +299,7 @@ export async function onRequestGet(context) {
     if (!db) return error("D1 database binding DB is not available");
     const jobId = Number(new URL(context.request.url).searchParams.get("job_id"));
     if (!Number.isInteger(jobId) || jobId <= 0) return error("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return error("Job not found", 404);
     await ensureSchema(db);
     const bundle = await loadBundle(db, jobId);
     if (!bundle) return error("Job not found", 404);
@@ -362,6 +365,7 @@ export async function onRequestPost(context) {
     const body = await context.request.json();
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) return error("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return error("Job not found", 404);
     await ensureSchema(db);
 
     if (body.action === "save_review") {
@@ -406,7 +410,9 @@ export async function onRequestPost(context) {
       const tariff = sanitiseTariff(body.tariff, jobId);
       if (!tariff.retailer || !tariff.plan_name) return error("Retailer and plan name are required", 400);
       const existingTariff = await db.prepare("SELECT job_id FROM job_energy_tariffs WHERE id = ?").bind(tariff.id).first();
-      if (existingTariff && Number(existingTariff.job_id) !== jobId) return error("Tariff record does not belong to this Job", 403);
+      if (existingTariff && !await requireRelatedRecord(db, "job_energy_tariffs", tariff.id, { jobId })) {
+        return error("Tariff record not found", 404);
+      }
       if (!existingTariff) {
         const countRow = await db.prepare("SELECT COUNT(*) AS total FROM job_energy_tariffs WHERE job_id = ?").bind(jobId).first();
         if (Number(countRow?.total || 0) >= 5) return error("This review already has five plans. Edit or remove a plan before adding another.", 400);
@@ -458,6 +464,7 @@ export async function onRequestPost(context) {
     } else if (body.action === "delete_tariff") {
       const id = text(body.tariff_id, 80);
       if (!id) return error("tariff_id is required", 400);
+      if (!await requireRelatedRecord(db, "job_energy_tariffs", id, { jobId })) return error("Tariff record not found", 404);
       await db.prepare("DELETE FROM job_energy_tariffs WHERE id = ? AND job_id = ?").bind(id, jobId).run();
     } else {
       return error("Unknown action", 400);
