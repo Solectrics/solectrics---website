@@ -1,4 +1,5 @@
 import { ensureJobFileRoleColumn } from "./_schema.js";
+import { requireExistingJob, requireJobFile } from "./_access-security.js";
 
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS job_files (
@@ -71,6 +72,7 @@ export async function onRequestGet(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await db.prepare(CREATE_TABLE).run();
     await ensureJobFileRoleColumn(db);
@@ -99,7 +101,9 @@ export async function onRequestPatch(context) {
     const category = String(body.category || "");
     if (!Number.isInteger(jobId) || jobId <= 0 || !id) return errorResponse("job_id and file id are required", 400);
     if (!ALLOWED_CATEGORIES.has(category)) return errorResponse("Choose a valid file category", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     await db.prepare(CREATE_TABLE).run();
+    if (!await requireJobFile(db, id, jobId)) return errorResponse("File not found for this job", 404);
     const result = await db.prepare("UPDATE job_files SET category = ? WHERE id = ? AND job_id = ?").bind(category, id, jobId).run();
     if (!result.meta?.changes) return errorResponse("File not found for this job", 404);
     return Response.json({ ok: true, id, category });
@@ -134,6 +138,7 @@ export async function onRequestPost(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!(file instanceof File) || !file.size) {
       return errorResponse("Choose a file to upload", 400);
     }
