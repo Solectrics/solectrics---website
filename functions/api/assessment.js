@@ -1,3 +1,5 @@
+import { requireExistingJob } from "./_access-security.js";
+
 export async function onRequestGet(context) {
   try {
     const db = context.env.DB;
@@ -16,6 +18,9 @@ export async function onRequestGet(context) {
         { error: "job_id is required" },
         { status: 400 }
       );
+    }
+    if (!await requireExistingJob(db, jobId)) {
+      return Response.json({ error: "Job not found" }, { status: 404 });
     }
 
     const assessment = await db
@@ -57,6 +62,9 @@ export async function onRequestPost(context) {
         { error: "job_id is required" },
         { status: 400 }
       );
+    }
+    if (!await requireExistingJob(db, jobId)) {
+      return Response.json({ error: "Job not found" }, { status: 404 });
     }
 
     await db.prepare(`
