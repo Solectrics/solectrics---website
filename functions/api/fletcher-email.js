@@ -1,4 +1,5 @@
 import { ensureJobFileRoleColumn } from "./_schema.js";
+import { requireExistingJob } from "./_access-security.js";
 
 const RECIPIENT = "jane@solectrics.co.nz";
 const MAX_TOTAL_ATTACHMENT_BYTES = 25 * 1024 * 1024;
@@ -74,6 +75,7 @@ export async function onRequestPost(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await ensureJobFileRoleColumn(db);
     await db.prepare(CREATE_EMAIL_LOGS).run();
@@ -192,7 +194,7 @@ export async function onRequestPost(context) {
       missing
     });
   } catch (error) {
-    console.error("Fletcher package email error:", error);
+    console.error("Fletcher package email failed");
     return errorResponse("Unable to email the Fletcher package", 500, error.message);
   }
 }
