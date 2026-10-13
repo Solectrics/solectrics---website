@@ -1,3 +1,5 @@
+import { requireExistingJob } from "./_access-security.js";
+
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS site_visits (
     job_id INTEGER PRIMARY KEY,
@@ -22,6 +24,7 @@ export async function onRequestGet(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await db.prepare(CREATE_TABLE).run();
     const row = await db
