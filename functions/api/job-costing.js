@@ -1,3 +1,4 @@
+import { requireExistingJob } from "./_access-security.js";
 import { ensureInternalCostingSchema } from "./_schema.js";
 
 const CATEGORIES = new Set(["materials", "labour", "subcontractor", "certification", "other"]);
@@ -47,6 +48,7 @@ export async function onRequestGet(context) {
     const jobId = Number(new URL(context.request.url).searchParams.get("job_id"));
     if (!db) return errorResponse("D1 database binding DB is not available");
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
 
     await ensureInternalCostingSchema(db);
     const options = await db.prepare(`
