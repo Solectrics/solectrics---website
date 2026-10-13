@@ -36,7 +36,22 @@ test("PATCH updates only a file belonging to the supplied job and rejects invali
         run: async () => ({ success: true }),
         bind(...values) {
           statements.push(values);
-          return { run: async () => ({ meta: { changes: 1 } }) };
+          return {
+            run: async () => ({ meta: { changes: 1 } }),
+            first: async () => {
+              if (sql.includes("SELECT id, enquiry_id, job_type FROM jobs WHERE id = ?")) {
+                return Number(values[0]) === 13 ? { id: 13, enquiry_id: 13, job_type: "solar" } : null;
+              }
+              if (sql.includes("FROM job_files") && String(values[0]) === "file-1" && Number(values[1]) === 13) {
+                return {
+                  id: "file-1", job_id: 13, storage_key: "jobs/13/file-1.pdf",
+                  original_name: "synthetic.pdf", content_type: "application/pdf",
+                  size_bytes: 10, document_role: "general"
+                };
+              }
+              return null;
+            }
+          };
         }
       };
     }
