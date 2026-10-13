@@ -1,3 +1,5 @@
+import { requireExistingJob, requireJobFile } from "./_access-security.js";
+
 function errorResponse(message, status = 500, detail) {
   return Response.json({ ok: false, error: message, ...(detail ? { detail } : {}) }, { status });
 }
@@ -43,14 +45,13 @@ export async function onRequestPost(context) {
     const fileId = cleanText(body.invoice_file_id, 100);
     const items = Array.isArray(body.items) ? body.items : [];
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!fileId) return errorResponse("Choose an uploaded supplier invoice", 400);
     if (!items.length || items.length > 300) return errorResponse("Choose between 1 and 300 material lines", 400);
 
     await db.prepare(CREATE_TABLE).run();
-    const file = await db.prepare(
-      "SELECT id FROM job_files WHERE id = ? AND job_id = ? AND document_role = 'supplier_invoice'"
-    ).bind(fileId, jobId).first();
-    if (!file) return errorResponse("Choose a supplier invoice attached to this job", 400);
+    const file = await requireJobFile(db, fileId, jobId);
+    if (!file || file.document_role !== "supplier_invoice") return errorResponse("Choose a supplier invoice attached to this job", 400);
     const existing = await db.prepare(
       "SELECT id FROM job_materials WHERE job_id = ? AND invoice_file_id = ? LIMIT 1"
     ).bind(jobId, fileId).first();
