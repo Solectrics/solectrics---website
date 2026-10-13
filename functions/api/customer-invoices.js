@@ -1,4 +1,5 @@
 import { ensureCustomerInvoiceSchema, ensureInternalCostingSchema } from "./_schema.js";
+import { requireExistingJob, requireRelatedRecord } from "./_access-security.js";
 
 const INVOICE_STATUSES = new Set(["draft", "issued", "paid", "void"]);
 const SOLECTRICS_GST_NUMBER = "137-174-537";
@@ -144,6 +145,7 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const invoiceId = url.searchParams.get("invoice_id");
     if (invoiceId) {
+      if (!await requireRelatedRecord(db, "customer_invoice_versions", invoiceId)) return errorResponse("Customer invoice not found", 404);
       const row = await db.prepare(`
         SELECT id, job_id, version_number, status, snapshot_json, created_at,
                issued_at, paid_at, voided_at
@@ -155,6 +157,7 @@ export async function onRequestGet(context) {
 
     const jobId = Number(url.searchParams.get("job_id"));
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     const result = await db.prepare(`
       SELECT id, job_id, version_number, status, snapshot_json, source_hash,
              created_at, issued_at, paid_at, voided_at
@@ -224,6 +227,7 @@ export async function onRequestPost(context) {
     if (body.action !== "generate") return errorResponse("Unknown invoice action", 400);
     const jobId = Number(body.job_id);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     const issueDate = isoDate(body.issue_date);
     const dueDate = isoDate(body.due_date);
     if (!issueDate || !dueDate) return errorResponse("Invoice date and due date are required", 400);
