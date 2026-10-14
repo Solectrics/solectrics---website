@@ -79,6 +79,7 @@ export async function onRequestPost(context) {
     const optionId = cleanText(option.id, 100) || crypto.randomUUID();
     const optionName = cleanText(option.name, 200);
     if (!Number.isInteger(jobId) || jobId <= 0) return errorResponse("job_id is required", 400);
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!optionName) return errorResponse("Option name is required", 400);
     if (!Array.isArray(body.lines) || body.lines.length > 300) return errorResponse("Up to 300 costing lines are allowed", 400);
 
