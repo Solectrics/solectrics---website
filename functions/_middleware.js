@@ -9,7 +9,9 @@ function isPagesHostname(hostname) {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
-  if (!isPagesHostname(url.hostname)) {
+  const allowPagesHost = String(context.env?.ALLOW_PAGES_DEV_HOST || "").toLowerCase() === "true";
+
+  if (!isPagesHostname(url.hostname) || allowPagesHost) {
     if (url.pathname.startsWith("/mini-fergus")) {
       const auth = await authenticateAccessRequest(context);
       if (!auth.ok) return auth.response;
