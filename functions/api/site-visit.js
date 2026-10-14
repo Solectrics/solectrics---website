@@ -54,6 +54,7 @@ export async function onRequestPost(context) {
     if (!Number.isInteger(jobId) || jobId <= 0) {
       return errorResponse("job_id is required", 400);
     }
+    if (!await requireExistingJob(db, jobId)) return errorResponse("Job not found", 404);
     if (!data.site_visit || typeof data.site_visit !== "object" || Array.isArray(data.site_visit)) {
       return errorResponse("site_visit is required", 400);
     }
