@@ -14,6 +14,11 @@ import {
 import { onRequest as apiMiddleware } from "../functions/api/_middleware.js";
 import { onRequestGet as downloadJobFile } from "../functions/api/job-file.js";
 import { onRequestPost as saveAssessment } from "../functions/api/assessment.js";
+import { onRequestPost as saveSiteVisit } from "../functions/api/site-visit.js";
+import { onRequestPost as saveSystemDesign } from "../functions/api/system-design.js";
+import { onRequestPost as saveCosting } from "../functions/api/job-costing.js";
+import { onRequestPost as updateInvoice } from "../functions/api/customer-invoices.js";
+import { onRequest as rootMiddleware } from "../functions/_middleware.js";
 
 const ISSUER = "https://security-test.cloudflareaccess.com";
 const AUDIENCE = "security-test-audience";
@@ -313,4 +318,106 @@ test("job-scoped writes reject nonexistent parent jobs before child writes", asy
   });
   assert.equal(response.status, 404);
   assert.equal(assessmentWrites, 0);
+});
+
+
+test("Pages hosts retain production redirect unless isolated testing is explicitly enabled", async () => {
+  const redirected = await rootMiddleware({
+    request: new Request("https://security-test.pages.dev/home-energy-check.html"),
+    env: {},
+    next: async () => new Response("should not run")
+  });
+  assert.equal(redirected.status, 308);
+  assert.equal(redirected.headers.get("location"), "https://solectrics.co.nz/home-energy-check.html");
+
+  let called = 0;
+  const allowed = await rootMiddleware({
+    request: new Request("https://security-test.pages.dev/home-energy-check.html"),
+    env: { ALLOW_PAGES_DEV_HOST: "true" },
+    next: async () => { called += 1; return new Response("isolated"); }
+  });
+  assert.equal(called, 1);
+  assert.equal(await allowed.text(), "isolated");
+
+  const publicPost = await rootMiddleware({
+    request: new Request("https://security-test.pages.dev/api/read-bill", { method: "POST" }),
+    env: { ALLOW_PAGES_DEV_HOST: "true" },
+    next: async () => new Response("bill-reader")
+  });
+  assert.equal(publicPost.status, 200);
+  assert.equal(await publicPost.text(), "bill-reader");
+});
+
+test("site visit, system design and costing reject nonexistent parent jobs before writes", async () => {
+  const cases = [
+    {
+      handler: saveSiteVisit,
+      body: { job_id: 999, site_visit: { visit_date: "2026-10-01" } },
+      writePattern: /INSERT INTO site_visits/
+    },
+    {
+      handler: saveSystemDesign,
+      body: { job_id: 999, system_design: { design_panel_count: "12" } },
+      writePattern: /INSERT INTO system_designs/
+    },
+    {
+      handler: saveCosting,
+      body: { job_id: 999, option: { name: "Synthetic" }, lines: [] },
+      writePattern: /INSERT INTO costing_options/
+    }
+  ];
+
+  for (const item of cases) {
+    let writes = 0;
+    const db = mockDb(({ sql, kind }) => {
+      if (/SELECT id, enquiry_id, job_type FROM jobs/.test(sql)) return null;
+      if (item.writePattern.test(sql) && kind === "run") writes += 1;
+      if (/PRAGMA table_info/.test(sql)) return { results: [] };
+      return kind === "all" ? { results: [] } : { meta: { changes: 1 } };
+    });
+    db.batch = async statements => {
+      writes += statements.length;
+      return statements.map(() => ({ meta: { changes: 1 } }));
+    };
+
+    const response = await item.handler({
+      request: new Request("https://solectrics.co.nz/api/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item.body)
+      }),
+      env: { DB: db }
+    });
+    assert.equal(response.status, 404);
+    assert.equal(writes, 0);
+  }
+});
+
+test("invoice status mutation resolves the invoice through its owning job first", async () => {
+  let directInvoiceLookup = 0;
+  let updates = 0;
+  const db = mockDb(({ sql, kind }) => {
+    if (/FROM customer_invoice_versions related/.test(sql)) return null;
+    if (/SELECT job_id, status FROM customer_invoice_versions/.test(sql)) {
+      directInvoiceLookup += 1;
+      return { job_id: 6, status: "draft" };
+    }
+    if (/UPDATE customer_invoice_versions/.test(sql) && kind === "run") updates += 1;
+    if (/CREATE TABLE|CREATE INDEX|ALTER TABLE/.test(sql)) return { meta: { changes: 0 } };
+    if (/PRAGMA table_info/.test(sql)) return { results: [] };
+    return kind === "all" ? { results: [] } : { meta: { changes: 1 } };
+  });
+
+  const response = await updateInvoice({
+    request: new Request("https://solectrics.co.nz/api/customer-invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "set_status", invoice_id: "wrong-job-invoice", status: "issued" })
+    }),
+    env: { DB: db }
+  });
+
+  assert.equal(response.status, 404);
+  assert.equal(directInvoiceLookup, 0);
+  assert.equal(updates, 0);
 });
