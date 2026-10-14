@@ -206,6 +206,7 @@ export async function onRequestPost(context) {
       const invoiceId = cleanText(body.invoice_id, 100);
       const status = cleanText(body.status, 20);
       if (!invoiceId || !INVOICE_STATUSES.has(status)) return errorResponse("A valid invoice and status are required", 400);
+      if (!await requireRelatedRecord(db, "customer_invoice_versions", invoiceId)) return errorResponse("Customer invoice not found", 404);
       const existing = await db.prepare("SELECT job_id, status FROM customer_invoice_versions WHERE id = ?").bind(invoiceId).first();
       if (!existing) return errorResponse("Customer invoice not found", 404);
       if (existing.status === "void" && status !== "void") return errorResponse("A void invoice cannot be changed", 409);
