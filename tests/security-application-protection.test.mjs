@@ -407,6 +407,7 @@ test("invoice status mutation resolves the invoice through its owning job first"
     if (/PRAGMA table_info/.test(sql)) return { results: [] };
     return kind === "all" ? { results: [] } : { meta: { changes: 1 } };
   });
+  db.batch = async statements => statements.map(() => ({ meta: { changes: 0 } }));
 
   const response = await updateInvoice({
     request: new Request("https://solectrics.co.nz/api/customer-invoices", {
