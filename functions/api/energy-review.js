@@ -67,6 +67,22 @@ const TARIFF_NUMBER_FIELDS = [
   "transition_cost_nzd", "exit_cost_nzd"
 ];
 
+const MODEL_REQUIRED_FIELDS = [
+  ["annual_consumption_kwh", "Annual household consumption"],
+  ["solar_generation_kwh", "Annual solar generation"],
+  ["grid_import_standard_kwh", "Standard grid imports"],
+  ["grid_import_peak_kwh", "Peak grid imports"],
+  ["grid_import_offpeak_kwh", "Off-peak grid imports"],
+  ["grid_import_controlled_kwh", "Controlled grid imports"],
+  ["grid_import_ev_kwh", "EV/night grid imports"],
+  ["solar_export_standard_kwh", "Standard solar exports"],
+  ["solar_export_peak_kwh", "Peak-window solar exports"]
+];
+
+const FORMAL_REVIEW_STATUSES = new Set([
+  "ready_for_review", "discuss_with_customer", "completed"
+]);
+
 function error(message, status = 500, detail) {
   return Response.json({ ok: false, error: message, ...(detail ? { detail } : {}) }, { status });
 }
@@ -196,19 +212,19 @@ function deriveBaseline(answers = {}, files = []) {
   };
 }
 
-function deriveProposedSystem(answers = {}, assessment = {}, design = {}) {
+function deriveProposedSystem(answers = {}, assessment = {}) {
   const loads = Array.isArray(answers.loads) ? answers.loads.map(value => String(value).toLowerCase()) : [];
   const planned = Array.isArray(answers.plannedChanges) ? answers.plannedChanges.map(value => String(value).toLowerCase()) : [];
   const has = term => [...loads, ...planned].some(value => value.includes(term));
-  const batteryKwh = number(design.design_battery_kwh) ?? number(assessment.battery_kwh);
   return {
-    solar_array_kw: number(design.design_array_kw) ?? number(assessment.solar_kw),
-    estimated_annual_solar_generation_kwh: number(assessment.estimated_generation_kwh),
-    inverter_model: design.design_inverter_model || assessment.inverter || "",
-    inverter_size_kw: number(design.design_inverter_kw),
-    battery: batteryKwh !== null || Boolean(design.design_battery_model),
-    battery_capacity_kwh: batteryKwh,
-    eps_backup: design.design_backup || "",
+    solar_array_kw: null,
+    estimated_annual_solar_generation_kwh: null,
+    inverter_model: "",
+    inverter_size_kw: null,
+    battery: false,
+    battery_capacity_kwh: null,
+    eps_backup: "",
+    system_design_confirmed: false,
     hot_water_cylinder: String(answers.hotWater || "").toLowerCase().includes("cylinder"),
     smart_hot_water_timer: false,
     solar_diverter: false,
@@ -220,6 +236,73 @@ function deriveProposedSystem(answers = {}, assessment = {}, design = {}) {
     pool_pump_scheduling: false,
     other_flexible_loads: assessment.smart_controls || ""
   };
+}
+
+export function applyCurrentSystemDesign(proposed = {}, design = {}, assessment = {}) {
+  const reviewed = Boolean(design.design_reviewed);
+  return {
+    ...proposed,
+    system_design_confirmed: reviewed,
+    solar_array_kw: reviewed ? number(design.design_array_kw) : null,
+    estimated_annual_solar_generation_kwh: reviewed ? number(assessment.estimated_generation_kwh) : null,
+    inverter_model: reviewed ? text(design.design_inverter_model, 300) : "",
+    inverter_size_kw: reviewed ? number(design.design_inverter_kw) : null,
+    battery: reviewed && (number(design.design_battery_kwh) !== null || Boolean(design.design_battery_model)),
+    battery_capacity_kwh: reviewed ? number(design.design_battery_kwh) : null,
+    eps_backup: reviewed ? text(design.design_backup, 100) : ""
+  };
+}
+
+export function modelReadinessIssues(review = {}) {
+  const issues = [];
+  const proposed = review.proposed_system || {};
+  const model = review.model || {};
+  if (!proposed.system_design_confirmed) {
+    issues.push("Mark the current System Design as reviewed before modelling the proposed installation");
+  }
+  for (const [field, label] of MODEL_REQUIRED_FIELDS) {
+    if (number(model[field]) === null) issues.push("Enter " + label + "; use 0 where it does not apply");
+  }
+  if (number(model.annual_consumption_kwh) !== null && number(model.annual_consumption_kwh) <= 0) {
+    issues.push("Annual household consumption must be greater than 0");
+  }
+  if (review.selected_scenario !== "current") {
+    if (number(proposed.solar_array_kw) === null || number(proposed.solar_array_kw) <= 0) {
+      issues.push("Enter the reviewed solar array size in System Design");
+    }
+    if (number(model.solar_generation_kwh) !== null && number(model.solar_generation_kwh) <= 0) {
+      issues.push("Estimated annual solar generation must be greater than 0 for a solar scenario");
+    }
+  }
+  if (["solar_battery", "solar_battery_smart"].includes(review.selected_scenario) &&
+      (number(proposed.battery_capacity_kwh) === null || number(proposed.battery_capacity_kwh) <= 0)) {
+    issues.push("Enter the reviewed battery capacity for a battery scenario");
+  }
+  return issues;
+}
+
+export function tariffHasVerifiedSource(tariff = {}) {
+  const hasSource = Boolean(text(tariff.source_name, 300) || safeUrl(tariff.source_url));
+  return hasSource && Boolean(isoDate(tariff.last_verified_date));
+}
+
+function formalReviewIssues(review = {}, verifiedPlanCount = 0) {
+  const issues = [];
+  if (!text(review.current_plan?.retailer, 200) || !text(review.current_plan?.plan_name, 200)) {
+    issues.push("Capture the current retailer and plan");
+  }
+  if (number(review.baseline?.annual_consumption_kwh) === null ||
+      number(review.baseline?.annual_consumption_kwh) <= 0) {
+    issues.push("Review the annual consumption baseline");
+  }
+  if (!review.model?.model_ready) {
+    issues.push("Mark the complete energy model as ready");
+  }
+  issues.push(...modelReadinessIssues(review));
+  if (verifiedPlanCount < 3) {
+    issues.push("Add at least three relevant plans with a source and last-verified date and complete rates");
+  }
+  return [...new Set(issues)];
 }
 
 function decodeReview(row) {
@@ -241,7 +324,7 @@ function decodeTariff(row) {
     peak_import_periods: array(row.peak_import_periods_json),
     offpeak_import_periods: array(row.offpeak_import_periods_json),
     peak_export_periods: array(row.peak_export_periods_json),
-    source_complete: Boolean(row.source_url && (row.last_verified_date || row.effective_date))
+    source_complete: tariffHasVerifiedSource(row)
   };
 }
 
@@ -261,25 +344,35 @@ async function loadBundle(db, jobId) {
   const derived = {
     current_plan: deriveCurrentPlan(answers),
     baseline: deriveBaseline(answers, files),
-    proposed_system: deriveProposedSystem(answers, assessment || {}, object(designRow?.data_json))
+    proposed_system: deriveProposedSystem(answers, assessment || {})
   };
+  const design = object(designRow?.data_json);
   const saved = decodeReview(reviewRow);
-  const review = saved || {
-    job_id: jobId,
-    status: "draft",
-    ...derived,
-    scenario: {},
-    model: { model_ready: false },
-    assumptions: [],
-    selected_scenario: "solar_smart",
-    customer_summary: "",
-    tariffs_checked_date: "",
-    consumption_period_start: derived.baseline.consumption_period_start,
-    consumption_period_end: derived.baseline.consumption_period_end,
-    post_install_review_due: ""
-  };
+  const savedProposed = saved?.proposed_system || derived.proposed_system;
+  const proposedSystem = applyCurrentSystemDesign(savedProposed, design, assessment || {});
+  const review = saved
+    ? { ...saved, proposed_system: proposedSystem }
+    : {
+        job_id: jobId,
+        status: "draft",
+        ...derived,
+        proposed_system: proposedSystem,
+        scenario: {},
+        model: { model_ready: false },
+        assumptions: [],
+        selected_scenario: "solar_smart",
+        customer_summary: "",
+        tariffs_checked_date: "",
+        consumption_period_start: derived.baseline.consumption_period_start,
+        consumption_period_end: derived.baseline.consumption_period_end,
+        post_install_review_due: ""
+      };
+  review.model.model_ready = Boolean(review.model.model_ready && modelReadinessIssues(review).length === 0);
   const tariffs = tariffRows.map(decodeTariff);
-  const comparisons = review.model?.model_ready ? compareTariffs(review.model, tariffs) : [];
+  const verifiedTariffs = tariffs.filter(tariff => tariff.source_complete);
+  const comparisons = review.model.model_ready && verifiedTariffs.length >= 3
+    ? compareTariffs(review.model, verifiedTariffs)
+    : [];
   return {
     customer: { name: job.customer_name, address: job.address },
     review,
@@ -366,18 +459,32 @@ export async function onRequestPost(context) {
 
     if (body.action === "save_review") {
       const review = sanitiseReview(body.review);
+      const [designRow, assessmentRow, tariffRows] = await Promise.all([
+        optionalFirst(db, "SELECT data_json FROM system_designs WHERE job_id = ?", jobId),
+        optionalFirst(db, "SELECT * FROM assessments WHERE job_id = ?", jobId),
+        optionalAll(db, "SELECT * FROM job_energy_tariffs WHERE job_id = ?", jobId)
+      ]);
+      review.proposed_system = applyCurrentSystemDesign(
+        review.proposed_system,
+        object(designRow?.data_json),
+        assessmentRow || {}
+      );
+      const verifiedPlanCount = tariffRows
+        .map(decodeTariff)
+        .filter(tariff => tariff.source_complete)
+        .filter(tariff => compareTariffs(review.model, [tariff])[0]?.complete)
+        .length;
       const requestedReady = Boolean(review.model.model_ready);
+      const readinessIssues = modelReadinessIssues(review);
+      if (requestedReady && readinessIssues.length) {
+        return error("The model cannot be marked ready yet", 400, readinessIssues);
+      }
       review.model.model_ready = requestedReady;
-      if (requestedReady) {
-        const annualConsumption = number(review.model.annual_consumption_kwh);
-        const solarGeneration = number(review.model.solar_generation_kwh);
-        const gridImports = ["grid_import_standard_kwh", "grid_import_peak_kwh", "grid_import_offpeak_kwh", "grid_import_controlled_kwh", "grid_import_ev_kwh"]
-          .reduce((sum, field) => sum + (number(review.model[field]) || 0), 0);
-        if (!annualConsumption) return error("Enter annual household consumption before marking the model ready", 400);
-        if (review.selected_scenario !== "current" && !solarGeneration) {
-          return error("Enter estimated annual solar generation before marking the model ready", 400);
+      if (FORMAL_REVIEW_STATUSES.has(review.status)) {
+        const issues = formalReviewIssues(review, verifiedPlanCount);
+        if (issues.length) {
+          return error("Complete the review checks before changing this status", 400, issues);
         }
-        if (!gridImports) return error("Enter the estimated annual grid imports before marking the model ready", 400);
       }
       await db.prepare(`
         INSERT INTO energy_reviews
