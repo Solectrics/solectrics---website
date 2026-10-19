@@ -1,3 +1,4 @@
+import {usabilityLocal} from './_usability-local.js';
 import { sanitise, onRequestPost as readBill } from "./read-bill.js";
 
 export const BILL_FIELDS = [
@@ -11,7 +12,7 @@ export const BILL_FIELDS = [
   "fixed_term", "exit_cost_nzd", "other_tariff_information", "notes"
 ];
 export function parseEnergyAnswers(value) {
-  try { const x = JSON.parse(value || "{}"); return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }
+  try { const x = JSON.parse(value || "{}"); if(!x || typeof x !== "object" || Array.isArray(x))throw Error("Invalid saved answers"); return x; }
   catch { throw new Error("Saved energy answers cannot be read. No update was made."); }
 }
 export function sharedBills(answers) {
@@ -21,7 +22,7 @@ export function sharedBills(answers) {
 }
 export function sharedIdentity(answers) {
   const bill = sharedBills(answers)[0] || {};
-  return { icp: answers.icp || bill.icp || "", retailer: bill.retailer || "", plan_name: bill.plan_name || "" };
+  return answers.hec_identity || { icp: answers.icp || bill.icp || "", retailer: bill.retailer || "", plan_name: bill.plan_name || "" };
 }
 export async function energyRevision(value) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value || ""));
@@ -56,7 +57,9 @@ export function applyReviewedBill(answers, {file, draft, bill, slot, now}) {
     extracted:draft.extracted, extracted_at:draft.extracted_at, reviewed:bill, reviewed_at:now,
     previous, previous_shared:previousShared, slot};
   const history = [...(answers.energy_data?.history || []), review];
-  return {...answers, bills:{...(answers.bills || {}), [slot]:bill},
+  const identity={...sharedIdentity(answers)};
+  for(const key of ['icp','retailer','plan_name']) if(bill[key]!=null && bill[key]!=='')identity[key]=bill[key];
+  return {...answers, hec_identity:identity, bills:{...(answers.bills || {}), [slot]:bill},
     ...(bill.icp ? {icp:bill.icp} : {}),
     energy_data:{...(answers.energy_data || {}), active_slot:slot, revision:crypto.randomUUID(),
       history, drafts:{...(answers.energy_data?.drafts || {}), [file.id]:null},
@@ -64,7 +67,7 @@ export function applyReviewedBill(answers, {file, draft, bill, slot, now}) {
 }
 
 export function stagingEnergyEnabled(context) {
-  return context.env.JOBHUB_STAGING_ONLY === "true" && context.env.ALLOW_PAGES_DEV_HOST === "true" &&
+  return usabilityLocal(context) || context.env.JOBHUB_STAGING_ONLY === "true" && context.env.ALLOW_PAGES_DEV_HOST === "true" &&
     ["fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev",
      "hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev"].includes(new URL(context.request.url).hostname);
 }

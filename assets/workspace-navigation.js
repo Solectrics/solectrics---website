@@ -2,7 +2,7 @@
   'use strict';
   const sectionLinks=[['HEC','hecEditorSection'],['Workflow','jobOperationsPanel'],['Handover','handoverAftercare'],['Site Visit','siteVisitSection'],['Design','systemDesignSection'],['Supplier Quotes','supplierPricingSection'],['Costing','internalCostingSection'],['Photos & Documents','jobFilesSection'],['Daily Work','workLogSection'],['Compliance evidence','jobFilesSection']];
   function escape(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  function openSection(id){const el=document.getElementById(id);if(!el)return false;let parent=el.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement;}el.scrollIntoView({block:'start'});return true;}
+  function openSection(id){const el=document.getElementById(id);if(!el)return false;if(el.tagName==='DETAILS')el.open=true;let parent=el.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement;}el.scrollIntoView({block:'start'});return true;}
   function localJobLink(id){const params=new URLSearchParams(location.search);const jobId=params.get('id')||params.get('job_id');return jobId?`/mini-fergus-job?id=${encodeURIComponent(jobId)}#${id}`:`/mini-fergus?open_section=${id}#jobs-container`;}
   function initNavigation(){
     const nav=document.createElement('nav');nav.className='jh-main-nav';nav.setAttribute('aria-label','Workspace navigation');
@@ -19,7 +19,7 @@
     page.dataset.navigationReady='true';const assessment=sections.find(el=>el.querySelector('#assessmentForm')||el.querySelector('h2')?.textContent.trim()==='Assessment & design');
     if(assessment){for(const id of ['siteVisitSection','jobFilesSection']){const el=document.getElementById(id);if(el)page.insertBefore(el,assessment);}}
     const shortcuts=document.createElement('nav');shortcuts.className='jh-job-shortcuts';shortcuts.setAttribute('aria-label','Job sections');page.querySelector('.status')?.after(shortcuts);
-    for(const section of [...page.children].filter(el=>el.tagName==='SECTION')){
+    for(const section of [...page.children].filter(el=>el.tagName==='SECTION').concat(['jobOperationsPanel','handoverAftercare'].map(id=>document.getElementById(id)).filter(el=>el && el.parentElement.tagName!=='DETAILS'))){
       const heading=section.querySelector('h2');if(!heading)continue;const title=heading.textContent.trim();if(['Customer','Next action'].includes(title))continue;
       const wrapper=document.createElement('details');wrapper.className='jh-job-section';const summary=document.createElement('summary');summary.textContent=title;wrapper.append(summary);section.before(wrapper);wrapper.append(section);
       const sync=()=>wrapper.hidden=section.hidden;sync();new MutationObserver(sync).observe(section,{attributes:true,attributeFilter:['hidden']});

@@ -1,3 +1,5 @@
+import {usabilityLocal} from './_usability-local.js';
+import {seedAcceptedQuoteTasks} from './job-operations-core.js';
 import { ensureCustomerQuoteSchema, ensureInternalCostingSchema, ensureJobFileRoleColumn } from "./_schema.js";
 
 const QUOTE_STATUSES = new Set(["draft", "issued", "accepted"]);
@@ -304,7 +306,7 @@ export async function onRequestPost(context) {
       const quoteId = String(body.quote_id || "");
       const status = String(body.status || "");
       if (!quoteId || !QUOTE_STATUSES.has(status)) return errorResponse("A valid quote and status are required", 400);
-      const existing = await db.prepare("SELECT status FROM customer_quote_versions WHERE id = ?").bind(quoteId).first();
+      const existing = await db.prepare("SELECT status,job_id FROM customer_quote_versions WHERE id = ?").bind(quoteId).first();
       if (!existing) return errorResponse("Customer quote not found", 404);
       if (existing.status === "accepted" && status !== "accepted") return errorResponse("An accepted quote cannot be changed", 409);
       await db.prepare(`
@@ -313,6 +315,10 @@ export async function onRequestPost(context) {
           accepted_at = CASE WHEN ? = 'accepted' AND accepted_at IS NULL THEN CURRENT_TIMESTAMP ELSE accepted_at END
         WHERE id = ?
       `).bind(status, status, status, quoteId).run();
+      if(status==='accepted' && usabilityLocal(context)) {
+        const columns=(await db.prepare('PRAGMA table_info(job_tasks)').all()).results||[];
+        if(columns.some(c=>c.name==='task_key'))await seedAcceptedQuoteTasks(db,existing.job_id);
+      }
       return Response.json({ ok: true });
     }
 

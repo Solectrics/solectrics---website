@@ -23,3 +23,11 @@ pass. New Operations endpoints are deliberately gated to loopback plus the
 explicit local testing flag. Missing schema fails closed. Only 0021/0022 are
 prepared; schema-only source confirms no accounting migration prerequisite.
 Migration files have not been executed. Test schemas are synthetic CREATE DDL.
+
+Stage 3 complete: full retrospective HEC/manual bills, history/revision checks,
+shared identity/energy refresh and explicit current-HEC design review. 138
+individual synthetic regressions pass. Browser acceptance passes at
+375/390/430/1440px, including real UI save/upload/manual fallback/aftercare and
+stale-tab rejection. See docs/USABILITY-RECOVERY.md for local run instructions,
+migration scope, validation limits and the next staging approval boundary.
+No migration or deployment occurred; security candidate remains separate.

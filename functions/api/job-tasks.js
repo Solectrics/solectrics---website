@@ -51,7 +51,7 @@ function jsonError(error, status = 500) {
 function clean(value, max = 1000) { return String(value ?? "").trim().slice(0, max); }
 function isoDate(value) {
   const valueText = clean(value, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(valueText) ? valueText : null;
+  return validDate(valueText);
 }
 function dateOffset(date, days) {
   const result = new Date(`${date}T12:00:00Z`);
@@ -119,17 +119,7 @@ export async function onRequestGet(context) {
     const taskResult = await db.prepare(taskSql).bind(...params).all();
 
     const jobsResult = await db.prepare(`
-      SELECT j.id AS job_id, j.job_type, j.job_status, j.install_date,
-        j.system_size_kw, j.inverter, j.battery, j.finance_type, j.finance_status,
-        j.finance_approval_required, j.deposit_status, j.deposit_required, j.deposit_received,
-        j.materials_status, j.materials_received_at, j.equipment_supplier, j.equipment_order_reference, j.equipment_amount_paid,
-        j.equipment_paid_at, j.equipment_expected_delivery_date, j.vector_dg_status,
-        j.retailer_export_status, j.retailer, j.retailer_plan, j.icp, j.meter_status, j.scaffolding_required,
-        j.scaffold_provider, j.scaffold_booked_at, j.final_site_verified_at, j.final_design_confirmed_at,
-        j.installation_team_confirmed_at, j.install_status, j.supervision_status, j.supervisor_approval_status,
-        j.inspection_status, j.coc_status, j.final_payment_status, j.handover_completed_at, j.job_closed_at,
-        ${handoverEnabled ? 'j.handover_checklist_json, j.handover_notes,' : ''}
-        e.customer_name, e.address
+      SELECT j.*, j.id AS job_id, e.customer_name, e.address
       FROM jobs j JOIN enquiries e ON e.id = j.enquiry_id
       ORDER BY j.install_date, j.id DESC
     `).all();
@@ -164,6 +154,7 @@ export async function onRequestPost(context) {
     if (!((await db.prepare('PRAGMA table_info(job_tasks)').all()).results || []).some(c=>c.name==='task_key')) return jsonError('Operations schema is not available.',503);
     const body = await context.request.json();
     const action = clean(body.action, 50);
+    for(const [key,value] of Object.entries(body)) if((key==='due_date'||key==='install_date'||WORKFLOW_FIELDS[key]==='date') && value && !validDate(value))return jsonError('Enter a valid date for '+key,400);
 
     if (action === "update_settings") {
       const allowed = ["vector_check", "retailer_contact", "scaffold_check", "equipment_delivery", "final_readiness"];

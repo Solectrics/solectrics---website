@@ -40,6 +40,11 @@ export function resolveElectricityDetails(job = {}, sources = {}) {
     }
     if (unique.size > 1) details.conflicts.push({ field: key, candidates: candidates.map(([source, value]) => ({ source, value: clean(value) })), confirmed: Boolean(clean(job[key])) });
   }
+  if(answers.hec_identity) {
+    for(const [field,key] of [['icp','icp'],['retailer','retailer'],['retailer_plan','plan_name']]) {
+      details[field]=clean(answers.hec_identity[key]);details.sources[field]='Reviewed HEC';
+    }
+  }
   return details;
 }
 

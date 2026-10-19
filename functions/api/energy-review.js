@@ -1,5 +1,5 @@
 import { compareTariffs } from "./_energy-calculator.js";
-import { sharedBills } from "./_post-hec-energy.js";
+import { sharedBills, sharedIdentity } from "./_post-hec-energy.js";
 
 const REVIEW_TABLE = `
   CREATE TABLE IF NOT EXISTS energy_reviews (
@@ -162,9 +162,9 @@ function firstKnown(bills, key) {
 export function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
   return {
-    retailer: firstKnown(bills, "retailer") || "",
-    plan_name: firstKnown(bills, "plan_name") || "",
-    icp: firstKnown(bills, "icp") || "",
+    retailer: sharedIdentity(answers).retailer,
+    plan_name: sharedIdentity(answers).plan_name,
+    icp: sharedIdentity(answers).icp,
     billing_period_start: firstKnown(bills, "billing_period_start") || "",
     billing_period_end: firstKnown(bills, "billing_period_end") || "",
     daily_charge_cents: bills.map(bill => rateInclGstCents(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis")).find(value => value !== null) ?? null,
@@ -198,8 +198,8 @@ export function deriveBaseline(answers = {}, files = []) {
   const startDates = bills.map(bill => bill.billing_period_start).filter(Boolean).sort();
   const endDates = bills.map(bill => bill.billing_period_end).filter(Boolean).sort();
   return {
-    annual_consumption_kwh: dailyUse.length ? Math.round((dailyUse.reduce((a, b) => a + b, 0) / dailyUse.length) * 365) : null,
-    annual_expenditure_nzd: dailySpend.length ? Math.round((dailySpend.reduce((a, b) => a + b, 0) / dailySpend.length) * 365) : null,
+    annual_consumption_kwh: answers.annual_kwh != null ? number(answers.annual_kwh) : dailyUse.length ? Math.round((dailyUse.reduce((a, b) => a + b, 0) / dailyUse.length) * 365) : null,
+    annual_expenditure_nzd: answers.annual_cost_nzd != null ? number(answers.annual_cost_nzd) : dailySpend.length ? Math.round((dailySpend.reduce((a, b) => a + b, 0) / dailySpend.length) * 365) : null,
     average_daily_consumption_kwh: dailyUse.length ? Number((dailyUse.reduce((a, b) => a + b, 0) / dailyUse.length).toFixed(2)) : null,
     annual_fixed_charges_nzd: bills
       .map(bill => rateInclGstCents(bill, "daily_fixed_charge_cents", "daily_fixed_charge_gst_basis"))
@@ -319,6 +319,7 @@ async function loadBundle(db, jobId) {
       review.status = "draft";
       review.current_plan = derived.current_plan;
       review.baseline = derived.baseline;
+      review.proposed_system = derived.proposed_system;
       review.scenario = {};
       review.customer_summary = "";
       review.model = {model_ready:false, energy_revision:revision,

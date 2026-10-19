@@ -1,8 +1,10 @@
+import {usabilityLocal} from './_usability-local.js';
 // Staging-only, SELECT + R2 HEAD inventory. No schema initialisation or writes.
 const HOSTS = ['fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev', 'hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev'];
-export async function onRequestGet({request, env}) {
+export async function onRequestGet(context) {
+  const {request,env}=context;
   const url = new URL(request.url);
-  if (env.JOBHUB_STAGING_ONLY !== 'true' || env.ALLOW_PAGES_DEV_HOST !== 'true' || !HOSTS.includes(url.hostname)) return new Response('Not found', {status:404});
+  if (!usabilityLocal(context) && (env.JOBHUB_STAGING_ONLY !== 'true' || env.ALLOW_PAGES_DEV_HOST !== 'true' || !HOSTS.includes(url.hostname))) return new Response('Not found', {status:404});
   const ids = [...new Set((url.searchParams.get('job_ids') || url.searchParams.get('job_id') || '').split(',').map(Number))];
   if (!ids.length || ids.length > 50 || ids.some(id => !Number.isSafeInteger(id) || id <= 0)) return Response.json({ok:false,error:'Supply 1–50 valid job IDs'}, {status:400});
   if (!env.DB || !env.JOB_FILES) return Response.json({ok:false,error:'Staging document bindings unavailable'}, {status:503});

@@ -45,6 +45,7 @@
       } catch(e) {
         status.textContent=e.message;
         const retry=node('button','Retry reading this bill');retry.type='button';retry.onclick=()=>open(fileId,name);
+        const manual=node('button','Enter bill information manually');manual.type='button';manual.onclick=()=>{dialog.close();window.WorkspaceNavigation?.openSection('hecEditorSection');const editor=doc.querySelector('#hecEditorSection>details');if(editor)editor.open=true;};
         const close=node('button','Close');close.type='button';close.onclick=()=>dialog.close();
       } finally{busy=false;}
     }

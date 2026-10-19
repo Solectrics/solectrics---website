@@ -392,7 +392,7 @@
 <script src="/assets/system-design-save.js"></script>
 <link rel="stylesheet" href="/assets/post-hec-bill.css">
 <script src="/assets/post-hec-bill.js"></script>
-</head>
+<link rel="stylesheet" href="/assets/job-hec-editor.css"><script type="module" src="/assets/job-hec-editor.mjs"></script></head>
 
 <body>
   <main class="wrap">
@@ -402,6 +402,7 @@
 
     <a class="back" href="/mini-fergus">← Back to Job Hub</a>
 
+    <nav aria-label="Workflow shortcuts"><a class="button-link" href="/mini-fergus-operations">OPERATIONS &amp; CALENDAR</a> <a id="handoverShortcut" class="button-link" href="#handoverAftercare" hidden>HANDOVER &amp; AFTERCARE</a></nav>
     <div id="page">
       Loading job...
     </div>
@@ -764,7 +765,7 @@ window.currentAnswers = answers;
             <span id="generalJobMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
-<section class="card solar-only">
+<section class="card solar-only" id="hecDisplaySection">
             <h2>Home Energy Check</h2>
 
             <h3>Home & energy use</h3>
@@ -793,7 +794,7 @@ window.currentAnswers = answers;
             <h3>All Home Energy Check answers</h3>
 
             <div class="answer-box">
-              ${renderObject(answers)}
+              ${renderObject(Object.fromEntries(Object.entries(answers).filter(([key])=>!["hec_audit","energy_data"].includes(key))))}
             </div>
           </section>
 
@@ -3155,6 +3156,7 @@ let loadedAssessmentForReview = {};
 let siteVisitLoaded = false;
 let assessmentLoaded = false;
 let systemDesignLoaded = false;
+let loadedDesignHecRevision = null;
 let hasSavedSiteVisit = false;
 let designDataReview;
 let systemDesignSaveController;
@@ -3371,7 +3373,7 @@ function sharedJobElectricity() {
   const slot = currentAnswers.energy_data?.active_slot;
   const bill = currentAnswers.bills?.[slot] || currentAnswers.bills?.summer || currentAnswers.bills?.winter || {};
   const gstRate = (key, basis) => bill[key] == null ? "" : Number(bill[key]) * (bill[basis] === "exclusive" ? 1.15 : 1);
-  return {icp:currentAnswers.icp || bill.icp || "", retailer:bill.retailer || "", plan_name:bill.plan_name || "",
+  return {...(currentAnswers.hec_identity || {icp:currentAnswers.icp || bill.icp || "", retailer:bill.retailer || "", plan_name:bill.plan_name || ""}),
     import_rate:gstRate("import_rate_cents", "import_rate_gst_basis") === "" ? "" : Number((gstRate("import_rate_cents", "import_rate_gst_basis") / 100).toFixed(6)),
     tariff_description:[bill.tariff_description, bill.free_import_schedule, bill.other_tariff_information].filter(Boolean).join(" · ")};
 }
@@ -3391,12 +3393,21 @@ function renderSharedEnergyInformation() {
     button.textContent = "Value applied — check save status";
   });
 }
-window.PostHecBill.mount({document,jobId,onSaved:async()=>{
-  const response=await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);const data=await response.json();
-  if(!response.ok || !data.ok)throw new Error("Reload needed");
-  currentAnswers=parseAnswers(data.job.answers_json);window.currentAnswers=currentAnswers;
-  renderSharedEnergyInformation();refreshDesignDataReview();
-}});
+async function refreshSavedHec() {
+ const response=await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);const data=await response.json();
+ if(!response.ok||!data.ok)throw new Error('Reload needed');
+ currentAnswers=parseAnswers(data.job.answers_json);window.currentAnswers=currentAnswers;
+ const display=document.getElementById('hecDisplaySection');
+ if(display){const visible={...currentAnswers};delete visible.hec_audit;delete visible.energy_data;display.innerHTML='<h2>Home Energy Check</h2><p>Saved changes need Assessment & Design review. Existing quote snapshots are unchanged.</p>'+renderObject(visible);}
+ renderSharedEnergyInformation();refreshDesignDataReview();
+ const reviewed=document.getElementById('design_reviewed');if(reviewed)reviewed.checked=false;updateSystemDesignReadiness();
+ const notice=document.getElementById('hecReviewNotice')||document.createElement('p');notice.id='hecReviewNotice';notice.textContent='HEC changed. Review household use, hot water, shading, electricity and forecasts before confirming this design.';
+ document.getElementById('sharedEnergyInformation')?.before(notice);
+ await loadJobOperations();
+}
+window.PostHecBill.mount({document,jobId,onSaved:refreshSavedHec});
+document.addEventListener('workspace:hec-saved',()=>refreshSavedHec().catch(()=>{}));
+
 
 const solarPhotoChecklistItems = [
   "site_photo", "switchboard", "meter", "cable_route", "fixings",
@@ -3991,6 +4002,7 @@ function collectSystemDesign() {
     design[id] = Boolean(document.getElementById(id)?.checked);
   });
 
+  design.hec_revision = design.design_reviewed ? (currentAnswers.energy_data?.revision || null) : loadedDesignHecRevision;
   design.roofs = Array.from(
     document.querySelectorAll("#designRoofs .design-roof")
   ).map(roof => {
@@ -4037,6 +4049,7 @@ async function loadSystemDesign() {
       return;
     }
     const design = data.system_design;
+    loadedDesignHecRevision = design.hec_revision || null;
 
     systemDesignFieldIds.forEach(id => {
       const field = document.getElementById(id);
@@ -4045,7 +4058,7 @@ async function loadSystemDesign() {
 
     systemDesignCheckboxIds.forEach(id => {
       const field = document.getElementById(id);
-      if (field) field.checked = Boolean(design[id]);
+      if (field) field.checked = Boolean(design[id]) && !(id === "design_reviewed" && currentAnswers.energy_data?.revision && loadedDesignHecRevision !== currentAnswers.energy_data.revision);
     });
 
     const roofsContainer = document.getElementById("designRoofs");
@@ -4930,6 +4943,10 @@ loadJob().then(() => {
     loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers(), loadJobOperations()
   ]).then(() => {
     initialiseDesignDataReview();
+    if(currentAnswers.energy_data?.revision && loadedDesignHecRevision !== currentAnswers.energy_data.revision){
+      const notice=document.createElement('p');notice.id='hecReviewNotice';notice.textContent='HEC information has changed. Review household use, hot water, shading and electricity evidence before confirming design or regenerating a proposal.';
+      document.getElementById('sharedEnergyInformation')?.before(notice);
+    }
     restoreWorkLogDraft();
 
     const roofOrientationField =

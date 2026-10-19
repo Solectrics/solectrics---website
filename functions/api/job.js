@@ -1,5 +1,5 @@
 import { ensureJobTypeColumn } from "./_schema.js";
-import { energyRevision, parseEnergyAnswers, stagingEnergyEnabled } from "./_post-hec-energy.js";
+import { energyRevision, parseEnergyAnswers, stagingEnergyEnabled, sharedIdentity } from "./_post-hec-energy.js";
 
 function errorResponse(message, status = 500, detail) {
   return Response.json(
@@ -88,7 +88,7 @@ export async function onRequestPost(context) {
       const icp = String(body.icp || "").replace(/\s+/g, "").toUpperCase();
       if (!/^[A-Z0-9]{15}$/.test(icp)) return errorResponse("Enter the complete 15-character ICP from the bill or meter record", 400);
       const answers = parseEnergyAnswers(row.answers_json);
-      const updated = {...answers, icp, energy_data:{...(answers.energy_data || {}), revision:crypto.randomUUID(),
+      const updated = {...answers, icp, hec_identity:{...sharedIdentity(answers),icp}, energy_data:{...(answers.energy_data || {}), revision:crypto.randomUUID(),
         identity_history:[...(answers.energy_data?.identity_history || []), {field:"icp",previous:answers.icp || null,value:icp,source:"staff_review",reviewed_at:new Date().toISOString()}]}};
       const json = JSON.stringify(updated);
       const changed = await db.prepare("UPDATE enquiries SET answers_json = ? WHERE id = ? AND answers_json IS ?").bind(json,row.enquiry_id,row.answers_json).run();

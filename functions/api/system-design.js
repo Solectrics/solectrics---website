@@ -1,3 +1,5 @@
+import {usabilityLocal} from './_usability-local.js';
+import {parseEnergyAnswers} from './_post-hec-energy.js';
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS system_designs (
     job_id INTEGER PRIMARY KEY,
@@ -67,6 +69,12 @@ export async function onRequestPost(context) {
       return errorResponse("system_design is required", 400);
     }
 
+    if(usabilityLocal(context) && systemDesign.design_reviewed) {
+      const linked=await db.prepare('SELECT e.answers_json FROM jobs j JOIN enquiries e ON e.id=j.enquiry_id WHERE j.id=?').bind(jobId).first();
+      if(!linked)return errorResponse('Job not found',404);
+      const revision=parseEnergyAnswers(linked.answers_json).energy_data?.revision;
+      if(revision && systemDesign.hec_revision!==revision)return errorResponse('HEC changed. Reload and review the current HEC before marking this design reviewed.',409);
+    }
     await db.prepare(CREATE_TABLE).run();
     await db
       .prepare(`
