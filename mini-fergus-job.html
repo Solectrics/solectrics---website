@@ -1,0 +1,4835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solectrics Job Hub | Job</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f5ef;
+      color: #263a36;
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .eyebrow {
+      color: #ef9c20;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .back {
+      display: inline-block;
+      margin: 34px 0;
+      color: #ef9c20;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .button-link { background: #173f3f; border-radius: 7px; color: #fff; display: inline-block; font-weight: 800; margin-top: 14px; padding: 12px 16px; text-decoration: none; }
+
+    h1 {
+      font-size: 48px;
+      margin: 5px 0 8px;
+    }
+
+    .address {
+      font-size: 21px;
+      color: #68746f;
+      margin-bottom: 28px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: #fff0e7;
+      color: #ef9c20;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd8cf;
+      border-radius: 24px;
+      padding: 32px 36px;
+      margin: 24px 0;
+    }
+
+    h2 {
+      margin: 0 0 25px;
+      font-size: 25px;
+    }
+
+    h3 {
+      margin: 28px 0 14px;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px 40px;
+    }
+
+    .label {
+      color: #68746f;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .value {
+      font-size: 17px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .answer-box {
+      background: #faf9f5;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+
+    .answers-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .answers-list li {
+      margin: 7px 0;
+    }
+
+    .placeholder {
+      color: #68746f;
+      line-height: 1.6;
+    }
+
+    .site-visit input:not([type="checkbox"]),
+    .site-visit select,
+    .site-visit textarea {
+      width: 100%;
+      min-height: 40px;
+    }
+
+    .site-visit textarea {
+      min-height: 80px;
+    }
+
+    .general-job input,
+    .general-job select,
+    .general-job textarea {
+      min-height: 40px;
+      width: 100%;
+    }
+
+    .general-job textarea { min-height: 86px; }
+
+    .job-files input:not([type="file"]),
+    .job-files select,
+    .job-files textarea,
+    .job-files input[type="file"] {
+      width: 100%;
+      min-height: 40px;
+    }
+
+    .job-file-row {
+      border-top: 1px solid #e6e1d8;
+      padding: 14px 0;
+    }
+
+    .job-file-row a {
+      color: #ef9c20;
+      font-weight: 700;
+    }
+
+    .job-file-selection {
+      border-top: 1px solid #e6e1d8;
+      margin-top: 16px;
+    }
+
+    .job-file-selection-row {
+      border-bottom: 1px solid #e6e1d8;
+      padding: 12px 0;
+    }
+
+    .job-file-selection-name {
+      font-weight: 700;
+      margin-bottom: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .photo-checklist {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .photo-checklist-row {
+      align-items: center;
+      background: #f8f6f1;
+      border-radius: 6px;
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      padding: 10px 12px;
+    }
+
+    .photo-checklist-status {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .photo-checklist-status.complete { color: #287a45; }
+    .photo-checklist-status.missing { color: #8a5a00; }
+    .energy-data-panel { background: #f8f6f1; border-left: 5px solid #ef9c20; border-radius: 8px; margin: 18px 0 24px; padding: 16px; }
+    .energy-data-panel h3 { margin-top: 0; }
+    .energy-status-grid { display: grid; gap: 8px; grid-template-columns: repeat(2,minmax(0,1fr)); margin: 12px 0 16px; }
+    .energy-status-item { background: #fff; border-radius: 7px; padding: 10px 12px; }
+    .energy-status-item.complete { color: #287a45; font-weight: 700; }
+    .energy-status-item.missing { color: #8a5a00; font-weight: 700; }
+    .energy-file-group { border-top: 1px solid #e6e1d8; margin-top: 12px; padding-top: 12px; }
+    .energy-file-group h4 { margin: 0 0 7px; }
+    .energy-file-link { display: block; margin: 7px 0; overflow-wrap: anywhere; }
+
+    .work-log-summary {
+      background: #f8f6f1;
+      border-radius: 6px;
+      font-weight: 700;
+      margin: 16px 0;
+      padding: 12px;
+    }
+
+    .work-log-row {
+      border-top: 1px solid #e6e1d8;
+      padding: 14px 0;
+    }
+
+    .work-log-heading {
+      display: flex;
+      flex-wrap: wrap;
+      font-weight: 700;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .work-log-detail {
+      margin-top: 7px;
+      white-space: pre-wrap;
+    }
+
+    .work-date-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .work-date-row {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+
+    .work-date-row input { flex: 1; min-width: 0; }
+    .work-date-row button { white-space: nowrap; }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .quote-box {
+      border: 1px solid #ddd8cf;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .quote-box strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .costing-toolbar {
+      align-items: end;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1.2fr 1.2fr .8fr .8fr auto;
+      margin-top: 20px;
+    }
+
+    .costing-toolbar input,
+    .costing-toolbar select,
+    .costing-search input,
+    .costing-line input,
+    .costing-line select {
+      min-height: 40px;
+      width: 100%;
+    }
+
+    .costing-search-results {
+      border: 1px solid #ddd8cf;
+      border-radius: 10px;
+      margin-top: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .costing-search-result {
+      align-items: center;
+      border-bottom: 1px solid #ece8df;
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      padding: 10px 12px;
+    }
+
+    .costing-search-result:last-child { border-bottom: 0; }
+    .costing-search-result button { white-space: nowrap; }
+
+    .costing-table-wrap { overflow-x: auto; margin-top: 18px; }
+    .costing-table { border-collapse: collapse; min-width: 1180px; width: 100%; }
+    .costing-table th, .costing-table td { border-bottom: 1px solid #e6e1d8; padding: 9px 7px; text-align: left; vertical-align: top; }
+    .costing-table th { color: #68746f; font-size: 11px; text-transform: uppercase; }
+    .costing-description { min-width: 230px; }
+    .costing-number { min-width: 90px; }
+    .costing-display { min-width: 150px; }
+    .costing-line-meta { color: #68746f; font-size: 12px; margin-top: 4px; }
+    .costing-remove { background: #fff0ed; color: #a12d2d; }
+
+    .customer-quote-tools { border-top: 1px solid #e6e1d8; margin-top: 22px; padding-top: 20px; }
+    .quote-warning { background: #fff4df; border-left: 4px solid #d88b00; border-radius: 8px; margin: 12px 0; padding: 11px 13px; }
+    .quote-history { display: grid; gap: 9px; margin-top: 14px; }
+    .quote-history-row { align-items: center; background: #f8f6f1; border-radius: 9px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 11px 13px; }
+    .quote-history-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .quote-history-actions a { background: #173f3f; border-radius: 4px; color: #fff; padding: 8px 12px; text-decoration: none; }
+
+    .costing-summary {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 22px;
+    }
+
+    .costing-summary-item { background: #f8f6f1; border-radius: 10px; padding: 13px; }
+    .costing-summary-item strong { display: block; font-size: 18px; margin-top: 5px; }
+    .costing-summary-item.highlight { background: #fff3e9; }
+
+    .error {
+      color: #a12d2d;
+    }
+
+    @media (max-width: 700px) {
+      .grid,
+      .quote-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+
+      .card {
+        padding: 25px 22px;
+      }
+
+      .costing-toolbar,
+      .costing-summary,
+      .energy-status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 701px) and (max-width: 1100px) {
+      .costing-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 1100px) {
+      .costing-table { min-width: 0; }
+      .costing-table thead { display: none; }
+      .costing-table, .costing-table tbody, .costing-table tr, .costing-table td { display: block; width: 100%; }
+      .costing-table tr { border: 1px solid #ddd8cf; border-radius: 11px; margin-bottom: 14px; padding: 10px; }
+      .costing-table td { border: 0; display: grid; gap: 10px; grid-template-columns: 145px minmax(0, 1fr); padding: 6px; }
+      .costing-table td::before { color: #68746f; content: attr(data-label); font-size: 11px; font-weight: 700; padding-top: 11px; text-transform: uppercase; }
+      .costing-description, .costing-number, .costing-display { min-width: 0; }
+      .costing-table td:last-child { display: block; padding-left: 151px; }
+    }
+  </style>
+<link rel="stylesheet" href="/assets/job-document-library.css">
+<script src="/assets/job-document-library.js"></script>
+<link rel="stylesheet" href="/assets/workspace-navigation.css">
+<script src="/assets/workspace-navigation.js" defer></script>
+<link rel="stylesheet" href="/assets/site-visit-photos.css">
+<script src="/assets/site-visit-photos.js" defer></script>
+<link rel="stylesheet" href="/assets/job-data-review.css">
+<script src="/assets/job-data-review.js"></script>
+<link rel="stylesheet" href="/assets/system-design-save.css">
+<script src="/assets/system-design-save.js"></script>
+<link rel="stylesheet" href="/assets/post-hec-bill.css">
+<script src="/assets/post-hec-bill.js"></script>
+</head>
+
+<body>
+  <main class="wrap">
+
+    <div class="brand">solectrics</div>
+    <div class="eyebrow">Internal workspace</div>
+
+    <a class="back" href="/mini-fergus">← Back to Job Hub</a>
+
+    <div id="page">
+      Loading job...
+    </div>
+
+  </main>
+
+  <script>
+    function formatStatus(status) {
+      if (!status) return "New enquiry";
+
+      return status
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function escapeHtml(value) {
+      if (value === null || value === undefined) return "";
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function prettyLabel(key) {
+      return key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/_/g, " ")
+        .replace(/^./, char => char.toUpperCase());
+    }
+
+    function prettyValue(value) {
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+if (typeof value === "object" && value !== null) {
+  return Object.entries(value)
+    .map(([key, val]) => `${prettyLabel(key)}: ${prettyValue(val)}`)
+    .join(" • ");
+}
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      if (value === null || value === undefined || value === "") return "Not provided";
+
+      return String(value);
+    }
+
+    function renderObject(obj) {
+      if (!obj || typeof obj !== "object") {
+        return `<div class="placeholder">No information provided.</div>`;
+      }
+
+      const entries = Object.entries(obj);
+
+      if (!entries.length) {
+        return `<div class="placeholder">No information provided.</div>`;
+      }
+
+      return `
+        <div class="grid">
+          ${entries.map(([key, value]) => `
+            <div>
+              <div class="label">${escapeHtml(prettyLabel(key))}</div>
+              <div class="value">${escapeHtml(prettyValue(value))}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function parseAnswers(raw) {
+      if (!raw) return {};
+
+      if (typeof raw === "object") {
+        return raw;
+      }
+
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return { answers: raw };
+      }
+    }
+const params = new URLSearchParams(window.location.search);
+const jobId = params.get("id");
+  let currentAnswers = {};
+  let postHecBillEnabled = false;
+  let currentJobType = "solar";
+
+async function loadJob() {
+  const page = document.getElementById("page");
+
+      if (!jobId) {
+        page.innerHTML = `
+          <section class="card error">
+            No job ID was supplied.
+          </section>
+        `;
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.ok || !data.job) {
+          throw new Error(data.error || "Job could not be loaded");
+        }
+
+        const job = data.job;
+        currentJobType = job.job_type || "solar";
+        currentAnswers = parseAnswers(job.answers_json);
+        postHecBillEnabled = data.post_hec_bill_processing === true;
+        
+const answers = currentAnswers;
+        
+window.currentAnswers = answers;
+        
+        const loads = answers.loads || [];
+        const home = {
+          "People": answers.people,
+          "Home type": answers.homeType,
+          "Daytime use": answers.dayHome,
+          "Hot water": answers.hotWater,
+          "Meter": answers.meter,
+          "Shade": answers.shade
+        };
+
+        page.innerHTML = `
+          <h1>${escapeHtml(job.customer_name || "Customer")}</h1>
+          <div class="address">${escapeHtml(job.address || "")}</div>
+
+          <div class="status">${escapeHtml(formatStatus(job.job_status))}</div>
+
+          <section class="card">
+            <h2>Customer</h2>
+
+            <div class="grid">
+              <div>
+                <div class="label">Email</div>
+                <div class="value">${escapeHtml(job.email || "Not provided")}</div>
+              </div>
+
+              <div>
+                <div class="label">Phone</div>
+                <div class="value">${escapeHtml(job.phone || "Not provided")}</div>
+              </div>
+
+              <div>
+                <div class="label">Address</div>
+                <div class="value">${escapeHtml(job.address || "Not provided")}</div>
+              </div>
+
+              <div>
+                <div class="label">Enquiry reference</div>
+                <div class="value">${escapeHtml(job.enquiry_ref || "Not provided")}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Next action</h2>
+            <div class="value">
+              ${escapeHtml(job.next_action || "Review Home Energy Check")}
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Job type</h2>
+            <p class="placeholder">General electrical jobs do not require the solar assessment or design sections.</p>
+            <select id="jobType">
+              <option value="solar" ${job.job_type !== "general_electrical" ? "selected" : ""}>Solar</option>
+              <option value="general_electrical" ${job.job_type === "general_electrical" ? "selected" : ""}>General electrical</option>
+            </select>
+            <span id="jobTypeMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+          </section>
+
+          <section class="card general-job general-only" id="generalJobSection" hidden>
+            <h2>Electrical Job Brief</h2>
+            <div style="margin:16px 0;">
+              <label for="general_billing_route">How should this job be billed?</label>
+              <select id="general_billing_route"><option value="quote">Prepare a customer quote</option><option value="invoice_only">Invoice only — no quote required</option></select>
+              <div class="placeholder">Invoice-only jobs can be turned into a customer invoice in Job Hub when the work is complete.</div>
+            </div>
+            <p class="placeholder">
+              Keep the essential job information here. Tom can use phone dictation in any notes box.
+              Ben is the default supervisor and does not need to be selected for each job.
+            </p>
+
+            <div class="grid">
+              <div>
+                <label>Job status</label>
+                <select id="general_job_status">
+                  <option value="New job" ${job.job_status === "New job" ? "selected" : ""}>New job</option>
+                  <option value="quoted" ${job.job_status === "quoted" ? "selected" : ""}>Quoted</option>
+                  <option value="accepted" ${job.job_status === "accepted" ? "selected" : ""}>Accepted</option>
+                  <option value="scheduled" ${job.job_status === "scheduled" ? "selected" : ""}>Scheduled</option>
+                  <option value="in_progress" ${job.job_status === "in_progress" ? "selected" : ""}>In progress</option>
+                  <option value="awaiting_inspection" ${job.job_status === "awaiting_inspection" ? "selected" : ""}>Awaiting inspection / certification</option>
+                  <option value="completed" ${job.job_status === "completed" ? "selected" : ""}>Completed</option>
+                  <option value="invoiced" ${job.job_status === "invoiced" ? "selected" : ""}>Invoiced</option>
+                </select>
+              </div>
+              <div><label>Next action</label><input id="general_next_action" value="${escapeHtml(job.next_action || "")}"></div>
+            </div>
+
+            <h3>Work requested</h3>
+            <textarea id="general_job_description" placeholder="What has the customer asked Solectrics to do?">${escapeHtml(answers.jobDescription || "")}</textarea>
+
+            <h3>Site and existing installation</h3>
+            <div class="grid">
+              <div><label>Site contact / access</label><textarea id="general_site_contact"></textarea></div>
+              <div><label>Access or parking notes</label><textarea id="general_access_notes"></textarea></div>
+              <div><label>Supply / phase / main switch</label><textarea id="general_supply_details"></textarea></div>
+              <div><label>Switchboard details</label><textarea id="general_switchboard_details"></textarea></div>
+            </div>
+            <div style="margin-top:16px;"><label>Existing installation / fault information</label><textarea id="general_existing_installation"></textarea></div>
+            <div style="margin-top:16px;"><label>Hazards and safety notes</label><textarea id="general_hazards"></textarea></div>
+
+            <h3>Planned electrical work</h3>
+            <textarea id="general_work_scope" placeholder="Circuits, fittings, repairs, switchboard work or other agreed scope"></textarea>
+            <div class="grid" style="margin-top:16px;">
+              <div><label>Testing required / planned</label><textarea id="general_testing_required"></textarea></div>
+              <div>
+                <label>Certification status</label>
+                <select id="general_certification_status">
+                  <option value="not_started">Not started</option>
+                  <option value="testing_in_progress">Testing in progress</option>
+                  <option value="ready_for_ben">Ready for Ben's review</option>
+                  <option value="certificate_required">Certificate required</option>
+                  <option value="completed">Completed / certificate filed</option>
+                  <option value="not_required">Not required</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:16px;"><label>Customer notes / decisions</label><textarea id="general_customer_notes"></textarea></div>
+
+            <br>
+            <span id="generalJobMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+          </section>
+
+<section class="card solar-only">
+            <h2>Home Energy Check</h2>
+
+            <h3>Home & energy use</h3>
+
+            <div class="grid">
+              ${Object.entries(home).map(([key, value]) => `
+                <div>
+                  <div class="label">${escapeHtml(key)}</div>
+                  <div class="value">${escapeHtml(prettyValue(value))}</div>
+                </div>
+              `).join("")}
+            </div>
+
+            <h3>Electrical loads</h3>
+
+            <div class="answer-box">
+              ${
+                loads.length
+                  ? `<ul class="answers-list">
+                      ${loads.map(load => `<li>${escapeHtml(load)}</li>`).join("")}
+                    </ul>`
+                  : "No loads provided."
+              }
+            </div>
+
+            <h3>All Home Energy Check answers</h3>
+
+            <div class="answer-box">
+              ${renderObject(answers)}
+            </div>
+          </section>
+
+          <section class="card solar-only">
+  <h2>Assessment & design</h2>
+
+  <div class="placeholder">
+    Review the Home Energy Check and develop the recommended
+    solar-smart solution.
+  </div>
+
+  <form id="assessmentForm">
+
+<h3>Solar design</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Panel wattage (W)</label>
+    <input type="number" id="panel_wattage" value="445">
+  </div>
+
+  <div>
+    <label>Number of panels</label>
+    <input type="number" id="panel_count">
+  </div>
+
+  <div>
+    <label>Solar array size (kWp)</label>
+    <input type="number" step="0.01" id="solar_kw" readonly>
+  </div>
+
+  <div>
+    <label>Roof / panel orientation</label>
+    <select id="roof_orientation">
+      <option value="">Select...</option>
+      <option value="North">North</option>
+      <option value="North-east">North-east</option>
+      <option value="North-west">North-west</option>
+      <option value="East">East</option>
+      <option value="West">West</option>
+      <option value="South-east">South-east</option>
+      <option value="South-west">South-west</option>
+      <option value="South">South</option>
+      <option value="Mixed">Mixed orientations</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Inverter</label>
+    <input type="text" id="inverter">
+  </div>
+
+  <div>
+    <label>Estimated annual generation (kWh)</label>
+    <input type="number" id="estimated_generation_kwh">
+    <div class="placeholder">
+      Preliminary estimate — editable if a detailed solar design gives a better figure.
+    </div>
+  </div>
+
+</div>
+
+
+<h3>Smart energy use</h3>
+
+<div class="placeholder">
+  Job Hub can suggest how this home could use more of its own solar based on the Home Energy Check.
+</div>
+
+<div class="grid">
+
+  <div>
+    <label>Hot-water strategy</label>
+    <textarea id="hot_water_strategy"
+      placeholder="Suggested hot-water timing or control"></textarea>
+  </div>
+
+  <div>
+    <label>Smart controls / load shifting</label>
+    <textarea id="smart_controls"
+      placeholder="Suggested loads to shift into solar-rich hours"></textarea>
+  </div>
+
+</div>
+
+
+<h3>Battery</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Battery recommendation</label>
+    <select id="battery_option">
+      <option value="">Select...</option>
+      <option value="Start without battery">Start without battery</option>
+      <option value="Battery-ready">Battery-ready</option>
+      <option value="Battery likely worthwhile">Battery likely worthwhile</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Battery size (kWh)</label>
+    <input type="number" step="0.1" id="battery_kwh">
+  </div>
+
+</div>
+
+<label>Why?</label>
+<textarea id="battery_reason"
+  placeholder="Why this battery approach suits this home"></textarea>
+
+
+<h3>Tariff review</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Current retailer</label>
+    <input type="text" id="current_retailer">
+  </div>
+
+  <div>
+    <label>Import rate (c/kWh)</label>
+    <input type="number" step="0.01" id="import_rate">
+  </div>
+
+  <div>
+    <label>Export / solar buy-back rate (c/kWh)</label>
+    <input type="number" step="0.01" id="export_rate">
+  </div>
+
+  <div>
+    <label>Controlled hot water</label>
+    <select id="controlled_hot_water">
+      <option value="">Unknown / not checked</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+      <option value="Not applicable">Not applicable</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Recommended retailer / tariff</label>
+    <input type="text" id="recommended_tariff">
+  </div>
+
+</div>
+
+<label>Tariff notes</label>
+<textarea id="tariff_notes"
+  placeholder="Import pricing, solar buy-back, controlled-load considerations or tariff notes"></textarea>
+
+
+<h3>Site notes</h3>
+
+<textarea id="site_notes"
+  placeholder="Roof, meter, switchboard, shading or anything to check on site"></textarea>
+
+
+<h3>Overall recommendation</h3>
+
+<div class="placeholder">
+  Job Hub will assemble a concise recommendation from the design above. You can edit it before saving.
+</div>
+
+<textarea id="recommendation"
+  placeholder="Recommended Solectrics solution"></textarea>
+
+<br>
+
+<button type="button" id="generateAssessment">
+  GENERATE RECOMMENDATION
+</button>
+
+<span id="assessmentMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+
+  </form>
+</section>
+
+<!-- TOM'S SITE VISIT -->
+
+<section class="card site-visit solar-only" id="siteVisitSection">
+  <h2>Tom's Site Visit</h2>
+  <div class="placeholder">
+    Record the onsite facts once. Saved information is available for review in
+    System Design; it does not overwrite the design. Phone dictation can be used in the notes fields.
+  </div>
+
+  <h3>1. Visit and electrical supply</h3>
+  <div class="grid">
+    <div><label>Visit date</label><input type="date" id="visit_date"></div>
+    <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
+    <div>
+      <label>Electrical connection</label>
+      <select id="visit_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
+    <div><label>ICP</label><input type="text" id="visit_icp"></div>
+    <div><label>Electricity retailer</label><input type="text" id="visit_retailer"></div>
+    <div><label>Distribution network</label><input type="text" id="visit_network"></div>
+    <div>
+      <label>Existing switchboard</label>
+      <select id="visit_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
+
+  <h3>2. Main roof face</h3>
+  <div class="grid">
+    <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
+    <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
+    <div><label>Pitch (degrees)</label><input type="number" step="0.1" id="visit_roof_pitch"></div>
+    <div>
+      <label>Orientation</label>
+      <select id="visit_roof_orientation">
+        <option value="">Select...</option><option>North</option><option>North-east</option>
+        <option>East</option><option>South-east</option><option>South</option>
+        <option>South-west</option><option>West</option><option>North-west</option>
+      </select>
+    </div>
+    <div><label>Roof material / profile</label><input type="text" id="visit_roof_material"></div>
+    <div><label>Roof access</label><input type="text" id="visit_roof_access"></div>
+  </div>
+  <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
+  <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
+
+  <h3>3. Site conditions</h3>
+  <div class="grid">
+    <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
+    <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
+    <label><input type="checkbox" id="visit_trees"> Trees / vegetation</label>
+    <label><input type="checkbox" id="visit_chimneys"> Chimneys</label>
+    <label><input type="checkbox" id="visit_buildings"> Nearby buildings</label>
+    <label><input type="checkbox" id="visit_aerials"> TV aerials</label>
+    <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
+    <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
+  </div>
+
+  <h3>4. Locations and dictated notes</h3>
+  <div class="grid">
+    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
+    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
+    <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
+  </div>
+  <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
+
+  <br>
+  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+</section>
+
+<!-- JOB PHOTOS & DOCUMENTS -->
+
+<section class="card job-files" id="jobFilesSection">
+  <h2>Job Photos & Documents</h2>
+  <div class="placeholder">
+    Add site photos, switchboard and meter photos, drawings, supplier documents
+    and certificates. Each file stays attached to this Job Hub record.
+  </div>
+
+  <details class="energy-data-panel solar-only" id="energyDataPanel"><summary>Energy Usage / Bills details</summary>
+    <h3>Energy Usage / Bills</h3>
+    <div class="placeholder">Electricity evidence received through the Home Energy Check or uploaded to this job for energy modelling and quote preparation.</div>
+    <div id="energyDataStatus" class="energy-status-grid"></div>
+    <div id="energyFilesList" class="placeholder">No energy files received yet.</div>
+    <div id="sharedEnergyInformation"></div>
+  </details>
+
+  <div id="documentSummary" aria-live="polite"></div>
+  <div id="documentAttention"></div>
+  <div class="doc-toolbar"><input id="documentSearch" type="search" placeholder="Search filenames or captions" aria-label="Search job files"><button type="button" id="showDocumentUpload">UPLOAD</button></div>
+  <div id="documentUploadControls" class="doc-upload-controls" hidden>
+  <div class="grid" style="margin-top:20px;">
+    <div>
+      <label>File category</label>
+      <select id="jobFileCategory">
+        <option value="site_photo">Before work / site overview</option>
+        <option value="switchboard">Switchboard</option>
+        <option value="meter">Meter / ICP</option>
+        <option value="roof">Roof</option>
+        <option value="cable_route">Cable route</option>
+        <option value="fixings">Mounting / fixings</option>
+        <option value="equipment">Equipment location</option>
+        <option value="wiring">Wiring before covers</option>
+        <option value="labels">Equipment labels / serial numbers</option>
+        <option value="testing">Testing / test results</option>
+        <option value="completed">Completed installation</option>
+        <option value="drawing">Drawing / design</option>
+        <option value="supplier">Supplier document</option>
+        <option value="certificate">Ben approval / CoC</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label>Choose files</label>
+      <input type="file" id="jobFileInput" accept="image/*,.pdf,.csv,.xls,.xlsx" multiple>
+    </div>
+    <div>
+      <label>Document use</label>
+      <select id="jobFileRole">
+        <option value="general">General job photo/document</option>
+        <option class="solar-file-role" value="power_bill">Customer power bill</option>
+        <option class="solar-file-role" value="annual_usage">12-month electricity usage</option>
+        <option class="solar-file-role" value="additional_power_bill">Additional electricity bill</option>
+        <option class="solar-file-role" value="sld">Single-line diagram (SLD)</option>
+        <option class="solar-file-role" value="roof_layout">Roof / panel layout</option>
+        <option value="supplier_quote">Supplier quote</option>
+        <option value="supplier_invoice">Supplier invoice</option>
+        <option value="certificate">Certificate / Ben approval</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="jobFileSelection" class="job-file-selection" hidden></div>
+
+  <br>
+  <button type="button" id="uploadJobFile" hidden>RETRY UPLOAD</button>
+  <span id="jobFileMessage" aria-live="polite">Files upload automatically after selection.</span>
+
+  </div>
+  <details><summary>Photo evidence inventory</summary>
+  <h3>Photo evidence checklist</h3>
+  <div class="placeholder">This updates automatically when files are uploaded.</div>
+  <div id="jobPhotoChecklist" class="photo-checklist"></div>
+  </details>
+
+  <h3>Files on this job</h3>
+  <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
+</section>
+
+<!-- MATERIALS ACTUALLY USED -->
+<section class="card" id="jobMaterialsSection">
+  <h2>Materials actually used</h2>
+  <p class="placeholder">Upload a supplier invoice, select it below, then let Job Hub read its totals and material lines. Check the preview before adding anything. Record stock taken from the van separately.</p>
+  <button type="button" id="uploadMaterialsInvoice">UPLOAD SUPPLIER INVOICE</button>
+  <div class="grid" style="margin-top:16px;">
+    <div><label>Material source</label><select id="materialsSource"><option value="supplier_invoice">Supplier invoice</option><option value="stock">Solectrics stock</option></select></div>
+    <div id="materialsSupplierWrap"><label>Supplier</label><input id="materialsSupplier" value="J.A. Russell" placeholder="Supplier name"></div>
+    <div id="materialsInvoiceWrap"><label>Uploaded invoice</label><select id="materialsInvoiceFile"><option value="">Upload/select invoice first</option></select></div>
+    <div id="materialsInvoiceNumberWrap"><label>Invoice number (optional)</label><input id="materialsInvoiceNumber"></div>
+    <div id="materialsInvoiceDateWrap"><label>Invoice date (optional)</label><input id="materialsInvoiceDate" type="date"></div>
+    <div><label>Material description *</label><input id="materialsDescription" placeholder="e.g. 4 mm² solar cable"></div>
+    <div><label>Supplier code (optional)</label><input id="materialsSku"></div>
+    <div><label>Quantity *</label><input id="materialsQuantity" type="number" min="0.01" step="0.01" value="1"></div>
+    <div><label>Unit (optional)</label><input id="materialsUnit" placeholder="m, each, pack"></div>
+    <div><label>Unit cost ex GST ($)</label><input id="materialsUnitCost" type="number" min="-10000000" step="0.01" value="0"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+    <button type="button" id="readMaterialsInvoice">READ SELECTED INVOICE</button>
+    <span id="materialsInvoiceReadMessage" class="autosave-status" aria-live="polite">Select an uploaded PDF invoice first.</span>
+  </div>
+  <div id="materialsInvoicePreview" class="answer-box" style="margin-top:16px;" hidden>
+    <h3 style="margin-top:0;">Check invoice before adding</h3>
+    <div id="materialsInvoiceSummary" class="grid"></div>
+    <div id="materialsInvoiceWarnings"></div>
+    <h3>Material lines found</h3>
+    <div id="materialsInvoiceLines"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      <button type="button" id="importMaterialsInvoiceLines">ADD TICKED LINES</button>
+      <button type="button" id="importMaterialsInvoiceTotal">ADD TOTAL ONLY</button>
+      <button type="button" id="cancelMaterialsInvoiceImport" class="costing-remove">CANCEL</button>
+    </div>
+    <div id="materialsInvoiceImportMessage" class="autosave-status" aria-live="polite" style="margin-top:10px;"></div>
+  </div>
+  <div style="margin-top:14px;"><button type="button" id="newJobMaterial">NEW MATERIAL</button> <span id="jobMaterialsMessage" class="autosave-status" aria-live="polite">Material lines save automatically after you enter a description and select an invoice.</span></div>
+  <div style="background:#fff3e9;border-radius:8px;font-weight:800;margin-top:16px;padding:14px;">Actual materials cost (ex GST): $<span id="jobMaterialsTotal">0.00</span></div>
+  <h3>Items recorded</h3><div id="jobMaterialsList" class="placeholder">Loading materials…</div>
+</section>
+
+<!-- DAILY WORK & EWRB RECORD -->
+
+<section class="card" id="workLogSection">
+  <h2>Work & EWRB Record</h2>
+  <div class="placeholder">
+    Record Tom's work across one or more dates, supervision and competency evidence. On a phone,
+    use the keyboard microphone to dictate into the notes fields.
+  </div>
+
+  <div class="grid" style="margin-top:20px;">
+    <div>
+      <label>Dates worked</label>
+      <div id="workLogDates" class="work-date-list"></div>
+      <button type="button" id="addWorkLogDate" style="margin-top:10px;">+ ADD ANOTHER DATE</button>
+    </div>
+    <div>
+      <label>Number of days</label>
+      <input type="number" id="workLogDays" min="0.5" max="60" step="0.5" placeholder="e.g. 3">
+    </div>
+    <div>
+      <label>Total hours worked</label>
+      <input type="number" id="workLogHours" min="0.1" max="1440" step="0.25" placeholder="e.g. 22.5">
+    </div>
+    <div>
+      <label>Supervision</label>
+      <select id="workLogSupervisionType">
+        <option value="on_site">On-site</option>
+        <option value="remote">Remote</option>
+        <option value="evidence_review">Photos / evidence reviewed</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label>EWRB competency</label>
+      <select id="workLogCompetency">
+        <option value="health_safety">Health and safety</option>
+        <option value="planning">Planning and preparation</option>
+        <option value="cable_installation">Cable installation</option>
+        <option value="switchboards">Switchboards and protection</option>
+        <option value="testing">Testing and verification</option>
+        <option value="solar_pv">Solar PV installation</option>
+        <option value="fault_finding">Fault finding</option>
+        <option value="documentation">Certification and documentation</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Work completed</label>
+    <textarea id="workLogCompleted" rows="3" maxlength="3000"
+      placeholder="Describe or dictate what was completed on these dates"></textarea>
+    <div id="workLogPlannedScopeConfirmation" class="placeholder" hidden style="margin-top:8px;">
+      Planned electrical work was copied above. Edit it to match what was completed, or confirm it below.
+      <label style="display:block;margin-top:8px;font-weight:600;"><input type="checkbox" id="confirmPlannedWorkCompleted"> I confirm this describes the work completed</label>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:16px;">
+    <div>
+      <label>Materials used</label>
+      <textarea id="workLogMaterials" rows="3" maxlength="3000" placeholder="Describe or dictate materials and quantities actually used"></textarea>
+    </div>
+    <div>
+      <label>Certification status</label>
+      <select id="workLogCertificationStatus">
+        <option value="not_started">Not started</option>
+        <option value="in_progress">Testing / records in progress</option>
+        <option value="ready_for_ben">Ready for Ben's review</option>
+        <option value="completed">Completed / certificate filed</option>
+        <option value="not_required">Not required</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:16px;">
+    <div>
+      <label>Tests performed and results</label>
+      <textarea id="workLogTests" rows="3" maxlength="2000"></textarea>
+    </div>
+    <div>
+      <label>Problems, changes or safety notes</label>
+      <textarea id="workLogIssues" rows="3" maxlength="2000"></textarea>
+    </div>
+  </div>
+  <div style="margin-top:16px;">
+    <label>Questions / notes for Ben</label>
+    <textarea id="workLogSupervisorNotes" rows="2" maxlength="2000"></textarea>
+  </div>
+
+  <br>
+  <button type="button" id="newWorkLog">NEW WORK RECORD</button>
+  <span id="workLogMessage" class="autosave-status" aria-live="polite">Work records save automatically once dates, hours and work completed are entered.</span>
+
+  <div id="workLogSummary" class="work-log-summary">Total recorded hours: 0</div>
+  <h3>Work record history</h3>
+  <div id="workLogList" class="placeholder">No work records yet.</div>
+</section>
+
+<!-- SYSTEM DESIGN -->
+
+<section class="card solar-only" id="systemDesignSection">
+<header class="design-save-bar">
+    <h2>SYSTEM DESIGN</h2>
+    <div class="design-save-actions">
+      <button type="button" id="saveSystemDesign" disabled>Save System Design</button>
+      <span id="systemDesignMessage" class="autosave-status" role="status" aria-live="polite">Loading saved design…</span>
+    </div>
+  </header>
+  <p class="placeholder">Changes still save automatically. Use Save System Design to save now or retry a failed save. Use Selected Values in Design is a separate review action.</p>
+  <div id="jobDataReview" aria-live="polite"></div>
+
+  <div class="placeholder">
+    Build the installation design from the Home Energy Check, site survey
+    and Solectrics assessment. This information can then be used for the
+    J.A. Russell pricing request, single-line diagram and customer quote.
+  </div>
+
+
+  <!-- SITE & SUPPLY -->
+
+  <h3>1. Site & electrical supply</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Electrical connection</label>
+      <select id="design_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Main supply / main switch rating (A)</label>
+      <input type="number"
+             id="design_main_supply"
+             placeholder="e.g. 63">
+    </div>
+
+    <div>
+      <label>ICP</label>
+      <input type="text"
+             id="design_icp">
+    </div>
+
+    <div>
+      <label>Electricity retailer</label>
+      <input type="text"
+             id="design_retailer">
+    </div>
+
+    <div>
+      <label>Distribution network</label>
+      <input type="text"
+             id="design_network"
+             placeholder="e.g. Vector">
+    </div>
+
+    <div>
+      <label>Existing switchboard</label>
+      <select id="design_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>Switchboard / supply notes</label>
+    <textarea id="design_supply_notes"
+              rows="3"
+              placeholder="Meter arrangement, main switch, available ways, switchboard condition, controlled load, cable route observations, etc."></textarea>
+  </div>
+
+
+  <!-- ROOF & ARRAY -->
+
+  <h3>2. Roof & array survey</h3>
+
+  <div class="placeholder">
+    Record each roof face that may be used for solar.
+    Add another roof where the proposed array spans more than one roof face.
+  </div>
+
+  <div id="designRoofs">
+
+    <div class="design-roof" data-roof="1">
+
+      <h4>Roof 1</h4>
+
+      <div class="grid">
+
+        <div>
+          <label>Roof length (m)</label>
+          <input type="number"
+                 step="0.01"
+                 class="roof_length">
+        </div>
+
+        <div>
+          <label>Roof width (m)</label>
+          <input type="number"
+                 step="0.01"
+                 class="roof_width">
+        </div>
+
+        <div>
+          <label>Pitch (degrees)</label>
+          <input type="number"
+                 step="0.1"
+                 class="roof_pitch">
+        </div>
+
+        <div>
+          <label>Orientation</label>
+          <select class="roof_orientation_design">
+            <option value="">Select...</option>
+            <option>North</option>
+            <option>North-east</option>
+            <option>East</option>
+            <option>South-east</option>
+            <option>South</option>
+            <option>South-west</option>
+            <option>West</option>
+            <option>North-west</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Roof material / profile</label>
+          <input type="text"
+                 class="roof_material"
+                 placeholder="e.g. Corrugated steel">
+        </div>
+
+        <div>
+          <label>Proposed panels on this roof</label>
+          <input type="number"
+                 class="roof_panel_count">
+        </div>
+
+        <div>
+          <label>Proposed array layout</label>
+          <input type="text"
+                 class="roof_array_layout"
+                 placeholder="e.g. 2 rows × 8 panels">
+        </div>
+
+      </div>
+
+      <div style="margin-top:16px;">
+        <label>Shading / obstructions</label>
+        <textarea class="roof_shading"
+                  rows="2"
+                  placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label>Roof notes</label>
+        <textarea class="roof_notes"
+                  rows="2"
+                  placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+      </div>
+
+    </div>
+
+  </div>
+
+  <button type="button" id="addDesignRoof" style="margin-top:16px;">
+    + ADD ANOTHER ROOF
+  </button>
+
+
+  <!-- SITE ENVIRONMENT -->
+
+  <h3>3. Site environment</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="design_salt_spray">
+      Salt spray
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_high_wind">
+      High wind area
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_trees">
+      Trees / vegetation
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_chimneys">
+      Chimneys
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_buildings">
+      Nearby buildings
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_aerials">
+      TV aerials
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_vents">
+      Vent pipes
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_satellite">
+      Satellite dish
+    </label>
+
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Environmental / site notes</label>
+    <textarea id="design_environment_notes"
+              rows="3"></textarea>
+  </div>
+
+
+  <!-- EQUIPMENT -->
+
+  <h3>4. Proposed system</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Panel manufacturer / model</label>
+      <input type="text" id="design_panel_model">
+    </div>
+
+    <div>
+      <label>Panel wattage (W)</label>
+      <input type="number" id="design_panel_wattage">
+    </div>
+
+    <div>
+      <label>Total panel quantity</label>
+      <input type="number" id="design_panel_count">
+    </div>
+
+    <div>
+      <label>Total array size (kWp)</label>
+      <input type="number"
+             step="0.01"
+             id="design_array_kw"
+             readonly>
+    </div>
+
+    <div>
+      <label>Inverter manufacturer / model</label>
+      <input type="text" id="design_inverter_model">
+    </div>
+
+    <div>
+      <label>Inverter rating (kW)</label>
+      <input type="number"
+             step="0.1"
+             id="design_inverter_kw">
+    </div>
+
+    <div>
+      <label>Battery manufacturer / model</label>
+      <input type="text"
+             id="design_battery_model"
+             placeholder="Leave blank if no battery">
+    </div>
+
+    <div>
+      <label>Battery capacity (kWh)</label>
+      <input type="number"
+             step="0.1"
+             id="design_battery_kwh">
+    </div>
+
+    <div>
+      <label>Backup arrangement</label>
+      <select id="design_backup">
+        <option value="">Select...</option>
+        <option value="none">No backup</option>
+        <option value="essential">Essential loads</option>
+        <option value="whole_home">Whole-home backup</option>
+        <option value="tbc">To be confirmed</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <!-- ELECTRICAL DESIGN -->
+
+  <h3>5. Electrical design</h3>
+
+  <div class="placeholder">
+    Design information — complete and review as part of the electrical
+    design process before the installation is finalised.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Number of PV strings</label>
+      <input type="number" id="design_string_count">
+    </div>
+
+    <div>
+      <label>String / MPPT configuration</label>
+      <input type="text"
+             id="design_mppt"
+             placeholder="e.g. String 1 → MPPT 1">
+    </div>
+
+    <div>
+      <label>DC cable</label>
+      <input type="text"
+             id="design_dc_cable"
+             placeholder="Size / type">
+    </div>
+
+    <div>
+      <label>AC cable</label>
+      <input type="text"
+             id="design_ac_cable"
+             placeholder="Size / type">
+    </div>
+
+    <div>
+      <label>AC protection</label>
+      <input type="text" id="design_ac_protection">
+    </div>
+
+    <div>
+      <label>DC protection / isolation</label>
+      <input type="text" id="design_dc_protection">
+    </div>
+
+    <div>
+      <label>Export control / CT arrangement</label>
+      <input type="text" id="design_export_control">
+    </div>
+
+    <div>
+      <label>Earthing arrangement</label>
+      <input type="text" id="design_earthing">
+    </div>
+
+  </div>
+
+  <div style="margin-top:16px;">
+    <label>Electrical design notes</label>
+    <textarea id="design_electrical_notes"
+              rows="4"></textarea>
+  </div>
+
+
+  <!-- DESIGN DOCUMENTS -->
+
+  <h3>6. Design documents</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="design_roof_plan">
+      Roof plan / panel layout complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_sld">
+      Single-line diagram complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_calculations">
+      Design calculations complete
+    </label>
+
+    <label>
+      <input type="checkbox" id="design_equipment_schedule">
+      Equipment schedule complete
+    </label>
+
+  </div>
+
+
+  <!-- DESIGN REVIEW -->
+
+  <h3>7. Design review</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Design reference</label>
+      <input type="text"
+             id="design_reference"
+             placeholder="e.g. SOL-2026-001-D01">
+    </div>
+
+    <div>
+      <label>Revision</label>
+      <input type="text"
+             id="design_revision"
+             value="1">
+    </div>
+
+    <div>
+      <label>Designer / reviewer</label>
+      <input type="text"
+             id="design_designer">
+    </div>
+
+    <div>
+      <label>Design date</label>
+      <input type="date"
+             id="design_date">
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>Standards / design basis</label>
+    <textarea id="design_standards"
+              rows="3"
+              placeholder="Record the standards and design basis relied upon for this installation."></textarea>
+  </div>
+
+  <div style="margin-top:18px;">
+    <label>
+      <input type="checkbox" id="design_reviewed">
+      Design reviewed and ready for final approval
+    </label>
+  </div>
+
+
+  <div id="designReadiness"
+       style="
+         margin-top:24px;
+         padding:18px;
+         border-radius:12px;
+         background:#f5f5f5;
+         font-weight:700;
+       ">
+    SYSTEM DESIGN INCOMPLETE
+  </div>
+
+
+  <!-- OUTPUTS -->
+
+  <h3>8. Design outputs</h3>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+
+    <button type="button" id="generateJARRequest">
+      GENERATE J.A. RUSSELL PRICING REQUEST
+    </button>
+
+    <button type="button" id="generateSLD">
+      GENERATE SINGLE-LINE DIAGRAM
+    </button>
+
+    <button type="button" id="generateDesignPack">
+      GENERATE DESIGN PACK
+    </button>
+
+  </div>
+
+  <br>
+
+
+
+</section>
+
+<section class="card solar-only" id="energyTariffReviewSection">
+  <h2>Energy → Retailer &amp; Tariff Review</h2>
+  <p class="placeholder">
+    Complete the pre-install energy baseline, connect the proposed solar and smart-energy system,
+    compare 3–5 relevant plans, and prepare the customer-facing electricity-plan summary before
+    retailer or metering changes are started.
+  </p>
+  <a class="button-link" href="/mini-fergus-energy-review.html?job_id=${encodeURIComponent(jobId)}">
+    OPEN RETAILER &amp; TARIFF REVIEW
+  </a>
+</section>
+
+<!-- SUPPLIER PRICING -->
+
+<section class="card solar-only" id="supplierPricingSection">
+
+  <h2>SUPPLIER PRICING</h2>
+
+  <div class="placeholder">
+    Request and record supplier pricing for the approved Solectrics system
+    design. More than one supplier or pricing option can be compared before
+    selecting the materials package used in the customer quote.
+  </div>
+
+
+  <!-- PRICING REQUEST -->
+
+  <h3>1. Pricing request</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Supplier</label>
+      <select id="supplier_name">
+        <option value="">Select...</option>
+        <option value="ja_russell">J.A. Russell</option>
+        <option value="ideal">Ideal Electrical</option>
+        <option value="corys">Corys Electrical</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Other supplier</label>
+      <input type="text"
+             id="supplier_other"
+             placeholder="Supplier name">
+    </div>
+
+    <div>
+      <label>Supplier contact</label>
+      <input type="text"
+             id="supplier_contact"
+             placeholder="e.g. Fletcher">
+    </div>
+
+    <div>
+      <label>Date requested</label>
+      <input type="date"
+             id="supplier_request_date">
+    </div>
+
+  </div>
+
+  <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
+
+    <button type="button" id="generateSupplierRequest">
+      GENERATE FLETCHER SOLAR FORM
+    </button>
+
+  </div>
+
+
+  <!-- RETURNED PRICING -->
+
+  <h3>2. Supplier response</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Supplier quote / reference</label>
+      <input type="text"
+             id="supplier_quote_reference">
+    </div>
+
+    <div>
+      <label>Option name</label>
+      <input type="text"
+             id="supplier_option_name"
+             placeholder="e.g. Option 1">
+    </div>
+
+    <div>
+      <label>Date received</label>
+      <input type="date"
+             id="supplier_received_date">
+    </div>
+
+    <div>
+      <label>Valid until</label>
+      <input type="date"
+             id="supplier_valid_until">
+    </div>
+
+  </div>
+
+
+  <!-- SYSTEM PRICED -->
+
+  <h3>3. System priced</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Solar system</label>
+      <input type="text"
+             id="supplier_solar_system"
+             placeholder="e.g. 8.55 kWp — 18 × 475 W">
+    </div>
+
+    <div>
+      <label>Panel make / model</label>
+      <input type="text"
+             id="supplier_panel_model">
+    </div>
+
+    <div>
+      <label>Inverter / controller</label>
+      <input type="text"
+             id="supplier_inverter">
+    </div>
+
+    <div>
+      <label>Battery</label>
+      <input type="text"
+             id="supplier_battery"
+             placeholder="Leave blank if none">
+    </div>
+
+    <div>
+      <label>Gateway / backup equipment</label>
+      <input type="text"
+             id="supplier_gateway">
+    </div>
+
+  </div>
+
+
+  <!-- SUPPLIER COST BREAKDOWN -->
+
+  <h3>4. Supplier cost breakdown</h3>
+
+  <div class="placeholder">
+    Record the supplier's ex-GST costs. This lets Solectrics distinguish
+    supplied equipment from materials that still need to be allowed for.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Panels ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_panels">
+    </div>
+
+    <div>
+      <label>Inverter / controller ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_inverter">
+    </div>
+
+    <div>
+      <label>Battery ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_battery">
+    </div>
+
+    <div>
+      <label>Gateway / backup ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_gateway">
+    </div>
+
+    <div>
+      <label>Mounting hardware ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_mounting">
+    </div>
+
+    <div>
+      <label>Solar miscellaneous ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_misc">
+    </div>
+
+    <div>
+      <label>Freight ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_freight">
+    </div>
+
+    <div>
+      <label>Other supplier cost ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="supplier_cost_other">
+    </div>
+
+  </div>
+
+
+  <!-- SUPPLIER TOTAL -->
+
+  <div style="margin-top:20px;">
+
+    <label>Supplier subtotal ($ ex GST)</label>
+
+    <input type="number"
+           step="0.01"
+           id="supplier_subtotal"
+           readonly>
+
+  </div>
+
+
+  <!-- EXCLUSIONS -->
+
+  <h3>5. What's not included?</h3>
+
+  <div class="grid">
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_cable">
+      Cable not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_conduit">
+      Conduit not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_excludes_switchgear">
+      AC switchgear not included
+    </label>
+
+    <label>
+      <input type="checkbox" id="supplier_mounting_confirm">
+      Mounting / quantities require site confirmation
+    </label>
+
+  </div>
+
+  <div style="margin-top:16px;">
+
+    <label>Other exclusions / supplier notes</label>
+
+    <textarea id="supplier_notes"
+              rows="4"
+              placeholder="Record exclusions, assumptions, substitutions, roof/fixing notes or supplier comments."></textarea>
+
+  </div>
+
+
+  <!-- SOLECTRICS ADDITIONAL MATERIALS -->
+
+  <h3>6. Solectrics additional materials</h3>
+
+  <div class="placeholder">
+    Add materials required for the installation that are not included
+    in the supplier quotation.
+  </div>
+
+  <div class="grid">
+
+    <div>
+      <label>Cable allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_cable_cost">
+    </div>
+
+    <div>
+      <label>Conduit allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_conduit_cost">
+    </div>
+
+    <div>
+      <label>AC switchgear allowance ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_switchgear_cost">
+    </div>
+
+    <div>
+      <label>Other materials ($ ex GST)</label>
+      <input type="number"
+             step="0.01"
+             id="solectrics_other_materials">
+    </div>
+
+  </div>
+
+
+  <!-- TRUE MATERIALS COST -->
+
+  <div style="
+       margin-top:24px;
+       padding:18px;
+       border-radius:12px;
+       background:#fffaf7;
+       border-left:4px solid #ef9c20;
+       ">
+
+    <strong>TRUE MATERIALS COST — EX GST</strong>
+
+    <div style="font-size:26px;font-weight:800;margin-top:8px;">
+      $<span id="trueMaterialsCost">0.00</span>
+    </div>
+
+    <div style="margin-top:8px;font-size:14px;">
+      Supplier subtotal plus Solectrics additional materials.
+    </div>
+
+  </div>
+
+
+  <!-- OPTION STATUS -->
+
+  <h3>7. Pricing option</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Pricing status</label>
+      <select id="supplier_pricing_status">
+        <option value="">Select...</option>
+        <option value="requested">Requested</option>
+        <option value="received">Received</option>
+        <option value="reviewing">Under review</option>
+        <option value="selected">Selected for customer quote</option>
+        <option value="not_selected">Not selected</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <br>
+
+  <span id="supplierPricingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+
+</section>
+
+<section class="card" id="internalCostingSection">
+  <h2>INTERNAL COSTING</h2>
+  <p class="placeholder">
+    Build the job cost once, then use it for the customer quote. Supplier costs,
+    mark-up and profit are internal and will never be shown to the customer.
+  </p>
+
+  <div class="costing-toolbar">
+    <div><label>Costing option</label><select id="costingOptionSelect"></select></div>
+    <div><label>Option name</label><input id="costingOptionName" type="text" placeholder="e.g. Solar only"></div>
+    <div><label>Status</label><select id="costingOptionStatus"><option value="draft">Draft</option><option value="approved">Approved</option></select></div>
+    <div><label>Default material mark-up %</label><input id="costingDefaultMarkup" type="number" min="0" step="0.1" value="30"></div>
+    <button type="button" id="newCostingOption">NEW OPTION</button>
+  </div>
+
+  <h3>Add catalogue products</h3>
+  <div class="costing-search">
+    <div class="grid">
+      <div><label for="costingSupplierFilter">Supplier catalogue</label><select id="costingSupplierFilter"><option value="">All suppliers</option></select></div>
+      <div><label for="costingProductSearch">Search product code, description or brand</label><input id="costingProductSearch" type="search" placeholder="e.g. solar cable, PDL, 10540100"></div>
+    </div>
+    <div id="costingSearchResults" class="costing-search-results" hidden></div>
+  </div>
+
+  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+    <button type="button" class="addCostingLine" data-category="materials">ADD MANUAL MATERIAL</button>
+    <button type="button" class="addCostingLine" data-category="labour">ADD LABOUR</button>
+    <button type="button" class="addCostingLine" data-category="certification">ADD TESTING / CERTIFICATION</button>
+    <button type="button" class="addCostingLine" data-category="other">ADD OTHER COST</button>
+  </div>
+
+  <div class="costing-table-wrap">
+    <table class="costing-table">
+      <thead><tr><th>Description / supplier</th><th>Category</th><th>Used by</th><th>Qty</th><th>Unit</th><th>Unit cost</th><th>Mark-up %</th><th>Customer unit price</th><th>Customer display</th><th></th></tr></thead>
+      <tbody id="costingLines"></tbody>
+    </table>
+  </div>
+
+  <div id="costingEmpty" class="placeholder" style="margin-top:16px;">No costing lines yet. Search the catalogue or add a manual line.</div>
+
+  <div class="costing-summary">
+    <div class="costing-summary-item"><span>Materials cost</span><strong id="costingMaterialsCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Labour cost</span><strong id="costingLabourCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Subcontractor / certification</span><strong id="costingSubcontractorCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Other costs</span><strong id="costingOtherCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Total estimated job cost</span><strong id="costingTotalCost">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Customer price ex GST</span><strong id="costingCustomerEx">$0.00</strong></div>
+    <div class="costing-summary-item"><span>GST</span><strong id="costingGst">$0.00</strong></div>
+    <div class="costing-summary-item"><span>Customer price incl GST</span><strong id="costingCustomerIncl">$0.00</strong></div>
+    <div class="costing-summary-item highlight"><span>Expected gross profit</span><strong id="costingProfit">$0.00</strong></div>
+    <div class="costing-summary-item highlight"><span>Expected gross margin</span><strong id="costingMargin">0.0%</strong></div>
+  </div>
+
+  <div class="customer-quote-tools" id="actualMaterialsReconciliation">
+    <h3>Actual materials for the customer invoice</h3>
+    <p class="placeholder">Calculated from material lines recorded above, including supplier invoices and Solectrics stock. This actual total is kept separate from the original quote costing to avoid double counting. For a fixed-price job, use it only for invoice-only work or an agreed variation, not on top of an accepted quote.</p>
+    <div class="costing-summary">
+      <div class="costing-summary-item"><span>Actual materials cost — ex GST</span><strong id="actualMaterialsCost">$0.00</strong></div>
+      <div class="costing-summary-item"><span>30% mark-up amount</span><strong id="actualMaterialsMarkup">$0.00</strong></div>
+      <div class="costing-summary-item"><span>Customer materials charge — ex GST</span><strong id="actualMaterialsCustomerEx">$0.00</strong></div>
+      <div class="costing-summary-item highlight"><span>Customer materials charge — incl GST</span><strong id="actualMaterialsCustomerIncl">$0.00</strong></div>
+    </div>
+    <p class="placeholder" id="actualMaterialsMarkupNote">Uses the default material mark-up above. The marked-up ex-GST amount is added to the Job Hub customer invoice below.</p>
+  </div>
+
+  <div style="margin-top:20px;">
+    <span id="costingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+  </div>
+
+  <div class="customer-quote-tools" id="customerQuoteTools">
+    <h3>Customer quote</h3>
+    <p class="placeholder">Approve and save the costing options you want to offer, then generate one customer-safe quote. Internal costs, mark-up and profit are never included.</p>
+    <button type="button" id="generateCustomerQuote">GENERATE CUSTOMER QUOTE</button>
+    <span id="customerQuoteMessage"></span>
+    <div id="customerQuoteWarning" class="quote-warning" hidden></div>
+    <div id="customerQuoteHistory" class="quote-history"></div>
+  </div>
+
+  <div class="customer-quote-tools" id="customerInvoiceTools">
+    <h3>Customer invoice</h3>
+    <p class="placeholder">Create a saved customer invoice from this costing option. Job Hub uses the customer labour and other charges above, plus the marked-up materials actually used. Review the draft before marking it issued.</p>
+    <div class="grid">
+      <div><label for="invoiceBusinessName">Business name</label><input id="invoiceBusinessName" value="Solectrics"></div>
+      <div><label for="invoiceGstNumber">Solectrics GST number</label><input id="invoiceGstNumber" inputmode="numeric" autocomplete="off" value="137-174-537"></div>
+      <div><label for="invoiceBusinessEmail">Business email</label><input id="invoiceBusinessEmail" type="email" value="tom@solectrics.co.nz"></div>
+      <div><label for="invoiceIssueDate">Invoice date</label><input id="invoiceIssueDate" type="date"></div>
+      <div><label for="invoiceDueDate">Due date</label><input id="invoiceDueDate" type="date"></div>
+      <div><label for="invoicePaymentTerms">Payment terms</label><input id="invoicePaymentTerms" value="Payment due within 7 days"></div>
+    </div>
+    <label for="invoicePaymentInstructions">Payment instructions</label>
+    <textarea id="invoicePaymentInstructions" rows="3" placeholder="Account name, bank account number and payment reference instructions"></textarea>
+    <label for="invoiceNotes">Invoice notes (optional)</label>
+    <textarea id="invoiceNotes" rows="2" placeholder="Optional customer note"></textarea>
+    <button type="button" id="generateCustomerInvoice">GENERATE CUSTOMER INVOICE</button>
+    <span id="customerInvoiceMessage" aria-live="polite"></span>
+    <div id="customerInvoiceWarning" class="quote-warning" hidden></div>
+    <div id="customerInvoiceHistory" class="quote-history"></div>
+  </div>
+</section>
+
+          <section class="card solar-only">
+  <h2>Quote</h2>
+
+  <p class="placeholder">
+    Build the customer quote from the recommended solar-smart solution above.
+  </p>
+
+  <h3>Recommended system</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Solar system</label>
+      <input type="text" id="quote_solar_system"
+        placeholder="e.g. 6.67 kWp solar — 15 × 445 W panels">
+    </div>
+
+    <div>
+      <label>Inverter</label>
+      <input type="text" id="quote_inverter">
+    </div>
+
+    <div>
+      <label>Battery</label>
+      <input type="text" id="quote_battery"
+        placeholder="e.g. Start without battery — battery-ready">
+    </div>
+
+    <div>
+      <label>Smart energy additions</label>
+      <input type="text" id="quote_smart_energy"
+        placeholder="e.g. Solar-smart hot-water control">
+    </div>
+
+  </div>
+
+  <h3>Price build-up</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Materials cost — ex GST ($)</label>
+      <input type="number" step="0.01" id="quote_materials">
+    </div>
+
+    <div>
+      <label>Materials mark-up (%)</label>
+      <input type="number" step="0.1" id="quote_markup" value="30">
+    </div>
+
+    <div>
+      <label>Tom labour ($)</label>
+      <input type="number" step="0.01" id="quote_tom_labour">
+    </div>
+
+    <div>
+      <label>Helper labour ($)</label>
+      <input type="number" step="0.01" id="quote_helper_labour">
+    </div>
+
+    <div>
+      <label>Supervision / CoC ($)</label>
+      <input type="number" step="0.01" id="quote_supervision">
+    </div>
+
+    <div>
+      <label>Other costs ($)</label>
+      <input type="number" step="0.01" id="quote_other">
+    </div>
+
+  </div>
+
+  <h3>Customer price</h3>
+
+  <div class="grid">
+
+    <div>
+      <label>Price ex GST ($)</label>
+      <input type="number" step="0.01" id="quote_ex_gst" readonly>
+    </div>
+
+    <div>
+      <label>GST ($)</label>
+      <input type="number" step="0.01" id="quote_gst" readonly>
+    </div>
+
+    <div>
+      <label>Price incl GST ($)</label>
+      <input type="number" step="0.01" id="quote_total" readonly>
+    </div>
+
+  </div>
+
+  <button type="button" id="calculateQuote">
+    CALCULATE QUOTE
+  </button>
+<!-- QUOTE & ACCEPTANCE -->
+
+<hr style="margin:32px 0;border:0;border-top:1px solid #ddd;">
+
+<h3>Quote & acceptance</h3>
+
+<div class="placeholder">
+  Track the quote from preparation through customer acceptance,
+  finance and deposit payment.
+</div>
+
+<div class="grid">
+
+  <div>
+    <label>Quote number</label>
+    <input type="text" id="quote_number"
+      placeholder="e.g. SOL-2026-001">
+  </div>
+
+  <div>
+    <label>Quote status</label>
+    <select id="quote_status">
+      <option value="">Select...</option>
+      <option value="draft">Draft</option>
+      <option value="sent">Sent</option>
+      <option value="accepted">Accepted</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Quote sent</label>
+    <input type="date" id="quote_sent_date">
+  </div>
+
+  <div>
+    <label>Quote expiry</label>
+    <input type="date" id="quote_expiry_date">
+  </div>
+
+</div>
+
+
+<h3>Customer acceptance</h3>
+
+<div class="grid">
+
+  <div>
+    <label>Accepted date</label>
+    <input type="date" id="quote_accepted_date">
+  </div>
+
+  <div>
+    <label>Deposit required (%)</label>
+    <input type="number"
+      id="quote_deposit_percent"
+      min="0"
+      max="100"
+      step="1"
+      value="50">
+  </div>
+
+  <div>
+    <label>Deposit amount ($)</label>
+    <input type="number"
+      id="quote_deposit_amount"
+      step="0.01"
+      readonly>
+  </div>
+
+  <div>
+    <label>Deposit status</label>
+    <select id="quote_deposit_status">
+      <option value="">Select...</option>
+      <option value="not_required">Not required</option>
+      <option value="awaiting">Awaiting deposit</option>
+      <option value="received">Deposit received</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Deposit received date</label>
+    <input type="date" id="quote_deposit_received_date">
+  </div>
+
+</div>
+
+
+<h3>Payment & finance</h3>
+
+<div class="grid">
+
+  <div>
+    <label>How is the customer paying?</label>
+    <select id="quote_finance_type">
+      <option value="">Select...</option>
+      <option value="self_funded">Self-funded</option>
+      <option value="westpac">Westpac Green Loan</option>
+      <option value="asb">ASB</option>
+      <option value="anz">ANZ</option>
+      <option value="bnz">BNZ</option>
+      <option value="kiwibank">Kiwibank</option>
+      <option value="other_finance">Other finance</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Finance status</label>
+    <select id="quote_finance_status">
+      <option value="">Select...</option>
+      <option value="not_required">Not required</option>
+      <option value="customer_investigating">Customer investigating</option>
+      <option value="application_submitted">Application submitted</option>
+      <option value="approved">Approved</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+</div>
+
+
+<div style="margin-top:20px;">
+  <label>Quote / acceptance notes</label>
+  <textarea
+    id="quote_acceptance_notes"
+    rows="4"
+    placeholder="Variations, customer requests, finance notes or anything that needs following up."></textarea>
+</div>
+
+
+<div id="preinstallReadiness"
+     style="
+       margin-top:24px;
+       padding:18px;
+       border-radius:12px;
+       background:#f5f5f5;
+       font-weight:700;
+     ">
+  NOT READY FOR PRE-INSTALL
+</div>
+
+</section>
+        `;
+        const roofOrientationField = document.getElementById("roof_orientation");
+
+if (
+  roofOrientationField &&
+  !roofOrientationField.value &&
+  answers.direction
+) {
+  roofOrientationField.value = answers.direction;
+}
+
+applyJobTypeVisibility(job.job_type || "solar");
+
+      } catch (error) {
+        console.error(error);
+
+        page.innerHTML = `
+          <section class="card error">
+            This job couldn't be loaded. Please return to Job Hub and try again.
+          </section>
+        `;
+      }
+    }
+
+
+
+function applyJobTypeVisibility(jobType) {
+  currentJobType = jobType;
+  const isSolar = jobType !== "general_electrical";
+  document.querySelectorAll(".solar-only").forEach(section => {
+    section.hidden = !isSolar;
+  });
+  document.querySelectorAll(".general-only").forEach(section => {
+    section.hidden = isSolar;
+  });
+  document.querySelectorAll(".solar-file-role").forEach(option => {
+    option.hidden = !isSolar;
+    option.disabled = !isSolar;
+  });
+  const fileRole = document.getElementById("jobFileRole");
+  if (!isSolar && fileRole?.selectedOptions[0]?.disabled) fileRole.value = "general";
+}
+
+async function saveJobType() {
+  const field = document.getElementById("jobType");
+  const message = document.getElementById("jobTypeMessage");
+  if (!field || !message) return;
+  message.textContent = " Saving...";
+  try {
+    const response = await fetch("/api/job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId), job_type: field.value })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+    applyJobTypeVisibility(data.job_type);
+    message.textContent = " ✓ Job type saved";
+  } catch (error) {
+    console.error("Could not save job type:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  }
+}
+
+const generalJobFieldMap = {
+  job_description: "general_job_description",
+  site_contact: "general_site_contact",
+  access_notes: "general_access_notes",
+  supply_details: "general_supply_details",
+  switchboard_details: "general_switchboard_details",
+  existing_installation: "general_existing_installation",
+  hazards: "general_hazards",
+  work_scope: "general_work_scope",
+  testing_required: "general_testing_required",
+  certification_status: "general_certification_status",
+  customer_notes: "general_customer_notes",
+  billing_route: "general_billing_route"
+};
+
+async function loadGeneralJobDetails() {
+  if (!document.getElementById("generalJobSection")) return;
+  try {
+    const response = await fetch(`/api/general-job-details?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok || !data.details) return;
+    Object.entries(generalJobFieldMap).forEach(([key, id]) => {
+      const field = document.getElementById(id);
+      if (field && data.details[key] !== undefined) field.value = data.details[key] || "";
+      updateCommercialRouteVisibility();
+    });
+  } catch (error) {
+    console.error("Could not load electrical job details:", error);
+  }
+}
+
+function updateCommercialRouteVisibility() {
+  const route = document.getElementById("general_billing_route")?.value;
+  const tools = document.getElementById("customerQuoteTools");
+  if (tools) tools.hidden = route === "invoice_only";
+}
+async function saveGeneralJobDetails() {
+  const message = document.getElementById("generalJobMessage");
+  if (!message) return;
+  message.textContent = " Saving…";
+  const details = {};
+  Object.entries(generalJobFieldMap).forEach(([key, id]) => {
+    details[key] = document.getElementById(id)?.value || "";
+  });
+  try {
+    const response = await fetch("/api/general-job-details", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId), details })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+
+    const jobResponse = await fetch("/api/job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: Number(jobId),
+        job_type: "general_electrical",
+        job_status: document.getElementById("general_job_status")?.value,
+        next_action: document.getElementById("general_next_action")?.value
+      })
+    });
+    const jobData = await jobResponse.json();
+    if (!jobResponse.ok || !jobData.ok) throw new Error(jobData.detail || jobData.error || "Job progress save failed");
+    updateCommercialRouteVisibility();
+    message.textContent = ' ✓ Electrical job brief saved';
+  } catch (error) {
+    console.error("Could not save electrical job details:", error);
+    message.textContent = ` Could not save: ${error.message}`;
+  }
+}
+
+    async function loadAssessment() {
+  try {
+    const response = await fetch(`/api/assessment?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+    assessmentLoaded = true;
+    if (!data.assessment) return;
+
+    const a = data.assessment;
+    loadedAssessmentForReview = { ...a };
+
+    document.getElementById("panel_wattage").value =
+      a.panel_wattage ?? 445;
+    document.getElementById("panel_count").value =
+      a.panel_count ?? "";
+    document.getElementById("solar_kw").value =
+      a.solar_kw ?? "";
+    document.getElementById("roof_orientation").value =
+      a.roof_orientation ?? "";
+    document.getElementById("inverter").value =
+      a.inverter ?? "";
+    document.getElementById("estimated_generation_kwh").value =
+      a.estimated_generation_kwh ?? "";
+
+    document.getElementById("hot_water_strategy").value =
+      a.hot_water_strategy ?? "";
+    document.getElementById("smart_controls").value =
+      a.smart_controls ?? "";
+
+    document.getElementById("battery_option").value =
+      a.battery_option ?? "";
+    document.getElementById("battery_kwh").value =
+      a.battery_kwh ?? "";
+    document.getElementById("battery_reason").value =
+      a.battery_reason ?? "";
+
+    document.getElementById("current_retailer").value =
+      a.current_retailer ?? "";
+    document.getElementById("import_rate").value =
+      a.import_rate ?? "";
+    document.getElementById("export_rate").value =
+      a.export_rate ?? "";
+    document.getElementById("controlled_hot_water").value =
+      a.controlled_hot_water ?? "";
+    document.getElementById("recommended_tariff").value =
+      a.recommended_tariff ?? "";
+    document.getElementById("tariff_notes").value =
+      a.tariff_notes ?? "";
+
+    document.getElementById("site_notes").value =
+      a.site_notes ?? "";
+    document.getElementById("recommendation").value =
+      a.recommendation ?? "";
+
+  } catch (error) {
+    assessmentLoaded = false;
+    console.error("Could not load assessment:", error);
+  }
+}
+
+
+function calculateSolarSize() {
+  const panelWattage = Number(
+    document.getElementById("panel_wattage")?.value || 0
+  );
+
+  const panelCount = Number(
+    document.getElementById("panel_count")?.value || 0
+  );
+
+  const solarSize = document.getElementById("solar_kw");
+
+  if (!solarSize) return;
+
+  if (panelWattage > 0 && panelCount > 0) {
+    solarSize.value =
+      ((panelWattage * panelCount) / 1000).toFixed(2);
+  } else {
+    solarSize.value = "";
+  }
+}
+
+
+function calculateEstimatedGeneration() {
+  const solarKw = Number(
+    document.getElementById("solar_kw")?.value || 0
+  );
+
+  const orientation =
+    document.getElementById("roof_orientation")?.value || "";
+
+  const generationField =
+    document.getElementById("estimated_generation_kwh");
+
+  if (!generationField || !solarKw) return;
+
+  const orientationFactors = {
+    "North": 1.00,
+    "North-East": 0.95,
+    "North-West": 0.95,
+    "East": 0.88,
+    "West": 0.88,
+    "South-East": 0.78,
+    "South-West": 0.78,
+    "South": 0.65,
+    "Mixed": 0.90
+  };
+
+  const factor = orientationFactors[orientation] ?? 0.90;
+
+  // Practical first-pass Auckland/Waiheke estimate.
+  // This remains editable and can later be replaced by OpenSolar data.
+  const annualGeneration =
+    Math.round(solarKw * 1250 * factor);
+
+  generationField.value = annualGeneration;
+}
+
+
+function suggestSmartEnergyUse() {
+  const hotWaterField = document.getElementById("hot_water_strategy");
+  const controlsField = document.getElementById("smart_controls");
+
+  if (!hotWaterField || !controlsField) return;
+
+  const loads = Array.isArray(currentAnswers?.loads)
+    ? currentAnswers.loads
+    : [];
+
+  const hotWater = String(currentAnswers?.hotWater || "").toLowerCase();
+  const dayHome = String(currentAnswers?.dayHome || "").toLowerCase();
+
+  const hasLoad = (text) =>
+    loads.some(load =>
+      String(load).toLowerCase().includes(text.toLowerCase())
+    );
+
+  // HOT WATER
+  if (hotWater.includes("electric")) {
+    hotWaterField.value =
+      "Shift electric hot-water heating into solar-rich daytime hours, ideally around 10am–3pm where practical. Check the existing meter, ripple-control and cylinder arrangement before selecting the final control strategy.";
+  } else {
+    hotWaterField.value =
+      "No electric hot-water load identified for solar shifting.";
+  }
+
+  // SMART LOAD SHIFTING
+  const suggestions = [];
+
+  if (hasLoad("washing machine")) {
+    suggestions.push("washing machine");
+  }
+
+  if (hasLoad("dishwasher")) {
+    suggestions.push("dishwasher");
+  }
+
+  if (hasLoad("heat pump") || hasLoad("electric heating")) {
+    suggestions.push("heat pump / electric heating");
+  }
+
+  if (hasLoad("EV")) {
+    suggestions.push("EV charging");
+  }
+
+  if (suggestions.length) {
+    controlsField.value =
+      "Prioritise direct solar use and shift " +
+      suggestions.join(", ") +
+      " into solar-rich daytime hours where practical" +
+      (dayHome.includes("usually") || dayHome.includes("someone")
+        ? ". Daytime occupancy should make direct use of solar easier."
+        : ".");
+  } else {
+    controlsField.value =
+      "Prioritise direct use of solar during the day and consider automatic load shifting where suitable.";
+  }
+}
+
+
+function suggestBattery() {
+  const batteryOption = document.getElementById("battery_option");
+  const batteryReason = document.getElementById("battery_reason");
+
+  if (!batteryOption || !batteryReason) return;
+
+  const answers = currentAnswers || {};
+  const loads = Array.isArray(answers.loads) ? answers.loads : [];
+
+  const goalsText = String(answers.goals || "").toLowerCase();
+  const dayHomeText = String(answers.dayHome || "").toLowerCase();
+  const hotWaterText = String(answers.hotWater || "").toLowerCase();
+
+  const hasDaytimeOccupancy =
+    dayHomeText.includes("usually someone home") ||
+    dayHomeText.includes("someone home");
+
+  const hasElectricHotWater =
+    hotWaterText.includes("electric");
+
+  const hasShiftableLoads = loads.some(load => {
+    const text = String(load).toLowerCase();
+    return (
+      text.includes("washing") ||
+      text.includes("dishwasher") ||
+      text.includes("heat pump") ||
+      text.includes("electric heating") ||
+      text.includes("ev")
+    );
+  });
+
+  const wantsBackup =
+    goalsText.includes("backup") ||
+    goalsText.includes("power cut") ||
+    goalsText.includes("resilience");
+
+  const billsKnown =
+    answers.bills &&
+    String(answers.bills).toLowerCase().includes("not provided") === false;
+
+  if (wantsBackup) {
+    batteryOption.value = "Battery likely worthwhile";
+    batteryReason.value =
+      "A battery is worth investigating because backup or energy resilience is an important goal for this home. Final battery size should be based on essential backup loads and expected solar surplus.";
+  } else if (hasDaytimeOccupancy || hasElectricHotWater || hasShiftableLoads) {
+    batteryOption.value = "Start without battery";
+    batteryReason.value =
+      "This home has good opportunities to use solar directly during the day, particularly through hot water, appliances and heating. Design the system battery-ready and review actual solar export and evening grid use after installation before deciding whether storage provides worthwhile additional value.";
+  } else if (!billsKnown) {
+    batteryOption.value = "Battery-ready";
+    batteryReason.value =
+      "There is not yet enough consumption information to justify a battery on savings alone. Design the system battery-ready and review electricity bills or actual solar export and evening grid use before selecting storage.";
+  } else {
+    batteryOption.value = "Battery-ready";
+    batteryReason.value =
+      "This home may have useful solar surplus available for evening use. Design the system battery-ready, then confirm the value and appropriate battery size from consumption patterns and expected export.";
+  }
+}
+
+function suggestTariff() {
+  const retailer =
+    document.getElementById("current_retailer")?.value.trim() || "";
+
+  const importRate =
+    document.getElementById("import_rate")?.value || "";
+
+  const exportRate =
+    document.getElementById("export_rate")?.value || "";
+
+  const controlledHotWater =
+    document.getElementById("controlled_hot_water")?.value || "";
+
+  const recommendedTariff =
+    document.getElementById("recommended_tariff");
+
+  const tariffNotes =
+  document.getElementById("tariff_notes");
+
+  if (!recommendedTariff || !tariffNotes) return;
+
+  let notes = [];
+
+  if (retailer) {
+    notes.push(`Current retailer: ${retailer}.`);
+  }
+
+  if (importRate) {
+    notes.push(`Current import rate: ${importRate} c/kWh.`);
+  }
+
+  if (exportRate) {
+    notes.push(`Current solar buy-back rate: ${exportRate} c/kWh.`);
+  }
+
+  if (controlledHotWater === "Yes") {
+    notes.push(
+      "Hot water is on a controlled supply. Check the retailer and network arrangement before changing hot-water timing."
+    );
+  }
+
+  if (!importRate || !exportRate) {
+    notes.push(
+      "Check current import and solar buy-back rates before finalising the quote."
+    );
+  }
+
+  notes.push(
+    "Compare the overall electricity plan, not just the solar buy-back rate. A higher export rate is not necessarily better if import charges or daily charges are also higher."
+  );
+
+  if (!recommendedTariff.value.trim()) {
+    recommendedTariff.value = "Review current plan against suitable solar tariffs";
+  }
+
+  tariffNotes.value = notes.join(" ");
+}
+function generateRecommendation() {
+  const solarKw =
+    document.getElementById("solar_kw")?.value || "";
+
+  const panelCount =
+    document.getElementById("panel_count")?.value || "";
+
+  const orientationField = document.getElementById("roof_orientation");
+const orientation = orientationField ? orientationField.value : "";
+
+  const generation =
+    document.getElementById("estimated_generation_kwh")?.value || "";
+
+  const hotWater =
+    document.getElementById("hot_water_strategy")?.value.trim() || "";
+
+  const smartControls =
+    document.getElementById("smart_controls")?.value.trim() || "";
+
+  const battery =
+    document.getElementById("battery_option")?.value || "";
+
+  const batteryReason =
+    document.getElementById("battery_reason")?.value.trim() || "";
+
+  const batteryKwh =
+    document.getElementById("battery_kwh")?.value || "";
+
+  const retailer =
+    document.getElementById("current_retailer")?.value.trim() || "";
+
+  const importRate =
+    document.getElementById("import_rate")?.value || "";
+
+  const exportRate =
+    document.getElementById("export_rate")?.value || "";
+
+  const recommendedTariff =
+    document.getElementById("recommended_tariff")?.value.trim() || "";
+
+  const recommendation =
+    document.getElementById("recommendation");
+
+  const paragraphs = [];
+
+  // SOLAR DESIGN
+  if (solarKw && panelCount) {
+    let solarText =
+      `We recommend approximately ${solarKw} kWp of solar (${panelCount} panels)`;
+
+    if (orientation) {
+      solarText +=
+        `, using the ${orientation.toLowerCase()}-facing roof area`;
+    }
+
+    solarText += ".";
+
+    if (generation) {
+      solarText +=
+        ` Estimated annual generation is approximately ${Number(generation).toLocaleString()} kWh.`;
+    }
+
+    paragraphs.push(solarText);
+  }
+
+  // HOT WATER
+  if (hotWater) {
+    paragraphs.push(hotWater);
+  }
+
+  // SMART SOLAR USE
+  if (smartControls) {
+    paragraphs.push(smartControls);
+  }
+
+  // BATTERY
+  if (battery) {
+    let batteryText = `Battery: ${battery}.`;
+
+    if (batteryKwh) {
+      batteryText += ` Indicative battery size: ${batteryKwh} kWh.`;
+    }
+
+    if (batteryReason) {
+      batteryText += ` ${batteryReason}`;
+    }
+
+    paragraphs.push(batteryText);
+  }
+
+  // TARIFF
+  if (
+    retailer ||
+    importRate ||
+    exportRate ||
+    recommendedTariff
+  ) {
+    let tariffText = "Electricity tariff review:";
+
+    if (retailer) {
+      tariffText += ` Current retailer: ${retailer}.`;
+    }
+
+    if (importRate) {
+      tariffText += ` Import rate: ${importRate} c/kWh.`;
+    }
+
+    if (exportRate) {
+      tariffText += ` Solar buy-back rate: ${exportRate} c/kWh.`;
+    }
+
+    if (recommendedTariff) {
+      tariffText += ` Recommended retailer / tariff: ${recommendedTariff}.`;
+    } else {
+      tariffText +=
+        " Check that the electricity plan suits the proposed solar system and expected import/export pattern.";
+    }
+
+    paragraphs.push(tariffText);
+  }
+
+  recommendation.value = paragraphs.join("\n\n");
+  // Populate Quote section from Assessment & Design
+const quoteSolarSystem = document.getElementById("quote_solar_system");
+const quoteInverter = document.getElementById("quote_inverter");
+const quoteBattery = document.getElementById("quote_battery");
+const quoteSmartEnergy = document.getElementById("quote_smart_energy");
+
+if (quoteSolarSystem) {
+  quoteSolarSystem.value =
+    `${solarKw} kWp solar — ${panelCount} × ${document.getElementById("panel_wattage")?.value || ""} W panels`;
+}
+
+if (quoteInverter) {
+  quoteInverter.value =
+    document.getElementById("inverter")?.value || "";
+}
+
+if (quoteBattery) {
+  quoteBattery.value = battery || "";
+}
+
+if (quoteSmartEnergy) {
+  quoteSmartEnergy.value = [hotWater, smartControls]
+    .filter(Boolean)
+    .join(" ");
+}
+}
+
+
+async function saveAssessment() {
+  const message =
+    document.getElementById("assessmentMessage");
+
+  if (!assessmentLoaded) {
+    message.textContent = " Could not save: reload the saved Assessment first.";
+    return;
+  }
+  message.textContent = " Saving...";
+
+  const assessment = {
+    job_id: jobId,
+
+    panel_wattage:
+      document.getElementById("panel_wattage").value,
+
+    panel_count:
+      document.getElementById("panel_count").value,
+
+    solar_kw:
+      document.getElementById("solar_kw").value,
+
+    roof_orientation:
+      document.getElementById("roof_orientation").value,
+
+    inverter:
+      document.getElementById("inverter").value,
+
+    estimated_generation_kwh:
+      document.getElementById("estimated_generation_kwh").value,
+
+    hot_water_strategy:
+      document.getElementById("hot_water_strategy").value,
+
+    smart_controls:
+      document.getElementById("smart_controls").value,
+
+    battery_option:
+      document.getElementById("battery_option").value,
+
+    battery_kwh:
+      document.getElementById("battery_kwh").value,
+
+    battery_reason:
+      document.getElementById("battery_reason").value,
+
+    current_retailer:
+      document.getElementById("current_retailer").value,
+
+    import_rate:
+      document.getElementById("import_rate").value,
+
+    export_rate:
+      document.getElementById("export_rate").value,
+
+    controlled_hot_water:
+      document.getElementById("controlled_hot_water").value,
+
+    recommended_tariff:
+      document.getElementById("recommended_tariff").value,
+
+    tariff_notes:
+      document.getElementById("tariff_notes").value,
+
+    site_notes:
+      document.getElementById("site_notes").value,
+
+    recommendation:
+      document.getElementById("recommendation").value
+  };
+
+  try {
+    const response = await fetch("/api/assessment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(assessment)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Save failed");
+    }
+
+    loadedAssessmentForReview = { ...assessment };
+    refreshDesignDataReview();
+    message.textContent = " ✓ Assessment saved";
+
+  } catch (error) {
+    console.error(error);
+    message.textContent = " Could not save assessment";
+  }
+}
+
+
+const siteVisitFieldIds = [
+  "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
+  "visit_icp", "visit_retailer", "visit_network", "visit_switchboard",
+  "visit_supply_notes", "visit_roof_length", "visit_roof_width",
+  "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
+  "visit_roof_access",
+  "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
+  "visit_battery_location", "visit_cable_route", "visit_access_notes",
+  "visit_general_notes"
+];
+
+let loadedSiteVisit = {};
+let loadedAssessmentForReview = {};
+let siteVisitLoaded = false;
+let assessmentLoaded = false;
+let systemDesignLoaded = false;
+let hasSavedSiteVisit = false;
+let designDataReview;
+let systemDesignSaveController;
+
+function showSystemDesignSaveState(state, error) {
+  const message = document.getElementById("systemDesignMessage");
+  const button = document.getElementById("saveSystemDesign");
+  const labels = { dirty: "Unsaved changes", saving: "Saving…", saved: "Saved successfully", failed: "Save failed — retry" };
+  message.textContent = labels[state] || "Unsaved changes";
+  message.classList.toggle("error", state === "failed");
+  if (error && !systemDesignLoaded) message.textContent += ". Reload the saved design first.";
+  button.disabled = state === "saving" || !systemDesignLoaded;
+  button.textContent = state === "failed" && systemDesignLoaded ? "Retry — Save System Design" : "Save System Design";
+}
+
+function designSaveController() {
+  if (!systemDesignSaveController) {
+    systemDesignSaveController = window.SystemDesignSave.create({
+      read: collectSystemDesign,
+      write: async system_design => {
+        const response = await fetch("/api/system-design", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ job_id: jobId, system_design })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
+      },
+      state: showSystemDesignSaveState,
+      saved: () => { clearTimeout(autosaveTimers.get("systemDesign")); updateSystemDesignReadiness(); refreshDesignDataReview(); }
+    });
+  }
+  return systemDesignSaveController;
+}
+
+function refreshDesignDataReview() { designDataReview?.refresh(); }
+function initialiseDesignDataReview() {
+  if (!document.getElementById("systemDesignSection")) return;
+  designDataReview = window.JobDataReview.mount({
+    document,
+    getSources: () => ({ visit: loadedSiteVisit, assessment: loadedAssessmentForReview, energy: sharedJobElectricity() }),
+    getDesign: collectSystemDesign,
+    canReview: () => siteVisitLoaded && assessmentLoaded && systemDesignLoaded,
+    onApplied: () => {
+      updateSystemDesignReadiness();
+      scheduleSectionAutosave({ target: document.getElementById("design_panel_count") });
+    }
+  });
+  designDataReview.refresh();
+  if (!hasSavedSiteVisit && siteVisitLoaded && systemDesignLoaded) {
+    const field = document.getElementById("visit_icp");
+    const suggestion = window.JobDataReview.icpSuggestion(currentAnswers, collectSystemDesign());
+    const note = document.createElement("p");
+    note.className = "data-source-note";
+    if (suggestion.conflict) note.textContent = "HEC and System Design have different ICP values. Confirm the correct meter ICP before entering it.";
+    else if (field && !field.value && suggestion.value) {
+      field.value = suggestion.value;
+      note.textContent = "ICP reused from existing HEC / design information. Confirm it onsite; it saves with your Site Visit changes.";
+    }
+    if (field && note.textContent) field.after(note);
+  }
+}
+
+const siteVisitCheckboxIds = [
+  "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
+  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
+];
+
+function collectSiteVisit() {
+  // Retain legacy fields that are no longer shown, without asking Tom to
+  // enter them again or wiping them from an older saved site visit.
+  const visit = { ...loadedSiteVisit };
+  siteVisitFieldIds.forEach(id => {
+    visit[id] = document.getElementById(id)?.value ?? "";
+  });
+  siteVisitCheckboxIds.forEach(id => {
+    visit[id] = Boolean(document.getElementById(id)?.checked);
+  });
+  return visit;
+}
+
+
+async function loadSiteVisit() {
+  try {
+    const response = await fetch(`/api/site-visit?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    siteVisitLoaded = true;
+    hasSavedSiteVisit = Boolean(data.site_visit);
+    if (!data.site_visit) {
+      const date = document.getElementById("visit_date");
+      if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
+      return;
+    }
+
+    loadedSiteVisit = { ...data.site_visit };
+    siteVisitFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = data.site_visit[id] ?? "";
+    });
+    siteVisitCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(data.site_visit[id]);
+    });
+  } catch (error) {
+    siteVisitLoaded = false;
+    console.error("Could not load site visit:", error);
+    const message = document.getElementById("siteVisitMessage");
+    if (message) message.textContent = " Could not load saved site visit";
+  } finally {
+    window.SiteVisitPhotos?.init(jobId, loadJobFiles);
+  }
+}
+
+async function saveSiteVisit() {
+  const message = document.getElementById("siteVisitMessage");
+  if (!siteVisitLoaded) {
+    message.textContent = " Could not save: reload the saved Site Visit first.";
+    return;
+  }
+  const siteVisit = collectSiteVisit();
+  message.textContent = " Saving...";
+
+  try {
+    const response = await fetch("/api/site-visit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: jobId, site_visit: siteVisit })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
+
+    loadedSiteVisit = { ...siteVisit };
+    hasSavedSiteVisit = true;
+    refreshDesignDataReview();
+    message.textContent = " ✓ Site Visit saved. System Design is unchanged; review saved information in System Design.";
+  } catch (error) {
+    console.error("Could not save site visit:", error);
+    message.textContent = " Could not save site visit";
+  }
+}
+
+
+const jobFileCategoryLabels = {
+  site_photo: "Before work / site overview",
+  switchboard: "Switchboard",
+  meter: "Meter / ICP",
+  roof: "Roof",
+  cable_route: "Cable route",
+  fixings: "Mounting / fixings",
+  equipment: "Equipment location",
+  wiring: "Wiring before covers",
+  labels: "Equipment labels / serial numbers",
+  testing: "Testing / test results",
+  completed: "Completed installation",
+  drawing: "Drawing / design",
+  supplier: "Supplier document",
+  certificate: "Ben approval / CoC",
+  other: "Other"
+};
+
+const jobFileRoleLabels = {
+  general: "General",
+  power_bill: "Power bill",
+  annual_usage: "12-month electricity usage",
+  additional_power_bill: "Additional electricity bill",
+  sld: "Single-line diagram",
+  roof_layout: "Roof / panel layout",
+  supplier_quote: "Supplier quote",
+  supplier_invoice: "Supplier invoice",
+  certificate: "Certificate / Ben approval",
+  fletcher_assessment: "Fletcher site assessment"
+};
+
+function renderEnergyData(files) {
+  const status = document.getElementById("energyDataStatus");
+  const list = document.getElementById("energyFilesList");
+  if (!status || !list) return;
+  renderSharedEnergyInformation();
+  const recent = files.filter(file => file.document_role === "power_bill");
+  const annual = files.filter(file => file.document_role === "annual_usage");
+  const extra = files.filter(file => file.document_role === "additional_power_bill");
+  const detailed = annual.filter(file => file.energy_data_detail === "half_hourly");
+  const moreRequired = !recent.length || !annual.length;
+  const statuses = [
+    [recent.length > 0, "Recent bill received", recent.length ? `${recent.length} file${recent.length === 1 ? "" : "s"}` : "Not received"],
+    [annual.length > 0, "12-month usage received", annual.length ? `${annual.length} file${annual.length === 1 ? "" : "s"}` : "Not received"],
+    [detailed.length > 0, "Detailed / half-hourly data received", detailed.length ? "Identified" : "Not identified"],
+    [extra.length > 0 || recent.length > 1, "Additional bills received", extra.length || Math.max(0, recent.length - 1) ? `${extra.length + Math.max(0, recent.length - 1)} additional` : "None"],
+    [!moreRequired, "Energy information complete", moreRequired ? "" : "Ready for detailed modelling"]
+  ];
+  if (moreRequired) statuses.push([false, "More information required", [!recent.length ? "recent bill" : "", !annual.length ? "12-month usage" : ""].filter(Boolean).join(" and ")]);
+  status.innerHTML = statuses.map(([complete, label, note]) => `<div class="energy-status-item ${complete ? "complete" : "missing"}">${complete ? "✓" : "○"} ${escapeHtml(label)}<div class="placeholder">${escapeHtml(note)}</div></div>`).join("");
+
+  const groups = [
+    ["Recent electricity bills", recent],
+    ["12-month consumption data", annual],
+    ["Additional electricity bills", extra]
+  ].filter(([, groupFiles]) => groupFiles.length);
+  if (!groups.length) {
+    list.className = "placeholder";
+    list.textContent = "No energy files received yet.";
+    return;
+  }
+  list.className = "";
+  list.innerHTML = groups.map(([heading, groupFiles]) => `<div class="energy-file-group"><h4>${escapeHtml(heading)}</h4>${groupFiles.map(file => `<a class="energy-file-link" href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.original_name)}</a><div class="placeholder">${escapeHtml(file.content_type || "File")} · uploaded ${escapeHtml(file.uploaded_at || "")}${file.energy_data_detail === "half_hourly" ? " · detailed / half-hourly data identified" : ""}</div>${billReadButton(file)}`).join("")}</div>`).join("");
+}
+
+function billReadButton(file) {
+  return postHecBillEnabled && ["power_bill", "additional_power_bill"].includes(file.document_role)
+    ? `<button type="button" data-read-energy-bill="${escapeHtml(file.id)}" data-bill-name="${escapeHtml(file.original_name)}">Read bill and update energy information</button>` : "";
+}
+function sharedJobElectricity() {
+  const slot = currentAnswers.energy_data?.active_slot;
+  const bill = currentAnswers.bills?.[slot] || currentAnswers.bills?.summer || currentAnswers.bills?.winter || {};
+  const gstRate = (key, basis) => bill[key] == null ? "" : Number(bill[key]) * (bill[basis] === "exclusive" ? 1.15 : 1);
+  return {icp:currentAnswers.icp || bill.icp || "", retailer:bill.retailer || "", plan_name:bill.plan_name || "",
+    import_rate:gstRate("import_rate_cents", "import_rate_gst_basis") === "" ? "" : Number((gstRate("import_rate_cents", "import_rate_gst_basis") / 100).toFixed(6)),
+    tariff_description:[bill.tariff_description, bill.free_import_schedule, bill.other_tariff_information].filter(Boolean).join(" · ")};
+}
+function renderSharedEnergyInformation() {
+  const host = document.getElementById("sharedEnergyInformation");
+  if (!host) return;
+  const source = sharedJobElectricity();
+  host.innerHTML = `<h3>Shared electricity information</h3><p>This comes from the saved, reviewed energy answers. Existing Site Visit and Design values remain unchanged until you choose to use a difference.</p>${[
+    ["ICP",source.icp,"visit_icp"],["Retailer",source.retailer,"visit_retailer"],
+    ["Assessment retailer",source.retailer,"current_retailer"],["Import rate incl GST ($/kWh)",source.import_rate,"import_rate"]
+  ].map(([label,value,target]) => `<div class="shared-energy-row">${escapeHtml(label)}: <strong>${escapeHtml(value === "" ? "Unknown / needs review" : value)}</strong>${value !== "" ? `<button type="button" data-use-shared-energy="${target}">Use this saved value</button>` : ""}</div>`).join("")}<p>${escapeHtml(source.tariff_description)}</p><p>${escapeHtml(currentAnswers.energy_data?.limitation || "Bill-based estimates require review before use in a proposal.")}</p>`;
+  host.querySelectorAll("[data-use-shared-energy]").forEach(button => button.onclick = () => {
+    const target = button.dataset.useSharedEnergy, field = document.getElementById(target);
+    const values = {visit_icp:source.icp, visit_retailer:source.retailer, current_retailer:source.retailer, import_rate:source.import_rate};
+    if (!field || field.disabled) return;
+    field.value = values[target];field.dispatchEvent(new Event("input",{bubbles:true}));
+    button.textContent = "Value applied — check save status";
+  });
+}
+window.PostHecBill.mount({document,jobId,onSaved:async()=>{
+  const response=await fetch(`/api/job?id=${encodeURIComponent(jobId)}`);const data=await response.json();
+  if(!response.ok || !data.ok)throw new Error("Reload needed");
+  currentAnswers=parseAnswers(data.job.answers_json);window.currentAnswers=currentAnswers;
+  renderSharedEnergyInformation();refreshDesignDataReview();
+}});
+
+const solarPhotoChecklistItems = [
+  "site_photo", "switchboard", "meter", "cable_route", "fixings",
+  "equipment", "wiring", "labels", "testing", "completed", "certificate"
+];
+
+const electricalPhotoChecklistItems = [
+  "site_photo", "switchboard", "wiring", "testing", "completed", "certificate"
+];
+
+function renderJobPhotoChecklist(files) {
+  const checklist = document.getElementById("jobPhotoChecklist");
+  const checklistItems = currentJobType === "general_electrical"
+    ? electricalPhotoChecklistItems
+    : solarPhotoChecklistItems;
+  const counts = files.reduce((totals, file) => {
+    totals[file.category] = (totals[file.category] || 0) + 1;
+    return totals;
+  }, {});
+
+  checklist.innerHTML = checklistItems.map(category => {
+    const count = counts[category] || 0;
+    return `
+      <div class="photo-checklist-row">
+        <span>${escapeHtml(jobFileCategoryLabels[category])}</span>
+        <span class="photo-checklist-status ${count ? "complete" : "missing"}">
+          ${count ? `✓ Uploaded (${count})` : "○ Not uploaded — requirement not confirmed"}
+        </span>
+      </div>
+    `;
+  }).join("");
+}
+
+function formatFileSize(bytes) {
+  const size = Number(bytes) || 0;
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function renderSelectedJobFiles() {
+  const input = document.getElementById("jobFileInput");
+  const selection = document.getElementById("jobFileSelection");
+  const files = Array.from(input.files || []);
+
+  if (!files.length) {
+    selection.hidden = true;
+    selection.replaceChildren();
+    return;
+  }
+
+  selection.hidden = false;
+  selection.innerHTML = files.map((file, index) => `
+    <div class="job-file-selection-row">
+      <div class="job-file-selection-name">
+        ${escapeHtml(file.name)} · ${escapeHtml(formatFileSize(file.size))}
+      </div>
+      <label for="jobFileCaption${index}">Caption / what this shows (optional)</label>
+      <input type="text" id="jobFileCaption${index}" data-job-file-caption="${index}"
+        maxlength="500" placeholder="Type or dictate a note for this photo">
+    </div>
+  `).join("");
+}
+
+async function loadJobFiles() {
+  const list = document.getElementById("jobFilesList");
+  try {
+    const response = await fetch(`/api/job-files?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    window.SiteVisitPhotos?.renderSaved(data.files);
+    renderJobPhotoChecklist(data.files);
+    renderEnergyData(data.files);
+
+    if (!data.files.length) {
+      list.className = "placeholder";
+      list.textContent = "No files uploaded yet.";
+      await verifyDocumentSummary();
+      return;
+    }
+
+    list.className = "";
+    const fileRows = data.files.map(file => `
+      <div class="job-file-row">
+        <a href="/api/job-file?id=${encodeURIComponent(file.id)}" target="_blank" rel="noopener">
+          ${escapeHtml(file.original_name)}
+        </a>
+        <div class="placeholder">
+          <label>File category
+            <select class="job-file-category" data-file-id="${escapeHtml(file.id)}" aria-label="Category for ${escapeHtml(file.original_name)}">
+              ${Object.entries(jobFileCategoryLabels).map(([value, label]) => `<option value="${value}" ${file.category === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+            </select>
+          </label>
+          · ${escapeHtml(jobFileRoleLabels[file.document_role] || "General")}
+          · ${escapeHtml(formatFileSize(file.size_bytes))}
+          · ${escapeHtml(file.uploaded_at || "")}
+        </div>
+        ${file.caption ? `<div>${escapeHtml(window.SiteVisitPhotos?.displayCaption(file) ?? file.caption)}</div>` : ""}
+        ${billReadButton(file)}
+      </div>
+    `);
+    const groups = new Map(["Energy & HEC", "Site Visit", "Design & OpenSolar", "Supplier Quotes", "Installation", "Compliance", "Handover", "Other / Unclassified"].map(name => [name, []]));
+    data.files.forEach((file, index) => {
+      const group = JobDocumentLibrary.group(file);
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(`<div data-document-search="${escapeHtml((file.original_name + " " + (window.SiteVisitPhotos?.displayCaption(file) ?? file.caption ?? "")).toLowerCase())}">${fileRows[index]}</div>`);
+    });
+    list.innerHTML = [...groups].map(([name, rows]) => `<details class="doc-group"><summary>${escapeHtml(name)} (${rows.length})</summary>${rows.join("") || '<p class="doc-verify-note">No classified files in this group. Requirement depends on the job.</p>'}</details>`).join("");
+    await verifyDocumentSummary();
+  } catch (error) {
+    console.error("Could not load job files:", error);
+    document.getElementById("jobPhotoChecklist").innerHTML =
+      '<div class="error">Could not load the photo checklist.</div>';
+    list.className = "error";
+    list.textContent = "Could not load job files.";
+  }
+}
+
+function revealDocumentUpload(role = "general") {
+  window.WorkspaceNavigation?.openSection("jobFilesSection");
+  const panel = document.getElementById("documentUploadControls");
+  if (!panel) return;
+  panel.hidden = false;
+  const use = document.getElementById("jobFileRole");
+  const category = document.getElementById("jobFileCategory");
+  if ([...use.options].some(option => option.value === role)) use.value = role;
+  category.value = ["roof_layout", "sld"].includes(role) ? "drawing" : role === "power_bill" ? "other" : role === "fletcher_assessment" ? "supplier" : "other";
+  panel.scrollIntoView({block:"start"});
+  use.focus({preventScroll:true});
+}
+function applyDocumentShortcut() {
+  if (location.hash !== "#jobFilesSection") return;
+  const role = new URLSearchParams(location.search).get("document_use") || "general";
+  revealDocumentUpload(role);
+}
+async function verifyDocumentSummary() {
+  const summary = document.getElementById("documentSummary");
+  const attention = document.getElementById("documentAttention");
+  try {
+    const response = await fetch(`/api/job-document-inventory?job_id=${encodeURIComponent(jobId)}`);
+    if (response.redirected) throw new Error("Authentication required");
+    const data = await response.json();
+    if (!response.ok || !data.ok || !data.jobs?.[0]) throw new Error("Inventory unavailable");
+    const files = data.jobs[0].files;
+    const packageRequired = files.some(file => file.document_role === "fletcher_assessment") || new URLSearchParams(location.search).get("document_context") === "fletcher";
+    const checks = JobDocumentLibrary.packageStatus(files, packageRequired && currentJobType !== "general_electrical");
+    const counts = {received:0, missing:0, review:0};
+    checks.forEach(check => { if (check.status in counts) counts[check.status]++; });
+    const checkedIds = new Set(checks.filter(check => check.file).map(check => check.file.id));
+    files.filter(file => !checkedIds.has(file.id)).forEach(file => {
+      counts[file.accessibility === "accessible" && !(file.document_role === "general" && ["other", "drawing"].includes(file.category)) ? "received" : "review"]++;
+    });
+    summary.innerHTML = `<div class="doc-stats">${[["Received",counts.received],["Missing",counts.missing],["Needs review",counts.review],["Not due yet","—"]].map(([label,count]) => `<div class="doc-stat"><strong>${count}</strong>${label}</div>`).join("")}</div><p class="doc-verify-note">Counts cover files and confirmed unmet package requirements. Missing requirements are currently verified for the Fletcher package only. Later-stage document requirements are not yet configured. Optional documents are excluded from missing totals.</p>`;
+    const outstanding = checks.filter(check => ["missing","review"].includes(check.status));
+    files.filter(file => !checkedIds.has(file.id) && (file.accessibility !== "accessible" || (file.document_role === "general" && ["other", "drawing"].includes(file.category)))).forEach(file => outstanding.push({status:"review",label:file.original_name,file,reason:file.accessibility === "accessible" ? "Document use needs checking" : "Stored file could not be verified"}));
+    attention.innerHTML = `<h3>Documents needing attention</h3>${outstanding.map(check => `<div class="doc-attention-row"><span class="doc-state">${check.status === "missing" ? "Missing" : "Needs review"}: ${escapeHtml(check.label)}</span><div>${escapeHtml(check.reason)}</div>${check.file ? `<a href="/api/job-file?id=${encodeURIComponent(check.file.id)}" target="_blank" rel="noopener">Open and check existing file</a>` : check.role === "fletcher_assessment" ? `<a href="/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}">Generate completed Fletcher PDF</a>` : `<a href="#jobFilesSection" data-upload-role="${check.role}">Upload ${escapeHtml(check.label)}</a>`}</div>`).join("") || '<p>No confirmed package documents need attention.</p>'}<p class="doc-verify-note">Other unclassified or unverified files are available in the groups below. Receipt does not mean design or compliance approval.</p>`;
+  } catch {
+    summary.textContent = "Document verification unavailable — received/missing status cannot be confirmed.";
+    attention.textContent = "You can still open existing files below. No document absence or completion is assumed.";
+  }
+}
+document.addEventListener("click", event => {
+  const upload = event.target.closest("[data-upload-role]");
+  if (upload) {event.preventDefault();revealDocumentUpload(upload.dataset.uploadRole);}
+  if (event.target.id === "showDocumentUpload") revealDocumentUpload();
+});
+document.addEventListener("input", event => {
+  if (event.target.id !== "documentSearch") return;
+  const term = event.target.value.toLowerCase();
+  document.querySelectorAll("#jobFilesList details").forEach(group => {
+    let matches = 0;
+    group.querySelectorAll("[data-document-search]").forEach(row => {row.hidden = !row.dataset.documentSearch.includes(term);if (!row.hidden) matches++;});
+    group.hidden = !!term && !matches;
+    if (term) group.open = !!matches;
+  });
+});
+document.addEventListener("click", event => {
+  if (event.target.id === "uploadMaterialsInvoice") {
+    const panel = document.getElementById("documentUploadControls");
+    if (panel) panel.hidden = false;
+  }
+}, true);
+window.addEventListener("hashchange", applyDocumentShortcut);
+
+async function updateJobFileCategory(fileId, category, select) {
+  select.disabled = true;
+  try {
+    const response = await fetch("/api/job-files", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: jobId, id: fileId, category }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not update category");
+    document.getElementById("jobFileMessage").textContent = "✓ File category updated";
+    await loadJobFiles();
+  } catch (error) {
+    document.getElementById("jobFileMessage").textContent = `Could not update category: ${error.message}`;
+    await loadJobFiles();
+  } finally { select.disabled = false; }
+}
+
+async function uploadJobFile() {
+  const input = document.getElementById("jobFileInput");
+  const message = document.getElementById("jobFileMessage");
+  const files = Array.from(input.files || []);
+
+  if (!files.length) {
+    message.textContent = " Choose one or more photos or PDFs first";
+    return;
+  }
+
+  const oversizedFile = files.find(file => file.size > 12 * 1024 * 1024);
+  if (oversizedFile) {
+    message.textContent = ` ${oversizedFile.name} is over the 12 MB limit`;
+    return;
+  }
+
+  const category = document.getElementById("jobFileCategory").value;
+  const documentRole = document.getElementById("jobFileRole").value;
+  const uploadButton = document.getElementById("uploadJobFile");
+  if (uploadButton) uploadButton.disabled = true;
+
+  try {
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const caption = document.querySelector(
+        `[data-job-file-caption="${index}"]`
+      )?.value || "";
+      const form = new FormData();
+      form.append("job_id", jobId);
+      form.append("file", file);
+      form.append("category", category);
+      form.append("caption", caption);
+      form.append("document_role", documentRole);
+      message.textContent = ` Uploading ${index + 1} of ${files.length}...`;
+
+      const response = await fetch("/api/job-files", { method: "POST", body: form });
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        throw new Error(data.detail || data.error || `Could not upload ${file.name}`);
+      }
+    }
+
+    input.value = "";
+    renderSelectedJobFiles();
+    message.textContent = ` ✓ ${files.length} file${files.length === 1 ? "" : "s"} uploaded`;
+    await loadJobFiles();
+  } catch (error) {
+    console.error("Could not upload job file:", error);
+    message.textContent = ` Could not upload: ${error.message}`;
+    if (uploadButton) uploadButton.hidden = false;
+  } finally {
+    if (uploadButton) uploadButton.disabled = false;
+  }
+}
+
+const workLogSupervisionLabels = {
+  on_site: "On-site",
+  remote: "Remote",
+  evidence_review: "Photos / evidence reviewed",
+  other: "Other"
+};
+
+const workLogCompetencyLabels = {
+  health_safety: "Health and safety",
+  planning: "Planning and preparation",
+  cable_installation: "Cable installation",
+  switchboards: "Switchboards and protection",
+  testing: "Testing and verification",
+  solar_pv: "Solar PV installation",
+  fault_finding: "Fault finding",
+  documentation: "Certification and documentation",
+  other: "Other"
+};
+
+const workLogCertificationLabels = {
+  not_started: "Not started",
+  in_progress: "Testing / records in progress",
+  ready_for_ben: "Ready for Ben's review",
+  completed: "Completed / certificate filed",
+  not_required: "Not required"
+};
+
+function formatWorkLogHours(hours) {
+  const value = Number(hours) || 0;
+  return `${value.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")} hours`;
+}
+
+function formatWorkLogDays(days) {
+  const value = Number(days) || 0;
+  const formatted = value.toFixed(1).replace(/\.0$/, "");
+  return `${formatted} ${value === 1 ? "day" : "days"}`;
+}
+
+function workLogDatesFromRecord(log) {
+  try {
+    const dates = JSON.parse(log.work_dates || "[]");
+    if (Array.isArray(dates) && dates.length) return dates;
+  } catch (_) {}
+  return log.work_date ? [log.work_date] : [];
+}
+
+function selectedWorkLogDates() {
+  return [...new Set([...document.querySelectorAll(".work-log-date")]
+    .map(input => input.value)
+    .filter(Boolean))].sort();
+}
+
+function syncWorkLogDays() {
+  const daysField = document.getElementById("workLogDays");
+  const count = selectedWorkLogDates().length;
+  if (daysField && count) daysField.value = String(count);
+}
+
+function addWorkLogDate(value = "") {
+  const list = document.getElementById("workLogDates");
+  if (!list) return;
+  const row = document.createElement("div");
+  row.className = "work-date-row";
+  row.innerHTML = `
+    <input type="date" class="work-log-date" aria-label="Date worked">
+    <button type="button" class="removeWorkLogDate" aria-label="Remove this date">REMOVE</button>
+  `;
+  row.querySelector("input").value = value;
+  list.appendChild(row);
+  row.querySelector("button").hidden = list.children.length === 1;
+  [...list.querySelectorAll(".removeWorkLogDate")].forEach(button => {
+    button.hidden = list.children.length === 1;
+  });
+  syncWorkLogDays();
+}
+
+function resetWorkLogDates() {
+  const list = document.getElementById("workLogDates");
+  if (!list) return;
+  list.innerHTML = "";
+  const today = new Date();
+  addWorkLogDate([
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0")
+  ].join("-"));
+}
+
+let workLogRecords = [];
+let currentWorkLogId = null;
+let workLogAutosaveTimer = null;
+let workLogSavePromise = null;
+let workLogRevision = 0;
+let workLogPlannedScopeNeedsConfirmation = false;
+
+function workLogDraftKey() { return `jobhub-work-log-draft-${jobId}`; }
+
+function workLogFormPayload() {
+  const workDates = selectedWorkLogDates();
+  return {
+    job_id: jobId, id: currentWorkLogId || undefined,
+    work_date: workDates[0] || "", work_dates: workDates,
+    days: document.getElementById("workLogDays").value,
+    hours: document.getElementById("workLogHours").value,
+    supervisor: "Ben",
+    supervision_type: document.getElementById("workLogSupervisionType").value,
+    competency: document.getElementById("workLogCompetency").value,
+    work_completed: document.getElementById("workLogCompleted").value,
+    tests_results: document.getElementById("workLogTests").value,
+    issues_notes: document.getElementById("workLogIssues").value,
+    supervisor_notes: document.getElementById("workLogSupervisorNotes").value,
+    materials_used: document.getElementById("workLogMaterials").value,
+    certification_status: document.getElementById("workLogCertificationStatus").value
+  };
+}
+
+function saveWorkLogDraftLocally() {
+  try {
+    const payload = workLogFormPayload();
+    payload.planned_work_unconfirmed = workLogPlannedScopeNeedsConfirmation;
+    if (payload.work_dates.length || payload.work_completed || payload.hours || payload.materials_used || payload.tests_results || payload.issues_notes || payload.supervisor_notes) {
+      localStorage.setItem(workLogDraftKey(), JSON.stringify(payload));
+    }
+  } catch {}
+}
+
+function restoreWorkLogDraft() {
+  try {
+    const raw = localStorage.getItem(workLogDraftKey());
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    currentWorkLogId = draft.id || null;
+    workLogPlannedScopeNeedsConfirmation = draft.planned_work_unconfirmed === true;
+    const dates = Array.isArray(draft.work_dates) ? draft.work_dates : [];
+    const list = document.getElementById("workLogDates");
+    list.innerHTML = "";
+    (dates.length ? dates : [""]).forEach(date => addWorkLogDate(date));
+    const values = {
+      workLogDays: draft.days, workLogHours: draft.hours,
+      workLogSupervisionType: draft.supervision_type, workLogCompetency: draft.competency,
+      workLogCompleted: draft.work_completed, workLogTests: draft.tests_results,
+      workLogIssues: draft.issues_notes, workLogSupervisorNotes: draft.supervisor_notes,
+      workLogMaterials: draft.materials_used, workLogCertificationStatus: draft.certification_status
+    };
+    Object.entries(values).forEach(([id, value]) => { if (value !== undefined && document.getElementById(id)) document.getElementById(id).value = value; });
+    document.getElementById("workLogPlannedScopeConfirmation").hidden = !workLogPlannedScopeNeedsConfirmation;
+    document.getElementById("confirmPlannedWorkCompleted").checked = false;
+    if (Object.values(values).some(Boolean)) document.getElementById("workLogMessage").textContent = "Draft restored. It will save automatically when required fields are complete.";
+  } catch {}
+}
+
+async function loadWorkLogs() {
+  const list = document.getElementById("workLogList");
+  const summary = document.getElementById("workLogSummary");
+  if (!list || !summary) return;
+
+  try {
+    const response = await fetch(`/api/job-work-logs?job_id=${jobId}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Load failed");
+
+    workLogRecords = data.logs || [];
+    summary.textContent = `Total recorded: ${formatWorkLogDays(data.total_days)} · ${formatWorkLogHours(data.total_hours)}`;
+
+    if (!data.logs.length) {
+      list.className = "placeholder";
+      list.textContent = "No work records yet.";
+      return;
+    }
+
+    list.className = "";
+    list.innerHTML = data.logs.map(log => {
+      const dates = workLogDatesFromRecord(log);
+      return `
+      <div class="work-log-row">
+        <div class="work-log-heading">
+          <span>${escapeHtml(dates.join(", "))} · ${escapeHtml(formatWorkLogDays(log.days || 1))} · ${escapeHtml(formatWorkLogHours(log.hours))}</span>
+          <span>${escapeHtml(workLogCompetencyLabels[log.competency] || "Other")}</span>
+        </div>
+        <button type="button" class="editWorkLog" data-work-log-id="${escapeHtml(log.id)}">EDIT</button>
+        <div class="placeholder">
+          Supervisor: ${escapeHtml(log.supervisor || "Not recorded")}
+          · ${escapeHtml(workLogSupervisionLabels[log.supervision_type] || "Other")}
+        </div>
+        <div class="work-log-detail"><strong>Work completed:</strong> ${escapeHtml(log.work_completed)}</div>
+        ${log.materials_used ? `<div class="work-log-detail"><strong>Materials used:</strong> ${escapeHtml(log.materials_used)}</div>` : ""}
+        ${log.tests_results ? `<div class="work-log-detail"><strong>Tests/results:</strong> ${escapeHtml(log.tests_results)}</div>` : ""}
+        ${log.issues_notes ? `<div class="work-log-detail"><strong>Problems/changes:</strong> ${escapeHtml(log.issues_notes)}</div>` : ""}
+        ${log.supervisor_notes ? `<div class="work-log-detail"><strong>For Ben:</strong> ${escapeHtml(log.supervisor_notes)}</div>` : ""}
+        <div class="work-log-detail"><strong>Certification:</strong> ${escapeHtml(workLogCertificationLabels[log.certification_status] || "Not started")}</div>
+      </div>
+    `; }).join("");
+  } catch (error) {
+    console.error("Could not load work logs:", error);
+    list.className = "error";
+    list.textContent = "Could not load daily records.";
+  }
+}
+
+function scheduleWorkLogAutosave() {
+  workLogRevision += 1;
+  saveWorkLogDraftLocally();
+  clearTimeout(workLogAutosaveTimer);
+  const payload = workLogFormPayload();
+  const message = document.getElementById("workLogMessage");
+  if (workLogPlannedScopeNeedsConfirmation) {
+    message.textContent = "Review the planned work above and edit it, or confirm that it matches the work completed, before this record can sync.";
+    return;
+  }
+  if (!payload.work_dates.length || !Number(payload.days) || !Number(payload.hours) || !payload.work_completed.trim()) {
+    message.textContent = "Draft saved on this phone. It will sync when dates, hours and work completed are entered.";
+    return;
+  }
+  message.textContent = "Changes pending…";
+  workLogAutosaveTimer = setTimeout(saveWorkLogAutomatically, 900);
+}
+
+async function saveWorkLogAutomatically() {
+  if (workLogSavePromise) {
+    await workLogSavePromise;
+    if (workLogAutosaveTimer) return;
+  }
+  const revision = workLogRevision;
+  const payload = workLogFormPayload();
+  const message = document.getElementById("workLogMessage");
+  if (!payload.work_dates.length || !Number(payload.days) || !Number(payload.hours) || !payload.work_completed.trim()) return;
+  message.textContent = "Saving…";
+  workLogSavePromise = (async () => {
+    try {
+      const response = await fetch("/api/job-work-logs", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Save failed");
+      if (revision === workLogRevision) {
+        currentWorkLogId = data.id;
+        localStorage.removeItem(workLogDraftKey());
+        message.textContent = "✓ Saved automatically";
+        await loadWorkLogs();
+      }
+    } catch (error) {
+      console.error("Could not autosave work record:", error);
+      message.textContent = `Could not save: ${error.message}. Keep this page open and try again.`;
+    } finally {
+      workLogSavePromise = null;
+      if (revision !== workLogRevision) {
+        clearTimeout(workLogAutosaveTimer);
+        workLogAutosaveTimer = setTimeout(saveWorkLogAutomatically, 250);
+      }
+    }
+  })();
+  await workLogSavePromise;
+}
+
+function editWorkLog(id) {
+  workLogRevision += 1;
+  clearTimeout(workLogAutosaveTimer);
+  const log = workLogRecords.find(item => item.id === id);
+  if (!log) return;
+  currentWorkLogId = log.id;
+  workLogPlannedScopeNeedsConfirmation = false;
+  document.getElementById("workLogPlannedScopeConfirmation").hidden = true;
+  document.getElementById("confirmPlannedWorkCompleted").checked = false;
+  const list = document.getElementById("workLogDates");
+  list.innerHTML = "";
+  const dates = workLogDatesFromRecord(log);
+  (dates.length ? dates : [log.work_date]).forEach(date => addWorkLogDate(date));
+  const values = {
+    workLogDays: log.days, workLogHours: log.hours,
+    workLogSupervisionType: log.supervision_type, workLogCompetency: log.competency,
+    workLogCompleted: log.work_completed, workLogTests: log.tests_results,
+    workLogIssues: log.issues_notes, workLogSupervisorNotes: log.supervisor_notes,
+    workLogMaterials: log.materials_used, workLogCertificationStatus: log.certification_status
+  };
+  Object.entries(values).forEach(([fieldId, value]) => { if (document.getElementById(fieldId)) document.getElementById(fieldId).value = value || ""; });
+  document.getElementById("workLogMessage").textContent = "Editing saved work record. Changes save automatically.";
+  document.getElementById("workLogSection").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function startNewWorkLog() {
+  workLogRevision += 1;
+  clearTimeout(workLogAutosaveTimer);
+  currentWorkLogId = null;
+  ["workLogDays", "workLogHours", "workLogCompleted", "workLogMaterials", "workLogTests", "workLogIssues", "workLogSupervisorNotes"].forEach(id => { document.getElementById(id).value = ""; });
+  document.getElementById("workLogCertificationStatus").value = "not_started";
+  document.getElementById("workLogSupervisionType").value = "on_site";
+  document.getElementById("workLogCompetency").value = "health_safety";
+  localStorage.removeItem(workLogDraftKey());
+  resetWorkLogDates();
+  const plannedWork = document.getElementById("general_work_scope").value.trim();
+  const completedField = document.getElementById("workLogCompleted");
+  const confirmation = document.getElementById("workLogPlannedScopeConfirmation");
+  const confirmationCheckbox = document.getElementById("confirmPlannedWorkCompleted");
+  completedField.value = plannedWork;
+  workLogPlannedScopeNeedsConfirmation = Boolean(plannedWork);
+  confirmation.hidden = !plannedWork;
+  confirmationCheckbox.checked = false;
+  document.getElementById("workLogMessage").textContent = plannedWork
+    ? "Planned electrical work copied into the new record. Review or confirm it before saving."
+    : "New work record. It will save automatically when required fields are entered.";
+}
+
+
+const systemDesignFieldIds = [
+  "design_connection_type", "design_main_supply", "design_icp",
+  "design_retailer", "design_network", "design_switchboard",
+  "design_supply_notes", "design_environment_notes", "design_panel_model",
+  "design_panel_wattage", "design_panel_count", "design_array_kw",
+  "design_inverter_model", "design_inverter_kw", "design_battery_model",
+  "design_battery_kwh", "design_backup", "design_string_count",
+  "design_mppt", "design_dc_cable", "design_ac_cable",
+  "design_ac_protection", "design_dc_protection", "design_export_control",
+  "design_earthing", "design_electrical_notes", "design_reference",
+  "design_revision", "design_designer", "design_date", "design_standards"
+];
+
+const systemDesignCheckboxIds = [
+  "design_salt_spray", "design_high_wind", "design_trees",
+  "design_chimneys", "design_buildings", "design_aerials",
+  "design_vents", "design_satellite", "design_roof_plan", "design_sld",
+  "design_calculations", "design_equipment_schedule", "design_reviewed"
+];
+
+const roofFieldClasses = [
+  "roof_length", "roof_width", "roof_pitch", "roof_orientation_design",
+  "roof_material", "roof_panel_count", "roof_array_layout", "roof_shading",
+  "roof_notes"
+];
+
+function collectSystemDesign() {
+  const design = {};
+
+  systemDesignFieldIds.forEach(id => {
+    design[id] = document.getElementById(id)?.value ?? "";
+  });
+
+  systemDesignCheckboxIds.forEach(id => {
+    design[id] = Boolean(document.getElementById(id)?.checked);
+  });
+
+  design.roofs = Array.from(
+    document.querySelectorAll("#designRoofs .design-roof")
+  ).map(roof => {
+    const roofData = {};
+    roofFieldClasses.forEach(className => {
+      roofData[className] = roof.querySelector(`.${className}`)?.value ?? "";
+    });
+    return roofData;
+  });
+
+  return design;
+}
+
+function populateRoof(roof, roofData = {}) {
+  roofFieldClasses.forEach(className => {
+    const field = roof.querySelector(`.${className}`);
+    if (field) field.value = roofData[className] ?? "";
+  });
+}
+
+function updateSystemDesignReadiness() {
+  const readiness = document.getElementById("designReadiness");
+  const reviewed = document.getElementById("design_reviewed")?.checked;
+  if (!readiness) return;
+
+  readiness.textContent = reviewed
+    ? "SYSTEM DESIGN REVIEWED — READY FOR FINAL APPROVAL"
+    : "SYSTEM DESIGN INCOMPLETE";
+  readiness.style.background = reviewed ? "#eef7ed" : "#f5f5f5";
+}
+
+async function loadSystemDesign() {
+  try {
+    const response = await fetch(`/api/system-design?job_id=${jobId}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Load failed");
+    }
+
+    systemDesignLoaded = true;
+    if (!data.system_design) {
+      designSaveController().initialise(false);
+      return;
+    }
+    const design = data.system_design;
+
+    systemDesignFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.value = design[id] ?? "";
+    });
+
+    systemDesignCheckboxIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) field.checked = Boolean(design[id]);
+    });
+
+    const roofsContainer = document.getElementById("designRoofs");
+    const roofs = Array.isArray(design.roofs) && design.roofs.length
+      ? design.roofs
+      : [{}];
+
+    while (roofsContainer.children.length > 1) {
+      roofsContainer.lastElementChild.remove();
+    }
+
+    populateRoof(roofsContainer.querySelector(".design-roof"), roofs[0]);
+    for (const roofData of roofs.slice(1)) {
+      document.getElementById("addDesignRoof").click();
+      populateRoof(roofsContainer.lastElementChild, roofData);
+    }
+
+    updateSystemDesignReadiness();
+    designSaveController().initialise(true);
+  } catch (error) {
+    systemDesignLoaded = false;
+    console.error("Could not load system design:", error);
+    showSystemDesignSaveState("failed", error);
+  }
+}
+
+async function saveSystemDesign() {
+  const message = document.getElementById("systemDesignMessage");
+  if (!systemDesignLoaded) {
+    message.textContent = "Save failed — retry. Please reload the saved System Design first.";
+    message.classList?.add("error");
+    return false;
+  }
+  clearTimeout(autosaveTimers.get("systemDesign"));
+  return designSaveController().save();
+}
+
+
+function updateDesignSuggestions() {
+  calculateSolarSize();
+  calculateEstimatedGeneration();
+}
+
+
+document.addEventListener("input", function(event) {
+  if (event.target?.id === "workLogCompleted" && workLogPlannedScopeNeedsConfirmation) {
+    workLogPlannedScopeNeedsConfirmation = false;
+    document.getElementById("workLogPlannedScopeConfirmation").hidden = true;
+  }
+  if (event.target?.closest?.("#workLogSection")) scheduleWorkLogAutosave();
+
+  if (!event.target) return;
+
+
+  /* ASSESSMENT & DESIGN */
+
+  if (
+    event.target.id === "panel_wattage" ||
+    event.target.id === "panel_count"
+  ) {
+    updateDesignSuggestions();
+
+    // Assessment is a separate source; explicit review applies changes to Design.
+  }
+
+  /* SYSTEM DESIGN — CALCULATE ARRAY SIZE */
+
+  if (
+    event.target.id === "design_panel_wattage" ||
+    event.target.id === "design_panel_count" ||
+    event.target.classList.contains("roof_panel_count")
+  ) {
+
+    const wattage =
+      Number(document.getElementById("design_panel_wattage")?.value) || 0;
+
+    const panelCount =
+      Number(document.getElementById("design_panel_count")?.value) || 0;
+
+    const arraySize =
+      document.getElementById("design_array_kw");
+
+    if (arraySize) {
+
+      if (wattage > 0 && panelCount > 0) {
+        arraySize.value =
+          ((wattage * panelCount) / 1000).toFixed(3);
+      } else {
+        arraySize.value = "";
+      }
+
+    }
+
+  }
+
+  /* SUPPLIER PRICING — CALCULATE MATERIAL COSTS */
+
+  const supplierCostFields = [
+    "supplier_cost_panels",
+    "supplier_cost_inverter",
+    "supplier_cost_battery",
+    "supplier_cost_gateway",
+    "supplier_cost_mounting",
+    "supplier_cost_misc",
+    "supplier_cost_freight",
+    "supplier_cost_other"
+  ];
+
+  const solectricsMaterialFields = [
+    "solectrics_cable_cost",
+    "solectrics_conduit_cost",
+    "solectrics_switchgear_cost",
+    "solectrics_other_materials"
+  ];
+
+  if (
+    supplierCostFields.includes(event.target.id) ||
+    solectricsMaterialFields.includes(event.target.id)
+  ) {
+
+    const supplierSubtotal = supplierCostFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const supplierSubtotalField =
+      document.getElementById("supplier_subtotal");
+
+    if (supplierSubtotalField) {
+      supplierSubtotalField.value = supplierSubtotal.toFixed(2);
+    }
+
+
+    const additionalMaterials = solectricsMaterialFields.reduce(
+      (total, id) =>
+        total + (Number(document.getElementById(id)?.value) || 0),
+      0
+    );
+
+    const trueMaterialsCost =
+      supplierSubtotal + additionalMaterials;
+
+    const trueMaterialsDisplay =
+      document.getElementById("trueMaterialsCost");
+
+    if (trueMaterialsDisplay) {
+      trueMaterialsDisplay.textContent =
+        trueMaterialsCost.toFixed(2);
+    }
+
+  }
+});
+
+
+document.addEventListener("change", function(event) {
+  if (event.target?.classList?.contains("job-file-category")) updateJobFileCategory(event.target.dataset.fileId, event.target.value, event.target);
+  if (event.target?.id === "confirmPlannedWorkCompleted") {
+    workLogPlannedScopeNeedsConfirmation = !event.target.checked;
+    scheduleWorkLogAutosave();
+  }
+  if (event.target?.id === "jobFileInput") {
+    renderSelectedJobFiles();
+    const retry = document.getElementById("uploadJobFile");
+    if (retry) retry.hidden = true;
+    uploadJobFile();
+  }
+  if (event.target?.closest?.("#workLogSection") && event.target.id !== "newWorkLog") scheduleWorkLogAutosave();
+
+  if (event.target?.classList?.contains("work-log-date")) {
+    syncWorkLogDays();
+  }
+
+  if (
+    event.target &&
+    event.target.id === "roof_orientation"
+  ) {
+    calculateEstimatedGeneration();
+  }
+
+  if (event.target?.id === "design_reviewed") {
+    updateSystemDesignReadiness();
+  }
+
+});
+
+
+document.addEventListener("click", function(event) {
+  if (!event.target) return;
+
+  if (event.target.id === "addWorkLogDate") {
+    addWorkLogDate();
+  }
+
+  if (event.target.classList?.contains("removeWorkLogDate")) {
+    event.target.closest(".work-date-row")?.remove();
+    const buttons = document.querySelectorAll(".removeWorkLogDate");
+    buttons.forEach(button => { button.hidden = buttons.length === 1; });
+    syncWorkLogDays();
+  }
+
+  if (event.target.id === "generateSmartSuggestions") {
+    suggestSmartEnergyUse();
+    suggestBattery();
+  }
+
+  if (event.target.id === "generateAssessment") {
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+    suggestSmartEnergyUse();
+    suggestBattery();
+    suggestTariff();
+    generateRecommendation();
+  }
+
+  if (event.target.id === "saveAssessment") {
+    saveAssessment();
+  }
+
+  if (event.target.id === "saveSiteVisit") {
+    saveSiteVisit();
+  }
+
+  if (event.target.id === "uploadJobFile") {
+    uploadJobFile();
+  }
+
+  if (event.target.id === "newWorkLog") startNewWorkLog();
+  if (event.target.classList?.contains("editWorkLog")) editWorkLog(event.target.dataset.workLogId);
+
+  if (event.target.id === "saveJobType") {
+    saveJobType();
+  }
+
+  if (event.target.id === "saveGeneralJobDetails") {
+    saveGeneralJobDetails();
+  }
+
+  if (event.target.id === "generateSupplierRequest") {
+    saveSystemDesign().then(saved => {
+      if (saved) window.location.href = `/mini-fergus-fletcher-form.html?job_id=${encodeURIComponent(jobId)}`;
+    });
+  }
+
+  if (event.target.id === "saveSystemDesign") {
+    saveSystemDesign();
+  }
+
+
+/* SYSTEM DESIGN — ADD ANOTHER ROOF */
+
+if (event.target.id === "addDesignRoof") {
+
+  const roofsContainer = document.getElementById("designRoofs");
+
+  if (!roofsContainer) return;
+
+  const existingRoofs =
+    roofsContainer.querySelectorAll(".design-roof");
+
+  const roofNumber = existingRoofs.length + 1;
+
+  const roof = document.createElement("div");
+
+  roof.className = "design-roof";
+  roof.dataset.roof = roofNumber;
+
+  roof.style.marginTop = "24px";
+  roof.style.paddingTop = "20px";
+  roof.style.borderTop = "1px solid #ddd";
+
+  roof.innerHTML = `
+
+    <h4>Roof ${roofNumber}</h4>
+
+    <div class="grid">
+
+      <div>
+        <label>Roof length (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_length">
+      </div>
+
+      <div>
+        <label>Roof width (m)</label>
+        <input type="number"
+               step="0.01"
+               class="roof_width">
+      </div>
+
+      <div>
+        <label>Pitch (degrees)</label>
+        <input type="number"
+               step="0.1"
+               class="roof_pitch">
+      </div>
+
+      <div>
+        <label>Orientation</label>
+        <select class="roof_orientation_design">
+          <option value="">Select...</option>
+          <option>North</option>
+          <option>North-east</option>
+          <option>East</option>
+          <option>South-east</option>
+          <option>South</option>
+          <option>South-west</option>
+          <option>West</option>
+          <option>North-west</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Roof material / profile</label>
+        <input type="text"
+               class="roof_material"
+               placeholder="e.g. Corrugated steel">
+      </div>
+
+      <div>
+        <label>Proposed panels on this roof</label>
+        <input type="number"
+               class="roof_panel_count">
+      </div>
+
+      <div>
+        <label>Proposed array layout</label>
+        <input type="text"
+               class="roof_array_layout"
+               placeholder="e.g. 2 rows × 8 panels">
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Shading / obstructions</label>
+      <textarea class="roof_shading"
+                rows="2"
+                placeholder="Trees, chimney, buildings, aerials, vent pipes, satellite dish, etc."></textarea>
+    </div>
+
+    <div style="margin-top:16px;">
+      <label>Roof notes</label>
+      <textarea class="roof_notes"
+                rows="2"
+                placeholder="Access, usable area, fixing considerations or other observations."></textarea>
+    </div>
+
+    <button type="button"
+            class="removeDesignRoof"
+            style="margin-top:12px;">
+      REMOVE THIS ROOF
+    </button>
+
+  `;
+
+  roofsContainer.appendChild(roof);
+}
+
+
+/* SYSTEM DESIGN — REMOVE EXTRA ROOF */
+
+if (event.target.classList.contains("removeDesignRoof")) {
+
+  const roof = event.target.closest(".design-roof");
+
+  if (roof) {
+    roof.remove();
+  }
+}
+
+});
+
+
+const costingState = {
+  options: [],
+  allLines: [],
+  currentOptionId: null,
+  lines: [],
+  catalogueResults: []
+};
+
+function costingMoney(value) {
+  return new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value) || 0);
+}
+
+function newCostingLine(category = "materials", product = null) {
+  const markup = Number(document.getElementById("costingDefaultMarkup")?.value) || 0;
+  const unitCost = Number(product?.buy_price) || 0;
+  return {
+    id: crypto.randomUUID(),
+    option_id: costingState.currentOptionId,
+    scope: "option",
+    supplier_product_id: product?.id || "",
+    supplier_name: product?.supplier_name || "",
+    supplier_sku: product?.supplier_sku || "",
+    description: product?.description || "",
+    unit_code: product?.unit_code || (category === "labour" ? "hour" : "each"),
+    quantity: 1,
+    unit_cost: unitCost,
+    markup_percent: category === "materials" ? markup : 0,
+    customer_unit_price: Number((unitCost * (1 + (category === "materials" ? markup : 0) / 100)).toFixed(2)),
+    category,
+    display_mode: "show",
+    combine_label: ""
+  };
+}
+
+function currentCostingOption() {
+  return costingState.options.find(option => option.id === costingState.currentOptionId);
+}
+
+function updateCostingOptionFields() {
+  const option = currentCostingOption();
+  if (!option) return;
+  document.getElementById("costingOptionName").value = option.name || "";
+  document.getElementById("costingOptionStatus").value = option.status || "draft";
+  document.getElementById("costingDefaultMarkup").value = Number(option.default_markup_percent ?? 30);
+}
+
+function renderCostingOptionSelect() {
+  const select = document.getElementById("costingOptionSelect");
+  if (!select) return;
+  select.innerHTML = costingState.options.map(option => `<option value="${escapeHtml(option.id)}" ${option.id === costingState.currentOptionId ? "selected" : ""}>${escapeHtml(option.name)}${option.status === "approved" ? " — Approved" : ""}</option>`).join("");
+  updateCostingOptionFields();
+}
+
+function selectCostingOption(optionId) {
+  costingState.currentOptionId = optionId;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id || line.option_id === optionId).map(line => ({ ...line, scope: line.option_id ? "option" : "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function createCostingOption() {
+  const optionNumber = costingState.options.length + 1;
+  const option = { id: crypto.randomUUID(), name: `Option ${optionNumber}`, status: "draft", default_markup_percent: 30 };
+  costingState.options.push(option);
+  costingState.currentOptionId = option.id;
+  costingState.lines = costingState.allLines.filter(line => !line.option_id).map(line => ({ ...line, scope: "shared" }));
+  renderCostingOptionSelect();
+  renderCostingLines();
+}
+
+function costingSelect(field, value) {
+  const choices = {
+    category: [["materials", "Materials"], ["labour", "Labour"], ["subcontractor", "Subcontractor"], ["certification", "Certification / testing"], ["other", "Other"]],
+    scope: [["option", "This option"], ["shared", "All options"]],
+    display_mode: [["show", "Show"], ["combine", "Combine"], ["hide", "Hide"]]
+  }[field];
+  return `<select data-field="${field}">${choices.map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
+function renderCostingLines() {
+  const body = document.getElementById("costingLines");
+  if (!body) return;
+  body.innerHTML = costingState.lines.map(line => `
+    <tr class="costing-line" data-line-id="${escapeHtml(line.id)}">
+      <td data-label="Description / supplier" class="costing-description"><input data-field="description" value="${escapeHtml(line.description)}" placeholder="Description"><div class="costing-line-meta">${escapeHtml([line.supplier_name, line.supplier_sku].filter(Boolean).join(" · "))}</div></td>
+      <td data-label="Category">${costingSelect("category", line.category)}</td>
+      <td data-label="Used by">${costingSelect("scope", line.scope)}</td>
+      <td data-label="Quantity" class="costing-number"><input data-field="quantity" type="number" min="0" step="0.01" value="${Number(line.quantity) || 0}"></td>
+      <td data-label="Unit" class="costing-number"><input data-field="unit_code" value="${escapeHtml(line.unit_code)}"></td>
+      <td data-label="Unit cost" class="costing-number"><input data-field="unit_cost" type="number" min="0" step="0.01" value="${Number(line.unit_cost) || 0}"></td>
+      <td data-label="Mark-up %" class="costing-number"><input data-field="markup_percent" type="number" min="0" step="0.1" value="${Number(line.markup_percent) || 0}"></td>
+      <td data-label="Customer unit price" class="costing-number"><input data-field="customer_unit_price" type="number" min="0" step="0.01" value="${Number(line.customer_unit_price) || 0}"></td>
+      <td data-label="Customer display" class="costing-display">${costingSelect("display_mode", line.display_mode)}<input data-field="combine_label" value="${escapeHtml(line.combine_label)}" placeholder="Combined quote label" style="margin-top:6px;${line.display_mode === "combine" ? "" : "display:none"}"></td>
+      <td data-label=""><button type="button" class="costing-remove removeCostingLine">REMOVE</button></td>
+    </tr>
+  `).join("");
+  document.getElementById("costingEmpty").style.display = costingState.lines.length ? "none" : "block";
+  updateCostingTotals();
+}
+
+function updateActualMaterialsCharge(total = window.jobActualMaterialsCost || 0) {
+  const cost = Number(total) || 0;
+  const markupField = document.getElementById("costingDefaultMarkup");
+  const markup = markupField && markupField.value !== "" ? Number(markupField.value) : 30;
+  const rate = Number.isFinite(markup) ? Math.max(0, markup) : 30;
+  const markupAmount = cost * rate / 100;
+  const customerEx = cost + markupAmount;
+  const customerIncl = customerEx * 1.15;
+  const values = {
+    actualMaterialsCost: cost,
+    actualMaterialsMarkup: markupAmount,
+    actualMaterialsCustomerEx: customerEx,
+    actualMaterialsCustomerIncl: customerIncl
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = costingMoney(value);
+  });
+  const note = document.getElementById("actualMaterialsMarkupNote");
+  if (note) note.textContent = `Uses the ${rate}% default material mark-up above, then adds 15% GST. The marked-up ex-GST amount is added to the Job Hub customer invoice below.`;
+}
+
+window.addEventListener("jobhub:materials-updated", event => {
+  window.jobActualMaterialsCost = Number(event.detail?.total) || 0;
+  updateActualMaterialsCharge(window.jobActualMaterialsCost);
+});
+
+document.addEventListener("input", event => {
+  if (event.target?.id === "costingDefaultMarkup") updateActualMaterialsCharge();
+});
+document.addEventListener("change", event => {
+  if (event.target?.id === "costingDefaultMarkup") updateActualMaterialsCharge();
+});
+
+function updateCostingTotals() {
+  const totals = { materials: 0, labour: 0, subcontractor: 0, certification: 0, other: 0, customer: 0 };
+  for (const line of costingState.lines) {
+    const quantity = Number(line.quantity) || 0;
+    totals[line.category] = (totals[line.category] || 0) + quantity * (Number(line.unit_cost) || 0);
+    totals.customer += quantity * (Number(line.customer_unit_price) || 0);
+  }
+  const totalCost = totals.materials + totals.labour + totals.subcontractor + totals.certification + totals.other;
+  const gst = totals.customer * 0.15;
+  const profit = totals.customer - totalCost;
+  const margin = totals.customer > 0 ? profit / totals.customer * 100 : 0;
+  document.getElementById("costingMaterialsCost").textContent = costingMoney(totals.materials);
+  document.getElementById("costingLabourCost").textContent = costingMoney(totals.labour);
+  document.getElementById("costingSubcontractorCost").textContent = costingMoney(totals.subcontractor + totals.certification);
+  document.getElementById("costingOtherCost").textContent = costingMoney(totals.other);
+  document.getElementById("costingTotalCost").textContent = costingMoney(totalCost);
+  document.getElementById("costingCustomerEx").textContent = costingMoney(totals.customer);
+  document.getElementById("costingGst").textContent = costingMoney(gst);
+  document.getElementById("costingCustomerIncl").textContent = costingMoney(totals.customer + gst);
+  document.getElementById("costingProfit").textContent = costingMoney(profit);
+  document.getElementById("costingMargin").textContent = `${margin.toFixed(1)}%`;
+  updateActualMaterialsCharge();
+}
+
+async function loadCosting(preferredOptionId) {
+  const message = document.getElementById("costingMessage");
+  try {
+    const response = await fetch(`/api/job-costing?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load internal costing");
+    costingState.options = data.options || [];
+    costingState.allLines = data.lines || [];
+    if (!costingState.options.length) createCostingOption();
+    else selectCostingOption(preferredOptionId && costingState.options.some(option => option.id === preferredOptionId) ? preferredOptionId : costingState.options[0].id);
+    if (message) message.textContent = "";
+  } catch (error) {
+    if (message) { message.textContent = error.message; message.className = "error"; }
+  }
+}
+
+async function saveInternalCosting() {
+  const option = currentCostingOption();
+  const message = document.getElementById("costingMessage");
+  if (!option) return;
+  option.name = document.getElementById("costingOptionName").value.trim();
+  option.status = document.getElementById("costingOptionStatus").value;
+  option.default_markup_percent = Number(document.getElementById("costingDefaultMarkup").value) || 0;
+  if (!option.name) { message.textContent = "Enter an option name."; message.className = "error"; return; }
+  try {
+    message.textContent = "Saving…"; message.className = "";
+    const response = await fetch("/api/job-costing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_id: Number(jobId), option, lines: costingState.lines }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not save internal costing");
+    await loadCosting(data.option_id);
+    message.textContent = "Internal costing saved.";
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function loadCustomerQuotes() {
+  const history = document.getElementById("customerQuoteHistory");
+  const warning = document.getElementById("customerQuoteWarning");
+  try {
+    const response = await fetch(`/api/customer-quotes?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer quote history");
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "Internal costing has changed since an issued or accepted quote. The saved quote has not been altered. Generate a new version if the customer price should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => `
+      <div class="quote-history-row"><div><strong>Quote v${Number(version.version_number)}</strong> · ${escapeHtml(version.status).toUpperCase()}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${Number(version.option_count)} option${Number(version.option_count) === 1 ? "" : "s"}</div></div>
+      <div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-quote?quote_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${version.status === "draft" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status !== "accepted" ? `<button type="button" class="setCustomerQuoteStatus" data-quote-id="${escapeHtml(version.id)}" data-status="accepted">MARK ACCEPTED</button>` : ""}</div></div>`).join("") : `<div class="placeholder">No customer quote versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerQuote() {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    message.textContent = "Generating…"; message.className = "";
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"generate", job_id:Number(jobId) }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer quote");
+    message.textContent = `Quote v${data.version_number} generated.`;
+    await loadCustomerQuotes();
+    window.open(`/mini-fergus-customer-quote?quote_id=${encodeURIComponent(data.quote_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerQuoteStatus(quoteId, status) {
+  const message = document.getElementById("customerQuoteMessage");
+  try {
+    const response = await fetch("/api/customer-quotes", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ action:"set_status", quote_id:quoteId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update quote status");
+    message.textContent = status === "accepted" ? "Quote marked accepted." : "Quote marked issued.";
+    message.className = "";
+    await loadCustomerQuotes();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+function localIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function initialiseInvoiceDates() {
+  const issue = document.getElementById("invoiceIssueDate");
+  const due = document.getElementById("invoiceDueDate");
+  const today = new Date();
+  if (issue && !issue.value) issue.value = localIsoDate(today);
+  if (due && !due.value) {
+    const dueDate = new Date(today);
+    dueDate.setDate(dueDate.getDate() + 7);
+    due.value = localIsoDate(dueDate);
+  }
+}
+
+async function loadCustomerInvoices() {
+  const history = document.getElementById("customerInvoiceHistory");
+  const warning = document.getElementById("customerInvoiceWarning");
+  if (!history || !warning) return;
+  initialiseInvoiceDates();
+  try {
+    const response = await fetch(`/api/customer-invoices?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load customer invoice history");
+    const defaults = data.defaults || {};
+    const fields = { invoiceBusinessName: defaults.business_name, invoiceGstNumber: defaults.gst_number, invoiceBusinessEmail: defaults.business_email, invoicePaymentInstructions: defaults.payment_instructions, invoicePaymentTerms: defaults.payment_terms };
+    Object.entries(fields).forEach(([id, value]) => { const field = document.getElementById(id); if (field && !field.value && value) field.value = value; });
+    warning.hidden = !data.costing_changed;
+    warning.textContent = data.costing_changed ? "The labour, customer charges or actual materials have changed since the latest saved invoice. That invoice has not been altered. Generate a new version if the customer invoice should change." : "";
+    history.innerHTML = data.versions.length ? data.versions.map(version => {
+      const status = escapeHtml(version.status).toUpperCase();
+      const controls = version.status === "void" ? "" : `${version.status === "draft" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="issued">MARK ISSUED</button>` : ""}${version.status === "issued" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="paid">MARK PAID</button>` : ""}${version.status !== "paid" ? `<button type="button" class="setCustomerInvoiceStatus" data-invoice-id="${escapeHtml(version.id)}" data-status="void">VOID</button>` : ""}`;
+      return `<div class="quote-history-row"><div><strong>${escapeHtml(version.invoice_number || `Invoice v${version.version_number}`)}</strong> · ${status}<div class="costing-line-meta">${new Date(`${version.created_at}Z`).toLocaleString("en-NZ")} · ${costingMoney(version.total_incl_gst)} incl GST</div></div><div class="quote-history-actions"><a class="button" href="/mini-fergus-customer-invoice?invoice_id=${encodeURIComponent(version.id)}" target="_blank">VIEW</a>${controls}</div></div>`;
+    }).join("") : `<div class="placeholder">No customer invoice versions yet.</div>`;
+  } catch (error) { history.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; }
+}
+
+async function generateCustomerInvoice() {
+  const message = document.getElementById("customerInvoiceMessage");
+  try {
+    message.textContent = "Saving costing and generating invoice…"; message.className = "";
+    await saveInternalCosting();
+    const payload = { action: "generate", job_id: Number(jobId), option_id: costingState.currentOptionId, business_name: document.getElementById("invoiceBusinessName").value, gst_number: document.getElementById("invoiceGstNumber").value, business_email: document.getElementById("invoiceBusinessEmail").value, issue_date: document.getElementById("invoiceIssueDate").value, due_date: document.getElementById("invoiceDueDate").value, payment_terms: document.getElementById("invoicePaymentTerms").value, payment_instructions: document.getElementById("invoicePaymentInstructions").value, notes: document.getElementById("invoiceNotes").value };
+    const response = await fetch("/api/customer-invoices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not generate customer invoice");
+    message.textContent = `${data.invoice_number} generated as a draft.`;
+    await loadCustomerInvoices();
+    window.open(`/mini-fergus-customer-invoice?invoice_id=${encodeURIComponent(data.invoice_id)}`, "_blank");
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+async function setCustomerInvoiceStatus(invoiceId, status) {
+  const message = document.getElementById("customerInvoiceMessage");
+  if (status === "void" && !window.confirm("Void this saved invoice?")) return;
+  try {
+    const response = await fetch("/api/customer-invoices", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "set_status", invoice_id: invoiceId, status }) });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not update invoice status");
+    message.textContent = `Invoice marked ${status}.`; message.className = "";
+    await loadCustomerInvoices();
+  } catch (error) { message.textContent = error.message; message.className = "error"; }
+}
+
+let costingSearchTimer;
+async function loadCostingSuppliers() {
+  const select = document.getElementById("costingSupplierFilter");
+  if (!select) return;
+  try {
+    const response = await fetch("/api/supplier-products?limit=1");
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load suppliers");
+    select.innerHTML = `<option value="">All suppliers</option>${(data.suppliers || []).map(supplier => `<option value="${escapeHtml(supplier.id)}" ${supplier.id === data.default_supplier_id ? "selected" : ""}>${escapeHtml(supplier.name)}${supplier.id === data.default_supplier_id ? " — Default" : ""}</option>`).join("")}`;
+  } catch (error) {
+    select.innerHTML = `<option value="">All suppliers</option>`;
+  }
+}
+
+async function searchCostingProducts() {
+  const query = document.getElementById("costingProductSearch").value.trim();
+  const supplierId = document.getElementById("costingSupplierFilter")?.value || "";
+  const results = document.getElementById("costingSearchResults");
+  if (query.length < 2) { results.hidden = true; results.innerHTML = ""; return; }
+  try {
+    const response = await fetch(`/api/supplier-products?query=${encodeURIComponent(query)}&supplier_id=${encodeURIComponent(supplierId)}&limit=30`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Search failed");
+    costingState.catalogueResults = data.products || [];
+    results.innerHTML = costingState.catalogueResults.length ? costingState.catalogueResults.map((product, index) => `<div class="costing-search-result"><div><strong>${escapeHtml(product.description)}</strong><div class="costing-line-meta">${escapeHtml(product.supplier_name)} · ${escapeHtml(product.supplier_sku)} · ${escapeHtml(product.unit_code || "unit")} · Buy ${costingMoney(product.buy_price)}</div></div><button type="button" class="addCatalogueProduct" data-product-index="${index}">ADD</button></div>`).join("") : `<div class="placeholder" style="padding:12px">No matching products.</div>`;
+    results.hidden = false;
+  } catch (error) { results.innerHTML = `<div class="error" style="padding:12px">${escapeHtml(error.message)}</div>`; results.hidden = false; }
+}
+
+document.addEventListener("input", function(event) {
+  if (event.target?.id === "costingProductSearch") {
+    clearTimeout(costingSearchTimer);
+    costingSearchTimer = setTimeout(searchCostingProducts, 250);
+    return;
+  }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  const field = event.target.dataset.field;
+  line[field] = ["quantity", "unit_cost", "markup_percent", "customer_unit_price"].includes(field) ? Number(event.target.value) || 0 : event.target.value;
+  if (field === "unit_cost" || field === "markup_percent") {
+    line.customer_unit_price = Number((Number(line.unit_cost || 0) * (1 + Number(line.markup_percent || 0) / 100)).toFixed(2));
+    row.querySelector('[data-field="customer_unit_price"]').value = line.customer_unit_price;
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("change", function(event) {
+  if (event.target?.id === "costingOptionSelect") { selectCostingOption(event.target.value); return; }
+  if (event.target?.id === "costingSupplierFilter") { searchCostingProducts(); return; }
+  const row = event.target?.closest?.(".costing-line");
+  if (!row || !event.target.dataset.field) return;
+  const line = costingState.lines.find(item => item.id === row.dataset.lineId);
+  if (!line) return;
+  line[event.target.dataset.field] = event.target.value;
+  if (event.target.dataset.field === "display_mode") {
+    row.querySelector('[data-field="combine_label"]').style.display = event.target.value === "combine" ? "block" : "none";
+  }
+  updateCostingTotals();
+});
+
+document.addEventListener("click", function(event) {
+  if (event.target?.id === "newCostingOption") createCostingOption();
+  if (event.target?.id === "saveInternalCosting") saveInternalCosting();
+  if (event.target?.id === "generateCustomerQuote") generateCustomerQuote();
+  if (event.target?.classList?.contains("setCustomerQuoteStatus")) setCustomerQuoteStatus(event.target.dataset.quoteId, event.target.dataset.status);
+  if (event.target?.id === "generateCustomerInvoice") generateCustomerInvoice();
+  if (event.target?.classList?.contains("setCustomerInvoiceStatus")) setCustomerInvoiceStatus(event.target.dataset.invoiceId, event.target.dataset.status);
+  if (event.target?.classList?.contains("addCostingLine")) {
+    costingState.lines.push(newCostingLine(event.target.dataset.category));
+    renderCostingLines();
+  }
+  if (event.target?.classList?.contains("addCatalogueProduct")) {
+    const product = costingState.catalogueResults[Number(event.target.dataset.productIndex)];
+    if (product) { costingState.lines.push(newCostingLine("materials", product)); renderCostingLines(); }
+  }
+  if (event.target?.classList?.contains("removeCostingLine")) {
+    const row = event.target.closest(".costing-line");
+    costingState.lines = costingState.lines.filter(line => line.id !== row?.dataset.lineId);
+    renderCostingLines();
+  }
+});
+
+const supplierPricingFieldIds = [
+  "supplier_name", "supplier_other", "supplier_contact", "supplier_request_date",
+  "supplier_quote_reference", "supplier_option_name", "supplier_received_date", "supplier_valid_until",
+  "supplier_solar_system", "supplier_panel_model", "supplier_inverter", "supplier_battery", "supplier_gateway",
+  "supplier_cost_panels", "supplier_cost_inverter", "supplier_cost_battery", "supplier_cost_gateway",
+  "supplier_cost_mounting", "supplier_cost_misc", "supplier_cost_freight", "supplier_cost_other",
+  "supplier_excludes_cable", "supplier_excludes_conduit", "supplier_excludes_switchgear", "supplier_mounting_confirm",
+  "supplier_notes", "solectrics_cable_cost", "solectrics_conduit_cost", "solectrics_switchgear_cost",
+  "solectrics_other_materials", "supplier_pricing_status"
+];
+
+function updateSupplierPricingTotals() {
+  const supplierCosts = ["supplier_cost_panels", "supplier_cost_inverter", "supplier_cost_battery", "supplier_cost_gateway", "supplier_cost_mounting", "supplier_cost_misc", "supplier_cost_freight", "supplier_cost_other"];
+  const extraCosts = ["solectrics_cable_cost", "solectrics_conduit_cost", "solectrics_switchgear_cost", "solectrics_other_materials"];
+  const supplierSubtotal = supplierCosts.reduce((sum, id) => sum + (Number(document.getElementById(id)?.value) || 0), 0);
+  const additional = extraCosts.reduce((sum, id) => sum + (Number(document.getElementById(id)?.value) || 0), 0);
+  const subtotal = document.getElementById("supplier_subtotal");
+  const total = document.getElementById("trueMaterialsCost");
+  if (subtotal) subtotal.value = supplierSubtotal.toFixed(2);
+  if (total) total.textContent = (supplierSubtotal + additional).toFixed(2);
+}
+
+async function loadSupplierPricing() {
+  try {
+    const response = await fetch(`/api/job-supplier-pricing?job_id=${encodeURIComponent(jobId)}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || "Could not load supplier pricing");
+    const pricing = data.pricing || {};
+    supplierPricingFieldIds.forEach(id => {
+      const field = document.getElementById(id);
+      if (!field || pricing[id] === undefined) return;
+      if (field.type === "checkbox") field.checked = Boolean(pricing[id]);
+      else field.value = pricing[id] ?? "";
+    });
+    updateSupplierPricingTotals();
+  } catch (error) {
+    const message = document.getElementById("supplierPricingMessage");
+    if (message) message.textContent = "Could not load saved supplier pricing.";
+  }
+}
+
+async function saveSupplierPricing() {
+  const pricing = {};
+  supplierPricingFieldIds.forEach(id => {
+    const field = document.getElementById(id);
+    pricing[id] = field?.type === "checkbox" ? Boolean(field.checked) : (field?.value || "");
+  });
+  updateSupplierPricingTotals();
+  const response = await fetch("/api/job-supplier-pricing", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: Number(jobId), pricing })
+  });
+  const data = await response.json();
+  if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not save supplier pricing");
+  return true;
+}
+
+const autosaveTimers = new Map();
+const autosaveBusy = new Set();
+const autosavePending = new Set();
+
+function autosaveTarget(event) {
+  const target = event.target;
+  if (!target || target.disabled || target.readOnly || target.closest(".svp-control, #jobDataReview")) return null;
+  if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
+  if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
+  if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
+  if (target.closest("#systemDesignSection")) return ["systemDesign", saveSystemDesign, "systemDesignMessage"];
+  if (target.closest("#supplierPricingSection")) return ["supplierPricing", saveSupplierPricing, "supplierPricingMessage"];
+  if (target.closest("#internalCostingSection")) return ["costing", saveInternalCosting, "costingMessage"];
+  if (target.id === "jobType") return ["jobType", saveJobType, "jobTypeMessage"];
+  return null;
+}
+
+function scheduleSectionAutosave(event) {
+  const target = autosaveTarget(event);
+  if (!target) return;
+  const [key, save, messageId] = target;
+  if (key === "systemDesign") {
+    designSaveController().dirty();
+    clearTimeout(autosaveTimers.get(key));
+    autosaveTimers.set(key, setTimeout(saveSystemDesign, 1100));
+    return;
+  }
+  const message = document.getElementById(messageId);
+  if (message) message.textContent = "Changes pending…";
+  clearTimeout(autosaveTimers.get(key));
+  autosaveTimers.set(key, setTimeout(async () => {
+    if (autosaveBusy.has(key)) { autosavePending.add(key); return; }
+    autosaveBusy.add(key);
+    try {
+      await save();
+      const status = document.getElementById(messageId);
+      if (status && !status.classList.contains("error") && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
+        status.classList.remove("error");
+        status.textContent = "✓ Saved automatically";
+      }
+    } catch (error) {
+      const status = document.getElementById(messageId);
+      if (status) {
+        status.textContent = `Could not save: ${error.message}. Try again when connected.`;
+        status.classList.add("error");
+      }
+    } finally {
+      autosaveBusy.delete(key);
+      if (autosavePending.has(key)) {
+        autosavePending.delete(key);
+        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType" }[key];
+        const retryTarget = document.querySelector(selector);
+        if (retryTarget) scheduleSectionAutosave({ target: retryTarget });
+      }
+    }
+  }, 1100));
+}
+document.addEventListener("input", scheduleSectionAutosave);
+document.addEventListener("change", scheduleSectionAutosave);
+
+resetWorkLogDates();
+
+loadJob().then(() => {
+  window.WorkspaceNavigation?.enhanceJob();
+  Promise.all([
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
+  ]).then(() => {
+    initialiseDesignDataReview();
+    restoreWorkLogDraft();
+
+    const roofOrientationField =
+      document.getElementById("roof_orientation");
+
+    if (
+      roofOrientationField &&
+      !roofOrientationField.value &&
+      window.currentAnswers?.direction
+    ) {
+      roofOrientationField.value = window.currentAnswers.direction;
+    }
+
+    calculateSolarSize();
+    calculateEstimatedGeneration();
+    applyDocumentShortcut();
+  });
+});
+  </script>
+  <script src="/assets/fletcher-quote-import.js"></script>
+  <script src="/assets/jobhub-materials.js?v=20261001-4"></script>
+</body>
+</html>

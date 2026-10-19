@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fletcher / J.A. Russell Solar Form | Solectrics</title>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    :root { --orange:#ef9c20; --ink:#18323a; --paper:#fff; --soft:#f4f1eb; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--soft); color:var(--ink); font-family:Arial,sans-serif; }
+    main { max-width:900px; margin:auto; padding:24px 16px 60px; }
+    a { color:var(--orange); }
+    .card { background:var(--paper); border-radius:14px; margin:16px 0; padding:22px; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    label { display:block; font-size:13px; font-weight:700; margin-bottom:5px; }
+    input, select, textarea { border:1px solid #89969a; border-radius:5px; font:inherit; padding:10px; width:100%; }
+    textarea { min-height:120px; resize:vertical; }
+    .checks { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .checks label { align-items:center; display:flex; gap:8px; margin:0; }
+    .checks input { width:auto; }
+    button { background:var(--orange); border:0; border-radius:6px; color:white; cursor:pointer; font-weight:700; padding:13px 18px; }
+    button:disabled { opacity:.55; }
+    .missing { background:#fff4dc; border-left:4px solid #d28a00; padding:12px; }
+    .ready { background:#edf8ef; border-left:4px solid #31814a; padding:12px; }
+    .proposal { background:#eef5f3; border-left:4px solid #26706a; }
+    .proposal strong { display:block; margin-bottom:5px; }
+    .hint { color:#65767b; font-size:13px; }
+    #status { font-weight:700; margin-left:8px; }
+    @media (max-width:650px) { .grid,.checks { grid-template-columns:1fr; } }
+  </style>
+<link rel="stylesheet" href="/assets/workspace-navigation.css">
+<script src="/assets/workspace-navigation.js" defer></script>
+</head>
+<body>
+<main>
+  <a id="backLink" href="/mini-fergus.html">← Back to job</a>
+  <h1>Fletcher / J.A. Russell Solar Form</h1>
+  <p>Review the automatically filled details, then download the checklist or email the complete package to Jane for checking.</p>
+
+  <div id="missingPanel" class="card">Loading saved job information…</div>
+
+  <section id="preliminaryProposal" class="card proposal" hidden>
+    <h2>Job Hub preliminary proposal</h2>
+    <div id="proposalSummary"></div>
+    <p class="hint">This is a starting point calculated from the Home Energy Check and Tom's site visit. Jane should review it before creating the OpenSolar layout and SLD.</p>
+    <button type="button" id="useProposal">USE THIS PROPOSAL ON THE FORM</button>
+  </section>
+
+  <section class="card">
+    <h2>Customer and site</h2>
+    <div class="grid">
+      <div><label>Installer account code (left blank)</label><input id="installerCode" value=""></div>
+      <div><label>Customer name</label><input id="customerName"></div>
+      <div><label>Site address</label><input id="siteAddress"></div>
+      <div><label>Suburb</label><input id="suburb"></div>
+      <div><label>City and postcode</label><input id="cityPostcode"></div>
+      <div><label>ICP (optional supplier note)</label><input id="icp"><button type="button" id="saveSharedIcp" hidden>SAVE REVIEWED ICP TO JOB</button><p id="icpSaveStatus" role="status"></p><label><input type="checkbox" id="includeIcpInPackage"> Include this ICP in supplier notes</label><p class="hint">The original checklist has no dedicated ICP field. Save corrections once here; existing Site Visit / Design differences require review.</p></div>
+      <div>
+        <label>Electrical connection</label>
+        <select id="connectionType"><option value="">Select…</option><option value="single_phase">Single phase</option><option value="dual_phase">Dual phase</option><option value="three_phase">Three phase</option></select>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>System and roof</h2>
+    <div class="grid">
+      <div>
+        <label>Inverter type</label>
+        <select id="inverterType"><option value="">Select…</option><option value="grid_tied">Grid tied inverter</option><option value="hybrid_ready">Hybrid inverter (battery ready)</option><option value="hybrid_battery">Hybrid inverter with batteries</option><option value="off_grid">Off-grid</option><option value="unknown">Don't know</option></select>
+      </div>
+      <div>
+        <label>Roof type</label>
+        <select id="roofType"><option value="">Select…</option><option value="corrugated_steel">Corrugated steel</option><option value="concrete_tiles">Concrete tiles</option><option value="other">Other</option></select>
+      </div>
+      <div><label>Other roof type / profile</label><input id="roofOther"></div>
+      <div><label>Roof pitch</label><input id="roofPitch" placeholder="e.g. 20°"></div>
+      <div><label>Proposed array layout</label><input id="arrayLayout" placeholder="e.g. 10 panels main roof + 4 small roof"></div>
+      <div><label>Proposed system size (kW)</label><input id="systemSize"></div>
+    </div>
+    <div class="checks" style="margin-top:16px;">
+      <label><input type="checkbox" id="powerBillAttached" disabled> Power bill is not included in this supplier package</label>
+      <label><input type="checkbox" id="plansAttached" disabled> Verified plan attachment available</label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Environment and shading</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="saltSpray"> Salt spray</label>
+      <label><input type="checkbox" id="snowIce"> Snow and ice</label>
+      <label><input type="checkbox" id="highWind"> High wind area</label>
+      <label><input type="checkbox" id="trees"> Trees and vegetation</label>
+      <label><input type="checkbox" id="chimneys"> Chimneys</label>
+      <label><input type="checkbox" id="buildings"> Buildings</label>
+      <label><input type="checkbox" id="aerials"> TV aerials</label>
+      <label><input type="checkbox" id="vents"> Vent pipes</label>
+      <label><input type="checkbox" id="satellite"> Satellite dish</label>
+      <label><input type="checkbox" id="noShading"> No shading issues</label>
+    </div>
+    <div style="margin-top:16px;"><label>Other environment / shading issue</label><input id="otherEnvironment"></div>
+  </section>
+
+  <section class="card">
+    <h2>Additional notes</h2>
+    <textarea id="additionalNotes"></textarea>
+    <p class="hint">Equipment models, panel quantities, stringing, battery option and design notes are assembled here automatically.</p>
+  </section>
+
+  <section class="card">
+    <h2>Package documents</h2>
+    <p class="hint">The OpenSolar roof / panel layout is required. An SLD is optional. Customer electricity bills stay private in Job Hub and are never included in this package. Review every attachment and supplier note before approving email to Jane.</p>
+    <div id="packageDocuments">Checking job documents…</div>
+    <p><a id="layoutUploadLink" href="#">UPLOAD / CHECK OPENSOLAR LAYOUT ON THIS JOB</a></p>
+    <p class="hint">Use Drawing / design and Roof / panel layout before choosing the image. Return here after the upload finishes.</p>
+  </section>
+
+  <p id="downloadRequirements" class="hint"></p>
+  <p id="emailRequirements" class="hint" role="status" aria-live="polite">Checking email attachments…</p>
+  <button type="button" id="downloadPdf">DOWNLOAD COMPLETED PDF</button>
+  <button type="button" id="emailPackage">EMAIL PACKAGE TO JANE</button>
+  <span id="status" role="status" aria-live="polite"></span>
+</main>
+
+<script>
+const jobId = new URLSearchParams(location.search).get("job_id");
+document.getElementById("backLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}`;
+document.getElementById("layoutUploadLink").href = `/mini-fergus-job?id=${encodeURIComponent(jobId || "")}&document_use=roof_layout&document_context=fletcher#jobFilesSection`;
+const $ = id => document.getElementById(id);
+const setValue = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
+const setChecked = (id, value) => { if ($(id)) $(id).checked = Boolean(value); };
+let packageBusy = false;
+let packageDocumentRoles = new Set();
+let savedAnswersRevision = null;
+
+function missingRequiredPackageDocuments() {
+  return [["roof_layout", "OpenSolar roof / panel layout"]]
+    .filter(([role]) => !packageDocumentRoles.has(role)).map(([, label]) => label);
+}
+
+async function refreshPackageDocuments() {
+  const data = await packageRequest(`/api/job-files?job_id=${encodeURIComponent(jobId)}`, {}, "documents");
+  renderPackageDocuments(data.files || [], {});
+  await verifyPackagePlans(data.files || [], {});
+}
+
+function setPackageBusy(busy) {
+  packageBusy = busy;
+  $("downloadPdf").disabled = busy;
+  $("emailPackage").disabled = busy;
+}
+
+async function packageRequest(url, options, stage) {
+  const label = stage === "email" ? "Email request" : stage === "documents" ? "Document check" : "PDF save";
+  let response;
+  try { response = await fetch(url, options); }
+  catch {
+    const result = stage === "email"
+      ? "Delivery is unconfirmed. Check Jane's inbox or the email delivery log before sending again."
+      : stage === "documents" ? "No email request was made. Reopen the job and check its documents." : "Saving is unconfirmed. Check the job documents before trying again.";
+    throw new Error(`${label} lost its connection. ${result}`);
+  }
+  if (response.redirected) {
+    throw new Error(`${label} was redirected. Open Job Hub in Safari and sign in there; check the previous result before retrying.`);
+  }
+  let data;
+  try { data = await response.json(); }
+  catch { throw new Error(`${label} returned an unreadable response (HTTP ${response.status}). Check the previous result before retrying.`); }
+  if (!response.ok || !data.ok) throw new Error(data.detail || data.error || `Request failed (HTTP ${response.status})`);
+  return data;
+}
+
+function parseAnswers(raw) {
+  if (!raw) return {};
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return {}; }
+}
+
+function splitAddress(address) {
+  const parts = String(address || "").split(",").map(part => part.trim()).filter(Boolean);
+  if (parts.length >= 3) return { site:parts[0], suburb:parts[1], city:parts.slice(2).join(", ") };
+  if (parts.length === 2) return { site:parts[0], suburb:"", city:parts[1] };
+  return { site:address || "", suburb:"", city:"" };
+}
+
+function inferRoofType(material) {
+  const value = String(material || "").toLowerCase();
+  if (value.includes("steel") || value.includes("corrugat") || value.includes("metal")) return "corrugated_steel";
+  if (value.includes("concrete") || value.includes("tile")) return "concrete_tiles";
+  return value ? "other" : "";
+}
+
+function inferInverterType(design) {
+  if (design.design_battery_model || Number(design.design_battery_kwh)) return "hybrid_battery";
+  const text = String(design.design_inverter_model || "").toLowerCase();
+  if (text.includes("hybrid") || design.design_backup) return "hybrid_ready";
+  return text ? "grid_tied" : "";
+}
+
+function firstValue(...values) {
+  return values.find(value => value !== undefined && value !== null && String(value).trim() !== "") ?? "";
+}
+
+function numeric(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+function billDailyUse(bill) {
+  if (!bill || typeof bill !== "object") return 0;
+  const daily = numeric(bill.average_daily_kwh ?? bill.averageDailyKwh);
+  if (daily) return daily;
+  const imported = numeric(bill.total_import_kwh ?? bill.totalImportKwh);
+  const days = numeric(bill.billing_days ?? bill.billingDays);
+  return imported && days ? imported / days : 0;
+}
+
+function orientationFactor(value) {
+  const key = String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+  return ({ north:1, northeast:.95, northwest:.95, east:.88, west:.88, southeast:.78, southwest:.78, south:.65, mixed:.9 })[key] || .9;
+}
+
+function calculatePreliminaryProposal(answers, visit, design, assessment) {
+  // Assessment values are inputs, not an approved supplier proposal. Only a
+  // quantity saved in System Design is treated as Jane-reviewed.
+  const savedCount = design.design_reviewed ? numeric(firstValue(design.design_panel_count)) : 0;
+  const panelWattage = numeric(firstValue(design.design_panel_wattage, assessment.panel_wattage)) || 445;
+  const summerDaily = billDailyUse(answers?.bills?.summer);
+  const winterDaily = billDailyUse(answers?.bills?.winter);
+  const dailyValues = [summerDaily, winterDaily].filter(Boolean);
+  const annualUse = dailyValues.length ? dailyValues.reduce((sum, value) => sum + value, 0) / dailyValues.length * 365 : 0;
+  const unusualOneBillEstimate = dailyValues.length === 1 && annualUse > 20000;
+  const orientation = firstValue(design.roofs?.[0]?.roof_orientation_design, visit.visit_roof_orientation, assessment.roof_orientation, answers.direction);
+  const productionPerKw = 1250 * orientationFactor(orientation);
+  const energyTargetKw = annualUse && !unusualOneBillEstimate ? annualUse * .9 / productionPerKw : 0;
+  const roofLength = numeric(firstValue(design.roofs?.[0]?.roof_length, visit.visit_roof_length));
+  const roofWidth = numeric(firstValue(design.roofs?.[0]?.roof_width, visit.visit_roof_width));
+  // Indicative only: reserve 25% for edges, access and obstructions; assume 2.4 m² per modern panel.
+  const roofCapacity = roofLength && roofWidth ? Math.max(1, Math.floor(roofLength * roofWidth * .75 / 2.4)) : 0;
+  const energyPanelCount = energyTargetKw ? Math.ceil(energyTargetKw * 1000 / panelWattage) : 0;
+  let panelCount = savedCount || (energyPanelCount && roofCapacity ? Math.min(energyPanelCount, roofCapacity) : 0);
+  const limitedByRoof = Boolean(!savedCount && energyPanelCount && roofCapacity && energyPanelCount > roofCapacity);
+  const systemKw = panelCount ? panelCount * panelWattage / 1000 : 0;
+  const sources = [];
+  if (dailyValues.length === 2) sources.push("summer and winter bill data");
+  else if (dailyValues.length === 1) sources.push("one supplied power bill");
+  if (roofCapacity) sources.push("Tom's recorded roof dimensions");
+  if (orientation) sources.push(`${orientation} orientation`);
+  if (savedCount) sources.push("the saved panel quantity");
+  return { panelCount, panelWattage, systemKw, annualUse, roofCapacity, limitedByRoof, sources, hasEnergyData:Boolean(annualUse), energyPanelCount, unusualOneBillEstimate };
+}
+
+let preliminaryProposal = null;
+
+function renderPreliminaryProposal(proposal) {
+  const panel = $("preliminaryProposal");
+  const summary = $("proposalSummary");
+  if (!proposal.panelCount) {
+    panel.hidden = false;
+    $("useProposal").hidden = true;
+    const energyText = proposal.unusualOneBillEstimate
+      ? `One bill annualises to approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh, which is unusually high for a home. Check the extracted bill figures or add another bill before using it to size the system.`
+      : proposal.energyPanelCount
+      ? `The energy-use estimate suggests approximately ${proposal.energyPanelCount} panels, but Job Hub will not use that as the proposal until the usable roof capacity is known.`
+      : "A reliable energy-use estimate is not yet available.";
+    summary.innerHTML = `<strong>More information is needed before proposing a system size.</strong><p>${energyText}</p><p>Add Tom's roof measurements or save a Jane-reviewed panel quantity in System Design. OpenSolar must confirm the final layout.</p>`;
+    return;
+  }
+  panel.hidden = false;
+  $("useProposal").hidden = false;
+  const roofNote = proposal.roofCapacity
+    ? ` Indicative roof capacity: approximately ${proposal.roofCapacity} panels.${proposal.limitedByRoof ? " The recommendation has been reduced to that roof capacity." : ""}`
+    : " Roof capacity still needs confirmation in OpenSolar.";
+  const energyNote = proposal.hasEnergyData
+    ? ` Estimated annual household use: approximately ${Math.round(proposal.annualUse).toLocaleString("en-NZ")} kWh.`
+    : " The quantity comes from the saved design rather than an energy-use calculation.";
+  summary.innerHTML = `<strong>${proposal.panelCount} × ${proposal.panelWattage} W panels = ${proposal.systemKw.toFixed(2)} kWp</strong><p>${energyNote}${roofNote}</p><p class="hint">Based on: ${proposal.sources.join(", ") || "saved Job Hub information"}.</p>`;
+}
+
+function applyPreliminaryProposal(replaceExisting = true) {
+  if (!preliminaryProposal?.panelCount) return;
+  if (replaceExisting || !$("arrayLayout").value.trim()) setValue("arrayLayout", `${preliminaryProposal.panelCount} panels — layout to be confirmed in OpenSolar`);
+  if (replaceExisting || !$("systemSize").value.trim()) setValue("systemSize", preliminaryProposal.systemKw.toFixed(2));
+  updateMissing();
+}
+
+function calculateSystemSize(design) {
+  if (!design.design_reviewed) return "";
+  const savedSize = firstValue(design.design_array_kw);
+  if (savedSize !== "") return savedSize;
+  const panelCount = Number(firstValue(design.design_panel_count));
+  const panelWattage = Number(firstValue(design.design_panel_wattage));
+  return panelCount && panelWattage ? (panelCount * panelWattage / 1000).toFixed(2) : "";
+}
+
+function inferredDocumentRole(file) {
+  if (file.document_role && file.document_role !== "general") return file.document_role;
+  const text = `${file.original_name || ""} ${file.caption || ""}`.toLowerCase();
+  if (/\bsld\b|single[- ]line/.test(text)) return "sld";
+  if (/roof.*(layout|plan)|panel.*layout/.test(text)) return "roof_layout";
+  if (/(power|electricity).*bill|bill.*(power|electricity)/.test(text)) return "power_bill";
+  return "general";
+}
+
+function verifiedPlanState(files, verifiedFiles, role) {
+  const latest = files.find(file => inferredDocumentRole(file) === role);
+  if (!latest) return {verified:false, label:"Not attached"};
+  const checked = (verifiedFiles || []).find(file => String(file.id) === String(latest.id));
+  const billName = /(power|electricity).*bill|bill.*(power|electricity)/i.test(`${latest.original_name || ""} ${latest.caption || ""}`);
+  const verified = !billName && latest.document_role === role && checked?.document_role === role && checked.accessibility === "accessible";
+  return {verified, label:verified ? "Verified attachment" : "Needs review — attachment not verified"};
+}
+
+async function verifyPackagePlans(files, answers) {
+  let verifiedFiles;
+  try {
+    const response = await fetch(`/api/job-document-inventory?job_id=${encodeURIComponent(jobId)}`);
+    if (!response.ok || response.redirected) throw new Error("Verification unavailable");
+    const data = await response.json();
+    const job = data.ok && data.jobs?.find(job => String(job.id) === String(jobId));
+    if (!job || !Array.isArray(job.files)) throw new Error("Verification unavailable");
+    verifiedFiles = job.files;
+  } catch { /* Keep receipt unconfirmed; PDF download and backend email checks remain independent. */ }
+  renderPackageDocuments(files, answers, verifiedFiles);
+}
+
+function renderPackageDocuments(files, answers, verifiedFiles) {
+  const roles = new Set(files.map(inferredDocumentRole));
+  packageDocumentRoles = roles;
+  const layout = verifiedPlanState(files, verifiedFiles, "roof_layout");
+  const sld = verifiedPlanState(files, verifiedFiles, "sld");
+  setChecked("plansAttached", layout.verified || sld.verified);
+  setChecked("powerBillAttached", false);
+  const hasBillData = Boolean(answers.billFileName || answers.bill_filename || answers.billUploaded);
+  const items = [
+    ["sld", "Single-line diagram (SLD) — optional", roles.has("sld")],
+    ["roof_layout", "Roof / panel layout", roles.has("roof_layout")],
+    ["power_bill", "Customer power bill — private, excluded from supplier package", roles.has("power_bill")]
+  ];
+  $("packageDocuments").innerHTML = items.map(([role, label, present]) => {
+    const note = role === "power_bill" && !present && hasBillData
+      ? " — bill information exists, but the original file is not stored"
+      : "";
+    if (role === "roof_layout" || role === "sld") {
+      const state = role === "roof_layout" ? layout : sld;
+      return `<div>${state.verified ? "✓" : "○"} ${label} — ${state.label}${role === "sld" ? " (does not replace the required OpenSolar layout)" : ""}</div>`;
+    }
+    return `<div>${present ? "✓" : "○"} ${label}${note}</div>`;
+  }).join("");
+  const missing = missingRequiredPackageDocuments();
+  $("emailRequirements").textContent = missing.length
+    ? `Email unavailable: missing ${missing.join(", ")}. Upload the missing attachment to this job. An SLD is optional. PDF download does not require these attachments.`
+    : "Required layout record found. Review its verification status below. An SLD is optional; the files are checked again before sending.";
+}
+
+function buildArrayLayout(roofs) {
+  return roofs.map((roof, index) => {
+    const count = roof.roof_panel_count;
+    const layout = roof.roof_array_layout;
+    if (!count && !layout) return "";
+    return `Roof ${index + 1}: ${layout || `${count} panels`}`;
+  }).filter(Boolean).join("; ");
+}
+
+function buildNotes(design, assessment, icp) {
+  const items = [];
+  const reviewed = Boolean(design.design_reviewed);
+  const panelCount = reviewed ? firstValue(design.design_panel_count) : "";
+  const panelWattage = reviewed ? firstValue(design.design_panel_wattage) : "";
+  const inverterModel = reviewed ? firstValue(design.design_inverter_model) : "";
+  const batteryCapacity = reviewed ? firstValue(design.design_battery_kwh) : "";
+  if (icp) items.push(`ICP: ${icp}`);
+  if (!reviewed) return items.join("\n");
+  if (panelCount || (reviewed && design.design_panel_model)) {
+    items.push(`${panelCount || ""} panels ${reviewed ? design.design_panel_model || "" : ""}${panelWattage ? ` (${panelWattage} W each)` : ""}`.trim());
+  }
+  if (inverterModel || design.design_inverter_kw) items.push(`Inverter: ${inverterModel || ""}${design.design_inverter_kw ? ` (${design.design_inverter_kw} kW)` : ""}`);
+  if (design.design_battery_model || batteryCapacity) items.push(`Battery: ${design.design_battery_model || ""}${batteryCapacity ? ` (${batteryCapacity} kWh)` : ""}`);
+  if (design.design_mppt) items.push(`Stringing / MPPT: ${design.design_mppt}`);
+  // Supplier notes are reviewed explicitly; unrelated internal design notes
+  // must not be copied into a purchasing request automatically.
+  return items.join("\n");
+}
+
+function updateMissing() {
+  const required = [
+    ["customerName", "Customer name"], ["siteAddress", "Site address"],
+    ["connectionType", "Electrical connection"], ["inverterType", "Inverter type"],
+    ["roofType", "Roof type"], ["roofPitch", "Roof pitch"],
+    ["arrayLayout", "Proposed array layout"], ["systemSize", "System size"]
+  ];
+  const missing = required.filter(([id]) => !$(id).value.trim()).map(([, label]) => label);
+  const panel = $("missingPanel");
+  panel.className = `card ${missing.length ? "missing" : "ready"}`;
+  panel.innerHTML = missing.length
+    ? `<strong>Please complete before downloading:</strong> ${missing.join(", ")}.`
+    : "<strong>Ready:</strong> the required Fletcher form details are complete.";
+  $("downloadRequirements").textContent = missing.length
+    ? `Before downloading, complete: ${missing.join(", ")}. Attachments are not required to download the PDF.`
+    : "PDF ready to download. The power bill, OpenSolar layout and SLD are not required for download.";
+  return missing;
+}
+
+async function loadData() {
+  if (!jobId) throw new Error("No job ID was supplied");
+  const urls = [`/api/job?id=${jobId}`, `/api/site-visit?job_id=${jobId}`, `/api/system-design?job_id=${jobId}`, `/api/job-files?job_id=${jobId}`, `/api/assessment?job_id=${jobId}`];
+  const responses = await Promise.all(urls.map(url => fetch(url)));
+  const [jobData, visitData, designData, filesData, assessmentData] = await Promise.all(responses.map(response => response.json()));
+  if (!jobData.ok || !jobData.job) throw new Error(jobData.error || "Job could not be loaded");
+  const job = jobData.job;
+  const answers = parseAnswers(job.answers_json);
+  const visit = visitData.site_visit || {};
+  const design = designData.system_design || {};
+  const assessment = assessmentData.assessment || {};
+  const roofs = Array.isArray(design.roofs) ? design.roofs : [];
+  const mainRoof = roofs[0] || {};
+  const address = splitAddress(job.address);
+
+  setValue("customerName", job.customer_name);
+  setValue("siteAddress", address.site);
+  setValue("suburb", address.suburb);
+  setValue("cityPostcode", address.city);
+  const bill = answers.bills?.[answers.energy_data?.active_slot] || answers.bills?.summer || answers.bills?.winter || {};
+  const candidates = [...new Set([answers.icp, bill.icp, design.design_icp, visit.visit_icp, answers.ICP].map(value=>String(value || "").trim()).filter(Boolean))];
+  const icp = answers.icp || (candidates.length === 1 ? candidates[0] : "");
+  savedAnswersRevision = jobData.answers_revision;
+  $("saveSharedIcp").hidden = !jobData.post_hec_bill_processing;
+  if(candidates.length > 1) $("icpSaveStatus").textContent = "Existing sources differ. Confirm and save the correct ICP; no source is silently overwritten.";
+  setValue("icp", icp);
+  setValue("connectionType", design.design_connection_type || visit.visit_connection_type);
+  const inverterDesign = {
+    ...design,
+    design_inverter_model: firstValue(design.design_inverter_model, assessment.inverter)
+  };
+  setValue("inverterType", inferInverterType(inverterDesign));
+  const material = firstValue(mainRoof.roof_material, visit.visit_roof_material, answers.roof_material, answers.roof_type);
+  setValue("roofType", inferRoofType(material));
+  setValue("roofOther", inferRoofType(material) === "other" ? material : "");
+  setValue("roofPitch", firstValue(mainRoof.roof_pitch, visit.visit_roof_pitch, answers.roof_pitch, answers.pitch));
+  const panelCount = design.design_reviewed ? firstValue(design.design_panel_count) : "";
+  setValue("arrayLayout", (design.design_reviewed ? buildArrayLayout(roofs) : "") || visit.visit_roof_layout || (panelCount ? `${panelCount} panels` : ""));
+  setValue("systemSize", calculateSystemSize(design));
+  setChecked("saltSpray", design.design_salt_spray || visit.visit_salt_spray);
+  setChecked("highWind", design.design_high_wind || visit.visit_high_wind);
+  setChecked("trees", design.design_trees || visit.visit_trees);
+  setChecked("chimneys", design.design_chimneys || visit.visit_chimneys);
+  setChecked("buildings", design.design_buildings || visit.visit_buildings);
+  setChecked("aerials", design.design_aerials || visit.visit_aerials);
+  setChecked("vents", design.design_vents || visit.visit_vents);
+  setChecked("satellite", design.design_satellite || visit.visit_satellite);
+  const hasShading = ["trees","chimneys","buildings","aerials","vents","satellite"].some(id => $(id).checked);
+  setChecked("noShading", !hasShading && Boolean(designData.system_design || visitData.site_visit));
+  const files = filesData.files || [];
+  setChecked("plansAttached", false);
+  setChecked("powerBillAttached", false);
+  setValue("additionalNotes", buildNotes(design, assessment, ""));
+  preliminaryProposal = calculatePreliminaryProposal(answers, visit, design, assessment);
+  renderPreliminaryProposal(preliminaryProposal);
+  applyPreliminaryProposal(false);
+  renderPackageDocuments(files, answers);
+  updateMissing();
+  await verifyPackagePlans(files, answers);
+}
+
+function drawTick(page, x, y, checked) {
+  if (!checked) return;
+  page.drawText("X", { x:x + 4, y:y + 3, size:12, color:PDFLib.rgb(0.82, 0.05, 0.08) });
+}
+
+function drawText(page, text, x, y, options = {}) {
+  const value = String(text || "").normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E\xA0-\xFF]/g, "-").trim();
+  if (!value) return;
+  const size = options.size || 10;
+  const maxWidth = options.maxWidth || 420;
+  const words = value.replace(/\r/g, "").split(/\s+/);
+  let line = "", lineY = y;
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length * size * 0.5 > maxWidth && line) {
+      page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
+      line = word; lineY -= size + 3;
+    } else line = candidate;
+  }
+  if (line) page.drawText(line, { x, y:lineY, size, color:PDFLib.rgb(0.12,0.12,0.12) });
+}
+
+async function createAndSavePdf(download = true, emailOperation = false) {
+  if (packageBusy && !emailOperation) return;
+  const missing = updateMissing();
+  if (missing.length) { $("status").textContent = `Please complete: ${missing.join(", ")}. No PDF was saved or downloaded.`; return; }
+  setPackageBusy(true); $("status").textContent = "Creating PDF…";
+  try {
+    if (!window.PDFLib) throw new Error("PDF generator did not load. Check the internet connection and refresh.");
+    const template = await fetch("/assets/fletcher-solar-site-checklist.pdf");
+    if (!template.ok) throw new Error("The Fletcher template could not be loaded");
+    const pdf = await PDFLib.PDFDocument.load(await template.arrayBuffer());
+    const [p1, p2] = pdf.getPages();
+
+    drawText(p1, $("customerName").value, 144, 661, { maxWidth:395 });
+    drawText(p1, $("siteAddress").value, 132, 626, { maxWidth:416 });
+    drawText(p1, $("suburb").value, 103, 591, { maxWidth:260 });
+    drawText(p1, $("cityPostcode").value, 461, 591, { maxWidth:90 });
+    const connection = $("connectionType").value;
+    drawTick(p1, 64, 494, connection === "single_phase"); drawTick(p1, 248, 494, connection === "dual_phase"); drawTick(p1, 432, 494, connection === "three_phase");
+    const inverter = $("inverterType").value;
+    drawTick(p1, 64, 388, inverter === "grid_tied"); drawTick(p1, 248, 388, inverter === "hybrid_ready"); drawTick(p1, 432, 388, inverter === "hybrid_battery"); drawTick(p1, 64, 335, inverter === "off_grid"); drawTick(p1, 248, 335, inverter === "unknown");
+    const roof = $("roofType").value;
+    drawTick(p1, 194, 262, roof === "corrugated_steel"); drawTick(p1, 358, 262, roof === "concrete_tiles"); drawTick(p1, 194, 227, roof === "other");
+    drawText(p1, $("roofOther").value, 254, 228, { maxWidth:290 });
+    drawText(p1, $("roofPitch").value, 154, 174, { maxWidth:390 });
+    drawText(p1, $("arrayLayout").value, 175, 126, { size:9, maxWidth:195 });
+    drawText(p1, $("systemSize").value, 509, 126, { maxWidth:40 });
+    drawTick(p1, 432, 92, false); // Customer bills are not disclosed.
+
+    drawTick(p2, 192, 681, $("saltSpray").checked); drawTick(p2, 358, 681, $("snowIce").checked); drawTick(p2, 192, 648, $("highWind").checked);
+    drawTick(p2, 192, 615, $("trees").checked); drawTick(p2, 358, 615, $("chimneys").checked); drawTick(p2, 192, 582, $("buildings").checked); drawTick(p2, 358, 582, $("aerials").checked);
+    drawTick(p2, 192, 549, $("vents").checked); drawTick(p2, 358, 549, $("satellite").checked); drawTick(p2, 358, 516, $("noShading").checked);
+    drawText(p2, $("otherEnvironment").value, 257, 517, { maxWidth:90 });
+    const supplierNotes = [$("includeIcpInPackage").checked && $("icp").value ? `ICP: ${$("icp").value.trim()}` : "", $("additionalNotes").value].filter(Boolean).join("\n");
+    drawText(p2, supplierNotes, 63, 455, { size:9, maxWidth:480 });
+    drawTick(p2, 192, 253, $("plansAttached").checked);
+
+    const safeName = $("customerName").value.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+    const filename = `${safeName || "Customer"}_Fletcher_Solar_Site_Checklist.pdf`;
+    const bytes = await pdf.save();
+    const blob = new Blob([bytes], { type:"application/pdf" });
+    const form = new FormData();
+    form.append("job_id", jobId);
+    form.append("file", new File([bytes], filename, { type:"application/pdf" }));
+    form.append("category", "supplier");
+    form.append("caption", "Generated Fletcher / J.A. Russell Solar Site Checklist");
+    form.append("document_role", "fletcher_assessment");
+    $("status").textContent = "Saving the completed PDF to this job…";
+    const savedData = await packageRequest("/api/job-files", { method:"POST", body:form }, "save");
+    $("status").textContent = download
+      ? "✓ PDF downloaded and saved to this job"
+      : "✓ Completed form prepared and saved";
+    if (download) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    }
+    return savedData;
+  } catch (error) {
+    console.error(error); $("status").textContent = `Could not create PDF: ${error.message}`;
+  } finally { if (!emailOperation) setPackageBusy(false); }
+}
+
+// Explicit field mapping: neighbouring labels must never label another answer.
+function supplierPreviewAnswers() {
+  const textFields = [
+    ["installerCode", "Installer account code"], ["customerName", "Customer name"],
+    ["siteAddress", "Site address"], ["suburb", "Suburb"], ["cityPostcode", "City and postcode"],
+    ["connectionType", "Electrical connection type"], ["inverterType", "Inverter type"],
+    ["roofType", "Roof type"], ["roofOther", "Other roof type / profile"], ["roofPitch", "Roof pitch"],
+    ["arrayLayout", "Proposed array layout"], ["systemSize", "Proposed system size (kW)"],
+    ["otherEnvironment", "Other environment / shading issue"], ["additionalNotes", "Additional supplier notes"]
+  ];
+  const checkFields = [
+    ["plansAttached", "Verified plan attachment available"], ["saltSpray", "Salt spray"],
+    ["snowIce", "Snow and ice"], ["highWind", "High wind area"], ["trees", "Trees and vegetation"],
+    ["chimneys", "Chimneys"], ["buildings", "Buildings"], ["aerials", "TV aerials"],
+    ["vents", "Vent pipes"], ["satellite", "Satellite dish"], ["noShading", "No shading issues"]
+  ];
+  const answers = textFields.flatMap(([id,label]) => {
+    const field = $(id);
+    const value = field.tagName === "SELECT" ? field.selectedOptions?.[0]?.textContent || field.value : field.value;
+    return field.value ? [{id,label,value}] : [];
+  });
+  checkFields.forEach(([id,label]) => answers.push({id,label,value:$(id).checked ? "Yes" : "No"}));
+  if ($("includeIcpInPackage").checked && $("icp").value) answers.push({id:"icp",label:"Approved optional ICP",value:$("icp").value});
+  return answers;
+}
+
+async function confirmPackagePreview(data) {
+  if (!data.preview || !data.preview_id) throw new Error("Package preview is unavailable. No email was sent.");
+  return new Promise(resolve=>{
+    const dialog=document.createElement("dialog");dialog.style.cssText="max-width:700px;width:calc(100% - 32px);max-height:90svh;overflow:auto;border-radius:12px;padding:20px";
+    const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;dialog.append(el);return el;};
+    add("h2","Review supplier package before approval");
+    add("p",`Recipient: ${data.preview.recipient}. This sends to Jane for review; it does not send directly to Fletcher.`);
+    add("p",`Email introduction: ${data.preview.information.customer_name} — ${data.preview.information.address}`);
+    add("h3","Documents included");
+    data.preview.attachments.forEach(file=>{const p=add("p",`${file.name} (${file.role})`);const link=document.createElement("a");link.textContent=" — Open and check";link.href=`/api/job-file?id=${encodeURIComponent(file.id)}`;link.target="_blank";link.rel="noopener";p.append(link);});
+    add("h3","Information in the completed form");
+    supplierPreviewAnswers().forEach(({label,value}) => add("p",`${label}: ${value}`));
+    add("p","Excluded: customer electricity bills, extracted energy data, internal costing and unrelated job notes. Check the PDF, layout and any SLD for unintended personal information before approving.");
+    const label=add("label","");const check=document.createElement("input");check.type="checkbox";label.append(check,document.createTextNode(" I have checked the information and documents above and approve this package."));
+    const send=add("button","APPROVE EMAIL TO JANE");send.type="button";send.disabled=true;send.style.cssText="min-height:44px;padding:12px;background:#ef9c20;margin:12px";
+    const cancel=add("button","CANCEL — DO NOT EMAIL");cancel.type="button";cancel.style.minHeight="44px";
+    const finish=value=>{dialog.close();dialog.remove();resolve(value);};
+    check.onchange=()=>send.disabled=!check.checked;send.onclick=()=>finish(true);cancel.onclick=()=>finish(false);
+    dialog.addEventListener("cancel",event=>{event.preventDefault();finish(false);});
+    document.body.append(dialog);dialog.showModal();
+  });
+}
+
+async function emailPackage() {
+  if (packageBusy) return;
+  setPackageBusy(true);
+  try {
+    $("status").textContent = "Checking the OpenSolar layout; customer bills are excluded…";
+    await refreshPackageDocuments();
+    const missingDocuments = missingRequiredPackageDocuments();
+    if (missingDocuments.length) throw new Error(`Upload these documents to the job before emailing: ${missingDocuments.join(", ")}.`);
+    const saved = await createAndSavePdf(false, true);
+    if (!saved) return;
+    const preview = await packageRequest("/api/fletcher-email", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({job_id:Number(jobId),action:"preview"})}, "preview");
+    if (!await confirmPackagePreview(preview)) { $("status").textContent = "Email cancelled. The PDF remains saved; no email was sent."; return; }
+    $("status").textContent = "Emailing the package to Jane…";
+    const data = await packageRequest("/api/fletcher-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: Number(jobId), approved_preview:preview.preview_id })
+    }, "email");
+    const missing = data.missing?.length ? ` Missing: ${data.missing.join(", ")}.` : "";
+    $("status").textContent = `✓ Email provider accepted the package for ${data.recipient}. Inbox delivery is not yet confirmed.${missing}`;
+  } catch (error) {
+    console.error(error);
+    $("status").textContent = `Could not email package: ${error.message}`;
+  } finally {
+    setPackageBusy(false);
+  }
+}
+
+document.querySelectorAll("input,select,textarea").forEach(field => field.addEventListener("input", updateMissing));
+$("downloadPdf").addEventListener("click", () => createAndSavePdf(true));
+$("emailPackage").addEventListener("click", emailPackage);
+$("saveSharedIcp").addEventListener("click", async()=>{
+  const button=$("saveSharedIcp");button.disabled=true;$("icpSaveStatus").textContent="Saving reviewed ICP…";
+  try {
+    const response=await fetch("/api/job",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save_shared_icp",job_id:Number(jobId),icp:$("icp").value,revision:savedAnswersRevision})});
+    const data=await response.json();if(!response.ok || !data.ok)throw new Error(data.error || "Save failed");
+    savedAnswersRevision=data.answers_revision;$("icp").value=data.icp;
+    $("icpSaveStatus").textContent="Reviewed ICP saved once to this job. Existing Site Visit / Design differences remain for review.";
+  }catch(e){$("icpSaveStatus").textContent="Save failed — "+e.message;}finally{button.disabled=false;}
+});
+$("useProposal").addEventListener("click", () => applyPreliminaryProposal(true));
+loadData().catch(error => { console.error(error); $("missingPanel").className = "card missing"; $("missingPanel").textContent = `Could not load job details: ${error.message}`; });
+</script>
+</body>
+</html>
