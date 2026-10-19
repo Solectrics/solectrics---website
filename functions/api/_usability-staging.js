@@ -1,7 +1,7 @@
 // Preliminary security reference: 514781021009dec8e5018c056d7e15851b137fb7.
 // This adapter does not change that reference or claim equivalence to f42de493.
 import {authenticateAccessRequest,withPrivateNoStore,requireExistingJob,requireRelatedRecord,requireJobFile} from './_access-security.js';
-export const ACCEPTANCE_HOST='usability-acceptance.solectrics-jobhub-staging.pages.dev';
+export const ACCEPTANCE_HOST='solectrics-jobhub-staging.pages.dev';
 const verified=new WeakSet();
 export const stagingIntent=c=>new URL(c.request.url).hostname===ACCEPTANCE_HOST || c.env?.JOBHUB_USABILITY_STAGING==='true';
 export function stagingStaff(c){const staff=c.data?.usabilityStaff;return new URL(c.request.url).hostname===ACCEPTANCE_HOST&&c.env?.JOBHUB_USABILITY_STAGING==='true'&&verified.has(staff)?staff:null;}

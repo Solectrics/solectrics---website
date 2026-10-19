@@ -40,7 +40,7 @@ test('all private usability surfaces deny unverified staff before storage',async
  for(const route of ['job-hec?job_id=9101','job-tasks?job_id=9101','job-file?id=synthetic','job-files?job_id=9101','job-document-inventory?job_id=9101','customer-quotes?quote_id=synthetic','customer-invoices?invoice_id=synthetic','system-design?job_id=9101','energy-review?job_id=9101']){const before=f.counts();assert.equal((await request(f,route,{token:null})).status,401);assert.deepEqual(f.counts(),before);}
 }));
 test('wrong host, missing flags/wildcard audience and absent explicit binding cannot open staging',async()=>fixture(async f=>{
- for(const options of [{host:'solectrics.co.nz'},{host:'unapproved.solectrics-jobhub-staging.pages.dev'},{flags:{JOBHUB_USABILITY_STAGING:'false'}},{flags:{JOBHUB_STAGING_ONLY:'false'}},{flags:{JOBHUB_ACCESS_AUDIENCES:JSON.stringify({'*.pages.dev':'synthetic'})}},{flags:{JOB_FILES:undefined,UPLOADS:f.env.JOB_FILES}}]){const before=f.counts();assert.ok([401,403,503].includes((await request(f,'job-hec?job_id=9101',options)).status));assert.deepEqual(f.counts(),before);}
+ for(const options of [{host:'solectrics.co.nz'},{host:'usability-acceptance.solectrics-jobhub-staging.pages.dev'},{host:'unapproved.solectrics-jobhub-staging.pages.dev'},{flags:{JOBHUB_USABILITY_STAGING:'false'}},{flags:{JOBHUB_STAGING_ONLY:'false'}},{flags:{JOBHUB_ACCESS_AUDIENCES:JSON.stringify({'*.pages.dev':'synthetic'})}},{flags:{JOB_FILES:undefined,UPLOADS:f.env.JOB_FILES}}]){const before=f.counts();assert.ok([401,403,503].includes((await request(f,'job-hec?job_id=9101',options)).status));assert.deepEqual(f.counts(),before);}
  assert.equal(stagingStaff({env:f.env,data:{usabilityStaff:{subject:'forged'}},request:new Request('https://'+ACCEPTANCE_HOST)}),null);
 }));
 test('wrong-origin and wrong-content-type mutations stop before DB/R2',async()=>fixture(async f=>{
@@ -99,4 +99,15 @@ test('authenticated stale HEC saves preserve the winning response and history',a
 test('authenticated attachment download uses the stored object key and private response headers',async()=>fixture(async f=>{
  attach(f,'synthetic-download');let key;f.env.JOB_FILES.get=async value=>{key=value;return {body:new TextEncoder().encode('%PDF synthetic'),writeHttpMetadata:headers=>headers.set('Content-Type','application/pdf')};};
  const r=await request(f,'job-file?id=synthetic-download&job_id=9101');assert.equal(r.status,200);assert.equal(key,'synthetic/synthetic-download.pdf');assert.equal(r.headers.get('Cache-Control'),'private, no-store');assert.equal(r.headers.get('X-Content-Type-Options'),'nosniff');assert.match(await r.text(),/synthetic/);
+}));
+
+
+test('base staging hostname is pinned and alternate hosts deny pages and APIs before storage',async()=>fixture(async f=>{
+ assert.equal(ACCEPTANCE_HOST,'solectrics-jobhub-staging.pages.dev');
+ for(const host of ['usability-acceptance.solectrics-jobhub-staging.pages.dev','solectrics-jobhub-staging.pages.dev.attacker.invalid','preview.solectrics-jobhub-staging.pages.dev','solectrics.co.nz']){
+  for(const route of ['/mini-fergus','/mini-fergus-job?id=9101','/api/job-hec?job_id=9101','/api/job-file?id=synthetic']){
+   const before=f.counts();const c={env:f.env,data:{},request:new Request('https://'+host+route,{headers:{'Cf-Access-Jwt-Assertion':await auth.token()}}),next:()=>{throw Error('Alternate host must not reach application');}};
+   assert.equal((await rootMiddleware(c)).status,403,host+route);assert.deepEqual(f.counts(),before);
+  }
+ }
 }));

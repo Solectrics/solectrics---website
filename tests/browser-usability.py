@@ -2,7 +2,7 @@ import asyncio,json,pathlib,os,urllib.request
 from playwright.async_api import async_playwright
 LOCAL='http://localhost:8765'
 STAGING=os.environ.get('JOBHUB_TEST_STAGING')=='true'
-BASE='https://usability-acceptance.solectrics-jobhub-staging.pages.dev' if STAGING else LOCAL
+BASE='https://solectrics-jobhub-staging.pages.dev' if STAGING else LOCAL
 async def main():
  async with async_playwright() as p:
   browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
@@ -49,6 +49,6 @@ async def main():
     a=page.locator('#hecAnswersForm');await a.locator('[data-hec-key=meter_number]').fill('SYNTHETIC-METER-1440');await a.locator('[data-reason]').fill('Synthetic desktop edit');await a.locator('[data-approve]').check();await a.get_by_role('button',name='Save reviewed HEC changes').click();await page.wait_for_function("document.querySelector('#hecEditorSection [role=status]').textContent.startsWith('Saved.')")
     b=other.locator('#hecAnswersForm');await b.locator('[data-hec-key=people]').select_option('5+');await b.locator('[data-reason]').fill('Synthetic stale tab');await b.locator('[data-approve]').check();await b.get_by_role('button',name='Save reviewed HEC changes').click();await other.wait_for_function("document.querySelector('#hecEditorSection [role=status]').textContent.includes('changed since')");assert await b.locator('[data-hec-key=people]').input_value()=='5+';await other.close()
    assert not errors,errors
-   results.append({'width':width,'dashboard_search':'passed','HEC_manual_bill_upload_aftercare':'passed' if width==375 else 'layout verified','operations_calendar':'passed','general_job_compatibility':'passed','overflow':False,'page_errors':errors});await context.close()
+   results.append({'width':width,'dashboard_search':'passed','HEC_manual_bill_upload_aftercare':'passed' if width==375 else 'layout verified','operations_calendar':'passed','general_job_compatibility':'passed','overflow':False,'page_errors':errors});await context.unroute_all(behavior='wait');await context.close()
   await browser.close();print(json.dumps(results,indent=2))
 asyncio.run(main())
