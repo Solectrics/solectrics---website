@@ -637,6 +637,7 @@ async function loadJob() {
         currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
         postHecBillEnabled = data.post_hec_bill_processing === true;
+        window.jobHubVerifiedStaff=data.staff_identity||null;
         
 const answers = currentAnswers;
         
@@ -4984,6 +4985,7 @@ async function loadJobOperations(){
     const response=await fetch(`/api/job-tasks?job_id=${encodeURIComponent(jobId)}&include_completed=1`);
     const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.error||"Could not load workflow");
     jobOperationData=data;const job=data.jobs?.[0]||{};
+    if(data.staff_identity){const actor=document.getElementById('handoverActor');actor.replaceChildren(new Option(data.staff_identity.email,data.staff_identity.subject));actor.disabled=true;actor.title='Recorded from verified sign-in';}
     renderHandoverAftercare(job,data.tasks||[],data.handover_enabled);
     setOpsValue("opsInstallDate",job.install_date);
     setOpsValue("opsFinanceType",job.finance_type||"unknown");setOpsValue("opsFinanceProvider",job.finance_provider);

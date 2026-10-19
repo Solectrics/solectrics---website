@@ -1,4 +1,4 @@
-import {usabilityLocal} from './_usability-local.js';
+import {usabilityEnabled} from './_usability-local.js';
 import {seedAcceptedQuoteTasks} from './job-operations-core.js';
 import { ensureCustomerQuoteSchema, ensureInternalCostingSchema, ensureJobFileRoleColumn } from "./_schema.js";
 
@@ -315,7 +315,7 @@ export async function onRequestPost(context) {
           accepted_at = CASE WHEN ? = 'accepted' AND accepted_at IS NULL THEN CURRENT_TIMESTAMP ELSE accepted_at END
         WHERE id = ?
       `).bind(status, status, status, quoteId).run();
-      if(status==='accepted' && usabilityLocal(context)) {
+      if(status==='accepted' && usabilityEnabled(context)) {
         const columns=(await db.prepare('PRAGMA table_info(job_tasks)').all()).results||[];
         if(columns.some(c=>c.name==='task_key'))await seedAcceptedQuoteTasks(db,existing.job_id);
       }

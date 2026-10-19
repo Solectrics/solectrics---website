@@ -1,18 +1,28 @@
-import asyncio,json,pathlib
+import asyncio,json,pathlib,os,urllib.request
 from playwright.async_api import async_playwright
-BASE='http://localhost:8765'
+LOCAL='http://localhost:8765'
+STAGING=os.environ.get('JOBHUB_TEST_STAGING')=='true'
+BASE='https://usability-acceptance.solectrics-jobhub-staging.pages.dev' if STAGING else LOCAL
 async def main():
  async with async_playwright() as p:
   browser=await p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
   results=[]
+  token=json.load(urllib.request.urlopen(LOCAL+'/__synthetic_token'))['token'] if STAGING else None
+  async def route_request(route):
+   if not route.request.url.startswith(BASE+'/'):return await route.abort()
+   if not STAGING:return await route.continue_()
+   headers={**route.request.headers,'cf-access-jwt-assertion':token}
+   upstream=await route.fetch(url=LOCAL+route.request.url[len(BASE):],headers=headers)
+   await route.fulfill(response=upstream)
   for width in [375,390,430,1440]:
    context=await browser.new_context(viewport={'width':width,'height':900},timezone_id='Pacific/Auckland')
-   await context.route('**/*',lambda route:route.continue_() if route.request.url.startswith(BASE) else route.abort())
+   await context.route('**/*',route_request)
    page=await context.new_page();page.set_default_timeout(12000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
    print('Viewport',width,flush=True)
    await page.goto(BASE+'/mini-fergus');await page.wait_for_selector('.job-card');await page.locator('#jh-job-search').fill('Beta');assert await page.locator('.job-card:visible').count()==1
    assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth+1'),'Dashboard overflow'
    await page.goto(BASE+'/mini-fergus-job?id=9101');await page.wait_for_selector('#hecAnswersForm',state='attached');await page.wait_for_function("document.getElementById('handoverForm') && !document.getElementById('handoverForm').hidden")
+   if STAGING:await page.wait_for_function("document.getElementById('handoverActor').disabled")
    await page.locator('#hecEditorSection>details').evaluate('(e)=>e.open=true')
    if width==375:
     form=page.locator('#hecAnswersForm');await form.locator('[data-hec-key=people]').select_option('4');await form.locator('[data-hec-key=hotWater]').select_option('Gas');assert not await form.locator('[data-hec-key=cylinderSize]').is_visible()
@@ -28,7 +38,7 @@ async def main():
     for key in ['Documents','Operation','Monitoring','Support']:await page.locator('#handover'+key).check()
     await page.locator('#handoverDate').fill('2026-01-31');await page.locator('#handoverForm button[type=submit]').click();await page.wait_for_function("document.getElementById('aftercareFollowups').querySelectorAll('form').length===2")
     await page.locator('#handoverForm button[type=submit]').click();await page.wait_for_function("document.getElementById('handoverMessage').textContent.includes('Handover saved')")
-    state=await (await page.request.get(BASE+'/__synthetic_state')).json();assert state['jobs']==2 and state['enquiries']==2;assert len(state['files'])==4;assert state['quotes'][0]['status']=='issued';assert state['answers']['people']=='4';assert state['answers']['bills']['winter']['average_daily_kwh']==20;tasks=[t for t in state['tasks'] if t['task_key'] in ['aftercare-2-week','aftercare-1-month']];assert len(tasks)==2;assert sorted(t['due_date'] for t in tasks)==['2026-02-14','2026-02-28']
+    state=json.load(urllib.request.urlopen(LOCAL+'/__synthetic_state'));assert state['jobs']==2 and state['enquiries']==2;assert len(state['files'])==4;assert state['quotes'][0]['status']=='issued';assert state['answers']['people']=='4';assert state['answers']['bills']['winter']['average_daily_kwh']==20;tasks=[t for t in state['tasks'] if t['task_key'] in ['aftercare-2-week','aftercare-1-month']];assert len(tasks)==2;assert sorted(t['due_date'] for t in tasks)==['2026-02-14','2026-02-28']
    assert not await page.locator('#design_reviewed').is_checked(),'Old design review must not certify changed HEC'
    assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth+1'),'Job page overflow '+str(width)
    await page.goto(BASE+'/mini-fergus-operations');await page.wait_for_function("document.getElementById('pipelineRows').children.length>0");assert await page.locator('#calendar').count()==1;assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth+1'),'Operations overflow'

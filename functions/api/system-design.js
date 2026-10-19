@@ -1,4 +1,4 @@
-import {usabilityLocal} from './_usability-local.js';
+import {usabilityEnabled} from './_usability-local.js';
 import {parseEnergyAnswers} from './_post-hec-energy.js';
 const CREATE_TABLE = `
   CREATE TABLE IF NOT EXISTS system_designs (
@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
       return errorResponse("system_design is required", 400);
     }
 
-    if(usabilityLocal(context) && systemDesign.design_reviewed) {
+    if(usabilityEnabled(context) && systemDesign.design_reviewed) {
       const linked=await db.prepare('SELECT e.answers_json FROM jobs j JOIN enquiries e ON e.id=j.enquiry_id WHERE j.id=?').bind(jobId).first();
       if(!linked)return errorResponse('Job not found',404);
       const revision=parseEnergyAnswers(linked.answers_json).energy_data?.revision;

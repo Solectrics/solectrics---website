@@ -1,3 +1,5 @@
+import {requireJobFile} from './_access-security.js';
+import {stagingStaff} from './_usability-staging.js';
 function getBucket(env) {
   return env.JOB_FILES || env.UPLOADS || env.BUCKET || null;
 }
@@ -17,7 +19,7 @@ export async function onRequestGet(context) {
     }
     if (!id) return Response.json({ error: "File ID is required" }, { status: 400 });
 
-    const row = await db.prepare(`
+    const row = stagingStaff(context) ? await requireJobFile(db,id) : await db.prepare(`
       SELECT storage_key, original_name, content_type FROM job_files WHERE id = ?
     `).bind(id).first();
     if (!row) return Response.json({ error: "File not found" }, { status: 404 });
@@ -32,7 +34,9 @@ export async function onRequestGet(context) {
       "Content-Disposition",
       `inline; filename="${safeDownloadName(row.original_name)}"`
     );
-    headers.set("Cache-Control", "private, max-age=300");
+    headers.set("Cache-Control", "private, no-store");
+    headers.set("X-Content-Type-Options","nosniff");
+    headers.set("Content-Security-Policy","sandbox");
     return new Response(object.body, { headers });
   } catch (error) {
     console.error("Job file download error:", error);

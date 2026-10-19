@@ -1,4 +1,5 @@
-import {usabilityLocal} from './_usability-local.js';
+import {staffActor,staffAudit,stagingStaff} from './_usability-staging.js';
+import {usabilityEnabled} from './_usability-local.js';
 import { sanitise, onRequestPost as readBill } from "./read-bill.js";
 
 export const BILL_FIELDS = [
@@ -50,12 +51,12 @@ export function validateReviewedBill(value) {
   if (bill.billing_days && total !== null) bill.average_daily_kwh = Number((total / bill.billing_days).toFixed(4));
   return bill;
 }
-export function applyReviewedBill(answers, {file, draft, bill, slot, now}) {
+export function applyReviewedBill(answers, {file, draft, bill, slot, now, actor, identity:auditIdentity}) {
   const previous = answers.bills?.[slot] ?? null;
   const previousShared = sharedIdentity(answers);
   const review = {source:"post_hec_job_bill", file_id:file.id, original_name:file.original_name,
     extracted:draft.extracted, extracted_at:draft.extracted_at, reviewed:bill, reviewed_at:now,
-    previous, previous_shared:previousShared, slot};
+    previous, previous_shared:previousShared, slot, ...(actor?{actor,identity:auditIdentity}: {})};
   const history = [...(answers.energy_data?.history || []), review];
   const identity={...sharedIdentity(answers)};
   for(const key of ['icp','retailer','plan_name']) if(bill[key]!=null && bill[key]!=='')identity[key]=bill[key];
@@ -67,7 +68,7 @@ export function applyReviewedBill(answers, {file, draft, bill, slot, now}) {
 }
 
 export function stagingEnergyEnabled(context) {
-  return usabilityLocal(context) || context.env.JOBHUB_STAGING_ONLY === "true" && context.env.ALLOW_PAGES_DEV_HOST === "true" &&
+  return usabilityEnabled(context) || context.env.JOBHUB_STAGING_ONLY === "true" && context.env.ALLOW_PAGES_DEV_HOST === "true" &&
     ["fletcher-package-mobile-fix.solectrics-jobhub-staging.pages.dev",
      "hec-fletcher-privacy.solectrics-jobhub-staging.pages.dev"].includes(new URL(context.request.url).hostname);
 }
@@ -77,6 +78,7 @@ export function stagingEnergyEnabled(context) {
 export async function postHecEnergyAction(context) {
   if (!stagingEnergyEnabled(context)) return reply("Post-HEC bill processing is enabled in the approved staging preview only.", 403);
   const body = await context.request.json();
+  if(stagingStaff(context) && body.action==="read_energy_bill")return reply("Use manual bill entry during synthetic staff acceptance.",403);
   const jobId = Number(body.job_id), fileId = String(body.file_id || "");
   if (!Number.isInteger(jobId) || jobId <= 0 || !fileId) return reply("Choose a job and its attached bill.");
   if (!["read_energy_bill", "load_energy_bill_review", "save_energy_bill"].includes(body.action)) return reply("Unknown bill action.");
@@ -112,7 +114,7 @@ export async function postHecEnergyAction(context) {
     if (!draft) return reply("Read this attached bill before approving its values.", 409);
     let bill;
     try { bill = validateReviewedBill(body.bill); } catch (error) { return reply(error.message); }
-    next = applyReviewedBill(answers, {file,draft,bill,slot:body.slot,now:new Date().toISOString()});
+    next = applyReviewedBill(answers, {file,draft,bill,slot:body.slot,now:new Date().toISOString(),actor:staffActor(context),identity:staffAudit(context)});
     result = {bill, energy_revision:next.energy_data.revision, shared:sharedIdentity(next)};
   }
   const json = JSON.stringify(next);

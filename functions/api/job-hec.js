@@ -1,5 +1,6 @@
+import {staffActor,staffAudit} from './_usability-staging.js';
 import {HEC_FIELDS} from '../../assets/hec-fields.mjs';
-import {usabilityLocal,localDenied} from './_usability-local.js';
+import {usabilityEnabled,localDenied} from './_usability-local.js';
 import {energyRevision,parseEnergyAnswers,sharedIdentity,validateReviewedBill,applyReviewedBill} from './_post-hec-energy.js';
 const fields=new Map(HEC_FIELDS.map(f=>[f.key,f]));
 const headers={'Cache-Control':'no-store'};
@@ -32,7 +33,7 @@ export function validatePatch(patch){
  return result;
 }
 export async function onRequestGet(context){
- if(!usabilityLocal(context))return localDenied();
+ if(!usabilityEnabled(context))return localDenied();
  try{
  const row=await load(context,Number(new URL(context.request.url).searchParams.get('job_id')));
  if(!row)return reply({ok:false,error:'Job not found'},404);
@@ -44,7 +45,7 @@ export async function onRequestGet(context){
  }catch{return reply({ok:false,error:'Saved HEC cannot be read. No update was made.'},409);}
 }
 export async function onRequestPost(context){
- if(!usabilityLocal(context))return localDenied();
+ if(!usabilityEnabled(context))return localDenied();
  try{
  const body=await context.request.json(),row=await load(context,Number(body.job_id));
  if(!row)return reply({ok:false,error:'Job not found'},404);
@@ -69,20 +70,20 @@ export async function onRequestPost(context){
  if(bill.icp&&!/^[A-Z0-9]{15}$/.test(bill.icp.replace(/\s/g,'').toUpperCase()))throw Error('Check the bill ICP.');
  const prior=slot==='additional'?(before.additionalBills||[]).find(b=>b.id===body.bill.id)?.bill:before.bills?.[slot];
  const reviewed={...prior,...bill};
- evidence={slot,previous:prior??null,reviewed,file_id:file.id,source:'staff_manual_review'};
+ evidence={slot,previous:prior??null,reviewed,file_id:file.id,source:'staff_manual_review',actor:staffActor(context),identity:staffAudit(context)};
  if(slot==='additional'){
  const items=[...(before.additionalBills||[])];let index=body.bill.id?items.findIndex(b=>b.id===body.bill.id):-1;
  if(body.bill.id&&index<0)throw Error('Additional bill no longer exists. Reload before correcting it.');
  const entry={id:body.bill.id||crypto.randomUUID(),bill:reviewed,file_id:file.id,reviewed_at:now};if(index<0)items.push(entry);else items[index]=entry;next.additionalBills=items;
  }else{
- next=applyReviewedBill(next,{file,draft:{extracted:null,extracted_at:null},bill:reviewed,slot,now});
+ next=applyReviewedBill(next,{file,draft:{extracted:null,extracted_at:null},bill:reviewed,slot,now,actor:staffActor(context),identity:staffAudit(context)});
  const identity=sharedIdentity(next);next.hec_identity={...identity};
  for(const key of ['icp','retailer','plan_name'])if(bill[key]!=null&&bill[key]!=='')next.hec_identity[key]=bill[key];
  }
  }
  if(!Object.keys(previous).length&&!evidence)return reply({ok:true,unchanged:true,revision:body.revision});
  next.energy_data={...(next.energy_data||{}),revision:crypto.randomUUID(),review_required:true};
- next.hec_audit={original:before.hec_audit?.original??before,history:[...(before.hec_audit?.history||[]),{id:crypto.randomUUID(),at:now,actor:'local-synthetic-staff',reason:body.reason.trim().slice(0,1000),before:previous,after:Object.fromEntries(Object.keys(previous).map(k=>[k,next[k]])),bill:evidence}]};
+ next.hec_audit={original:before.hec_audit?.original??before,history:[...(before.hec_audit?.history||[]),{id:crypto.randomUUID(),at:now,actor:staffActor(context),identity:staffAudit(context),reason:body.reason.trim().slice(0,1000),before:previous,after:Object.fromEntries(Object.keys(previous).map(k=>[k,next[k]])),bill:evidence}]};
  const json=JSON.stringify(next);
  if(json.length>2*1024*1024)return reply({ok:false,error:'HEC history needs archival review before another update.'},409);
  const contact=Object.fromEntries(Object.entries({name:'customer_name',email:'email',phone:'phone',address:'address'}).map(([key,column])=>[column,Object.hasOwn(patch,key)?(patch[key]??''):row[column]]));

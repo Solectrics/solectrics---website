@@ -1,4 +1,5 @@
-import {usabilityLocal,localDenied} from './_usability-local.js';
+import {stagingStaff} from './_usability-staging.js';
+import {usabilityEnabled,localDenied} from './_usability-local.js';
 import { insertTask, seedAcceptedQuoteTasks, generatePostInstallTasks, recordDepositReceived, recordVectorDocumentReceived, installationReadiness } from "./job-operations-core.js";
 import { loadElectricityDetails } from "./_job-electricity-details.js";
 import { AFTERCARE_KEYS, HANDOVER_ITEMS, saveHandover, validDate, nzToday, handoverSchemaReady } from './handover-aftercare.js';
@@ -87,7 +88,7 @@ function parseTaskIds(value) {
 }
 
 export async function onRequestGet(context) {
-  if (!usabilityLocal(context)) return localDenied();
+  if (!usabilityEnabled(context)) return localDenied();
   try {
     const db = context.env.DB;
     if (!db) return jsonError("D1 database binding DB is not available");
@@ -133,6 +134,7 @@ export async function onRequestGet(context) {
 
     return Response.json({
       ok: true,
+      staff_identity: stagingStaff(context),
       handover_enabled: handoverEnabled,
       electricity_details: jobId ? await loadElectricityDetails(db, jobId) : null,
       tasks: taskResult.results || [],
@@ -147,12 +149,13 @@ export async function onRequestGet(context) {
 }
 
 export async function onRequestPost(context) {
-  if (!usabilityLocal(context)) return localDenied();
+  if (!usabilityEnabled(context)) return localDenied();
   try {
     const db = context.env.DB;
     if (!db) return jsonError("D1 database binding DB is not available");
     if (!((await db.prepare('PRAGMA table_info(job_tasks)').all()).results || []).some(c=>c.name==='task_key')) return jsonError('Operations schema is not available.',503);
     const body = await context.request.json();
+    if(stagingStaff(context))body.actor=stagingStaff(context).subject;
     const action = clean(body.action, 50);
     for(const [key,value] of Object.entries(body)) if((key==='due_date'||key==='install_date'||WORKFLOW_FIELDS[key]==='date') && value && !validDate(value))return jsonError('Enter a valid date for '+key,400);
 

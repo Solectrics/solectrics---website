@@ -1,3 +1,6 @@
+import {stagingIntent,stagingGate} from './api/_usability-staging.js';
+import {authenticateAccessRequest,withPrivateNoStore} from './api/_access-security.js';
+import {usabilityLocal} from './api/_usability-local.js';
 const CANONICAL_HOSTNAME = "solectrics.co.nz";
 
 function isPagesHostname(hostname) {
@@ -6,8 +9,13 @@ function isPagesHostname(hostname) {
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
+  if(stagingIntent(context))return stagingGate(context);
 
   if (!isPagesHostname(url.hostname)) {
+    if(url.pathname.startsWith('/mini-fergus') && !usabilityLocal(context)) {
+      const auth=await authenticateAccessRequest(context);if(!auth.ok)return auth.response;
+      return withPrivateNoStore(await context.next());
+    }
     return context.next();
   }
 
