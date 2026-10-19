@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Energy for Your Home | Solectrics</title>
+  <meta name="description" content="Make more of your solar with smart appliance timing, EV charging, hot-water heat pumps, daytime heating and simple home-energy controls from Solectrics.">
+  <link rel="icon" type="image/png" href="./favicon.png?v=2">
+  <style>
+    :root{
+      --green:#17332d;
+      --green-soft:#49615b;
+      --orange:#ef9c20;
+      --cream:#f7f5ef;
+      --line:#e5e2d9;
+      --white:#fff;
+      --shadow:0 12px 34px rgba(23,51,45,.09);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--green);
+      line-height:1.6;
+      background:var(--cream);
+    }
+
+    a{color:inherit}
+    .wrap{width:min(1120px,calc(100% - 40px));margin:auto}
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:20px 0;
+      border-bottom:1px solid rgba(229,226,217,.9);
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(10px);
+    }
+
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{text-decoration:none;font-size:22px;font-weight:800;letter-spacing:.05em}
+    .brand .e{color:var(--orange)}
+    .nav-links{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:600}
+    .nav-links a{text-decoration:none}
+    .nav-links a:hover,.nav-links a[aria-current="page"]{color:#ef9c20}
+    .mobile-menu{display:none;position:relative}
+    .mobile-menu summary{list-style:none;cursor:pointer;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:800}
+    .mobile-menu summary::-webkit-details-marker{display:none}
+    .mobile-menu-links{position:absolute;right:0;top:calc(100% + 9px);width:min(260px,calc(100vw - 28px));padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 14px 32px rgba(23,51,45,.16)}
+    .mobile-menu-links a{display:block;padding:12px 10px;text-decoration:none;font-weight:700}
+
+    .hero{
+      min-height:430px;
+      display:flex;
+      align-items:center;
+      padding:86px 0 70px;
+      background:
+        linear-gradient(90deg,rgba(247,245,239,.82) 0%,rgba(247,245,239,.62) 54%,rgba(247,245,239,.34) 100%),
+        url("AE6ECD78-405A-46A3-B156-354A1CB82DA3.png") center 48%/cover no-repeat;
+    }
+    .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:36px;line-height:1.1;font-weight:800;color:#3c876c;margin-bottom:18px}
+    h1{font-size:clamp(46px,7vw,80px);line-height:.98;letter-spacing:-.045em;max-width:890px;margin:0 0 28px}
+    h1 span{color:var(--orange)}
+    .hero-intro{font-size:clamp(20px,2.3vw,27px);line-height:1.45;max-width:900px;margin:0;color:#405750}
+    .hero-note{max-width:800px;font-size:17px;color:var(--green-soft);margin:22px 0 0}
+
+    .intro-strip{padding:34px 0 0;background:rgba(255,255,255,.82);color:var(--green)}
+    .intro-card{max-width:980px;padding:30px 34px;border-radius:22px;background:var(--orange);box-shadow:0 16px 34px rgba(23,51,45,.16)}
+    .intro-card p{margin:0;max-width:900px;font-size:28px;line-height:1.4;font-style:italic}
+    .intro-card p+p{margin-top:12px}
+
+    .usage-section{padding:34px 0 76px;background:rgba(255,255,255,.82)}
+    .usage-intro{max-width:820px;margin-bottom:34px}
+    .usage-intro .eyebrow{white-space:nowrap;font-size:clamp(11px,3.2vw,28px);letter-spacing:.055em}
+    .usage-intro h2{margin-bottom:14px}
+    .usage-intro p{color:var(--green-soft);font-size:18px;margin:0}
+    .smart-overview{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:26px;align-items:start}
+    .usage-infographic-link{display:block;border-radius:24px;overflow:hidden;background:var(--cream);box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease}
+    .usage-infographic-link:hover,.usage-infographic-link:focus{transform:translateY(-3px);box-shadow:0 18px 42px rgba(23,51,45,.16);outline:3px solid var(--orange);outline-offset:4px}
+    .usage-infographic-link img{display:block;width:100%;height:auto}
+    .solution-panel{padding:30px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.95);box-shadow:var(--shadow)}
+    .solution-panel h3{margin:0 0 20px;font-size:25px;line-height:1.2}
+    .solution-panel h3{margin-bottom:7px}
+    .solution-lead{margin:0 0 20px;color:var(--green-soft)}
+    .solution-list{display:grid;gap:11px}
+    .solution-link{display:block;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--cream);text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+    .solution-link:hover,.solution-link:focus{transform:translateY(-2px);border-color:var(--orange);box-shadow:0 9px 20px rgba(23,51,45,.1)}
+    .solution-link.featured{border:2px solid var(--orange);background:#fff4df}
+    .solution-kicker{display:block;margin-bottom:3px;color:#8b5a0d;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .solution-title{display:flex;justify-content:space-between;gap:16px;align-items:center;font-size:17px;font-weight:900;line-height:1.25}
+    .solution-title::after{content:'→';color:var(--orange);font-size:21px}
+    .solution-copy{display:block;margin-top:5px;color:var(--green-soft);font-size:14px;line-height:1.45}
+    .solution-detail{border:1px solid var(--line);border-radius:14px;background:var(--cream)}
+    .solution-detail summary{display:flex;align-items:center;gap:12px;padding:16px 18px;list-style:none;cursor:pointer;font-weight:900}
+    .solution-detail summary::-webkit-details-marker{display:none}
+    .solution-detail summary::after{content:'+';margin-left:auto;color:var(--orange);font-size:22px}
+    .solution-detail[open] summary::after{content:'−'}
+    .solution-detail p{margin:0;padding:0 18px 17px;color:var(--green-soft);font-size:14px;line-height:1.5}
+
+    .section{padding:72px 0;background:rgba(247,245,239,.66)}
+    #hot-water,#heating{scroll-margin-top:92px}
+    .section.white{background:rgba(255,255,255,.75)}
+    .section-head{max-width:790px;margin-bottom:34px}
+    h2{font-size:clamp(32px,4vw,49px);line-height:1.08;letter-spacing:-.025em;margin:0 0 16px}
+    .hot-water-title{color:var(--orange);font-weight:900;font-size:clamp(42px,6vw,70px);letter-spacing:-.035em}
+    .hot-water-highlights{margin:0 0 28px;padding-left:24px;font-size:19px;color:var(--green-soft)}
+    .hot-water-highlights li{margin:0 0 12px;padding-left:6px}
+    .hot-water-intro{display:grid;gap:20px}
+    .hot-water-intro p{margin:0}
+    .hot-water-intro .hot-water-support{font-size:15px;line-height:1.6}
+    .heat-pump-intro{display:grid;gap:20px}
+    .heat-pump-intro p{margin:0}
+    .section-head p{font-size:18px;color:var(--green-soft);margin:0}
+
+    .hot-water{display:grid;grid-template-columns:.9fr 1.1fr;gap:30px;align-items:start}
+    .hot-water-copy{background:rgba(255,255,255,.95);border-radius:22px;padding:32px;box-shadow:var(--shadow)}
+    .hot-water-copy p{color:var(--green-soft);font-size:17px}
+    .hot-water-copy p:last-child{margin-bottom:0}
+    .benefits{display:grid;gap:14px}
+    .benefit{padding:22px;border-left:5px solid var(--orange);background:rgba(255,255,255,.92);border-radius:0 16px 16px 0}
+    .benefit strong{display:block;font-size:18px;margin-bottom:5px}
+    .benefit span{color:var(--green-soft)}
+    .source-note{margin:22px 0 0;color:#66736e;font-size:13px}
+    .source-note a{color:#276b58;font-weight:700}
+
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .step{padding:25px;border-radius:18px;background:rgba(255,255,255,.93);border:1px solid var(--line)}
+    .step-number{color:#ef9c20;font-weight:800;font-size:12px;letter-spacing:.12em;margin-bottom:10px}
+    .step h3{margin:0 0 8px;font-size:21px}
+    .step p{margin:0;color:var(--green-soft)}
+
+    .cta{padding:78px 0;text-align:center;background:rgba(255,255,255,.82)}
+    .cta h2{max-width:760px;margin:0 auto 16px}
+    .cta p{max-width:720px;margin:0 auto 28px;color:var(--green-soft);font-size:18px}
+    .buttons{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    .button{display:inline-block;text-decoration:none;border-radius:9px;padding:17px 25px;background:var(--orange);color:var(--green);font-weight:800;border:2px solid var(--orange)}
+    .button.secondary{background:var(--green);border-color:var(--green);color:#fff}
+
+    footer{padding:26px 20px;text-align:center;color:#65736e;background:rgba(255,255,255,.9);border-top:1px solid var(--line);font-size:13px}
+
+    @media(max-width:900px){
+      .nav-links{display:none}
+      .mobile-menu{display:block}
+      .hero{min-height:360px;padding:58px 0 48px;background-position:62% center}
+      .eyebrow{font-size:28px}
+      .intro-card{padding:24px 22px;border-radius:18px}
+      .intro-card p{font-size:23px}
+      .section{padding:54px 0}
+      .hot-water,.steps,.smart-overview{grid-template-columns:1fr}
+      .wrap{width:min(100% - 28px,1120px)}
+      body{background-attachment:scroll}
+    }
+
+    @media(max-width:620px){
+      .usage-section{padding:54px 0}
+      .solution-panel{padding:22px 17px}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="/">sol<span class="e">e</span>ctrics</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/home-energy-check.html">Home Energy Check</a>
+      <a href="/smart-energy.html" aria-current="page">Smart Energy</a>
+      <a href="/smart-solar-prices.html">Prices</a>
+      <a href="#enquire">Contact</a>
+    </nav>
+    <details class="mobile-menu">
+      <summary>Menu</summary>
+      <div class="mobile-menu-links">
+        <a href="/">Home</a><a href="/home-energy-check.html">Home Energy Check</a><a href="/smart-energy.html">Smart Energy</a><a href="/smart-solar-prices.html">Prices</a><a href="#enquire">Contact</a>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">More than panels on a roof</div>
+      <h1>Make the Most of your <span>Solar</span></h1>
+    </div>
+  </section>
+
+  <section class="intro-strip">
+    <div class="wrap">
+      <div class="intro-card">
+        <p><strong>SIMPLY</strong></p>
+        <p><em>First reduce the energy needed, then shift the remaining demand into solar hours.</em></p>
+        <p><em>Use smart timers, devices and controls to make that shift practical.</em></p>
+        <p><em>Let us help you make your best bill-saving choices</em></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="usage-section" aria-labelledby="household-usage-title">
+    <div class="wrap">
+      <div class="usage-intro">
+        <div class="eyebrow" id="household-usage-title">Where household electricity goes</div>
+        <p>A typical New Zealand home uses electricity across several everyday needs. Starting with the larger loads usually creates the greatest opportunity for savings.</p>
+      </div>
+
+      <div class="smart-overview">
+        <a class="usage-infographic-link" href="#hot-water" aria-label="Typical household electricity use. Water heating is the largest load at 27 percent. Go to the hot-water heat-pump section.">
+          <img src="/assets/solectrics-household-electricity-use.svg" alt="Solectrics infographic showing typical household electricity use: water heating 27 percent, electronics 20 percent, refrigeration 17 percent, space heating 15 percent, lighting 13 percent, cooking 5 percent and clothes drying 3 percent.">
+        </a>
+
+        <aside class="solution-panel" aria-label="Smart energy solutions">
+          <h3>Start with the biggest opportunities</h3>
+          <p class="solution-lead">Water and space heating together account for about 42% of typical household electricity use.</p>
+          <div class="solution-list">
+            <a class="solution-link featured" href="#hot-water">
+              <span class="solution-kicker">Water heating · around 27%</span>
+              <span class="solution-title">HOT WATER HEAT PUMP</span>
+              <span class="solution-copy">Use less electricity to produce hot water and make better use of daytime solar.</span>
+            </a>
+            <a class="solution-link featured" href="#heating">
+              <span class="solution-kicker">Space heating · around 15%</span>
+              <span class="solution-title">HEAT PUMP + SMART CONTROLS</span>
+              <span class="solution-copy">Warm your home efficiently while your panels are producing energy.</span>
+            </a>
+            <details class="solution-detail">
+              <summary>Timers and smart switching</summary>
+              <p>Shift suitable hot-water cylinders, pool and spa pumps, and larger appliances into the strongest solar hours.</p>
+            </details>
+            <details class="solution-detail">
+              <summary>Solar-aware EV charging</summary>
+              <p>Schedule charging for daytime solar or lower-priced electricity periods while considering the other loads in your home.</p>
+            </details>
+            <details class="solution-detail">
+              <summary>Monitoring and battery-ready controls</summary>
+              <p>See when your home imports, exports and uses energy—and prepare for storage if you decide to add a battery later.</p>
+            </details>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="hot-water">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">The big opportunity</div>
+        <h2 class="hot-water-title">HOT WATER HEAT PUMP</h2>
+        <div class="hot-water-intro">
+          <p>EECA says water heating makes up around one-third of household energy bills, making it one of the most worthwhile places to look for savings.</p>
+          <p><strong>Solectrics can source and coordinate the installation of a hot-water heat pump suited to your household, your hot-water use and your property.</strong></p>
+        </div>
+      </div>
+
+      <div class="hot-water">
+        <div class="hot-water-copy">
+          <p>A hot-water heat pump gathers warmth from the surrounding air and transfers it into your water instead of creating all the heat directly from electricity.</p>
+          <p>We help select the right type and size, plan how it will work with your solar, and coordinate the electrical and plumbing installation.</p>
+          <a class="button" href="mailto:jane@solectrics.co.nz?subject=Hot-water%20heat%20pump%20enquiry">ASK ABOUT A HOT-WATER HEAT PUMP →</a>
+        </div>
+        <div class="benefits">
+          <div class="benefit"><strong>Use around one-third of the electricity</strong><span>Compared with conventional electric-resistance water heating.</span></div>
+          <div class="benefit"><strong>Can be about 60% cheaper to run</strong><span>A significant opportunity in homes with high hot-water use.</span></div>
+          <div class="benefit"><strong>Works especially well with solar</strong><span>Heat water while your panels are producing energy.</span></div>
+          <div class="benefit"><strong>Strong whole-of-life value</strong><span>Often among the lowest-cost water-heating options over their lifetime.</span></div>
+        </div>
+      </div>
+      <p class="source-note">Independent guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/water-heating/hot-water-heat-pumps/" target="_blank" rel="noopener">EECA — hot-water heat pumps for your home</a>.</p>
+    </div>
+  </section>
+
+  <section class="section white" id="heating">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Solar-powered comfort</div>
+        <h2 class="hot-water-title">HEAT PUMP + smart controls</h2>
+        <div class="heat-pump-intro">
+          <p>An efficient heat pump can warm your home while your solar panels are producing energy.</p>
+          <p>Your home can carry some of that warmth into the evening, reducing the grid electricity needed after solar production fades. Timers and smart controls help the heat pump run during the most useful solar hours while maintaining a comfortable temperature.</p>
+          <p><strong>Solectrics can source and coordinate the installation of a heat pump that suits your household.</strong></p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <article class="step"><div class="step-number">01 · GENERATE</div><h3>Solar production rises</h3><p>Your panels begin producing useful energy through the day.</p></article>
+        <article class="step"><div class="step-number">02 · WARM</div><h3>Use your solar hours</h3><p>Smart scheduling runs efficient heating while solar generation is available.</p></article>
+        <article class="step"><div class="step-number">03 · CARRY IT FORWARD</div><h3>Ease the evening demand</h3><p>A comfortably warmed home may need less grid-powered heating after sunset.</p></article>
+      </div>
+      <div class="buttons" style="justify-content:flex-start;margin-top:28px"><a class="button" href="mailto:jane@solectrics.co.nz?subject=Solar-smart%20heating%20enquiry">ASK ABOUT SOLAR-SMART HEATING →</a></div>
+      <p class="source-note">Independent guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/heating-and-cooling/heat-and-cool-efficiently-at-home/" target="_blank" rel="noopener">EECA — heat and cool your home efficiently</a> and <a href="https://www.eeca.govt.nz/for-homes/vehicles/smart-ev-chargers/" target="_blank" rel="noopener">EECA — smart EV chargers</a>.</p>
+    </div>
+  </section>
+
+  <section class="cta" id="enquire">
+    <div class="wrap">
+      <div class="eyebrow">Start with your home</div>
+      <h2>What would make the biggest difference in your home?</h2>
+      <p>Start with the Home Energy Check, or tell us which smart-energy upgrade you are considering.</p>
+      <div class="buttons">
+        <a class="button" href="mailto:jane@solectrics.co.nz?subject=Smart%20Energy%20price%20enquiry">ENQUIRE ABOUT PRICES →</a>
+        <a class="button secondary" href="/home-energy-check.html">START MY HOME ENERGY CHECK</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>© 2026 Solectrics • Smart Solar Living • Waiheke Island, New Zealand</footer>
+
+</body>
+</html>

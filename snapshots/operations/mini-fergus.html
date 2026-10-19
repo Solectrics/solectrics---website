@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Solectrics Job Hub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f5ef;
+      color: #263a36;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .eyebrow {
+      color: #ef9c20;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin: 10px 0 8px;
+    }
+
+    .intro {
+      color: #68716e;
+      font-size: 17px;
+      margin-bottom: 35px;
+    }
+
+    .pipeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 35px;
+    }
+
+    .pipeline span {
+      background: #fff;
+      border: 1px solid #dedbd3;
+      border-radius: 30px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pipeline span:first-child {
+      border-color: #ef9c20;
+      color: #ef9c20;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 25px;
+    }
+
+    .catalogue-link {
+      color: #ef9c20;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .workspace-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    button {
+      background: #173f3f;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 800;
+      padding: 12px 16px;
+    }
+
+    .new-job-panel {
+      background: #fff;
+      border: 1px solid #dedbd3;
+      border-radius: 18px;
+      margin-bottom: 26px;
+      padding: 22px;
+    }
+
+    .new-job-panel[hidden] { display: none; }
+    .new-job-panel h2 { margin-top: 0; }
+    .new-job-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .new-job-grid label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+    .new-job-grid input, .new-job-grid textarea { border: 1px solid #cfcac0; border-radius: 7px; font: inherit; min-height: 42px; padding: 10px; width: 100%; }
+    .new-job-grid textarea { min-height: 92px; resize: vertical; }
+    .new-job-wide { grid-column: 1 / -1; }
+    .form-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .job-type { background: #edf5f1; border-radius: 20px; color: #173f3f; display: inline-block; font-size: 11px; font-weight: 800; margin-top: 8px; padding: 6px 10px; text-transform: uppercase; }
+
+    .job-card {
+      background: #fff;
+      border: 1px solid #dedbd3;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .job-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .job-name {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .address {
+      color: #68716e;
+      margin-bottom: 18px;
+    }
+
+    .status {
+      display: inline-block;
+      background: #fff3e9;
+      color: #ef9c20;
+      padding: 7px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .next {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #ece9e1;
+    }
+
+    .next-label {
+      color: #68716e;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .next-action {
+      font-weight: 700;
+      margin-top: 5px;
+    }
+
+    .open-job {
+      display: inline-block;
+      margin-top: 18px;
+      color: #ef9c20;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .coming {
+      margin-top: 35px;
+      background: #fffaf7;
+      border-left: 4px solid #ef9c20;
+      border-radius: 0 14px 14px 0;
+      padding: 18px 20px;
+      color: #68716e;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 650px) {
+      h1 {
+        font-size: 34px;
+      }
+
+      .job-top {
+        display: block;
+      }
+
+      .new-job-grid { grid-template-columns: 1fr; }
+      .new-job-wide { grid-column: auto; }
+
+      .status {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="wrap">
+
+    <div class="brand">solectrics</div>
+    <div class="eyebrow">Internal workspace</div>
+
+    <h1>Job Hub</h1>
+
+    <div class="intro">
+      Keep solar and everyday electrical jobs moving from enquiry to completion.
+    </div>
+
+    <div class="pipeline">
+      <span>New enquiries</span>
+      <span>Assess & design</span>
+      <span>Quote sent</span>
+      <span>Accepted</span>
+      <span>Ready to install</span>
+      <span>Installed / finishing</span>
+    </div>
+
+    <div class="section-head">
+      <h2>Jobs</h2>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end">
+        <a class="catalogue-link" href="/mini-fergus-business-settings">BUSINESS SETTINGS →</a>
+        <a class="catalogue-link" href="/mini-fergus-operations.html">OPERATIONS →</a>
+        <a class="catalogue-link" href="/mini-fergus-accounting">ACCOUNTING →</a>
+        <a class="catalogue-link" href="/mini-fergus-supplier-invoices">SUPPLIER INVOICE INBOX →</a>
+        <a class="catalogue-link" href="/mini-fergus-suppliers">SUPPLIER CATALOGUE →</a>
+      </div>
+    </div>
+
+    <div class="workspace-actions">
+      <div>Home Energy Check enquiries appear automatically as solar jobs.</div>
+      <button type="button" id="showNewElectricalJob">+ NEW ELECTRICAL JOB</button>
+    </div>
+
+    <section class="new-job-panel" id="newElectricalJobPanel" hidden>
+      <h2>New general electrical job</h2>
+      <p>Create a job without requiring a Home Energy Check or any solar information.</p>
+      <form id="newElectricalJobForm">
+        <div class="new-job-grid">
+          <div><label for="newCustomerName">Customer name *</label><input id="newCustomerName" required></div>
+          <div><label for="newCustomerPhone">Phone</label><input id="newCustomerPhone" inputmode="tel"></div>
+          <div><label for="newCustomerEmail">Email</label><input id="newCustomerEmail" type="email"></div>
+          <div><label for="newCustomerAddress">Job address</label><input id="newCustomerAddress"></div>
+          <div class="new-job-wide"><label for="newJobDescription">Work requested</label><textarea id="newJobDescription" placeholder="e.g. Replace switchboard, add sockets, fault finding"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit">CREATE ELECTRICAL JOB</button>
+          <button type="button" id="cancelNewElectricalJob">CANCEL</button>
+          <span id="newElectricalJobMessage"></span>
+        </div>
+      </form>
+    </section>
+
+   <div id="jobs-container">
+  <div class="job-card">
+    <div class="job-name">Loading jobs…</div>
+  </div>
+</div>
+
+    <div class="coming">
+      <strong>Two simple routes:</strong> Home Energy Check submissions create solar jobs
+      automatically. Use <strong>New Electrical Job</strong> for switchboards, repairs,
+      fault finding, sockets, lighting and other non-solar work.
+    </div>
+
+  </main>
+<script>
+async function loadJobs() {
+  const container = document.getElementById("jobs-container");
+
+  try {
+    const response = await fetch("/api/jobs");
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || "Could not load jobs");
+    }
+
+    if (!data.jobs || data.jobs.length === 0) {
+      container.innerHTML = `
+        <div class="job-card">
+          <div class="job-name">No jobs yet</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = data.jobs.map(job => `
+      <div class="job-card">
+
+        <div class="job-top">
+          <div>
+            <div class="job-name">${escapeHtml(job.customer_name || "Unnamed customer")}</div>
+<div class="address">${escapeHtml(job.address || "")}</div>
+<div class="address">Received: ${formatReceivedDate(job.created_at)}</div>
+<span class="job-type">${job.job_type === "general_electrical" ? "General electrical" : "Solar"}</span>
+<div class="address">Supplier reference: <strong>${escapeHtml(job.supplier_reference || "Pending migration")}</strong></div>
+          </div>
+
+          <div>
+            <span class="status">${formatStatus(job.job_status)}</span>
+          </div>
+        </div>
+
+        <div class="next">
+          <div class="next-label">Next action</div>
+          <div class="next-action">${escapeHtml(job.next_action || "Review job")}</div>
+        </div>
+
+        <a class="open-job" href="/mini-fergus-job?id=${job.job_id}">
+  OPEN JOB →
+</a>
+
+      </div>
+    `).join("");
+
+  } catch (error) {
+    console.error(error);
+
+    container.innerHTML = `
+      <div class="job-card">
+        <div class="job-name">Jobs couldn't be loaded</div>
+        <div class="address">Please refresh the page.</div>
+      </div>
+    `;
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+const newJobPanel = document.getElementById("newElectricalJobPanel");
+document.getElementById("showNewElectricalJob").addEventListener("click", () => {
+  newJobPanel.hidden = false;
+  document.getElementById("newCustomerName").focus();
+});
+document.getElementById("cancelNewElectricalJob").addEventListener("click", () => {
+  newJobPanel.hidden = true;
+});
+document.getElementById("newElectricalJobForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const message = document.getElementById("newElectricalJobMessage");
+  message.textContent = "Creating job…";
+  try {
+    const response = await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer_name: document.getElementById("newCustomerName").value,
+        phone: document.getElementById("newCustomerPhone").value,
+        email: document.getElementById("newCustomerEmail").value,
+        address: document.getElementById("newCustomerAddress").value,
+        job_description: document.getElementById("newJobDescription").value
+      })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Could not create job");
+    window.location.href = `/mini-fergus-job?id=${encodeURIComponent(data.job_id)}`;
+  } catch (error) {
+    message.textContent = `Could not create job: ${error.message}`;
+  }
+});
+function formatReceivedDate(dateString) {
+  if (!dateString) return "Date unavailable";
+
+  const date = new Date(dateString);
+
+  return date.toLocaleString("en-NZ", {
+    timeZone: "Pacific/Auckland",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+                                                
+function formatStatus(status) {
+  if (!status) return "New enquiry";
+
+  return status
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+loadJobs();
+</script>
+</body>
+</html>

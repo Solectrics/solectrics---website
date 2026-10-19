@@ -1,0 +1,2159 @@
+{
+  "repository": "Solectrics/solectrics---website",
+  "branch": "codex/jobhub-usability-recovery-backup",
+  "pins": {
+    "baseline": "ff025fee70f3732c575a7d2475d6a2d2e8a98fce",
+    "operations": "5fcfbf1e59ec731bb3c5ad3381d80b522bdaf30c",
+    "bills_navigation": "6304da167286ee3096b560ddd30370abed1cd136"
+  },
+  "entries": [
+    {
+      "snapshot": "baseline",
+      "path": "assets/fletcher-quote-import.js",
+      "sha": "7e1ac6f6d499ded9ba2039381e7c93f3c42e112d",
+      "mode": "100644",
+      "size": 13944,
+      "target": "snapshots/baseline/assets/fletcher-quote-import.js",
+      "sha256": "2910d1de105320d5a67fb26701d7c72f30354db1fc4b6a46b423b021be3141ab"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "assets/jobhub-materials.js",
+      "sha": "35f77eefb5541266c7526825775733cd8875d571",
+      "mode": "100644",
+      "size": 21310,
+      "target": "snapshots/baseline/assets/jobhub-materials.js",
+      "sha256": "e2cf8a3d5fd041902d07d65cb8808a9ea06a03b00f0cf833857c47dbbd5064cb"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "assets/solectrics-household-electricity-use.svg",
+      "sha": "f5c79e8e34abcbae803519949ea9ca172196e0ef",
+      "mode": "100644",
+      "size": 7227,
+      "target": "snapshots/baseline/assets/solectrics-household-electricity-use.svg",
+      "sha256": "262fb96245a13236c6f41cf1fb50228647e1f75dfd685243dde964bc979758bd"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/_middleware.js",
+      "sha": "983c9b94d1e6732d47fb3685190b3fda022d33a2",
+      "mode": "100644",
+      "size": 708,
+      "target": "snapshots/baseline/functions/_middleware.js",
+      "sha256": "0c1202049a40677122536611c6213f8f55b352761db0aac0052be4149b7fe454"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/_energy-calculator.js",
+      "sha": "3538c3f168d2b408407a263b193e145436629bbb",
+      "mode": "100644",
+      "size": 4477,
+      "target": "snapshots/baseline/functions/api/_energy-calculator.js",
+      "sha256": "9623cc22b1f282c1ee0deb8296a2d8159cd2a7fb042796f3e41b64fb4e20d96b"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/_hec-customer-copy.js",
+      "sha": "1d3dcd350f4d9c1b865ffe1035bc7186a1692470",
+      "mode": "100644",
+      "size": 7139,
+      "target": "snapshots/baseline/functions/api/_hec-customer-copy.js",
+      "sha256": "1ea137dc5288c77df395d3bbb03d88e9d727647f8b4ed05fa29b1168324d65a1"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/_schema.js",
+      "sha": "98021796ae3f2d9df701db76798b7e6bef980eb2",
+      "mode": "100644",
+      "size": 6909,
+      "target": "snapshots/baseline/functions/api/_schema.js",
+      "sha256": "cb33476280fc566d4e84db00f397aef6001b711d7349f4c03fb36eb44032a25f"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/assessment.js",
+      "sha": "1913d96c8d7bf1a6328673f861965a63216e57ac",
+      "mode": "100644",
+      "size": 4110,
+      "target": "snapshots/baseline/functions/api/assessment.js",
+      "sha256": "769689cca1367f3b8f183ea6cb737689ea1387871c1f5ac91d52ebab763d491b"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/catalogue-import.js",
+      "sha": "43cd394bb5906b31fc145b9adb019bca5ced7c79",
+      "mode": "100644",
+      "size": 6113,
+      "target": "snapshots/baseline/functions/api/catalogue-import.js",
+      "sha256": "1a17817b47f07c882159522d83b41960f6d17f7cb194818e2eb3987d84cadd51"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/customer-invoices.js",
+      "sha": "c4d48547ae9912102ed47325f73df6d549a5c2ed",
+      "mode": "100644",
+      "size": 12737,
+      "target": "snapshots/baseline/functions/api/customer-invoices.js",
+      "sha256": "c80298290b70582fc3c3b94ba1822a94b6f1161a641004a8be541beb8b70bd57"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/customer-quotes.js",
+      "sha": "d2352df53e680de7f388278e6a74a113edb1af3c",
+      "mode": "100644",
+      "size": 15274,
+      "target": "snapshots/baseline/functions/api/customer-quotes.js",
+      "sha256": "e2e11ea4e5b2e418b7b131180e5a20993890ae2a3e6a0f01786abd5325cce00a"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/energy-review.js",
+      "sha": "54d635d3b9184e262b979d65b069d9569f85e310",
+      "mode": "100644",
+      "size": 23504,
+      "target": "snapshots/baseline/functions/api/energy-review.js",
+      "sha256": "d8e57b8ad70a14a306b9bc5b20b1e6369f69a2bdc10ed884f5053c74b05acf81"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/enquiry.js",
+      "sha": "da5d6901e007638348a4ae195cd6287620898132",
+      "mode": "100644",
+      "size": 7648,
+      "target": "snapshots/baseline/functions/api/enquiry.js",
+      "sha256": "f5f8696c0a88bd8c020052fcdac3b44609e5a1a6c17a2cae3e01cb6bf5009757"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/fletcher-email.js",
+      "sha": "7222bf17072a8d8f0112b9399be2400306dd7405",
+      "mode": "100644",
+      "size": 7175,
+      "target": "snapshots/baseline/functions/api/fletcher-email.js",
+      "sha256": "bec31cc32f02e39a135fd5794e7e9b736b595b85ce909dbae4a468d5b6e4dd3f"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/fletcher-quote-import.js",
+      "sha": "8703084f03c2cd2a128798d350b85f36246cf852",
+      "mode": "100644",
+      "size": 8758,
+      "target": "snapshots/baseline/functions/api/fletcher-quote-import.js",
+      "sha256": "dfa5a453ed9b907883096cd742e4ceb320508eabbdcc3408afa48a47b3c86aae"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/general-job-details.js",
+      "sha": "e5b0c6ce0212fe9bdf6ac3699fabc2234cd1c490",
+      "mode": "100644",
+      "size": 2893,
+      "target": "snapshots/baseline/functions/api/general-job-details.js",
+      "sha256": "02022dc7ca3e071e7bf202394da52c1611b02bc1898a7e7da7230985440aec3e"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-costing.js",
+      "sha": "2042bcababb3416988f998f8af222da2e44354e7",
+      "mode": "100644",
+      "size": 5910,
+      "target": "snapshots/baseline/functions/api/job-costing.js",
+      "sha256": "833cd69ea379886e60d7d1bad0349b29e242780b27b06f6a453e8507c7c78cec"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-file.js",
+      "sha": "6c15f4891f03f974236671d507cbbdbc6d7e0ee9",
+      "mode": "100644",
+      "size": 1560,
+      "target": "snapshots/baseline/functions/api/job-file.js",
+      "sha256": "1780f44e39f43d8f49a40ee4dd4e44c5aa673c4ee0f014fc2801e73e5a0a0bf9"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-files.js",
+      "sha": "748c31f19a01684bb63d4f7fdae610c8ab57d961",
+      "mode": "100644",
+      "size": 7147,
+      "target": "snapshots/baseline/functions/api/job-files.js",
+      "sha256": "c238420fd9caa2b1b99bb5f988667ba8c54d1f1466685b254479163dd2b23735"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-materials-import.js",
+      "sha": "ce6344f114bb26a4b0f62611919b47bf323305ef",
+      "mode": "100644",
+      "size": 4064,
+      "target": "snapshots/baseline/functions/api/job-materials-import.js",
+      "sha256": "7f8fa8b11f3e57476311f610cbcf8628ff3a2dde77feba76e0f2655d86036aff"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-materials.js",
+      "sha": "a4b73f2ca6c96e420f9e2b456bdf1c2c26b26741",
+      "mode": "100644",
+      "size": 6252,
+      "target": "snapshots/baseline/functions/api/job-materials.js",
+      "sha256": "aae0fa0763a5989af1da8b0e8162a373ea4918de79574d5d94ca0d5ff015ac86"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-supplier-pricing.js",
+      "sha": "998afbacde029fc271ee0c9fd910685cb4256ae5",
+      "mode": "100644",
+      "size": 2494,
+      "target": "snapshots/baseline/functions/api/job-supplier-pricing.js",
+      "sha256": "4cf7cd9be70011b5cb9027790a4ef39b39231e6633cf26866c1ce1f79c2ea668"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job-work-logs.js",
+      "sha": "0051882f5626a62a883c20d9a57cd5ebb3b8565f",
+      "mode": "100644",
+      "size": 7234,
+      "target": "snapshots/baseline/functions/api/job-work-logs.js",
+      "sha256": "13c2b055006d31744279194d3fd6d7b070d3bbc1c06f51ee8e34e3721a0204cf"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/job.js",
+      "sha": "0578fb8d9bc8590a2cc3bf7a0cb9e694c724e257",
+      "mode": "100644",
+      "size": 3079,
+      "target": "snapshots/baseline/functions/api/job.js",
+      "sha256": "dc08682de5606e44b617953479f170d386b4aaffe6c89967101ec495d5bf4611"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/jobs.js",
+      "sha": "39db5d10d77c64387b419597b79f910483113c50",
+      "mode": "100644",
+      "size": 3257,
+      "target": "snapshots/baseline/functions/api/jobs.js",
+      "sha256": "5428a7cc8542a2e56899fecb31e10816f7a17da5bc5dfd71eadb704cbd2c2dae"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/read-bill.js",
+      "sha": "86ec04ea288e59fcc534f742e7c6081b551f5d53",
+      "mode": "100644",
+      "size": 6607,
+      "target": "snapshots/baseline/functions/api/read-bill.js",
+      "sha256": "387a4de31b2c54ae064218530f01628048bba158f8e56a9dbe89d78f7f9d9ca1"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/site-visit.js",
+      "sha": "da7046a201d9fec05135e94029c0a4a6348e3eb5",
+      "mode": "100644",
+      "size": 2313,
+      "target": "snapshots/baseline/functions/api/site-visit.js",
+      "sha256": "45c1f1165a1d87638ca08fec2ab7affcde76550f917d8e4bb8d49bec999adae6"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/supplier-invoice-read.js",
+      "sha": "656e12cae904716ff77605d05619a0dd03b2260f",
+      "mode": "100644",
+      "size": 8976,
+      "target": "snapshots/baseline/functions/api/supplier-invoice-read.js",
+      "sha256": "5ae1acbecd1d05f4959421f9b00d8a36d9523015d0fd1c9dc5a979b07279470b"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/supplier-products.js",
+      "sha": "9a9bbcba7070bffa0c105d64548be93acb4ebe5e",
+      "mode": "100644",
+      "size": 2330,
+      "target": "snapshots/baseline/functions/api/supplier-products.js",
+      "sha256": "18396f515f803338351d0f2774254ee88a1b1af2349a9e3a122b59934aca6bcf"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "functions/api/system-design.js",
+      "sha": "365abadc61e8bac4acd7169644cfed816fea3eca",
+      "mode": "100644",
+      "size": 2464,
+      "target": "snapshots/baseline/functions/api/system-design.js",
+      "sha256": "f4ffdc4abc36c5738536054a609b0983db8f8168fab5f492064a0ffc017ff06e"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "home-energy-check.html",
+      "sha": "8bca42212d3b42a0d4e83fb19cab2265b85c649c",
+      "mode": "100644",
+      "size": 123349,
+      "target": "snapshots/baseline/home-energy-check.html",
+      "sha256": "e15a790a9da58b6936eb7eae6b554bd4e0ec64b334708c509a88696f5af07f68"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "index.html",
+      "sha": "121960d3b409d50394ce73f2bb5a4c1fd536efe6",
+      "mode": "100644",
+      "size": 20525,
+      "target": "snapshots/baseline/index.html",
+      "sha256": "766735bf257b72fe621356f7b243ac0149ee85d2cbbc808b43cf1f4b5988ebcb"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0001_job_types_and_document_roles.sql",
+      "sha": "f2490956e7c5ffd4930ddfe31c498c7c6e8b4143",
+      "mode": "100644",
+      "size": 367,
+      "target": "snapshots/baseline/migrations/0001_job_types_and_document_roles.sql",
+      "sha256": "9fba71e0749963d3430d96d41304fcc769f7b9c8245b0e2c7f2f7e2da08dfe43"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0002_email_logs.sql",
+      "sha": "0c316b496dfb7d9c748605768bb46385b630fecc",
+      "mode": "100644",
+      "size": 413,
+      "target": "snapshots/baseline/migrations/0002_email_logs.sql",
+      "sha256": "d095b9ade1f0c40812d32aab7a66d11775081cbd0d32f4701fa0f810f0eba352"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0003_supplier_catalogue.sql",
+      "sha": "e12a19c8df9f722008a0ee63bbd0de2ef3538081",
+      "mode": "100644",
+      "size": 1567,
+      "target": "snapshots/baseline/migrations/0003_supplier_catalogue.sql",
+      "sha256": "14db84474b9721e5940d9ac378fd64726d3c1018edebf4981865dc63942c814d"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0004_internal_costing.sql",
+      "sha": "1294e9bfc848431cfbb2713db6a5f3578eaef80e",
+      "mode": "100644",
+      "size": 1299,
+      "target": "snapshots/baseline/migrations/0004_internal_costing.sql",
+      "sha256": "8c81c7e4e2b41f67084c2d577399f4d92ea00e3d4bfa8b52f1c1ce9f5f41dbb9"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0005_customer_quote_versions.sql",
+      "sha": "5c275794160b6767b0327f7a3194cf78f2d19180",
+      "mode": "100644",
+      "size": 486,
+      "target": "snapshots/baseline/migrations/0005_customer_quote_versions.sql",
+      "sha256": "d09d25cc9e3c2b8d1dd304f212ed3b9c0926afc857962295403049b700191f90"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0006_default_supplier.sql",
+      "sha": "9cef01d43da3ba16f249831ead63146c30a3c709",
+      "mode": "100644",
+      "size": 153,
+      "target": "snapshots/baseline/migrations/0006_default_supplier.sql",
+      "sha256": "0ff8840342a1e2c7634cef13610bbcd0f9b6609e8471309095f51ad6149c0eaa"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0010_multi_date_work_logs.sql",
+      "sha": "e72bf7d102961067215654d4f81b97857de61cde",
+      "mode": "100644",
+      "size": 593,
+      "target": "snapshots/baseline/migrations/0010_multi_date_work_logs.sql",
+      "sha256": "fd54d9fdd8cebcc1db7d363259008b7cae9ef2568a96c0d0046617d582e21018"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0011_energy_usage_files.sql",
+      "sha": "c1d9c548a178cdeb194fdf6f5e87a18d3dbc8f41",
+      "mode": "100644",
+      "size": 275,
+      "target": "snapshots/baseline/migrations/0011_energy_usage_files.sql",
+      "sha256": "6f94e69713b4899cf1a12ddf8f48814fb3ae1cb559e324f5d3ca3eda8e09df3a"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0013_energy_tariff_reviews.sql",
+      "sha": "6183f1bf4dcd9748fc96188fac024b56bb530dbc",
+      "mode": "100644",
+      "size": 2227,
+      "target": "snapshots/baseline/migrations/0013_energy_tariff_reviews.sql",
+      "sha256": "d0e417b74e6186c62b5fc38a19afbf805c67802d68bff4b535be50d459ea24e7"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "migrations/0014_customer_invoice_versions.sql",
+      "sha": "aa65e3b3a1b1fd026aedb21a97e540ecdc9747c7",
+      "mode": "100644",
+      "size": 506,
+      "target": "snapshots/baseline/migrations/0014_customer_invoice_versions.sql",
+      "sha256": "c4383f7d7e13c67797e6c8f3e90ccf3964bf77ca5e6984f82b85009593e6de76"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-customer-invoice.html",
+      "sha": "8a447486181c0c2624e1325561254ad47691cc11",
+      "mode": "100644",
+      "size": 7493,
+      "target": "snapshots/baseline/mini-fergus-customer-invoice.html",
+      "sha256": "506fd0146982c401d5cd535d91e229fa416656398aec807d55cf4f7266a72077"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-customer-quote.html",
+      "sha": "5054b4c71cf86fedc4ecf67d23ac2cf1f1912686",
+      "mode": "100644",
+      "size": 15885,
+      "target": "snapshots/baseline/mini-fergus-customer-quote.html",
+      "sha256": "bccdea45f3917fb5d53f99c2970ce78a7b5b66304b8a8fdd6b2b76bc654c7f66"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-energy-review.html",
+      "sha": "7cab6bf52bd26e5c365cd82e013a53388bfce8ae",
+      "mode": "100644",
+      "size": 32619,
+      "target": "snapshots/baseline/mini-fergus-energy-review.html",
+      "sha256": "195eea6df55e94e5ed50bb16b227960a852796261ab035035cd311ec1cd551af"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-fletcher-form.html",
+      "sha": "9f13e2bfc5dde80553905dc316e66f984f3bc1f2",
+      "mode": "100644",
+      "size": 28071,
+      "target": "snapshots/baseline/mini-fergus-fletcher-form.html",
+      "sha256": "fd9fb2a10b9c60ff7dca53642908960de876ebab8102e1a3cc0eca2d5bdfecc2"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-job.html",
+      "sha": "c3099bfad5d43d380c24076ed2bb4d02ca052caa",
+      "mode": "100644",
+      "size": 167389,
+      "target": "snapshots/baseline/mini-fergus-job.html",
+      "sha256": "fa27655bc78826c0f3cae9db8baa287710ee148ded58c6e6c2ca6b51685fab62"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus-suppliers.html",
+      "sha": "7522007bfd918c15cb34ae1639c267f13bfae59d",
+      "mode": "100644",
+      "size": 27522,
+      "target": "snapshots/baseline/mini-fergus-suppliers.html",
+      "sha256": "d199335723e1c50b796229e19ad7ca2b1972cd62794dff8d1155942c9fa48582"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "mini-fergus.html",
+      "sha": "c3e901742de9806ea3940df418093ee773687d60",
+      "mode": "100644",
+      "size": 10909,
+      "target": "snapshots/baseline/mini-fergus.html",
+      "sha256": "10a81578ca4e2629cf12fabc5021aa9ed855801b03f4f49fb2a2c4af395cb42d"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "smart-energy.html",
+      "sha": "fcf488ffdeae52b836fde8c24a6221d2747e0a16",
+      "mode": "100644",
+      "size": 18453,
+      "target": "snapshots/baseline/smart-energy.html",
+      "sha256": "d51cb883f607e5d34335559d8c9d94afee03b85ec49a9f2095d8009deafd7659"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "smart-solar-prices.html",
+      "sha": "151b745aa976ffb960d1b0879562dc0d032bfb78",
+      "mode": "100644",
+      "size": 17631,
+      "target": "snapshots/baseline/smart-solar-prices.html",
+      "sha256": "9a263809eb1cf7faf038589312a045ddb5da4848b4b02173208e8dee5a53c4ba"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "solar-system-check.html",
+      "sha": "0f568589aa4ef852df044980f5eb27e11b7019b4",
+      "mode": "100644",
+      "size": 23295,
+      "target": "snapshots/baseline/solar-system-check.html",
+      "sha256": "2a2366260b64e524993c239c925786a332a552935e94907ffb9c8819e9124d71"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "terms-and-conditions.html",
+      "sha": "fe991c6a96101e6d2f0b1b482cd8d51d8276ba4a",
+      "mode": "100644",
+      "size": 8688,
+      "target": "snapshots/baseline/terms-and-conditions.html",
+      "sha256": "1db7260a55fd269856cf0103aa39a0ceb7d3f993992e99b8e087ff00bb695c82"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/customer-invoices.test.mjs",
+      "sha": "46cb8bcd5091b2b1d2f3e990a6c0980668177b21",
+      "mode": "100644",
+      "size": 2212,
+      "target": "snapshots/baseline/tests/customer-invoices.test.mjs",
+      "sha256": "9e70bb76235ed51dae6b7eedefafede2aec1d26ee9965438a18fa7e816bcc38b"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/customer-quotes.test.mjs",
+      "sha": "e447e5cc0833674f2c70b18b2441a24caa49172f",
+      "mode": "100644",
+      "size": 2115,
+      "target": "snapshots/baseline/tests/customer-quotes.test.mjs",
+      "sha256": "58ac8481402005cfd86c70fe62d1a9671d6c34e9950fd9607fb92cd632508985"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/energy-tariff-review.test.mjs",
+      "sha": "7cf6c520a14e8683f4f5a98de5e90139c1e1abf8",
+      "mode": "100644",
+      "size": 2902,
+      "target": "snapshots/baseline/tests/energy-tariff-review.test.mjs",
+      "sha256": "364d91c0e1bde39be1af6956ff51015790d110e2d44ccb226eff443c58967bd6"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/hec-customer-copy.test.mjs",
+      "sha": "f4bf6838ddac141d9b0153a454538cfa68e8bf8c",
+      "mode": "100644",
+      "size": 18657,
+      "target": "snapshots/baseline/tests/hec-customer-copy.test.mjs",
+      "sha256": "77ec98f94964ee34939738ac08fae45841cade3465625c874122b51f192cc2b4"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/hec-energy-uploads.test.mjs",
+      "sha": "3059295ce6c9206ca693b4abde5d8368761228a3",
+      "mode": "100644",
+      "size": 2188,
+      "target": "snapshots/baseline/tests/hec-energy-uploads.test.mjs",
+      "sha256": "2b37cbe4a5a91bbe12e666528ffc56c4e47f3c848eb7f12c5cfa23d3ff41ed78"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/jobhub-mobile-fixes.test.mjs",
+      "sha": "59aa68dc64ab6ac1d1e5aa80fd6166e275c065f1",
+      "mode": "100644",
+      "size": 2736,
+      "target": "snapshots/baseline/tests/jobhub-mobile-fixes.test.mjs",
+      "sha256": "17a81e1b5de042b7f5f8289c9e36a42a520f57f063927d790a1df1ee840835f8"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/supplier-invoice-reader.test.mjs",
+      "sha": "1f5727a20bd81ba65b379368dfe497ffb71581b1",
+      "mode": "100644",
+      "size": 2657,
+      "target": "snapshots/baseline/tests/supplier-invoice-reader.test.mjs",
+      "sha256": "42e9d17cd0ad83389fc2c6a3629dcd3a655dd7e99963903e45f993fb7a7af0b9"
+    },
+    {
+      "snapshot": "baseline",
+      "path": "tests/work-log-dates.test.mjs",
+      "sha": "848501c5b616500ba285e389e5571567d26f5622",
+      "mode": "100644",
+      "size": 825,
+      "target": "snapshots/baseline/tests/work-log-dates.test.mjs",
+      "sha256": "1eac13e27c6e5c669c73db08d1e771c107881c11f0e26ce039a3447d3ee1d714"
+    },
+    {
+      "snapshot": "operations",
+      "path": "assets/fletcher-quote-import.js",
+      "sha": "7e1ac6f6d499ded9ba2039381e7c93f3c42e112d",
+      "mode": "100644",
+      "size": 13944,
+      "target": "snapshots/operations/assets/fletcher-quote-import.js",
+      "sha256": "2910d1de105320d5a67fb26701d7c72f30354db1fc4b6a46b423b021be3141ab"
+    },
+    {
+      "snapshot": "operations",
+      "path": "assets/jobhub-materials.js",
+      "sha": "35f77eefb5541266c7526825775733cd8875d571",
+      "mode": "100644",
+      "size": 21310,
+      "target": "snapshots/operations/assets/jobhub-materials.js",
+      "sha256": "e2cf8a3d5fd041902d07d65cb8808a9ea06a03b00f0cf833857c47dbbd5064cb"
+    },
+    {
+      "snapshot": "operations",
+      "path": "assets/solectrics-household-electricity-use.svg",
+      "sha": "f5c79e8e34abcbae803519949ea9ca172196e0ef",
+      "mode": "100644",
+      "size": 7227,
+      "target": "snapshots/operations/assets/solectrics-household-electricity-use.svg",
+      "sha256": "262fb96245a13236c6f41cf1fb50228647e1f75dfd685243dde964bc979758bd"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/_middleware.js",
+      "sha": "e6c1fc272e16d84ff793fb7bcd9a9e639b32ac70",
+      "mode": "100644",
+      "size": 1607,
+      "target": "snapshots/operations/functions/_middleware.js",
+      "sha256": "bec6f2981ef2c9d3b9e25ac95639e9be50c7f95b96103eab398567efc31ab4d5"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/_energy-calculator.js",
+      "sha": "3538c3f168d2b408407a263b193e145436629bbb",
+      "mode": "100644",
+      "size": 4477,
+      "target": "snapshots/operations/functions/api/_energy-calculator.js",
+      "sha256": "9623cc22b1f282c1ee0deb8296a2d8159cd2a7fb042796f3e41b64fb4e20d96b"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/_hec-customer-copy.js",
+      "sha": "3cdc037bb9e1f33e57d7788b9fd45f7420a09e38",
+      "mode": "100644",
+      "size": 3837,
+      "target": "snapshots/operations/functions/api/_hec-customer-copy.js",
+      "sha256": "84a7e0c04b340c523454de0b8430ed6380036e8edd30ce0fbd0d8b2b33b91c62"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/_job-electricity-details.js",
+      "sha": "74c484d3f77e57d1100a5ec9545115bf4a1549b9",
+      "mode": "100644",
+      "size": 3705,
+      "target": "snapshots/operations/functions/api/_job-electricity-details.js",
+      "sha256": "d4e8694955f35f8bd4dd8e52ac2205912f6c5f3acf6deafbf9c195cecd880c61"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/_schema.js",
+      "sha": "98021796ae3f2d9df701db76798b7e6bef980eb2",
+      "mode": "100644",
+      "size": 6909,
+      "target": "snapshots/operations/functions/api/_schema.js",
+      "sha256": "cb33476280fc566d4e84db00f397aef6001b711d7349f4c03fb36eb44032a25f"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/_site-visit-completion.js",
+      "sha": "d8429f7d7418afe9bc4a7beed822f7447f5d3236",
+      "mode": "100644",
+      "size": 2956,
+      "target": "snapshots/operations/functions/api/_site-visit-completion.js",
+      "sha256": "670ea6666533b7a65756f07c11b9236a21d654bb896f0b76c9fff8976d526408"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/assessment.js",
+      "sha": "4b7c2429606e2a36d870791578e10ed6d3d70627",
+      "mode": "100644",
+      "size": 4491,
+      "target": "snapshots/operations/functions/api/assessment.js",
+      "sha256": "0afbf2630b450e7c78571a9be3fff615bcd6c8c4232f37b5fd5b3a5fc97491bd"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/catalogue-import.js",
+      "sha": "43cd394bb5906b31fc145b9adb019bca5ced7c79",
+      "mode": "100644",
+      "size": 6113,
+      "target": "snapshots/operations/functions/api/catalogue-import.js",
+      "sha256": "1a17817b47f07c882159522d83b41960f6d17f7cb194818e2eb3987d84cadd51"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/customer-invoices.js",
+      "sha": "3588757175fd322e71607015b0d97b15f0656cab",
+      "mode": "100644",
+      "size": 14868,
+      "target": "snapshots/operations/functions/api/customer-invoices.js",
+      "sha256": "0db46c83b256181342071bb2de3d278230775b9924149466835cd0d3abb56fb9"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/customer-quotes.js",
+      "sha": "ab85e57ecd3af2ee9e8e67b03f2b1489992623bd",
+      "mode": "100644",
+      "size": 15833,
+      "target": "snapshots/operations/functions/api/customer-quotes.js",
+      "sha256": "b016f68feba73f1872ff3078c5ea7f54b9da8a6732a8cc7b6b112ec4cf04fd25"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/energy-review.js",
+      "sha": "b1174dcdaac035e25f3f42a335c1aa9caeb9dc94",
+      "mode": "100644",
+      "size": 24444,
+      "target": "snapshots/operations/functions/api/energy-review.js",
+      "sha256": "253234cad343213c40365f30b69e67db4b52b93aaa36260ba550f41eea7e0d4a"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/enquiry.js",
+      "sha": "8c059093834a70278ccd3ab23042d449f28c8d54",
+      "mode": "100644",
+      "size": 7927,
+      "target": "snapshots/operations/functions/api/enquiry.js",
+      "sha256": "620f6e2e32df70e6067eb9e3441f490f44614c0b4a74d9d8094152bc17fa6790"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/fletcher-email.js",
+      "sha": "7222bf17072a8d8f0112b9399be2400306dd7405",
+      "mode": "100644",
+      "size": 7175,
+      "target": "snapshots/operations/functions/api/fletcher-email.js",
+      "sha256": "bec31cc32f02e39a135fd5794e7e9b736b595b85ce909dbae4a468d5b6e4dd3f"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/fletcher-quote-import.js",
+      "sha": "8703084f03c2cd2a128798d350b85f36246cf852",
+      "mode": "100644",
+      "size": 8758,
+      "target": "snapshots/operations/functions/api/fletcher-quote-import.js",
+      "sha256": "dfa5a453ed9b907883096cd742e4ceb320508eabbdcc3408afa48a47b3c86aae"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/general-job-details.js",
+      "sha": "e5b0c6ce0212fe9bdf6ac3699fabc2234cd1c490",
+      "mode": "100644",
+      "size": 2893,
+      "target": "snapshots/operations/functions/api/general-job-details.js",
+      "sha256": "02022dc7ca3e071e7bf202394da52c1611b02bc1898a7e7da7230985440aec3e"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/handover-aftercare.js",
+      "sha": "5a80a64421d3a62b945f88d63bb40cd170a9a679",
+      "mode": "100644",
+      "size": 5038,
+      "target": "snapshots/operations/functions/api/handover-aftercare.js",
+      "sha256": "ebf40166a3fc14545f755bc461a38392c9769e8104158203f4bce897b360631f"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-costing.js",
+      "sha": "2042bcababb3416988f998f8af222da2e44354e7",
+      "mode": "100644",
+      "size": 5910,
+      "target": "snapshots/operations/functions/api/job-costing.js",
+      "sha256": "833cd69ea379886e60d7d1bad0349b29e242780b27b06f6a453e8507c7c78cec"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-file.js",
+      "sha": "6c15f4891f03f974236671d507cbbdbc6d7e0ee9",
+      "mode": "100644",
+      "size": 1560,
+      "target": "snapshots/operations/functions/api/job-file.js",
+      "sha256": "1780f44e39f43d8f49a40ee4dd4e44c5aa673c4ee0f014fc2801e73e5a0a0bf9"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-files.js",
+      "sha": "748c31f19a01684bb63d4f7fdae610c8ab57d961",
+      "mode": "100644",
+      "size": 7147,
+      "target": "snapshots/operations/functions/api/job-files.js",
+      "sha256": "c238420fd9caa2b1b99bb5f988667ba8c54d1f1466685b254479163dd2b23735"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-materials-import.js",
+      "sha": "ce6344f114bb26a4b0f62611919b47bf323305ef",
+      "mode": "100644",
+      "size": 4064,
+      "target": "snapshots/operations/functions/api/job-materials-import.js",
+      "sha256": "7f8fa8b11f3e57476311f610cbcf8628ff3a2dde77feba76e0f2655d86036aff"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-materials.js",
+      "sha": "a64a79c4f380a5517b380ca2db2c00aaf380ac45",
+      "mode": "100644",
+      "size": 6888,
+      "target": "snapshots/operations/functions/api/job-materials.js",
+      "sha256": "9a540424f16bab607d5d4eabe5d9efda964ffd305b2d17b7c366d4be5dd60e09"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-operations-core.js",
+      "sha": "76832893507513941d0f9eb4770c46ee2d92c013",
+      "mode": "100644",
+      "size": 8128,
+      "target": "snapshots/operations/functions/api/job-operations-core.js",
+      "sha256": "89f9739393b03611f8e129264f10d313785e15b2709ae4f2a38c9cdb860ba404"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-supplier-pricing.js",
+      "sha": "998afbacde029fc271ee0c9fd910685cb4256ae5",
+      "mode": "100644",
+      "size": 2494,
+      "target": "snapshots/operations/functions/api/job-supplier-pricing.js",
+      "sha256": "4cf7cd9be70011b5cb9027790a4ef39b39231e6633cf26866c1ce1f79c2ea668"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-tasks.js",
+      "sha": "a0c20c9255f871716094709d966a92202c93b977",
+      "mode": "100644",
+      "size": 29057,
+      "target": "snapshots/operations/functions/api/job-tasks.js",
+      "sha256": "bd23676f1ccdee40373a45f2baeb00e16506b033270f8ffa0041aa7fab457d2e"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job-work-logs.js",
+      "sha": "0051882f5626a62a883c20d9a57cd5ebb3b8565f",
+      "mode": "100644",
+      "size": 7234,
+      "target": "snapshots/operations/functions/api/job-work-logs.js",
+      "sha256": "13c2b055006d31744279194d3fd6d7b070d3bbc1c06f51ee8e34e3721a0204cf"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/job.js",
+      "sha": "b720bacc12d5654b4f4f39815730624b8d377376",
+      "mode": "100644",
+      "size": 3327,
+      "target": "snapshots/operations/functions/api/job.js",
+      "sha256": "6ff5920e633a538585ea5f756387299f5a687e1f7749cc5abd1bdbe3cf5c71b3"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/jobs.js",
+      "sha": "f29b3c57832856df694de3d4ceb6c64913e47486",
+      "mode": "100644",
+      "size": 3660,
+      "target": "snapshots/operations/functions/api/jobs.js",
+      "sha256": "3a4a4bb7d12201cbcaa2b03108284303331a7afa2cfb314bebf7f9dbb4e1e0a5"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/read-bill.js",
+      "sha": "86ec04ea288e59fcc534f742e7c6081b551f5d53",
+      "mode": "100644",
+      "size": 6607,
+      "target": "snapshots/operations/functions/api/read-bill.js",
+      "sha256": "387a4de31b2c54ae064218530f01628048bba158f8e56a9dbe89d78f7f9d9ca1"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/site-visit.js",
+      "sha": "054f56c10583f53f70e2b9217b7388399d25d14c",
+      "mode": "100644",
+      "size": 2741,
+      "target": "snapshots/operations/functions/api/site-visit.js",
+      "sha256": "9e9283d3d7dde29a824d01a632ef68e5893cfb5c3b84e946f85559224b3f7da9"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/supplier-invoice-read.js",
+      "sha": "3349cf2a0b2e1d27b8bb80603b8f30659838a3be",
+      "mode": "100644",
+      "size": 14652,
+      "target": "snapshots/operations/functions/api/supplier-invoice-read.js",
+      "sha256": "1909a20dfa259bc93b78b72aee234473bddb140419a766a9231814f03c25097a"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/supplier-products.js",
+      "sha": "9a9bbcba7070bffa0c105d64548be93acb4ebe5e",
+      "mode": "100644",
+      "size": 2330,
+      "target": "snapshots/operations/functions/api/supplier-products.js",
+      "sha256": "18396f515f803338351d0f2774254ee88a1b1af2349a9e3a122b59934aca6bcf"
+    },
+    {
+      "snapshot": "operations",
+      "path": "functions/api/system-design.js",
+      "sha": "99c9ad3f5eda2a61962680a7e4bb90e66dcdab2d",
+      "mode": "100644",
+      "size": 2737,
+      "target": "snapshots/operations/functions/api/system-design.js",
+      "sha256": "98480a47b70d2d02d81cbc2568ce72c1c0e880162f0d586fb3cb246b0350d7bd"
+    },
+    {
+      "snapshot": "operations",
+      "path": "home-energy-check.html",
+      "sha": "8bca42212d3b42a0d4e83fb19cab2265b85c649c",
+      "mode": "100644",
+      "size": 123349,
+      "target": "snapshots/operations/home-energy-check.html",
+      "sha256": "e15a790a9da58b6936eb7eae6b554bd4e0ec64b334708c509a88696f5af07f68"
+    },
+    {
+      "snapshot": "operations",
+      "path": "index.html",
+      "sha": "3fbe4d416f9c56c776bc1226234ddd24b20867ac",
+      "mode": "100644",
+      "size": 19800,
+      "target": "snapshots/operations/index.html",
+      "sha256": "81b1f40ae5124bd3c17612316e1e47868795bbccbd8d65e66023190ab79b3f0b"
+    },
+    {
+      "snapshot": "operations",
+      "path": "jobhub-staging-test.html",
+      "sha": "1b0745f86381ee76558091d272b117abe5da53a9",
+      "mode": "100644",
+      "size": 6010,
+      "target": "snapshots/operations/jobhub-staging-test.html",
+      "sha256": "5cffbd698701a468a97c241a97d6ee2c85156f8ba67bb1e12a47174de831b852"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0001_job_types_and_document_roles.sql",
+      "sha": "f2490956e7c5ffd4930ddfe31c498c7c6e8b4143",
+      "mode": "100644",
+      "size": 367,
+      "target": "snapshots/operations/migrations/0001_job_types_and_document_roles.sql",
+      "sha256": "9fba71e0749963d3430d96d41304fcc769f7b9c8245b0e2c7f2f7e2da08dfe43"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0002_email_logs.sql",
+      "sha": "0c316b496dfb7d9c748605768bb46385b630fecc",
+      "mode": "100644",
+      "size": 413,
+      "target": "snapshots/operations/migrations/0002_email_logs.sql",
+      "sha256": "d095b9ade1f0c40812d32aab7a66d11775081cbd0d32f4701fa0f810f0eba352"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0003_supplier_catalogue.sql",
+      "sha": "e12a19c8df9f722008a0ee63bbd0de2ef3538081",
+      "mode": "100644",
+      "size": 1567,
+      "target": "snapshots/operations/migrations/0003_supplier_catalogue.sql",
+      "sha256": "14db84474b9721e5940d9ac378fd64726d3c1018edebf4981865dc63942c814d"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0004_internal_costing.sql",
+      "sha": "1294e9bfc848431cfbb2713db6a5f3578eaef80e",
+      "mode": "100644",
+      "size": 1299,
+      "target": "snapshots/operations/migrations/0004_internal_costing.sql",
+      "sha256": "8c81c7e4e2b41f67084c2d577399f4d92ea00e3d4bfa8b52f1c1ce9f5f41dbb9"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0005_customer_quote_versions.sql",
+      "sha": "5c275794160b6767b0327f7a3194cf78f2d19180",
+      "mode": "100644",
+      "size": 486,
+      "target": "snapshots/operations/migrations/0005_customer_quote_versions.sql",
+      "sha256": "d09d25cc9e3c2b8d1dd304f212ed3b9c0926afc857962295403049b700191f90"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0006_default_supplier.sql",
+      "sha": "9cef01d43da3ba16f249831ead63146c30a3c709",
+      "mode": "100644",
+      "size": 153,
+      "target": "snapshots/operations/migrations/0006_default_supplier.sql",
+      "sha256": "0ff8840342a1e2c7634cef13610bbcd0f9b6609e8471309095f51ad6149c0eaa"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0010_multi_date_work_logs.sql",
+      "sha": "e72bf7d102961067215654d4f81b97857de61cde",
+      "mode": "100644",
+      "size": 593,
+      "target": "snapshots/operations/migrations/0010_multi_date_work_logs.sql",
+      "sha256": "fd54d9fdd8cebcc1db7d363259008b7cae9ef2568a96c0d0046617d582e21018"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0011_energy_usage_files.sql",
+      "sha": "c1d9c548a178cdeb194fdf6f5e87a18d3dbc8f41",
+      "mode": "100644",
+      "size": 275,
+      "target": "snapshots/operations/migrations/0011_energy_usage_files.sql",
+      "sha256": "6f94e69713b4899cf1a12ddf8f48814fb3ae1cb559e324f5d3ca3eda8e09df3a"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0013_energy_tariff_reviews.sql",
+      "sha": "6183f1bf4dcd9748fc96188fac024b56bb530dbc",
+      "mode": "100644",
+      "size": 2227,
+      "target": "snapshots/operations/migrations/0013_energy_tariff_reviews.sql",
+      "sha256": "d0e417b74e6186c62b5fc38a19afbf805c67802d68bff4b535be50d459ea24e7"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0014_customer_invoice_versions.sql",
+      "sha": "aa65e3b3a1b1fd026aedb21a97e540ecdc9747c7",
+      "mode": "100644",
+      "size": 506,
+      "target": "snapshots/operations/migrations/0014_customer_invoice_versions.sql",
+      "sha256": "c4383f7d7e13c67797e6c8f3e90ccf3964bf77ca5e6984f82b85009593e6de76"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0021_solar_operations_workflow.sql",
+      "sha": "d12b4e2de2c13154ea588568303e258c5218e966",
+      "mode": "100644",
+      "size": 3887,
+      "target": "snapshots/operations/migrations/0021_solar_operations_workflow.sql",
+      "sha256": "50f26aab89b4e9c64147a3e8636bbdbeb04a80b03c87113947e80e4595f8020d"
+    },
+    {
+      "snapshot": "operations",
+      "path": "migrations/0022_handover_aftercare.sql",
+      "sha": "f8da5da9ee75baa3fe3e2678412ee90729538473",
+      "mode": "100644",
+      "size": 371,
+      "target": "snapshots/operations/migrations/0022_handover_aftercare.sql",
+      "sha256": "a0d9ff89ae76e56aef5b78a339b4cd94e6b548d6aff36bf7ef6bfc6f79370603"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-customer-invoice.html",
+      "sha": "8a447486181c0c2624e1325561254ad47691cc11",
+      "mode": "100644",
+      "size": 7493,
+      "target": "snapshots/operations/mini-fergus-customer-invoice.html",
+      "sha256": "506fd0146982c401d5cd535d91e229fa416656398aec807d55cf4f7266a72077"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-customer-quote.html",
+      "sha": "5054b4c71cf86fedc4ecf67d23ac2cf1f1912686",
+      "mode": "100644",
+      "size": 15885,
+      "target": "snapshots/operations/mini-fergus-customer-quote.html",
+      "sha256": "bccdea45f3917fb5d53f99c2970ce78a7b5b66304b8a8fdd6b2b76bc654c7f66"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-energy-review.html",
+      "sha": "9a5d9dbccedc74e6ffee549257e1e746b0d5d6b9",
+      "mode": "100644",
+      "size": 33521,
+      "target": "snapshots/operations/mini-fergus-energy-review.html",
+      "sha256": "e7960ae1e6520f4cc94d0c3babbfa7531f1e9e0339d7e50d7a524ac64e94300a"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-fletcher-form.html",
+      "sha": "0efde03aed7bc11290b1b87b35fa1f2b9e442a86",
+      "mode": "100644",
+      "size": 28135,
+      "target": "snapshots/operations/mini-fergus-fletcher-form.html",
+      "sha256": "a4d4dde475a484a252e05424775ebe25d9e71abf67211f54c8d25d99fda36a0c"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-job.html",
+      "sha": "6fd44e5a41b209ee4858566e701bd19e8f7a7034",
+      "mode": "100644",
+      "size": 202979,
+      "target": "snapshots/operations/mini-fergus-job.html",
+      "sha256": "9b528a3abbde49abdac0f9bbcbb49cae167b4bdc107eb6456050b26024573730"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-operations.html",
+      "sha": "5dfc659bf8909c65d1e17ed002b312c9432ded8c",
+      "mode": "100644",
+      "size": 28129,
+      "target": "snapshots/operations/mini-fergus-operations.html",
+      "sha256": "cd354e6a050f300eb5f538baa000779035395ab1386426651cd9f0fab64b81b0"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-supplier-invoices.html",
+      "sha": "a19aaccd387d54408dfa96b539c8bf1e1e813356",
+      "mode": "100644",
+      "size": 17089,
+      "target": "snapshots/operations/mini-fergus-supplier-invoices.html",
+      "sha256": "8d61db6641080119241707591810d267bfedbfd3c64cddceebc14051dc0ea3b5"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus-suppliers.html",
+      "sha": "7522007bfd918c15cb34ae1639c267f13bfae59d",
+      "mode": "100644",
+      "size": 27522,
+      "target": "snapshots/operations/mini-fergus-suppliers.html",
+      "sha256": "d199335723e1c50b796229e19ad7ca2b1972cd62794dff8d1155942c9fa48582"
+    },
+    {
+      "snapshot": "operations",
+      "path": "mini-fergus.html",
+      "sha": "49fa1dbe0d9be178761e08fdfc58d320859c4d7a",
+      "mode": "100644",
+      "size": 11505,
+      "target": "snapshots/operations/mini-fergus.html",
+      "sha256": "cbed05d527956339d7aa8781a4ff5b9a93060246a544d543f614e5635cb3582e"
+    },
+    {
+      "snapshot": "operations",
+      "path": "smart-energy.html",
+      "sha": "fcf488ffdeae52b836fde8c24a6221d2747e0a16",
+      "mode": "100644",
+      "size": 18453,
+      "target": "snapshots/operations/smart-energy.html",
+      "sha256": "d51cb883f607e5d34335559d8c9d94afee03b85ec49a9f2095d8009deafd7659"
+    },
+    {
+      "snapshot": "operations",
+      "path": "smart-solar-prices.html",
+      "sha": "151b745aa976ffb960d1b0879562dc0d032bfb78",
+      "mode": "100644",
+      "size": 17631,
+      "target": "snapshots/operations/smart-solar-prices.html",
+      "sha256": "9a263809eb1cf7faf038589312a045ddb5da4848b4b02173208e8dee5a53c4ba"
+    },
+    {
+      "snapshot": "operations",
+      "path": "solar-system-check.html",
+      "sha": "0f568589aa4ef852df044980f5eb27e11b7019b4",
+      "mode": "100644",
+      "size": 23295,
+      "target": "snapshots/operations/solar-system-check.html",
+      "sha256": "2a2366260b64e524993c239c925786a332a552935e94907ffb9c8819e9124d71"
+    },
+    {
+      "snapshot": "operations",
+      "path": "terms-and-conditions.html",
+      "sha": "fe991c6a96101e6d2f0b1b482cd8d51d8276ba4a",
+      "mode": "100644",
+      "size": 8688,
+      "target": "snapshots/operations/terms-and-conditions.html",
+      "sha256": "1db7260a55fd269856cf0103aa39a0ceb7d3f993992e99b8e087ff00bb695c82"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/customer-invoices.test.mjs",
+      "sha": "46f2fadd3a560f94f6be3048a0b93a498a654c3f",
+      "mode": "100644",
+      "size": 2975,
+      "target": "snapshots/operations/tests/customer-invoices.test.mjs",
+      "sha256": "4fce5e190ee67c3db6eaae4ebf2df219707f9f9630fa29d2f9d5f6b98b431107"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/customer-quotes.test.mjs",
+      "sha": "e447e5cc0833674f2c70b18b2441a24caa49172f",
+      "mode": "100644",
+      "size": 2115,
+      "target": "snapshots/operations/tests/customer-quotes.test.mjs",
+      "sha256": "58ac8481402005cfd86c70fe62d1a9671d6c34e9950fd9607fb92cd632508985"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/energy-tariff-review.test.mjs",
+      "sha": "7cf6c520a14e8683f4f5a98de5e90139c1e1abf8",
+      "mode": "100644",
+      "size": 2902,
+      "target": "snapshots/operations/tests/energy-tariff-review.test.mjs",
+      "sha256": "364d91c0e1bde39be1af6956ff51015790d110e2d44ccb226eff443c58967bd6"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/handover-aftercare.test.mjs",
+      "sha": "235b462fc580e2e77401c05d1e3e79b2251b087e",
+      "mode": "100644",
+      "size": 12253,
+      "target": "snapshots/operations/tests/handover-aftercare.test.mjs",
+      "sha256": "92da1e936d153c6a5f5518822c5596ae9881df6c94ed45b652893500d6e8b2c8"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/hec-customer-copy.test.mjs",
+      "sha": "ffcaa805fc76daafe17e4468e590ad1b4476d236",
+      "mode": "100644",
+      "size": 6673,
+      "target": "snapshots/operations/tests/hec-customer-copy.test.mjs",
+      "sha256": "80b7213251d0e125c8910777c9a47acfa6e0688c70a1e54c03386d6fabff407a"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/hec-energy-uploads.test.mjs",
+      "sha": "3059295ce6c9206ca693b4abde5d8368761228a3",
+      "mode": "100644",
+      "size": 2188,
+      "target": "snapshots/operations/tests/hec-energy-uploads.test.mjs",
+      "sha256": "2b37cbe4a5a91bbe12e666528ffc56c4e47f3c848eb7f12c5cfa23d3ff41ed78"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/initial-businesses.test.mjs",
+      "sha": "3ebb50210e06a7ea418741c8fe780998ea5127bf",
+      "mode": "100644",
+      "size": 2301,
+      "target": "snapshots/operations/tests/initial-businesses.test.mjs",
+      "sha256": "27c00faffd1157232331c09b9831fb5345aaa1a4689155db793c9f1b6d11b7e6"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/job-electricity-details.test.mjs",
+      "sha": "612e8d2b85b5175cbbb34fc5a50d830768a67f0d",
+      "mode": "100644",
+      "size": 10342,
+      "target": "snapshots/operations/tests/job-electricity-details.test.mjs",
+      "sha256": "0d6de5017df9f521bc1fa7189d4f4a0e2226ba18763949d32dc88bdf81a19be8"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/job-operations-workflow.test.mjs",
+      "sha": "8657a217b5184bf94a4c893baec5753ece96ac67",
+      "mode": "100644",
+      "size": 3620,
+      "target": "snapshots/operations/tests/job-operations-workflow.test.mjs",
+      "sha256": "58fffb84cdc6f0d609da8b81f6a0eb6a0d0de380084d7c620e3d7df1ec2211db"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/jobhub-mobile-fixes.test.mjs",
+      "sha": "59aa68dc64ab6ac1d1e5aa80fd6166e275c065f1",
+      "mode": "100644",
+      "size": 2736,
+      "target": "snapshots/operations/tests/jobhub-mobile-fixes.test.mjs",
+      "sha256": "17a81e1b5de042b7f5f8289c9e36a42a520f57f063927d790a1df1ee840835f8"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/site-visit-design-gating.test.mjs",
+      "sha": "7499e80d82be5fcf95dd7338c24358997b9c7860",
+      "mode": "100644",
+      "size": 5864,
+      "target": "snapshots/operations/tests/site-visit-design-gating.test.mjs",
+      "sha256": "078dd82e3d9a5cb75d370ce6b79c225d08a6f4c1dc54ccb36acaa05b0fe2c827"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/solar-design-handoff.test.mjs",
+      "sha": "7e1a9e49a40b190a4371ce59bfc60618101452ed",
+      "mode": "100644",
+      "size": 3526,
+      "target": "snapshots/operations/tests/solar-design-handoff.test.mjs",
+      "sha256": "e8875f336326067b2a881dceb021c72c4510598eecd01ef344b96788d22b1b6b"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/staging-host.test.mjs",
+      "sha": "9f521cc1669e87f42d2c15f2aa455a538c6a9b22",
+      "mode": "100644",
+      "size": 2052,
+      "target": "snapshots/operations/tests/staging-host.test.mjs",
+      "sha256": "5a9c5093e8d9b42c42b63f8a4f21bc207fa1e4e4780e3f499f6d4e519b4bdb6c"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/staging-test-helper.test.mjs",
+      "sha": "94654de64f87d0097661ee852b41d7b2fded5231",
+      "mode": "100644",
+      "size": 2851,
+      "target": "snapshots/operations/tests/staging-test-helper.test.mjs",
+      "sha256": "f0a295ebd8a5bba25cec0935350f4afc4e5d1477a6ffa74e00866d250f49b945"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/supplier-email-worker.test.mjs",
+      "sha": "e5155a7d97b1c2330487c806dc51a7723aa6ab47",
+      "mode": "100644",
+      "size": 1603,
+      "target": "snapshots/operations/tests/supplier-email-worker.test.mjs",
+      "sha256": "864bdb72cb0c54249cc7531f4b762435b5b765a13484da85fe1d37e057cc9ca8"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/supplier-invoice-multipart.test.mjs",
+      "sha": "7ba566cb368cb3a184aa6a586b1a4228163d766b",
+      "mode": "100644",
+      "size": 2012,
+      "target": "snapshots/operations/tests/supplier-invoice-multipart.test.mjs",
+      "sha256": "84bac83f3f34bec3bf56d560d1191c4409e91a64370d1a7318e14a7faa5f598b"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/supplier-invoice-reader.test.mjs",
+      "sha": "1f5727a20bd81ba65b379368dfe497ffb71581b1",
+      "mode": "100644",
+      "size": 2657,
+      "target": "snapshots/operations/tests/supplier-invoice-reader.test.mjs",
+      "sha256": "42e9d17cd0ad83389fc2c6a3629dcd3a655dd7e99963903e45f993fb7a7af0b9"
+    },
+    {
+      "snapshot": "operations",
+      "path": "tests/work-log-dates.test.mjs",
+      "sha": "848501c5b616500ba285e389e5571567d26f5622",
+      "mode": "100644",
+      "size": 825,
+      "target": "snapshots/operations/tests/work-log-dates.test.mjs",
+      "sha256": "1eac13e27c6e5c669c73db08d1e771c107881c11f0e26ce039a3447d3ee1d714"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/fletcher-quote-import.js",
+      "sha": "7e1ac6f6d499ded9ba2039381e7c93f3c42e112d",
+      "mode": "100644",
+      "size": 13944,
+      "target": "snapshots/bills_navigation/assets/fletcher-quote-import.js",
+      "sha256": "2910d1de105320d5a67fb26701d7c72f30354db1fc4b6a46b423b021be3141ab"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/job-data-review.css",
+      "sha": "fe3bcf0054a4b7a99aa28ec0f9d4878824900531",
+      "mode": "100644",
+      "size": 580,
+      "target": "snapshots/bills_navigation/assets/job-data-review.css",
+      "sha256": "e7da6212d330acdc4ef7e94a834fd424420b6251123ae4170ad303056688504c"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/job-data-review.js",
+      "sha": "f9430f54170083b15d492c869e33ad06aaebc25f",
+      "mode": "100644",
+      "size": 8955,
+      "target": "snapshots/bills_navigation/assets/job-data-review.js",
+      "sha256": "3dc0d1961741041a1b0e3c02b3b76a5cdd8a35c53665da9c920e3b1e881e56db"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/job-document-library.css",
+      "sha": "b7fb36161c89417abcb3496faeb3c61aae5a772f",
+      "mode": "100644",
+      "size": 1098,
+      "target": "snapshots/bills_navigation/assets/job-document-library.css",
+      "sha256": "ec45c596870becc7271b880210c7bc4614ab5b7d403328c3767253077f5151a7"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/job-document-library.js",
+      "sha": "04f0f1a8c6ca6c2241afa80b59faf82cba927125",
+      "mode": "100644",
+      "size": 2416,
+      "target": "snapshots/bills_navigation/assets/job-document-library.js",
+      "sha256": "ab88ff4e98db1a843d6b21851a847a82a0bc0904dd936f7462d46cd2704d6517"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/jobhub-materials.js",
+      "sha": "35f77eefb5541266c7526825775733cd8875d571",
+      "mode": "100644",
+      "size": 21310,
+      "target": "snapshots/bills_navigation/assets/jobhub-materials.js",
+      "sha256": "e2cf8a3d5fd041902d07d65cb8808a9ea06a03b00f0cf833857c47dbbd5064cb"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/post-hec-bill.css",
+      "sha": "0388bc514d953a758323a7ce920ffa978299025a",
+      "mode": "100644",
+      "size": 1249,
+      "target": "snapshots/bills_navigation/assets/post-hec-bill.css",
+      "sha256": "5299287acb99390bc071c70c1c26d80b8e806fc75f0650c09f18c5fd667bedab"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/post-hec-bill.js",
+      "sha": "b3ad2b6e467cb748bbfd56c04774499714796cf0",
+      "mode": "100644",
+      "size": 9304,
+      "target": "snapshots/bills_navigation/assets/post-hec-bill.js",
+      "sha256": "c3788e3779cba09b21ef574501b0374e572d5a51b0996158ce2c3b2f05d8f022"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/site-visit-photos.css",
+      "sha": "50f0286400b54f8b843e0da2a37d94a44ef79063",
+      "mode": "100644",
+      "size": 1529,
+      "target": "snapshots/bills_navigation/assets/site-visit-photos.css",
+      "sha256": "1b1d67b47db20b53fc0a0947e51090d6ebcc852e49bb493c1c297844f8a8bc8d"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/site-visit-photos.js",
+      "sha": "b59564bb16903413fc5c806aa06f213ce7989641",
+      "mode": "100644",
+      "size": 12553,
+      "target": "snapshots/bills_navigation/assets/site-visit-photos.js",
+      "sha256": "7b96ff2e4c41d659492cfc51bded35137c4216f69fb8b9a3fe009dc4cc092b97"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/solectrics-household-electricity-use.svg",
+      "sha": "f5c79e8e34abcbae803519949ea9ca172196e0ef",
+      "mode": "100644",
+      "size": 7227,
+      "target": "snapshots/bills_navigation/assets/solectrics-household-electricity-use.svg",
+      "sha256": "262fb96245a13236c6f41cf1fb50228647e1f75dfd685243dde964bc979758bd"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/system-design-save.css",
+      "sha": "67a78fe7617774def9f7fb57e443098e15ee8bc1",
+      "mode": "100644",
+      "size": 1021,
+      "target": "snapshots/bills_navigation/assets/system-design-save.css",
+      "sha256": "ff03e40fea1b63de783cd95a3795c1eeee308d87f3072f9899f57e1fe7bc141a"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/system-design-save.js",
+      "sha": "d5158cbb1816b0d1dbe918e6f0fcc71585c61ede",
+      "mode": "100644",
+      "size": 1149,
+      "target": "snapshots/bills_navigation/assets/system-design-save.js",
+      "sha256": "a328213da45f9969c7b1929254ad21320af06e30756c5b3ad40dee21b02baf35"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/workspace-navigation.css",
+      "sha": "2b0b97d1f66cb0b26668e82515a8bf1a16475dd9",
+      "mode": "100644",
+      "size": 4057,
+      "target": "snapshots/bills_navigation/assets/workspace-navigation.css",
+      "sha256": "61387459c1ed8c31319ddde7e2ec34e0dfa43fbbc3dbe527f4d7ab340c656b9e"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "assets/workspace-navigation.js",
+      "sha": "691c44ad6545d3841ad37c649daa1790d7ec46b7",
+      "mode": "100644",
+      "size": 10286,
+      "target": "snapshots/bills_navigation/assets/workspace-navigation.js",
+      "sha256": "c76ef9957e2cf67c3c2ad95260da256553f9aa4fff915e7f4c20d4241e2a8aad"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/_middleware.js",
+      "sha": "55f6d8c04d988b9300de3dee44886f3725314e10",
+      "mode": "100644",
+      "size": 1156,
+      "target": "snapshots/bills_navigation/functions/_middleware.js",
+      "sha256": "b9fa9561d1ce31820ef1ac78635b932e298383b218cc8db572723fe5d1e4c4db"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/_energy-calculator.js",
+      "sha": "3538c3f168d2b408407a263b193e145436629bbb",
+      "mode": "100644",
+      "size": 4477,
+      "target": "snapshots/bills_navigation/functions/api/_energy-calculator.js",
+      "sha256": "9623cc22b1f282c1ee0deb8296a2d8159cd2a7fb042796f3e41b64fb4e20d96b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/_hec-customer-copy.js",
+      "sha": "1d3dcd350f4d9c1b865ffe1035bc7186a1692470",
+      "mode": "100644",
+      "size": 7139,
+      "target": "snapshots/bills_navigation/functions/api/_hec-customer-copy.js",
+      "sha256": "1ea137dc5288c77df395d3bbb03d88e9d727647f8b4ed05fa29b1168324d65a1"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/_post-hec-energy.js",
+      "sha": "c9c5828d838a8108c214934a9cc3681f32a30d8f",
+      "mode": "100644",
+      "size": 9454,
+      "target": "snapshots/bills_navigation/functions/api/_post-hec-energy.js",
+      "sha256": "0662b4b877d759f6df51caeffe8413ca42e804f2aaa073ca8105d1186a6164af"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/_schema.js",
+      "sha": "98021796ae3f2d9df701db76798b7e6bef980eb2",
+      "mode": "100644",
+      "size": 6909,
+      "target": "snapshots/bills_navigation/functions/api/_schema.js",
+      "sha256": "cb33476280fc566d4e84db00f397aef6001b711d7349f4c03fb36eb44032a25f"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/assessment.js",
+      "sha": "1913d96c8d7bf1a6328673f861965a63216e57ac",
+      "mode": "100644",
+      "size": 4110,
+      "target": "snapshots/bills_navigation/functions/api/assessment.js",
+      "sha256": "769689cca1367f3b8f183ea6cb737689ea1387871c1f5ac91d52ebab763d491b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/catalogue-import.js",
+      "sha": "43cd394bb5906b31fc145b9adb019bca5ced7c79",
+      "mode": "100644",
+      "size": 6113,
+      "target": "snapshots/bills_navigation/functions/api/catalogue-import.js",
+      "sha256": "1a17817b47f07c882159522d83b41960f6d17f7cb194818e2eb3987d84cadd51"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/customer-invoices.js",
+      "sha": "c4d48547ae9912102ed47325f73df6d549a5c2ed",
+      "mode": "100644",
+      "size": 12737,
+      "target": "snapshots/bills_navigation/functions/api/customer-invoices.js",
+      "sha256": "c80298290b70582fc3c3b94ba1822a94b6f1161a641004a8be541beb8b70bd57"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/customer-quotes.js",
+      "sha": "9c3b63d1e204ba7c0653d803f77a95120d6540a4",
+      "mode": "100644",
+      "size": 19566,
+      "target": "snapshots/bills_navigation/functions/api/customer-quotes.js",
+      "sha256": "ab9f584466d449eed9d7a60545f9892560846eefdce027822591044a3e5c19ac"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/energy-review.js",
+      "sha": "803be66d85208a3ee3a69b0b3bfb4b420fe52543",
+      "mode": "100644",
+      "size": 26268,
+      "target": "snapshots/bills_navigation/functions/api/energy-review.js",
+      "sha256": "2742a3c8a804573203d9d5d1f8eed187d51f4d749fc8d5ce73a7ed3e44b23b8c"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/enquiry.js",
+      "sha": "da5d6901e007638348a4ae195cd6287620898132",
+      "mode": "100644",
+      "size": 7648,
+      "target": "snapshots/bills_navigation/functions/api/enquiry.js",
+      "sha256": "f5f8696c0a88bd8c020052fcdac3b44609e5a1a6c17a2cae3e01cb6bf5009757"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/fletcher-email.js",
+      "sha": "ccf8796b1bb7d33a75de1f7ac84477870f3b87e6",
+      "mode": "100644",
+      "size": 8759,
+      "target": "snapshots/bills_navigation/functions/api/fletcher-email.js",
+      "sha256": "a6282a2a7ff9249e4c57c0a35bcd24c061a404e2e72f7911598b0a8d9d42a536"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/fletcher-quote-import.js",
+      "sha": "8703084f03c2cd2a128798d350b85f36246cf852",
+      "mode": "100644",
+      "size": 8758,
+      "target": "snapshots/bills_navigation/functions/api/fletcher-quote-import.js",
+      "sha256": "dfa5a453ed9b907883096cd742e4ceb320508eabbdcc3408afa48a47b3c86aae"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/general-job-details.js",
+      "sha": "e5b0c6ce0212fe9bdf6ac3699fabc2234cd1c490",
+      "mode": "100644",
+      "size": 2893,
+      "target": "snapshots/bills_navigation/functions/api/general-job-details.js",
+      "sha256": "02022dc7ca3e071e7bf202394da52c1611b02bc1898a7e7da7230985440aec3e"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-costing.js",
+      "sha": "2042bcababb3416988f998f8af222da2e44354e7",
+      "mode": "100644",
+      "size": 5910,
+      "target": "snapshots/bills_navigation/functions/api/job-costing.js",
+      "sha256": "833cd69ea379886e60d7d1bad0349b29e242780b27b06f6a453e8507c7c78cec"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-document-inventory.js",
+      "sha": "ecf3ef61b0475d978a56a6648a3da1e5cd7ef2bc",
+      "mode": "100644",
+      "size": 2383,
+      "target": "snapshots/bills_navigation/functions/api/job-document-inventory.js",
+      "sha256": "13c37056a5c3087fd7c5e5ce263cd434503348cebe17d5c7762ae31ea380d5d1"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-file.js",
+      "sha": "6c15f4891f03f974236671d507cbbdbc6d7e0ee9",
+      "mode": "100644",
+      "size": 1560,
+      "target": "snapshots/bills_navigation/functions/api/job-file.js",
+      "sha256": "1780f44e39f43d8f49a40ee4dd4e44c5aa673c4ee0f014fc2801e73e5a0a0bf9"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-files.js",
+      "sha": "916c3dd0611cdcc4dd6fafa168d2428eb1d118ad",
+      "mode": "100644",
+      "size": 7341,
+      "target": "snapshots/bills_navigation/functions/api/job-files.js",
+      "sha256": "2b7726a02b7f7504f65eec1e6bc5e5135edd05424d62c0a0ec2b11bae9248eb2"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-materials-import.js",
+      "sha": "ce6344f114bb26a4b0f62611919b47bf323305ef",
+      "mode": "100644",
+      "size": 4064,
+      "target": "snapshots/bills_navigation/functions/api/job-materials-import.js",
+      "sha256": "7f8fa8b11f3e57476311f610cbcf8628ff3a2dde77feba76e0f2655d86036aff"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-materials.js",
+      "sha": "a4b73f2ca6c96e420f9e2b456bdf1c2c26b26741",
+      "mode": "100644",
+      "size": 6252,
+      "target": "snapshots/bills_navigation/functions/api/job-materials.js",
+      "sha256": "aae0fa0763a5989af1da8b0e8162a373ea4918de79574d5d94ca0d5ff015ac86"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-supplier-pricing.js",
+      "sha": "998afbacde029fc271ee0c9fd910685cb4256ae5",
+      "mode": "100644",
+      "size": 2494,
+      "target": "snapshots/bills_navigation/functions/api/job-supplier-pricing.js",
+      "sha256": "4cf7cd9be70011b5cb9027790a4ef39b39231e6633cf26866c1ce1f79c2ea668"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job-work-logs.js",
+      "sha": "0051882f5626a62a883c20d9a57cd5ebb3b8565f",
+      "mode": "100644",
+      "size": 7234,
+      "target": "snapshots/bills_navigation/functions/api/job-work-logs.js",
+      "sha256": "13c2b055006d31744279194d3fd6d7b070d3bbc1c06f51ee8e34e3721a0204cf"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/job.js",
+      "sha": "d2c7c596c882e0d93e119aa2473e89cb5815e683",
+      "mode": "100644",
+      "size": 4880,
+      "target": "snapshots/bills_navigation/functions/api/job.js",
+      "sha256": "4cdbe913c72b34abce9cbf8c56621cde974f65b47241146811a3a622ce82b9ec"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/jobs.js",
+      "sha": "39db5d10d77c64387b419597b79f910483113c50",
+      "mode": "100644",
+      "size": 3257,
+      "target": "snapshots/bills_navigation/functions/api/jobs.js",
+      "sha256": "5428a7cc8542a2e56899fecb31e10816f7a17da5bc5dfd71eadb704cbd2c2dae"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/read-bill.js",
+      "sha": "ccaee5195221533ff8c62ab5ec624e4c5f903351",
+      "mode": "100644",
+      "size": 12538,
+      "target": "snapshots/bills_navigation/functions/api/read-bill.js",
+      "sha256": "c91f7a38b26a73b390e78418e1987604e8ea43532ba3c7de950d32ce19f007b9"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/site-visit.js",
+      "sha": "da7046a201d9fec05135e94029c0a4a6348e3eb5",
+      "mode": "100644",
+      "size": 2313,
+      "target": "snapshots/bills_navigation/functions/api/site-visit.js",
+      "sha256": "45c1f1165a1d87638ca08fec2ab7affcde76550f917d8e4bb8d49bec999adae6"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/supplier-invoice-read.js",
+      "sha": "656e12cae904716ff77605d05619a0dd03b2260f",
+      "mode": "100644",
+      "size": 8976,
+      "target": "snapshots/bills_navigation/functions/api/supplier-invoice-read.js",
+      "sha256": "5ae1acbecd1d05f4959421f9b00d8a36d9523015d0fd1c9dc5a979b07279470b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/supplier-products.js",
+      "sha": "9a9bbcba7070bffa0c105d64548be93acb4ebe5e",
+      "mode": "100644",
+      "size": 2330,
+      "target": "snapshots/bills_navigation/functions/api/supplier-products.js",
+      "sha256": "18396f515f803338351d0f2774254ee88a1b1af2349a9e3a122b59934aca6bcf"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "functions/api/system-design.js",
+      "sha": "365abadc61e8bac4acd7169644cfed816fea3eca",
+      "mode": "100644",
+      "size": 2464,
+      "target": "snapshots/bills_navigation/functions/api/system-design.js",
+      "sha256": "f4ffdc4abc36c5738536054a609b0983db8f8168fab5f492064a0ffc017ff06e"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "home-energy-check.html",
+      "sha": "8bca42212d3b42a0d4e83fb19cab2265b85c649c",
+      "mode": "100644",
+      "size": 123349,
+      "target": "snapshots/bills_navigation/home-energy-check.html",
+      "sha256": "e15a790a9da58b6936eb7eae6b554bd4e0ec64b334708c509a88696f5af07f68"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "index.html",
+      "sha": "121960d3b409d50394ce73f2bb5a4c1fd536efe6",
+      "mode": "100644",
+      "size": 20525,
+      "target": "snapshots/bills_navigation/index.html",
+      "sha256": "766735bf257b72fe621356f7b243ac0149ee85d2cbbc808b43cf1f4b5988ebcb"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0001_job_types_and_document_roles.sql",
+      "sha": "f2490956e7c5ffd4930ddfe31c498c7c6e8b4143",
+      "mode": "100644",
+      "size": 367,
+      "target": "snapshots/bills_navigation/migrations/0001_job_types_and_document_roles.sql",
+      "sha256": "9fba71e0749963d3430d96d41304fcc769f7b9c8245b0e2c7f2f7e2da08dfe43"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0002_email_logs.sql",
+      "sha": "0c316b496dfb7d9c748605768bb46385b630fecc",
+      "mode": "100644",
+      "size": 413,
+      "target": "snapshots/bills_navigation/migrations/0002_email_logs.sql",
+      "sha256": "d095b9ade1f0c40812d32aab7a66d11775081cbd0d32f4701fa0f810f0eba352"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0003_supplier_catalogue.sql",
+      "sha": "e12a19c8df9f722008a0ee63bbd0de2ef3538081",
+      "mode": "100644",
+      "size": 1567,
+      "target": "snapshots/bills_navigation/migrations/0003_supplier_catalogue.sql",
+      "sha256": "14db84474b9721e5940d9ac378fd64726d3c1018edebf4981865dc63942c814d"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0004_internal_costing.sql",
+      "sha": "1294e9bfc848431cfbb2713db6a5f3578eaef80e",
+      "mode": "100644",
+      "size": 1299,
+      "target": "snapshots/bills_navigation/migrations/0004_internal_costing.sql",
+      "sha256": "8c81c7e4e2b41f67084c2d577399f4d92ea00e3d4bfa8b52f1c1ce9f5f41dbb9"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0005_customer_quote_versions.sql",
+      "sha": "5c275794160b6767b0327f7a3194cf78f2d19180",
+      "mode": "100644",
+      "size": 486,
+      "target": "snapshots/bills_navigation/migrations/0005_customer_quote_versions.sql",
+      "sha256": "d09d25cc9e3c2b8d1dd304f212ed3b9c0926afc857962295403049b700191f90"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0006_default_supplier.sql",
+      "sha": "9cef01d43da3ba16f249831ead63146c30a3c709",
+      "mode": "100644",
+      "size": 153,
+      "target": "snapshots/bills_navigation/migrations/0006_default_supplier.sql",
+      "sha256": "0ff8840342a1e2c7634cef13610bbcd0f9b6609e8471309095f51ad6149c0eaa"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0010_multi_date_work_logs.sql",
+      "sha": "e72bf7d102961067215654d4f81b97857de61cde",
+      "mode": "100644",
+      "size": 593,
+      "target": "snapshots/bills_navigation/migrations/0010_multi_date_work_logs.sql",
+      "sha256": "fd54d9fdd8cebcc1db7d363259008b7cae9ef2568a96c0d0046617d582e21018"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0011_energy_usage_files.sql",
+      "sha": "c1d9c548a178cdeb194fdf6f5e87a18d3dbc8f41",
+      "mode": "100644",
+      "size": 275,
+      "target": "snapshots/bills_navigation/migrations/0011_energy_usage_files.sql",
+      "sha256": "6f94e69713b4899cf1a12ddf8f48814fb3ae1cb559e324f5d3ca3eda8e09df3a"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0013_energy_tariff_reviews.sql",
+      "sha": "6183f1bf4dcd9748fc96188fac024b56bb530dbc",
+      "mode": "100644",
+      "size": 2227,
+      "target": "snapshots/bills_navigation/migrations/0013_energy_tariff_reviews.sql",
+      "sha256": "d0e417b74e6186c62b5fc38a19afbf805c67802d68bff4b535be50d459ea24e7"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "migrations/0014_customer_invoice_versions.sql",
+      "sha": "aa65e3b3a1b1fd026aedb21a97e540ecdc9747c7",
+      "mode": "100644",
+      "size": 506,
+      "target": "snapshots/bills_navigation/migrations/0014_customer_invoice_versions.sql",
+      "sha256": "c4383f7d7e13c67797e6c8f3e90ccf3964bf77ca5e6984f82b85009593e6de76"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-customer-invoice.html",
+      "sha": "8a447486181c0c2624e1325561254ad47691cc11",
+      "mode": "100644",
+      "size": 7493,
+      "target": "snapshots/bills_navigation/mini-fergus-customer-invoice.html",
+      "sha256": "506fd0146982c401d5cd535d91e229fa416656398aec807d55cf4f7266a72077"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-customer-quote.html",
+      "sha": "4128590e8bb07b4afc6ef477924df37d7cae4770",
+      "mode": "100644",
+      "size": 15982,
+      "target": "snapshots/bills_navigation/mini-fergus-customer-quote.html",
+      "sha256": "3cbfc13db2d77b91f0914bcb3ce02d56e59c3ea680114efc759f1d828555ed09"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-energy-review.html",
+      "sha": "b5c6f3856604d429fd0b1513b03f01406f3dcd5d",
+      "mode": "100644",
+      "size": 34116,
+      "target": "snapshots/bills_navigation/mini-fergus-energy-review.html",
+      "sha256": "879e467e2175301f0e00bf21d9d690952df4c8117c75fb9a567916e97354995e"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-fletcher-form.html",
+      "sha": "4c8e4f40ded81116a0b8c63e5edfbbb0ed37442d",
+      "mode": "100644",
+      "size": 39628,
+      "target": "snapshots/bills_navigation/mini-fergus-fletcher-form.html",
+      "sha256": "55926d65d3b9350cb9e683366aa16794c61453038417f9b7bd7cae6b21b844bf"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-job.html",
+      "sha": "6c1ced3fb4ef9f5619b93038419ffa57e2d440ec",
+      "mode": "100644",
+      "size": 178926,
+      "target": "snapshots/bills_navigation/mini-fergus-job.html",
+      "sha256": "1fd44e482ef34a1df10be0f4fc962b0dbe1993af8ed2773a9318eb59b340ec13"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus-suppliers.html",
+      "sha": "834fc3bec84294c7937fbd5512151d94c7fad32e",
+      "mode": "100644",
+      "size": 27648,
+      "target": "snapshots/bills_navigation/mini-fergus-suppliers.html",
+      "sha256": "ddbf4cad110a4bf01d999b2bd7847fb7b8fb3ec4ae40ece69b4f1c2a95257112"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "mini-fergus.html",
+      "sha": "097a6a9b9f5e2f8f05de0f2cd247b9a5823792d6",
+      "mode": "100644",
+      "size": 13951,
+      "target": "snapshots/bills_navigation/mini-fergus.html",
+      "sha256": "1608d1bb4bfd09117f9805beac745648c540926bd88a49dbff349805bc01698d"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "smart-energy.html",
+      "sha": "fcf488ffdeae52b836fde8c24a6221d2747e0a16",
+      "mode": "100644",
+      "size": 18453,
+      "target": "snapshots/bills_navigation/smart-energy.html",
+      "sha256": "d51cb883f607e5d34335559d8c9d94afee03b85ec49a9f2095d8009deafd7659"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "smart-solar-prices.html",
+      "sha": "151b745aa976ffb960d1b0879562dc0d032bfb78",
+      "mode": "100644",
+      "size": 17631,
+      "target": "snapshots/bills_navigation/smart-solar-prices.html",
+      "sha256": "9a263809eb1cf7faf038589312a045ddb5da4848b4b02173208e8dee5a53c4ba"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "solar-system-check.html",
+      "sha": "0f568589aa4ef852df044980f5eb27e11b7019b4",
+      "mode": "100644",
+      "size": 23295,
+      "target": "snapshots/bills_navigation/solar-system-check.html",
+      "sha256": "2a2366260b64e524993c239c925786a332a552935e94907ffb9c8819e9124d71"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "terms-and-conditions.html",
+      "sha": "fe991c6a96101e6d2f0b1b482cd8d51d8276ba4a",
+      "mode": "100644",
+      "size": 8688,
+      "target": "snapshots/bills_navigation/terms-and-conditions.html",
+      "sha256": "1db7260a55fd269856cf0103aa39a0ceb7d3f993992e99b8e087ff00bb695c82"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/bill-provider-diagnostic.test.mjs",
+      "sha": "f851f3f238be6e2fb5cc8413ea33a121b3e2e484",
+      "mode": "100644",
+      "size": 4267,
+      "target": "snapshots/bills_navigation/tests/bill-provider-diagnostic.test.mjs",
+      "sha256": "94c78c97321c7649cf3afa1fe879e9b47a9ffeab9c488181ad4bce6b1a9f32cb"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/customer-invoices.test.mjs",
+      "sha": "46cb8bcd5091b2b1d2f3e990a6c0980668177b21",
+      "mode": "100644",
+      "size": 2212,
+      "target": "snapshots/bills_navigation/tests/customer-invoices.test.mjs",
+      "sha256": "9e70bb76235ed51dae6b7eedefafede2aec1d26ee9965438a18fa7e816bcc38b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/customer-quotes.test.mjs",
+      "sha": "e447e5cc0833674f2c70b18b2441a24caa49172f",
+      "mode": "100644",
+      "size": 2115,
+      "target": "snapshots/bills_navigation/tests/customer-quotes.test.mjs",
+      "sha256": "58ac8481402005cfd86c70fe62d1a9671d6c34e9950fd9607fb92cd632508985"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/energy-tariff-review.test.mjs",
+      "sha": "7cf6c520a14e8683f4f5a98de5e90139c1e1abf8",
+      "mode": "100644",
+      "size": 2902,
+      "target": "snapshots/bills_navigation/tests/energy-tariff-review.test.mjs",
+      "sha256": "364d91c0e1bde39be1af6956ff51015790d110e2d44ccb226eff443c58967bd6"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/fletcher-package-mobile.test.mjs",
+      "sha": "5645b2490217dc4a2cd3ae2c51a49055ac82bf3e",
+      "mode": "100644",
+      "size": 12775,
+      "target": "snapshots/bills_navigation/tests/fletcher-package-mobile.test.mjs",
+      "sha256": "965b1fcfe1b7769a9e326c4bbcd53ec8342440d46aa0a3f0e5a6359bf711c51b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/fletcher-preview-safety.test.mjs",
+      "sha": "6a32b701066c2dffdc1a03d48d47d671fa398bd0",
+      "mode": "100644",
+      "size": 4214,
+      "target": "snapshots/bills_navigation/tests/fletcher-preview-safety.test.mjs",
+      "sha256": "e679e53801c4f7796c338e620c4c00d205329f776170c009c7eff86f2a11084c"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/fletcher-required-attachments.test.mjs",
+      "sha": "4905f0bdb8e0f38ef7ecc4f704b74a9ce0f7d867",
+      "mode": "100644",
+      "size": 4316,
+      "target": "snapshots/bills_navigation/tests/fletcher-required-attachments.test.mjs",
+      "sha256": "2680e2d5565b82dc55e1a80d592285e5c6f7da60006e4f7a6739164a21404cbf"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/hec-customer-copy.test.mjs",
+      "sha": "f4bf6838ddac141d9b0153a454538cfa68e8bf8c",
+      "mode": "100644",
+      "size": 18657,
+      "target": "snapshots/bills_navigation/tests/hec-customer-copy.test.mjs",
+      "sha256": "77ec98f94964ee34939738ac08fae45841cade3465625c874122b51f192cc2b4"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/hec-energy-uploads.test.mjs",
+      "sha": "3059295ce6c9206ca693b4abde5d8368761228a3",
+      "mode": "100644",
+      "size": 2188,
+      "target": "snapshots/bills_navigation/tests/hec-energy-uploads.test.mjs",
+      "sha256": "2b37cbe4a5a91bbe12e666528ffc56c4e47f3c848eb7f12c5cfa23d3ff41ed78"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/job-data-review.test.mjs",
+      "sha": "6b725ef541b07c8840e1de548eee8a0fa06caa51",
+      "mode": "100644",
+      "size": 3631,
+      "target": "snapshots/bills_navigation/tests/job-data-review.test.mjs",
+      "sha256": "3120e2f8b088607e62298471f4a8a9317b073d051162e62eb32e0af13ac3b791"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/job-document-library.test.mjs",
+      "sha": "aafd9058d4217aae56583ced1e1d6e35ab9b31cf",
+      "mode": "100644",
+      "size": 5293,
+      "target": "snapshots/bills_navigation/tests/job-document-library.test.mjs",
+      "sha256": "172d292cb2a3493eb46f215f658be82b4cf73ce3ddf01efa8472b93cf2ee824a"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/jobhub-mobile-fixes.test.mjs",
+      "sha": "59aa68dc64ab6ac1d1e5aa80fd6166e275c065f1",
+      "mode": "100644",
+      "size": 2736,
+      "target": "snapshots/bills_navigation/tests/jobhub-mobile-fixes.test.mjs",
+      "sha256": "17a81e1b5de042b7f5f8289c9e36a42a520f57f063927d790a1df1ee840835f8"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/post-hec-bill.test.mjs",
+      "sha": "2074ff4dbd2b0059540a11934201fe40131a4af2",
+      "mode": "100644",
+      "size": 9054,
+      "target": "snapshots/bills_navigation/tests/post-hec-bill.test.mjs",
+      "sha256": "fefb9996dbe30bd213ec9788b70a4315a5199afcadbbc42ef829e2b6fb3f3e9d"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/site-visit-photos.test.mjs",
+      "sha": "e8520baa296adee4d1db02122b23073070130be5",
+      "mode": "100644",
+      "size": 3410,
+      "target": "snapshots/bills_navigation/tests/site-visit-photos.test.mjs",
+      "sha256": "489f1b9c81794c395d4751566140b661a11b5ff1958909ef74cf250c6939962b"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/supplier-invoice-reader.test.mjs",
+      "sha": "1f5727a20bd81ba65b379368dfe497ffb71581b1",
+      "mode": "100644",
+      "size": 2657,
+      "target": "snapshots/bills_navigation/tests/supplier-invoice-reader.test.mjs",
+      "sha256": "42e9d17cd0ad83389fc2c6a3629dcd3a655dd7e99963903e45f993fb7a7af0b9"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/system-design-save.test.mjs",
+      "sha": "80571d47be774d9b3dac533fbf50ecd695050249",
+      "mode": "100644",
+      "size": 2495,
+      "target": "snapshots/bills_navigation/tests/system-design-save.test.mjs",
+      "sha256": "7dd0b9dd1e9646f329aa2d1a79df575d5b9cfe307739279f10d036566b0d2f04"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/work-log-dates.test.mjs",
+      "sha": "848501c5b616500ba285e389e5571567d26f5622",
+      "mode": "100644",
+      "size": 825,
+      "target": "snapshots/bills_navigation/tests/work-log-dates.test.mjs",
+      "sha256": "1eac13e27c6e5c669c73db08d1e771c107881c11f0e26ce039a3447d3ee1d714"
+    },
+    {
+      "snapshot": "bills_navigation",
+      "path": "tests/workspace-navigation.test.mjs",
+      "sha": "6235b5e9d844107abddc15f59f76e3a0a2f38b6d",
+      "mode": "100644",
+      "size": 1302,
+      "target": "snapshots/bills_navigation/tests/workspace-navigation.test.mjs",
+      "sha256": "1db76d1737ae0a5aff4bd7b64b3242ab8e49a5a5ee0e25934b429d9d534b6d20"
+    }
+  ],
+  "exclusions": {
+    "baseline": [
+      "7C5EAD1A-1695-4D4B-BD00-1E50C0CB2763 (1).png",
+      "AE6ECD78-405A-46A3-B156-354A1CB82DA3.png",
+      "DEPLOYMENT.md",
+      "EFEC3451-B808-452A-8EA2-64B22E36C363.png",
+      "README.md",
+      "assets/fletcher-solar-site-checklist.pdf",
+      "flavicon.png"
+    ],
+    "operations": [
+      "7C5EAD1A-1695-4D4B-BD00-1E50C0CB2763 (1).png",
+      "ACCOUNTANT_DEMO_READINESS.md",
+      "AE6ECD78-405A-46A3-B156-354A1CB82DA3.png",
+      "BOOKKEEPING_IMPLEMENTATION.md",
+      "DEPLOYMENT.md",
+      "EFEC3451-B808-452A-8EA2-64B22E36C363.png",
+      "README.md",
+      "assets/fletcher-solar-site-checklist.pdf",
+      "config/initial-businesses.json",
+      "docs/ACCOUNTANT_DEMO_READINESS.md",
+      "flavicon.png",
+      "functions/api/accountant-controls.js",
+      "functions/api/accountant-demo.js",
+      "functions/api/bank-feed-adapters.js",
+      "functions/api/bank-reconciliation-core.js",
+      "functions/api/bank-reconciliation.js",
+      "functions/api/bookkeeping-controls.js",
+      "functions/api/bookkeeping-core.js",
+      "functions/api/bookkeeping.js",
+      "functions/api/business-access.js",
+      "functions/api/business-config.js",
+      "functions/api/business-context.js",
+      "functions/api/customer-invoice-accounting.js",
+      "functions/api/supplier-invoice-inbox-file.js",
+      "functions/api/supplier-invoice-inbox.js",
+      "functions/api/supplier-invoice-matching.js",
+      "migrations/0015_bookkeeping_foundation.sql",
+      "migrations/0016_bank_reconciliation.sql",
+      "migrations/0017_supplier_invoice_inbox.sql",
+      "migrations/0018_job_supplier_references_and_billable_materials.sql",
+      "migrations/0019_business_identity_and_modules.sql",
+      "migrations/0020_accountant_controls.sql",
+      "mini-fergus-accountant-demo.html",
+      "mini-fergus-accounting.html",
+      "mini-fergus-business-settings.html",
+      "staging/.gitignore",
+      "staging/ACCOUNTANT-ACCEPTANCE.md",
+      "staging/HANDOVER-AFTERCARE-ACCEPTANCE.md",
+      "staging/PAGES-DEPLOYMENT.md",
+      "staging/apply-0019-0020-accounting-staging.sh",
+      "staging/apply-jobhub-staging.sh",
+      "staging/apply-operations-migrations-staging.sh",
+      "staging/check-pages-staging.py",
+      "staging/deploy-jobhub-staging.sh",
+      "staging/post-0018-columns-01.sql",
+      "staging/post-0018-columns-02.sql",
+      "staging/post-0018-columns-03.sql",
+      "staging/post-0018-foreign-keys.sql",
+      "staging/post-0018-indexes.sql",
+      "staging/post-0018-integrity.sql",
+      "staging/post-0018-table-diagnostic.sql",
+      "staging/post-0018-verify.sql",
+      "staging/pre-0015-baseline.sql",
+      "staging/prepare-jobhub-pages.sh",
+      "staging/seed-initial-businesses.sql",
+      "staging/test-pages-staging.py",
+      "staging/test-verifier-local.py",
+      "staging/verify-accountant-demo.sql",
+      "staging/verify-jobhub-staging.sh",
+      "tests/accountant-controls.test.mjs",
+      "tests/accountant-demo-readiness.test.mjs",
+      "tests/bookkeeping-core.test.mjs",
+      "tests/business-access.test.mjs",
+      "tests/business-claim.test.mjs",
+      "tests/business-context.test.mjs",
+      "tests/fixtures/real-ja-russell-invoice-extractions.json",
+      "tests/supplier-invoice-inbox.test.mjs",
+      "workers/supplier-invoice-email-worker.js"
+    ],
+    "bills_navigation": [
+      "7C5EAD1A-1695-4D4B-BD00-1E50C0CB2763 (1).png",
+      "AE6ECD78-405A-46A3-B156-354A1CB82DA3.png",
+      "DEPLOYMENT.md",
+      "EFEC3451-B808-452A-8EA2-64B22E36C363.png",
+      "README.md",
+      "assets/fletcher-solar-site-checklist.pdf",
+      "docs/POST-HEC-BILL-AND-FLETCHER-PRIVACY-RELEASE.md",
+      "flavicon.png",
+      "staging/DATA-REUSE-VALIDATION.md",
+      "staging/NAVIGATION-VALIDATION.md",
+      "staging/SITE-PHOTO-VALIDATION.md",
+      "staging/check-pages-staging.py",
+      "staging/deploy-fletcher-preview.sh"
+    ]
+  },
+  "scope": "Selected source-only recovery snapshots; not integrated, not deployable. Security candidate excluded. No customer records or credentials. Omitted binary branding/template files remain at pinned upstream commits.",
+  "trigger_evidence": "Cloudflare exclusions and disabled security-project deployments personally verified by owner; reliance expressly authorised. No workflows in pinned trees. No new Actions runs identified.",
+  "verification": {
+    "upstream_git_blob_hashes": "all verified",
+    "sha256": "per-file in entries",
+    "credential_and_known_customer_name_scan": "passed",
+    "excluded": "runtime state, credentials, customer records, real invoice fixtures, historical release notes, security candidate, deployment scripts and unrelated accounting modules",
+    "restore_scope": "selected recovery source; omitted upstream assets remain separately pinned, not a deployable complete site"
+  }
+}
