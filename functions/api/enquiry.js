@@ -1,6 +1,7 @@
 import { ensureJobFileRoleColumn, ensureJobTypeColumn } from "./_schema.js";
 import { identifyEnergyDataDetail } from "./job-files.js";
 import { sendHomeEnergyCheckCopy } from "./_hec-customer-copy.js";
+import { sanitiseAnnualUsageReview } from "./_hec-annual-review.js";
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif", "pdf", "csv", "xls", "xlsx"]);
@@ -110,6 +111,15 @@ export async function onRequestPost(context) {
       })
     ];
     validateFiles(uploads);
+    const annualReview = sanitiseAnnualUsageReview(answers.annualUsageReview, annualFiles, createdAt);
+    if (annualReview === false) {
+      return Response.json({
+        ok: false,
+        error: "The confirmed monthly figures need another review. Recheck the figures or send the spreadsheet without confirming them."
+      }, { status: 400 });
+    }
+    if (annualReview) answers.annualUsageReview = annualReview;
+    else delete answers.annualUsageReview;
     const bucket = uploads.length ? getBucket(context.env) : null;
     if (uploads.length && !bucket) throw new Error("File storage is not available. Please try again later.");
 
@@ -239,6 +249,7 @@ export async function onRequestPost(context) {
       enquiryRef: enquiryId,
       jobId: jobId,
       receivedAt: createdAt,
+      annualReviewSaved: Boolean(annualReview),
       customerCopy
     });
 
