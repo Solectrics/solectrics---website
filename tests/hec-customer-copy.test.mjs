@@ -254,14 +254,14 @@ test("submission payload passes the actual customer-copy choice without adding a
   for (const checked of [false, true]) {
     const answers = { name: "Alex", email: "alex@example.invalid" };
     const payloads = [];
-    await new Function("document", "answers", "FormData", "fetch", "console",
+    await new Function("document", "answers", "FormData", "fetch", "console", "window",
       `${handler}; return submitHomeEnergyCheck();`
     )({ getElementById: id => id === "customerCopyConsent" ? { checked } : { files: [] } },
     answers, FormData, async (url, options) => {
       assert.equal(url, "/api/enquiry");
       payloads.push(JSON.parse(options.body.get("answers")));
       return Response.json({ ok: true, enquiryRef: 101, jobId: 102 });
-    }, { log() {}, error() {} });
+    }, { log() {}, error() {} }, { hecAnnualUsageReview: { getConfirmedSubmission: () => null } });
     assert.equal(payloads.length, 1);
     assert.equal(payloads[0].customerCopyOptIn, checked);
   }
