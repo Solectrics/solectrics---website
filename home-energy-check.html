@@ -5454,72 +5454,105 @@ setTimeout(
 <!-- END SOLECTRICS FINAL SMART SOLAR HOME REPORT -->
 
 <script type="module">
-import {parseCsv, reviewMonthlyRows} from './assets/hec-annual-usage-reader.mjs';
-const input = document.getElementById('annualUsageFiles');
-const review = document.getElementById('annualUsageReview');
-const status = document.getElementById('annualUsageStatus');
-const cell = (row, value) => { const td=document.createElement('td'); td.textContent=value; td.style.padding='7px'; td.style.borderBottom='1px solid #ddd'; row.appendChild(td); };
-function render(result, name) {
+import {parseCsv,reviewMonthlyRows} from './assets/hec-annual-usage-reader.mjs';
+import {readXlsxRows} from './assets/hec-xlsx-reader.mjs';
+const input=document.getElementById('annualUsageFiles');
+const review=document.getElementById('annualUsageReview');
+const status=document.getElementById('annualUsageStatus');
+function paragraph(text){
+  const p=document.createElement('p');
+  p.className='upload-note';
+  p.textContent=text;
+  review.appendChild(p);
+}
+function cell(row,value){
+  const td=document.createElement('td');
+  td.textContent=String(value);
+  td.style.padding='7px';
+  td.style.borderBottom='1px solid #ddd';
+  row.appendChild(td);
+}
+function render(result,filename,sheetName,extraWarnings=[]){
   review.replaceChildren();
-  const heading=document.createElement('strong');
-  heading.textContent='Monthly data review — '+name;
-  review.appendChild(heading);
-  const info=document.createElement('p');
-  info.className='upload-note';
-  info.textContent='Please check every month. Dollar amounts are not kWh. These figures are for review only and are not yet used in the solar calculation.';
-  review.appendChild(info);
-  if(result.months.length) {
-    const wrapper=document.createElement('div'); wrapper.style.overflowX='auto';
-    const table=document.createElement('table'); table.style.width='100%'; table.style.fontSize='13px'; table.style.borderCollapse='collapse';
-    const head=document.createElement('tr');
-    ['Month','kWh','Electricity 
-</html>
-,'Broadband 
-</html>
-,'GST basis'].forEach(v=>cell(head,v));
-    table.appendChild(head);
-    result.months.forEach(m=>{
-      const tr=document.createElement('tr');
-      [m.month,m.kwh??'Needs review',m.electricityNzd??'Needs review',m.broadbandNzd??'—',m.gstBasis||'Unknown'].forEach(v=>cell(tr,String(v)));
-      table.appendChild(tr);
-    });
-    wrapper.appendChild(table);review.appendChild(wrapper);
+  const title=document.createElement('strong');
+  title.textContent='Monthly data review — '+filename+(sheetName?' ('+sheetName+')':'');
+  review.appendChild(title);
+  paragraph('Check these extracted figures against the original file. Dollar costs are not kWh. The figures are for review and are NOT yet used in the solar calculations.');
+  if(result.months.length){
+    const wrap=document.createElement('div');wrap.style.overflowX='auto';
+    const table=document.createElement('table');table.style.width='100%';table.style.fontSize='13px';table.style.borderCollapse='collapse';
+    const header=document.createElement('tr');
+    ['Month','kWh','Electricity $','Broadband $','GST basis'].forEach(x=>cell(header,x));table.appendChild(header);
+    for(const m of result.months){
+      const row=document.createElement('tr');
+      [m.month,m.kwh??'Not supplied',m.electricityNzd??'Not supplied',m.broadbandNzd??'—',m.gstBasis||'Unknown'].forEach(x=>cell(row,x));
+      table.appendChild(row);
+    }
+    wrap.appendChild(table);review.appendChild(wrap);
   }
-  const summary=document.createElement('p');summary.className='upload-note';
-  summary.textContent='Annual kWh: '+(result.totals.kwh??'Not established')+'; electricity-only annual $: '+(result.totals.electricityNzd??'Not established');
-  review.appendChild(summary);
-  if(result.warnings.length) {
+  paragraph('Annual kWh: '+(result.totals.kwh??'Not established')+'; electricity-only annual cost: '+(result.totals.electricityNzd===null?'Not established':'$'+result.totals.electricityNzd));
+  const warnings=[...extraWarnings,...result.warnings];
+  if(warnings.length){
     const list=document.createElement('ul');list.style.fontSize='13px';
-    result.warnings.slice(0,18).forEach(w=>{const li=document.createElement('li');li.textContent=w;list.appendChild(li);});
-    if(result.warnings.length>18){const li=document.createElement('li');li.textContent=(result.warnings.length-18)+' further review warnings';list.appendChild(li);}
+    warnings.slice(0,18).forEach(w=>{const li=document.createElement('li');li.textContent=w;list.appendChild(li);});
+    if(warnings.length>18){const li=document.createElement('li');li.textContent=(warnings.length-18)+' further review warnings';list.appendChild(li);}
     review.appendChild(list);
   }
+  status.className='bill-status '+(warnings.length?'bad':'good');
+  status.textContent=warnings.length
+    ? 'File attached; monthly figures extracted but need checking. You can still send the file for manual review.'
+    : 'Monthly figures extracted — check the table below. The file remains attached for submission.';
+}
+function selectMonthlySheet(sheets){
+  const candidates=[];
+  for(const sheet of sheets){
+    let best=null;
+    for(let start=0;start<Math.min(12,sheet.rows.length-1);start++){
+      const result=reviewMonthlyRows(sheet.rows.slice(start));
+      if(result.months.length<2)continue;
+      const score=result.months.length*100-result.warnings.length;
+      if(!best||score>best.score)best={name:sheet.name,result,score,formulaCount:sheet.formulaCount};
+    }
+    if(best)candidates.push(best);
+  }
+  candidates.sort((a,b)=>b.score-a.score);
+  return {chosen:candidates[0]||null,ambiguous:candidates.length>1};
 }
 input?.addEventListener('change',async()=>{
   review.replaceChildren();
   const files=Array.from(input.files||[]);
-  const csv=files.filter(f=>/\.csv$/i.test(f.name));
-  const excel=files.filter(f=>/\.(xlsx|xls)$/i.test(f.name));
-  if(excel.length){
-    const p=document.createElement('p');p.className='upload-note';
-    p.textContent='Excel file attached, but automatic Excel extraction is not yet available in this development version. It can still be sent for manual review.';
-    review.appendChild(p);
-  }
-  if(csv.length!==1) {
-    if(csv.length>1){const p=document.createElement('p');p.textContent='Multiple CSV files attached; automatic combined review is not supported yet.';review.appendChild(p);}
+  const supported=files.filter(file=>/\.(csv|xlsx)$/i.test(file.name));
+  if(!files.length)return;
+  if(supported.length!==1||files.length!==1){
+    paragraph('Files selected for attachment. For automatic monthly review, select one CSV or .xlsx file at a time. Additional PDFs and old .xls files can still be attached for manual review.');
     return;
   }
-  if(csv[0].size>12*1024*1024)return;
+  const file=supported[0];
+  if(file.size>12*1024*1024)return;
+  status.className='bill-status';
+  status.textContent='Reading the monthly spreadsheet locally…';
   try {
-    const result=reviewMonthlyRows(parseCsv(await csv[0].text()));
-    render(result,csv[0].name);
-    status.textContent=result.status==='ready_for_review'
-      ? 'CSV monthly figures extracted — please review; file remains attached for submission.'
-      : 'CSV attached — some monthly figures need manual review.';
-    status.className='bill-status '+(result.status==='ready_for_review'?'good':'bad');
-  }catch(e){
-    status.textContent='CSV attached, but monthly extraction failed; file can still be sent for manual review.';
+    if(/\.csv$/i.test(file.name)){
+      const result=reviewMonthlyRows(parseCsv(await file.text()));
+      render(result,file.name);
+      return;
+    }
+    const sheets=await readXlsxRows(await file.arrayBuffer());
+    const selection=selectMonthlySheet(sheets);
+    if(!selection.chosen){
+      status.className='bill-status bad';
+      status.textContent='Excel file attached, but no recognisable monthly table was found; send it for manual review.';
+      paragraph('We could not identify at least two monthly rows with clear electricity-cost or kWh headings. No figures were estimated or added to the solar model.');
+      return;
+    }
+    const warnings=[];
+    if(selection.ambiguous)warnings.push('Several worksheets contain monthly information; confirm that the selected sheet is the right one.');
+    if(selection.chosen.formulaCount)warnings.push('This worksheet contains formulas; formula-derived values were deliberately not read. Check the source manually.');
+    render(selection.chosen.result,file.name,selection.chosen.name,warnings);
+  }catch(error){
     status.className='bill-status bad';
+    status.textContent='File attached, but automatic monthly extraction failed; it can still be sent for manual review.';
+    paragraph(error?.message||'The spreadsheet format could not be read.');
   }
 });
 </script>
