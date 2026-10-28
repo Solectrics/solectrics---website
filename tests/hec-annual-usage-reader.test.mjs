@@ -51,3 +51,21 @@ test("invalid numeric values are not silently coerced",()=>{
   assert.equal(r.totals.kwh,null);
   assert.match(r.warnings.join(" "),/Invalid kWh/);
 });
+
+
+test("recognises recent month-name labels and Excel 1900 date serials",()=>{
+  const serial=Math.floor((Date.UTC(2025,0,1)-Date.UTC(1899,11,30))/86400000);
+  const data=rows(["Month","Power Cost"],(i,m)=>[i===0?String(serial):i===1?"Feb-25":m,"$130"]);
+  const r=reviewMonthlyRows(data);
+  assert.equal(r.months[0].month,"2025-01");
+  assert.equal(r.months[1].month,"2025-02");
+  assert.equal(r.totals.kwh,null);
+  assert.equal(r.totals.electricityNzd,1560);
+});
+test("recognises Excel 1904 serials only with the workbook date-system flag",()=>{
+  const serial=Math.floor((Date.UTC(2025,0,1)-Date.UTC(1904,0,1))/86400000);
+  const data=rows(["Date","Electricity kWh"],(i,m)=>[i===0?String(serial):m,"200"]);
+  const r=reviewMonthlyRows(data,{date1904:true});
+  assert.equal(r.months[0].month,"2025-01");
+  assert.equal(r.totals.kwh,2400);
+});
