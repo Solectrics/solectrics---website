@@ -5454,7 +5454,7 @@ setTimeout(
 <!-- END SOLECTRICS FINAL SMART SOLAR HOME REPORT -->
 
 <script type="module">
-import {parseCsv,reviewMonthlyRows} from './assets/hec-annual-usage-reader.mjs';
+import {parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary} from './assets/hec-annual-usage-reader.mjs';
 import {readXlsxRows} from './assets/hec-xlsx-reader.mjs';
 const input=document.getElementById('annualUsageFiles');
 const review=document.getElementById('annualUsageReview');
@@ -5474,23 +5474,33 @@ function cell(row,value){
 }
 function render(result,filename,sheetName,extraWarnings=[]){
   review.replaceChildren();
+  const summary=result.kind==='monthly_bill_summary';
   const title=document.createElement('strong');
   title.textContent='Monthly data review — '+filename+(sheetName?' ('+sheetName+')':'');
   review.appendChild(title);
-  paragraph('Check these extracted figures against the original file. Dollar costs are not kWh. The figures are for review and are NOT yet used in the solar calculations.');
+  paragraph(summary
+    ? '12 months of bill amounts found. These are spending figures, NOT kWh or verified electricity-only charges. The month labels have no years. No figures are used in the solar model.'
+    : 'Check these figures against the original file. Dollar costs are not kWh. These figures are for review and are NOT yet used in the solar calculations.');
   if(result.months.length){
     const wrap=document.createElement('div');wrap.style.overflowX='auto';
     const table=document.createElement('table');table.style.width='100%';table.style.fontSize='13px';table.style.borderCollapse='collapse';
     const header=document.createElement('tr');
-    ['Month','kWh','Electricity $','Broadband $','GST basis'].forEach(x=>cell(header,x));table.appendChild(header);
+    (summary?['Month (year not supplied)','Monthly bill $ — may include broadband']:['Month','kWh','Electricity $','Broadband $','GST basis']).forEach(v=>cell(header,v));
+    table.appendChild(header);
     for(const m of result.months){
       const row=document.createElement('tr');
-      [m.month,m.kwh??'Not supplied',m.electricityNzd??'Not supplied',m.broadbandNzd??'—',m.gstBasis||'Unknown'].forEach(x=>cell(row,x));
+      (summary?[m.label,m.combinedNzd??'Needs review']:[m.month,m.kwh??'Not supplied',m.electricityNzd??'Not supplied',m.broadbandNzd??'—',m.gstBasis||'Unknown']).forEach(v=>cell(row,v));
       table.appendChild(row);
     }
     wrap.appendChild(table);review.appendChild(wrap);
   }
-  paragraph('Annual kWh: '+(result.totals.kwh??'Not established')+'; electricity-only annual cost: '+(result.totals.electricityNzd===null?'Not established':'$'+result.totals.electricityNzd));
+  if(summary){
+    paragraph('Total of monthly bills: '+(result.totals.combinedNzd===null?'Not established':'$'+result.totals.combinedNzd)+'. No kWh data supplied.');
+    if(result.totals.reportedAfterBroadbandNzd!==null)paragraph('Workbook figure after broadband deduction: $'+result.totals.reportedAfterBroadbandNzd+' — estimate only, not verified electricity-only spending.');
+    if(result.broadbandMonthlyEstimateNzd!==null)paragraph('Broadband mentioned in the workbook: approximately $'+result.broadbandMonthlyEstimateNzd+' per month. Confirm the actual charges and GST treatment.');
+  }else{
+    paragraph('Annual kWh: '+(result.totals.kwh??'Not established')+'; electricity-only annual cost: '+(result.totals.electricityNzd===null?'Not established':'$'+result.totals.electricityNzd));
+  }
   const warnings=[...extraWarnings,...result.warnings];
   if(warnings.length){
     const list=document.createElement('ul');list.style.fontSize='13px';
@@ -5499,9 +5509,11 @@ function render(result,filename,sheetName,extraWarnings=[]){
     review.appendChild(list);
   }
   status.className='bill-status '+(warnings.length?'bad':'good');
-  status.textContent=warnings.length
-    ? 'File attached; monthly figures extracted but need checking. You can still send the file for manual review.'
-    : 'Monthly figures extracted — check the table below. The file remains attached for submission.';
+  status.textContent=summary
+    ? '12 monthly bill amounts recognised — spending only, needs review; no kWh extracted.'
+    : warnings.length
+      ? 'File attached; monthly figures extracted but need checking. You can still send the file for manual review.'
+      : 'Monthly figures extracted — check the table below. The file remains attached for submission.';
 }
 function selectMonthlySheet(sheets){
   const candidates=[];
@@ -5514,6 +5526,10 @@ function selectMonthlySheet(sheets){
       if(!best||score>best.score)best={name:sheet.name,result,score,formulaCount:sheet.formulaCount};
     }
     if(best)candidates.push(best);
+    else {
+      const summary=reviewMonthlyBillSummary(sheet.rows);
+      if(summary)candidates.push({name:sheet.name,result:summary,score:900,formulaCount:sheet.formulaCount});
+    }
   }
   candidates.sort((a,b)=>b.score-a.score);
   return {chosen:candidates[0]||null,ambiguous:candidates.length>1};
@@ -5535,7 +5551,9 @@ input?.addEventListener('change',async()=>{
   status.textContent='Reading the monthly spreadsheet locally…';
   try {
     if(/\.csv$/i.test(file.name)){
-      const result=reviewMonthlyRows(parseCsv(await file.text()));
+      const rows=parseCsv(await file.text());
+      const structured=reviewMonthlyRows(rows);
+      const result=structured.months.length>=2?structured:(reviewMonthlyBillSummary(rows)||structured);
       render(result,file.name);
       return;
     }
