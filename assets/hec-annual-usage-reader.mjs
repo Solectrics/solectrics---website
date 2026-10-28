@@ -102,3 +102,56 @@ export function reviewMonthlyRows(rows, options={}) {
     verifiedForModel:false
   };
 }
+
+
+/**
+ * A manually prepared 12-month spending summary has no kWh, no year and no
+ * demonstrated electricity-only columns. Preserve the raw month/value pairs
+ * without inventing units, dates, allocations or GST status.
+ */
+export function reviewMonthlyBillSummary(rows) {
+  if (!Array.isArray(rows)) return null;
+  const recognised=[];
+  for (const row of rows) {
+    const label=clean(row?.[0]);
+    const m=/^(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)$/i.exec(label);
+    if (!m) continue;
+    recognised.push({label, monthIndex:monthNames.indexOf(label.slice(0,3).toLowerCase()), combinedNzd:number(row?.[1])});
+  }
+  if(recognised.length!==12||new Set(recognised.map(r=>r.monthIndex)).size!==12)return null;
+  const increasing=recognised.every((v,i)=>i===0||v.monthIndex===(recognised[i-1].monthIndex+1)%12);
+  const decreasing=recognised.every((v,i)=>i===0||v.monthIndex===(recognised[i-1].monthIndex+11)%12);
+  if(!increasing&&!decreasing)return null;
+  const valid=recognised.every(r=>r.combinedNzd!==null);
+  const sum=valid?Number(recognised.reduce((a,m)=>a+m.combinedNzd,0).toFixed(2)):null;
+  const deductionRow=rows.find(r=>/^less\s+broadband\s+charges?/i.test(clean(r?.[0])));
+  const statedAfterBroadbandNzd=deductionRow?number(deductionRow[1]):null;
+  const allNotes=rows.flat().filter(v=>typeof v==='string').join(' ');
+  const chargeMatch=/monthly\s+broadband\s+charge\s+(?:of\s+)?\$\s*([\d,]+(?:\.\d{1,2})?)/i.exec(allNotes);
+  const broadbandMonthlyEstimateNzd=chargeMatch?number(chargeMatch[1]):null;
+  const warnings=[
+    'These are monthly dollar amounts, not kWh. No consumption figures have been extracted.',
+    'Electricity-only charges cannot be established from these combined or unspecified bill amounts.',
+    'The months have no years and may be statement months rather than electricity usage months.',
+    'GST treatment of monthly amounts has not been established.'
+  ];
+  if(!valid)warnings.push('At least one monthly amount is missing or invalid.');
+  if(broadbandMonthlyEstimateNzd!==null)warnings.push('Broadband is an approximate monthly figure; confirm it before any cost modelling.');
+  if(statedAfterBroadbandNzd!==null)warnings.push('The workbook states an amount after broadband deduction. This is unverified, not an electricity-only total.');
+  if(sum!==null && statedAfterBroadbandNzd!==null && broadbandMonthlyEstimateNzd!==null &&
+      Math.abs(sum-statedAfterBroadbandNzd-12*broadbandMonthlyEstimateNzd)>0.03){
+    warnings.push('The broadband estimate does not reconcile with the workbook deduction.');
+  }
+  if(/overseas|away\s+for|absen(?:t|ce)|unoccup/i.test(allNotes)){
+    warnings.push('The notes indicate possible occupancy changes; spending may not represent typical seasonal electricity consumption.');
+  }
+  return {
+    kind:'monthly_bill_summary',
+    status:'needs_review',
+    months:recognised.map(({label,combinedNzd})=>({label,combinedNzd})),
+    totals:{combinedNzd:sum,reportedAfterBroadbandNzd:statedAfterBroadbandNzd},
+    broadbandMonthlyEstimateNzd,
+    warnings,
+    verifiedForModel:false
+  };
+}
