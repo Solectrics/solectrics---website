@@ -5547,7 +5547,7 @@ let latestRead=0;
 window.hecAnnualUsageReview={
   getConfirmedSubmission(){
     const files=Array.from(input?.files||[]);
-    if(!confirmedPayload||files.length!==1||!currentFile||files[0]!==currentFile)return null;
+    if(!confirmedPayload||!currentFile||!files.includes(currentFile)||files.filter(f=>/\.(csv|xlsx)$/i.test(f.name)).length!==1)return null;
     return JSON.parse(JSON.stringify(confirmedPayload));
   }
 };
@@ -5707,14 +5707,18 @@ input?.addEventListener('change',async()=>{
   const files=Array.from(input.files||[]);
   const supported=files.filter(file=>/\.(csv|xlsx)$/i.test(file.name));
   if(!files.length)return;
-  if(supported.length!==1||files.length!==1){
+  if(supported.length!==1){
     status.className='bill-status';
     status.textContent='File selected for submission — monthly data has not been extracted.';
-    paragraph('For automatic monthly review, select one CSV or .xlsx file at a time. Additional PDFs and old .xls files can still be attached for manual review.');
+    paragraph('For automatic monthly review, attach exactly one CSV or .xlsx spreadsheet. You may attach PDFs and older .xls files alongside it for manual review. If you selected several spreadsheets, choose one to review first.');
     return;
   }
   const file=supported[0];
-  if(file.size>12*1024*1024)return;
+  if(file.size>12*1024*1024){
+    status.className='bill-status bad';
+    status.textContent='This spreadsheet is over the 12 MB file limit; please choose a smaller file.';
+    return;
+  }
   status.className='bill-status';
   status.textContent='Reading the monthly spreadsheet locally…';
   try {
