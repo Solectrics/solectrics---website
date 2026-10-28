@@ -5508,7 +5508,7 @@ function selectMonthlySheet(sheets){
   for(const sheet of sheets){
     let best=null;
     for(let start=0;start<Math.min(12,sheet.rows.length-1);start++){
-      const result=reviewMonthlyRows(sheet.rows.slice(start));
+      const result=reviewMonthlyRows(sheet.rows.slice(start),{date1904:sheet.date1904});
       if(result.months.length<2)continue;
       const score=result.months.length*100-result.warnings.length;
       if(!best||score>best.score)best={name:sheet.name,result,score,formulaCount:sheet.formulaCount};
