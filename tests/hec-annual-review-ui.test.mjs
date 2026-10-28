@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {parseCsv,reviewMonthlyRows} from '../assets/hec-annual-usage-reader.mjs';
+import {parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary} from '../assets/hec-annual-usage-reader.mjs';
 
 const html=await readFile(new URL('../home-energy-check.html',import.meta.url),'utf8');
 const script=html.match(/<script type="module">\s*import \{parseCsv,reviewMonthlyRows\}[\s\S]*?<\/script>/)?.[0];
@@ -22,7 +22,7 @@ function setup(readXlsxRows=async()=>[]){
     getElementById:id=>elements[id]||null,
     createElement:()=>new Element()
   };
-  vm.runInNewContext(code,{document,parseCsv,reviewMonthlyRows,readXlsxRows});
+  vm.runInNewContext(code,{document,parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary,readXlsxRows});
   return {input,status,review};
 }
 const rows=[['Month','Electricity Cost','Broadband','GST Basis'],
@@ -60,4 +60,18 @@ test('XLSX sheet without electricity figures is not labelled extracted',async()=
   ui.input.files=[{name:'synthetic.xlsx',size:200,arrayBuffer:async()=>new ArrayBuffer(20)}];
   await ui.input.listeners.change();
   assert.match(ui.status.textContent,/no recognisable monthly table/);
+});
+
+test('unlabelled 12-month summary displays combined spending, without claiming kWh or electricity-only spending',async()=>{
+  const labels=['Oct','Sep','Aug','Jul','Jun','May','Apr','Mar','Feb','Jan','Dec','Nov'];
+  const workbookRows=[['12 Months Power - Retailer'],...labels.map((label,i)=>[label,String(200+i)]),
+    ['Total',''],['Less Broadband Charges','1500'],['Notes','Monthly broadband charge of $90 incl GST']];
+  const ui=setup(async()=>[{name:'Summary',rows:workbookRows,date1904:false,formulaCount:1}]);
+  ui.input.files=[{name:'annual.xlsx',size:300,arrayBuffer:async()=>new ArrayBuffer(16)}];
+  await ui.input.listeners.change();
+  assert.match(ui.status.textContent,/12 monthly bill amounts recognised/);
+  assert.match(ui.status.textContent,/no kWh extracted/);
+  const allText=JSON.stringify(ui.review.children);
+  assert.match(allText,/broadband/i);
+  assert.doesNotMatch(allText,/electricity-only annual cost/i);
 });
