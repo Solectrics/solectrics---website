@@ -5487,7 +5487,7 @@ let latestRead=0;
 window.hecAnnualUsageReview={
   getConfirmedSubmission(){
     const files=Array.from(input?.files||[]);
-    if(!confirmedPayload||files.length!==1||!currentFile||files[0].name!==currentFile.name||files[0].size!==currentFile.size)return null;
+    if(!confirmedPayload||files.length!==1||!currentFile||files[0]!==currentFile)return null;
     return JSON.parse(JSON.stringify(confirmedPayload));
   }
 };
@@ -5602,7 +5602,10 @@ function render(result,filename,sheetName,extraWarnings=[],file){
       : {kwh:readNumericEntry(value.kwh),electricityNzd:readNumericEntry(value.electricityNzd),broadbandNzd:readNumericEntry(value.broadbandNzd),gstBasis:value.gstBasis.value});
     try{
       confirmedPayload=makeConfirmedAnnualReview(result,changed,currentFile);
-      message.textContent='Confirmed ✓ These checked figures will be saved with the Home Energy Check when you submit it. They will NOT automatically change solar sizing or tariff calculations.';
+      const total=confirmedPayload.kind==='monthly_bill_summary'
+        ? 'Combined monthly bill total: NZD '+confirmedPayload.totals.combinedBillNzd+'.'
+        : 'Annual electricity: '+(confirmedPayload.totals.kwh??'Not established')+' kWh; electricity-only charges: NZD '+(confirmedPayload.totals.electricityNzd??'Not established')+'.';
+      message.textContent='Confirmed ✓ '+total+' These checked figures will be saved when you submit the Home Energy Check, but will NOT automatically change solar sizing or tariff calculations.';
       status.className='bill-status good';status.textContent='Monthly figures confirmed — ready to send with the original spreadsheet.';
     }catch(error){
       confirmedPayload=null;
