@@ -130,10 +130,14 @@ try{
   await page.locator('#annualUsageFiles').setInputFiles([pdfA,pdfB,xlsx]);
   await page.waitForFunction(()=>document.getElementById('annualUsageStatus').textContent.includes('12 monthly bill amounts recognised'));
   check('Two PDFs alongside one XLSX do not block the monthly preview',await page.locator('#annualUsageReview input[type=number]').count()===12);
+  await page.evaluate(()=>{window.__previousAnnualApproval=document.getElementById('annualUsageChecked');});
   await page.locator('#annualUsageFiles').setInputFiles(xlsx);
-  // A prior review status can still be visible while the replacement file is being decoded.
-  // Wait for the new review controls, not merely for the old status text.
-  await page.locator('#annualUsageChecked').waitFor({state:'attached'});
+  // The *old* checkbox may exist while the new spreadsheet is still loading.
+  // Confirm only against the freshly rendered checkbox, not a stale one.
+  await page.waitForFunction(()=>{
+    const current=document.getElementById('annualUsageChecked');
+    return current&&current!==window.__previousAnnualApproval;
+  });
   await page.waitForFunction(()=>document.getElementById('annualUsageStatus').textContent.includes('12 monthly bill amounts recognised'));
   await page.evaluate(()=>{
     document.getElementById('annualUsageChecked').checked=true;
