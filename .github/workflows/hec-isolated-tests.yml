@@ -1,0 +1,31 @@
+name: HEC isolated branch tests
+
+on:
+  push:
+    branches:
+      - codex/hec-annual-usage-reader-isolated
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hec-isolated-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-tests:
+    name: Node.js unit and regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out isolated branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run all repository test files
+        run: node --test tests/*.test.mjs
