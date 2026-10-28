@@ -648,6 +648,8 @@ function electricityBillTotal(bill){
 
   const other=billNumber(bill,['non_electricity_charges_nzd']);
   if(other!==null&&other>0) return null;
+  // Older PDFs may only mention bundled services in free-form tariff information.
+  if(/\b(broadband|internet|fibre|fiber|bundled services?)\b/i.test(billText(bill,'other_tariff_information'))) return null;
 
   return billNumber(bill,['total_bill_nzd','total_bill','bill_total']);
 }
