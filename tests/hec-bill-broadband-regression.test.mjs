@@ -85,7 +85,7 @@ test('uncertain electricity cost separation is honoured even if extraction suppl
  assert.equal(bill.electricity_charges_nzd,null);
  assert.ok(bill.needs_review_fields.includes('electricity_charges_nzd'));
 });
-test('PDF instructions avoid confusing comparison-month kWh with the billed period',()=>{
+test('PDF instructions avoid confusing comparison-month kWh with the billed period',async()=>{
  const extractor=await readFile(new URL('../functions/api/read-bill.js',import.meta.url),'utf8');
  assert.match(extractor,/CURRENT invoiced period only/);
  assert.match(extractor,/usage-comparison table/);
