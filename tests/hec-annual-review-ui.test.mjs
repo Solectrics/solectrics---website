@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary} from '../assets/hec-annual-usage-reader.mjs';
 
 const html=await readFile(new URL('../home-energy-check.html',import.meta.url),'utf8');
-const script=html.match(/<script type="module">\s*import \{parseCsv,reviewMonthlyRows\}[\s\S]*?<\/script>/)?.[0];
+const script=html.match(/<script type="module">\s*import \{parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary\}[\s\S]*?<\/script>/)?.[0];
 assert.ok(script,'Monthly review module must be present');
 const code=script.replace(/^<script type="module">/,'').replace(/<\/script>$/,'').replace(/^import .*;\s*$/gm,'');
 
