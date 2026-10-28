@@ -105,6 +105,8 @@ Rules:
 - If the invoice includes another service and its electricity portion cannot be separated reliably, set electricity_charges_nzd to null, electricity_cost_separation_status to "needs_review", and include electricity_charges_nzd in needs_review_fields.
 - gst_nzd is whole-invoice GST. electricity_gst_nzd is GST attributable to electricity only when clearly shown or exactly derivable from an explicitly separated electricity subtotal.
 - If imported electricity includes charged and zero-price/free kWh, keep total_import_kwh as the full imported amount and populate charged_import_kwh and free_import_kwh. They should sum to total_import_kwh when all are clear.
+- Where the bill includes current and previous billing periods in a usage-comparison table or chart, extract imported kWh and billing dates for the CURRENT invoiced period only; do not accidentally use the previous month or add comparison rows together.
+- Electricity-only charges shown incl GST on a usage page should be preferred when explicit; otherwise calculate them from clearly itemised electricity-only charges and their stated GST basis, excluding broadband. Do not remove broadband from a total merely by estimating the broadband fee.
 - Record a visible free-electricity time window in free_import_schedule. Do not infer interval consumption inside that window.
 - tariff_description may describe the confirmed tariff structure (for example low-user and free-period terms). plan_name must remain null unless an exact product/plan name is explicitly shown.
 - total_bill_nzd, electricity_charges_nzd, non_electricity_charges_nzd, gst_nzd and electricity_gst_nzd must be numeric NZ dollars.
@@ -225,10 +227,30 @@ export function sanitise(x) {
     }
   }
 
+  // Do not accept an implausible or internally contradictory electricity/other-service split.
+  // Credits, extra products or unclear allocations require a human check, not a guessed correction.
+  const flagged = [...(Array.isArray(x?.needs_review_fields) ? x.needs_review_fields : [])];
+  const requireReview = key => { if (!flagged.includes(key)) flagged.push(key); };
+  if (out.electricity_cost_separation_status === "needs_review") {
+    out.electricity_charges_nzd = null;
+    requireReview("electricity_charges_nzd");
+  }
+  if (out.total_bill_nzd !== null && out.electricity_charges_nzd !== null) {
+    const other = out.non_electricity_charges_nzd;
+    const combined = out.electricity_charges_nzd + (other ?? 0);
+    if (out.electricity_charges_nzd < 0 || out.electricity_charges_nzd > out.total_bill_nzd + 0.06 ||
+        (other !== null && Math.abs(combined - out.total_bill_nzd) > 0.06)) {
+      out.electricity_charges_nzd = null;
+      requireReview("electricity_charges_nzd");
+    }
+  }
+  if (out.non_electricity_charges_nzd !== null && out.non_electricity_charges_nzd < 0) {
+    out.non_electricity_charges_nzd = null;
+    requireReview("non_electricity_charges_nzd");
+  }
+
   const allowedReviewFields = new Set([...numeric, ...strings].filter(k => k !== "confidence"));
-  out.needs_review_fields = Array.isArray(x?.needs_review_fields)
-    ? x.needs_review_fields.map(String).filter(k => allowedReviewFields.has(k)).slice(0, 30)
-    : [];
+  out.needs_review_fields = flagged.map(String).filter(k => allowedReviewFields.has(k)).slice(0, 30);
   for (const k of out.needs_review_fields) out[k] = null;
   return out;
 }
