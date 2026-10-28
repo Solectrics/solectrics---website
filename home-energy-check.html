@@ -3613,6 +3613,9 @@ function buildModel(){
     estimateSource:
       estimateSource,
 
+    freePeriodTariffLimited:
+      hasFreeImportTariff(summer) || hasFreeImportTariff(winter),
+
     existingSolar:
       (
         billHasExport(
@@ -4445,6 +4448,15 @@ function renderFinalSmartSolarReport(){
       `
       : ""
     }
+
+
+    ${model.freePeriodTariffLimited ? `
+      <div class="ss-context">
+        <strong>FREE-ELECTRICITY TARIFF — SAVINGS ARE INDICATIVE</strong>
+        <br><br>
+        Your bill includes some imported electricity charged at $0. We keep that energy in your usage total, but do not value every imported kWh at the paid rate. Without validated interval data showing exactly when your household used electricity, we cannot know how much future solar would overlap the free period. Dollar savings are therefore an estimate for review, not a precise tariff simulation.
+      </div>
+    ` : ""}
 
 
     <h3>
