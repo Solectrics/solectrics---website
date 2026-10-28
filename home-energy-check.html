@@ -595,6 +595,7 @@ function renderBillFields(season,data){
     input.value=(data[key]??'');
     input.placeholder='Needs review';
     if(type==='number') input.step='any';
+    input.addEventListener('input',()=>{ input.dataset.userEdited='true'; });
 
     wrap.appendChild(lab);
     wrap.appendChild(input);
@@ -616,6 +617,13 @@ function saveBillEditsNoLoop(){
       answers.bills[season][key]=type==='number'
         ? (el.value===''?null:Number(el.value))
         : el.value.trim();
+      // Only an actual manual edit can clear an extraction uncertainty flag.
+      // A pre-filled number must not silently become verified on submission.
+      if(el.dataset?.userEdited==='true' && el.value.trim()!=='' &&
+        Array.isArray(answers.bills[season].needs_review_fields)){
+        answers.bills[season].needs_review_fields=
+          answers.bills[season].needs_review_fields.filter(field=>field!==key);
+      }
     });
   });
 }
