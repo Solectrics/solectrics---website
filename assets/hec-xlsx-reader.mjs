@@ -118,11 +118,12 @@ export async function readXlsxRows(buffer){
   ]);
   if(!wb||!rels)fail('Excel workbook structure not found');
   const workbook=xml(wb),relationships=xml(rels);
+  const date1904=['1','true'].includes(tags(workbook,'workbookPr')[0]?.getAttribute('date1904'));
   const strings=shared?tags(xml(shared),'si').map(si=>tags(si,'t').map(t=>t.textContent).join('')):[];
   const sheets=[];
   for(const entry of sheetPaths(workbook,relationships)){
     const text=await fileText(zip,entry.path);if(!text)continue;
-    sheets.push({name:entry.name,...readSheet(xml(text),strings)});
+    sheets.push({name:entry.name,date1904,...readSheet(xml(text),strings)});
   }
   if(!sheets.length)fail('No supported Excel worksheets found');
   return sheets;
