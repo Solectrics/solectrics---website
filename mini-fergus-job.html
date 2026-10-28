@@ -3247,17 +3247,17 @@ function renderEnergyData(files) {
   const moreRequired = !recent.length || !annual.length;
   const statuses = [
     [recent.length > 0, "Recent bill received", recent.length ? `${recent.length} file${recent.length === 1 ? "" : "s"}` : "Not received"],
-    [annual.length > 0, "12-month usage received", annual.length ? `${annual.length} file${annual.length === 1 ? "" : "s"}` : "Not received"],
+    [annual.length > 0, "12-month history file received", annual.length ? `${annual.length} file${annual.length === 1 ? "" : "s"}` : "Not received"],
     [detailed.length > 0, "Detailed / half-hourly data received", detailed.length ? "Identified" : "Not identified"],
     [extra.length > 0 || recent.length > 1, "Additional bills received", extra.length || Math.max(0, recent.length - 1) ? `${extra.length + Math.max(0, recent.length - 1)} additional` : "None"],
-    [!moreRequired, "Energy information complete", moreRequired ? "" : "Ready for detailed modelling"]
+    [!moreRequired, "Supporting files received", moreRequired ? "" : "Contents still need review before detailed modelling"]
   ];
   if (moreRequired) statuses.push([false, "More information required", [!recent.length ? "recent bill" : "", !annual.length ? "12-month usage" : ""].filter(Boolean).join(" and ")]);
   status.innerHTML = statuses.map(([complete, label, note]) => `<div class="energy-status-item ${complete ? "complete" : "missing"}">${complete ? "✓" : "○"} ${escapeHtml(label)}<div class="placeholder">${escapeHtml(note)}</div></div>`).join("");
 
   const groups = [
     ["Recent electricity bills", recent],
-    ["12-month consumption data", annual],
+    ["12-month electricity history / bills (content needs review)", annual],
     ["Additional electricity bills", extra]
   ].filter(([, groupFiles]) => groupFiles.length);
   if (!groups.length) {
