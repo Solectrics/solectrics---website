@@ -5509,7 +5509,7 @@ function selectMonthlySheet(sheets){
     let best=null;
     for(let start=0;start<Math.min(12,sheet.rows.length-1);start++){
       const result=reviewMonthlyRows(sheet.rows.slice(start),{date1904:sheet.date1904});
-      if(result.months.length<2)continue;
+      if(result.months.length<2||!result.months.some(m=>m.kwh!==null||m.electricityNzd!==null))continue;
       const score=result.months.length*100-result.warnings.length;
       if(!best||score>best.score)best={name:sheet.name,result,score,formulaCount:sheet.formulaCount};
     }
@@ -5524,7 +5524,9 @@ input?.addEventListener('change',async()=>{
   const supported=files.filter(file=>/\.(csv|xlsx)$/i.test(file.name));
   if(!files.length)return;
   if(supported.length!==1||files.length!==1){
-    paragraph('Files selected for attachment. For automatic monthly review, select one CSV or .xlsx file at a time. Additional PDFs and old .xls files can still be attached for manual review.');
+    status.className='bill-status';
+    status.textContent='File selected for submission — monthly data has not been extracted.';
+    paragraph('For automatic monthly review, select one CSV or .xlsx file at a time. Additional PDFs and old .xls files can still be attached for manual review.');
     return;
   }
   const file=supported[0];
