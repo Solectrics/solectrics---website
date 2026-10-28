@@ -110,6 +110,7 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
   <p class="upload-note">If you have access to 12 months of your electricity-use data, you can upload it here. This gives us the clearest picture of your electricity use throughout the year.</p>
   <input type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
   <div id="annualUsageStatus" class="bill-status">You can upload one usage file or several electricity bills. This is optional — you can continue without it.</div>
+  <div id="annualUsageReview" aria-live="polite" style="margin-top:12px"></div>
   <details class="usage-help">
     <summary>I don’t know how to get this</summary>
     <h3>How to get your electricity usage</h3>
@@ -5452,5 +5453,75 @@ setTimeout(
 
 <!-- END SOLECTRICS FINAL SMART SOLAR HOME REPORT -->
 
+<script type="module">
+import {parseCsv, reviewMonthlyRows} from './assets/hec-annual-usage-reader.mjs';
+const input = document.getElementById('annualUsageFiles');
+const review = document.getElementById('annualUsageReview');
+const status = document.getElementById('annualUsageStatus');
+const cell = (row, value) => { const td=document.createElement('td'); td.textContent=value; td.style.padding='7px'; td.style.borderBottom='1px solid #ddd'; row.appendChild(td); };
+function render(result, name) {
+  review.replaceChildren();
+  const heading=document.createElement('strong');
+  heading.textContent='Monthly data review — '+name;
+  review.appendChild(heading);
+  const info=document.createElement('p');
+  info.className='upload-note';
+  info.textContent='Please check every month. Dollar amounts are not kWh. These figures are for review only and are not yet used in the solar calculation.';
+  review.appendChild(info);
+  if(result.months.length) {
+    const wrapper=document.createElement('div'); wrapper.style.overflowX='auto';
+    const table=document.createElement('table'); table.style.width='100%'; table.style.fontSize='13px'; table.style.borderCollapse='collapse';
+    const head=document.createElement('tr');
+    ['Month','kWh','Electricity 
+</html>
+,'Broadband 
+</html>
+,'GST basis'].forEach(v=>cell(head,v));
+    table.appendChild(head);
+    result.months.forEach(m=>{
+      const tr=document.createElement('tr');
+      [m.month,m.kwh??'Needs review',m.electricityNzd??'Needs review',m.broadbandNzd??'—',m.gstBasis||'Unknown'].forEach(v=>cell(tr,String(v)));
+      table.appendChild(tr);
+    });
+    wrapper.appendChild(table);review.appendChild(wrapper);
+  }
+  const summary=document.createElement('p');summary.className='upload-note';
+  summary.textContent='Annual kWh: '+(result.totals.kwh??'Not established')+'; electricity-only annual $: '+(result.totals.electricityNzd??'Not established');
+  review.appendChild(summary);
+  if(result.warnings.length) {
+    const list=document.createElement('ul');list.style.fontSize='13px';
+    result.warnings.slice(0,18).forEach(w=>{const li=document.createElement('li');li.textContent=w;list.appendChild(li);});
+    if(result.warnings.length>18){const li=document.createElement('li');li.textContent=(result.warnings.length-18)+' further review warnings';list.appendChild(li);}
+    review.appendChild(list);
+  }
+}
+input?.addEventListener('change',async()=>{
+  review.replaceChildren();
+  const files=Array.from(input.files||[]);
+  const csv=files.filter(f=>/\.csv$/i.test(f.name));
+  const excel=files.filter(f=>/\.(xlsx|xls)$/i.test(f.name));
+  if(excel.length){
+    const p=document.createElement('p');p.className='upload-note';
+    p.textContent='Excel file attached, but automatic Excel extraction is not yet available in this development version. It can still be sent for manual review.';
+    review.appendChild(p);
+  }
+  if(csv.length!==1) {
+    if(csv.length>1){const p=document.createElement('p');p.textContent='Multiple CSV files attached; automatic combined review is not supported yet.';review.appendChild(p);}
+    return;
+  }
+  if(csv[0].size>12*1024*1024)return;
+  try {
+    const result=reviewMonthlyRows(parseCsv(await csv[0].text()));
+    render(result,csv[0].name);
+    status.textContent=result.status==='ready_for_review'
+      ? 'CSV monthly figures extracted — please review; file remains attached for submission.'
+      : 'CSV attached — some monthly figures need manual review.';
+    status.className='bill-status '+(result.status==='ready_for_review'?'good':'bad');
+  }catch(e){
+    status.textContent='CSV attached, but monthly extraction failed; file can still be sent for manual review.';
+    status.className='bill-status bad';
+  }
+});
+</script>
 </body>
 </html>
