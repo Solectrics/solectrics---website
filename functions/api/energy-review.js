@@ -185,7 +185,7 @@ export function deriveCurrentPlan(answers = {}) {
   };
 }
 
-export export function deriveBaseline(answers = {}, files = []) {
+export function deriveBaseline(answers = {}, files = []) {
   const bills = billValues(answers);
   const dailyUse = bills.map(bill => number(bill.average_daily_kwh)).filter(value => value !== null);
   const dailySpend = bills.map(bill => {
