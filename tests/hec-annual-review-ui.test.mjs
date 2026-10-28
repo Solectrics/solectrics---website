@@ -108,7 +108,7 @@ test('confirmed monthly summary is exposed only after explicit review',async()=>
 });
 test('editing a confirmed monthly value immediately clears confirmation',async()=>{
   const ui=setup();
-  ui.input.files=[{name:'synthetic.csv',size:200,text:async()=>rows.map(r=>r.join(',')).join('\\n')}];
+  ui.input.files=[{name:'synthetic.csv',size:200,text:async()=>rows.map(r=>r.join(',')).join('\n')}];
   await ui.input.listeners.change();
   await confirm(ui);
   assert.ok(ui.window.hecAnnualUsageReview.getConfirmedSubmission());
@@ -122,7 +122,7 @@ test('editing a confirmed monthly value immediately clears confirmation',async()
 });
 test('changing to a different file clears previously confirmed figures',async()=>{
   const ui=setup();
-  ui.input.files=[{name:'synthetic.csv',size:200,text:async()=>rows.map(r=>r.join(',')).join('\\n')}];
+  ui.input.files=[{name:'synthetic.csv',size:200,text:async()=>rows.map(r=>r.join(',')).join('\n')}];
   await ui.input.listeners.change();
   await confirm(ui);
   assert.ok(ui.window.hecAnnualUsageReview.getConfirmedSubmission());
