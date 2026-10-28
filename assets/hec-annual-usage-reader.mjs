@@ -9,12 +9,25 @@ const number = value => {
   const n = Number(raw);
   return Number.isFinite(n) && n >= 0 ? n : null;
 };
-function monthId(value) {
-  const s = clean(value);
-  const iso = /^(\d{4})[-/](\d{1,2})(?:[-/]\d{1,2})?$/.exec(s);
-  if (iso && +iso[2] >= 1 && +iso[2] <= 12) return iso[1] + "-" + iso[2].padStart(2,"0");
-  const name = /^(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[\s-]*(\d{4})$/i.exec(s);
-  if (name) return name[2] + "-" + String(monthNames.indexOf(name[1].slice(0,3).toLowerCase()) + 1).padStart(2,"0");
+function monthId(value, date1904=false) {
+  const s=clean(value);
+  const iso=/^(\d{4})[-/](\d{1,2})(?:[-/]\d{1,2})?$/.exec(s);
+  if(iso && +iso[2]>=1 && +iso[2]<=12)return iso[1]+"-"+iso[2].padStart(2,"0");
+  const named=/^(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[\s-]*(\d{2}|\d{4})$/i.exec(s);
+  if(named){
+    const year=named[2].length===2?2000+Number(named[2]):Number(named[2]);
+    if(year<2000||year>2099)return null;
+    return year+"-"+String(monthNames.indexOf(named[1].slice(0,3).toLowerCase())+1).padStart(2,"0");
+  }
+  // Excel date serials are only interpreted in an explicitly labelled month/date column.
+  if(/^\d{5}(?:\.\d+)?$/.test(s)){
+    const days=Number(s);
+    if(days>20000&&days<80000){
+      const date=new Date(Date.UTC(date1904?1904:1899,date1904?0:11,date1904?1:30)+Math.floor(days)*86400000);
+      const year=date.getUTCFullYear();
+      if(year>=2000&&year<=2099)return year+"-"+String(date.getUTCMonth()+1).padStart(2,"0");
+    }
+  }
   return null;
 }
 export function parseCsv(text) {
@@ -36,13 +49,13 @@ export function parseCsv(text) {
   row.push(field);if(row.some(v=>clean(v)))rows.push(row);
   return rows;
 }
-export function reviewMonthlyRows(rows) {
+export function reviewMonthlyRows(rows, options={}) {
   if(!Array.isArray(rows)||rows.length<2)return {status:"needs_review",months:[],warnings:["No monthly table found"]};
   const headers=rows[0].map(key);
   const find = patterns => headers.findIndex(h=>patterns.some(p=>p.test(h)));
-  const monthCol=find([/^month$/, /^period$/, /^billingmonth$/, /^date$/]);
+  const monthCol=find([/^month$/, /^period$/, /^billingmonth$/, /^billingperiod$/, /^date$/, /^monthending$/, /^monthstart$/]);
   const kwhCol=find([/^kwh$/, /electricity.*kwh/, /energy.*kwh/, /^consumptionkwh$/, /^usagekwh$/]);
-  const costCol=find([/^electricitycost$/, /^electricitynzd$/, /^electricitycharges$/, /^powercost$/, /^powernzd$/, /^electricity\$$/]);
+  const costCol=find([/^electricitycost/, /^electricitynzd$/, /^electricitycharges/, /^electricityamount$/, /^powercost/, /^powernzd$/, /^powercharges/, /^energycost/, /^energyamount$/]);
   const broadbandCol=find([/^broadband/, /^internet/]);
   const totalCol=find([/^total$/, /^totalcost$/, /^totalnzd$/, /^billtotal$/, /^combinedtotal$/]);
   const gstCol=find([/^gstbasis$/, /^gststatus$/, /^taxbasis$/]);
@@ -54,7 +67,7 @@ export function reviewMonthlyRows(rows) {
   if(monthCol>=0){
     for(const [index,row] of rows.slice(1).entries()){
       if(!row.some(v=>clean(v)))continue;
-      const month=monthId(row[monthCol]);
+      const month=monthId(row[monthCol],Boolean(options.date1904));
       if(!month){warnings.push("Unrecognised month on data row "+(index+2));continue;}
       if(seen.has(month)){warnings.push("Duplicate month "+month);continue;}
       seen.add(month);
