@@ -130,3 +130,38 @@ test('changing to a different file clears previously confirmed figures',async()=
   await ui.input.listeners.change();
   assert.equal(ui.window.hecAnnualUsageReview.getConfirmedSubmission(),null);
 });
+
+test('a PDF and the annual XLSX together still display the editable monthly review',async()=>{
+  const ui=setup(async()=>[{name:'Synthetic usage',rows,date1904:false,formulaCount:0}]);
+  const pdf={name:'winter.pdf',size:100};
+  const xlsx={name:'annual.xlsx',size:300,arrayBuffer:async()=>new ArrayBuffer(12)};
+  ui.input.files=[pdf,xlsx];
+  await ui.input.listeners.change();
+  assert.match(ui.status.textContent,/Monthly figures extracted/);
+  await confirm(ui);
+  const confirmed=ui.window.hecAnnualUsageReview.getConfirmedSubmission();
+  assert.equal(confirmed.sourceFile.name,'annual.xlsx');
+  assert.equal(confirmed.months.length,12);
+});
+test('two PDFs and a monthly XLSX can be attached and reviewed together',async()=>{
+  const labels=['Oct','Sep','Aug','Jul','Jun','May','Apr','Mar','Feb','Jan','Dec','Nov'];
+  const values=[['Header'],...labels.map((m,i)=>[m,String(i+100)])];
+  const ui=setup(async()=>[{name:'Combined bills',rows:values,date1904:false,formulaCount:1}]);
+  const pdf1={name:'march.pdf',size:110},pdf2={name:'september.pdf',size:120};
+  const annual={name:'annual.xlsx',size:200,arrayBuffer:async()=>new ArrayBuffer(12)};
+  ui.input.files=[pdf1,pdf2,annual];
+  await ui.input.listeners.change();
+  assert.match(ui.status.textContent,/12 monthly bill amounts recognised/);
+  await confirm(ui);
+  assert.equal(ui.window.hecAnnualUsageReview.getConfirmedSubmission().sourceFile.name,'annual.xlsx');
+});
+test('two CSV/XLSX files leave both attached but do not present an ambiguous extraction',async()=>{
+  const ui=setup();
+  ui.input.files=[
+    {name:'a.csv',size:200,text:async()=>rows.map(r=>r.join(',')).join('\n')},
+    {name:'b.xlsx',size:220,arrayBuffer:async()=>new ArrayBuffer(12)}
+  ];
+  await ui.input.listeners.change();
+  assert.match(ui.status.textContent,/has not been extracted/);
+  assert.equal(ui.window.hecAnnualUsageReview.getConfirmedSubmission(),null);
+});
