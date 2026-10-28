@@ -73,7 +73,7 @@ test('unlabelled 12-month summary displays combined spending, without claiming k
   ui.input.files=[{name:'annual.xlsx',size:300,arrayBuffer:async()=>new ArrayBuffer(16)}];
   await ui.input.listeners.change();
   assert.match(ui.status.textContent,/12 monthly bill amounts recognised/);
-  assert.match(ui.status.textContent,/no kWh extracted/);
+  assert.match(JSON.stringify(ui.review.children),/No kWh data supplied/);
   const allText=JSON.stringify(ui.review.children);
   assert.match(allText,/broadband/i);
   assert.doesNotMatch(allText,/electricity-only annual cost/i);
