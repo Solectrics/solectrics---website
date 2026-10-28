@@ -61,3 +61,32 @@ test('new PDF review fields and free-electricity disclaimer exist without replac
  assert.match(html,/FREE-ELECTRICITY TARIFF — SAVINGS ARE INDICATIVE/);
  assert.match(html,/makeConfirmedAnnualReview/);
 });
+
+test('internally contradictory mixed-service invoice is flagged, never silently used for cost modelling',()=>{
+ const bill=sanitise({
+  total_bill_nzd:510,
+  electricity_charges_nzd:470,
+  non_electricity_charges_nzd:85,
+  electricity_cost_separation_status:'separated',
+  needs_review_fields:[]
+ });
+ assert.equal(bill.electricity_charges_nzd,null);
+ assert.ok(bill.needs_review_fields.includes('electricity_charges_nzd'));
+ const baseline=deriveBaseline({bills:{summer:{...bill,billing_days:31}}},[]);
+ assert.equal(baseline.annual_expenditure_nzd,null);
+});
+test('uncertain electricity cost separation is honoured even if extraction supplied a number',()=>{
+ const bill=sanitise({
+  total_bill_nzd:345,
+  electricity_charges_nzd:280,
+  electricity_cost_separation_status:'needs_review',
+  needs_review_fields:[]
+ });
+ assert.equal(bill.electricity_charges_nzd,null);
+ assert.ok(bill.needs_review_fields.includes('electricity_charges_nzd'));
+});
+test('PDF instructions avoid confusing comparison-month kWh with the billed period',()=>{
+ const extractor=await readFile(new URL('../functions/api/read-bill.js',import.meta.url),'utf8');
+ assert.match(extractor,/CURRENT invoiced period only/);
+ assert.match(extractor,/usage-comparison table/);
+});
