@@ -59,7 +59,7 @@ export function makeConfirmedAnnualReview(original,changes,source,reviewedAt=new
     months,
     totals,
     broadbandMonthlyEstimateNzd,
-    workbookReportedAfterBroadbandNzd,
+    workbookReportedAfterBroadbandNzd:workbookAfterBroadbandNzd,
     flags:{
       yearUnknown:kind==='monthly_bill_summary',
       electricityCostUnverified:kind==='monthly_bill_summary',
