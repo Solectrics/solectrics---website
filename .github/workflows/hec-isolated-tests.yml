@@ -29,3 +29,23 @@ jobs:
           node-version: '22'
       - name: Run all repository test files
         run: node --test tests/*.test.mjs
+
+  browser-smoke:
+    name: Chromium integrated form smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out isolated branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install temporary browser testing dependency
+        run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: Install headless Chromium
+        run: npx playwright install chromium
+      - name: Test integrated HEC in Chromium with synthetic local-only files
+        run: node tests/browser/hec-integrated-browser.mjs
