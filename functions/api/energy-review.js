@@ -143,6 +143,7 @@ function electricityChargeNzd(bill) {
   if (status === "needs_review" || status === "separated") return null;
   const other = number(bill?.non_electricity_charges_nzd);
   if (other !== null && other > 0) return null;
+  if (/\b(broadband|internet|fibre|fiber|bundled services?)\b/i.test(String(bill?.other_tariff_information || ''))) return null;
   return number(bill?.total_bill_nzd);
 }
 
