@@ -73,3 +73,41 @@ test('actual extraction rejection still reports failure without saving bill answ
   assert.equal(r.context.answers.bills.winter, null);
   assert.equal(r.requests(), 1);
 });
+
+test('PDF extraction Needs review flags only clear after explicit manual edits',()=>{
+  const fragment=between('function renderBillFields(season,data)','function validNumber(v)');
+  const nodes=new Map();
+  const fields={children:[],set innerHTML(value){this.children=[];},appendChild(el){
+    this.children.push(el);
+    for(const child of el.children||[])if(child.id)nodes.set(child.id,child);
+  }};
+  nodes.set('winterFields',fields);
+  const document={
+    getElementById:id=>nodes.get(id)||null,
+    createElement:()=>({
+      children:[],className:'',dataset:{},listeners:{},value:'',
+      appendChild(el){this.children.push(el);},
+      addEventListener(event,callback){this.listeners[event]=callback;}
+    })
+  };
+  const answers={bills:{summer:null,winter:{
+    electricity_charges_nzd:337.36,
+    billing_days:30,
+    needs_review_fields:['electricity_charges_nzd','billing_days']
+  }}};
+  const script=fragment;
+  const context=vm.createContext({document,answers,BILL_FIELDS:[
+    ['electricity_charges_nzd','Electricity only','number',''],
+    ['billing_days','Billing days','number','']
+  ],updateBillInsights(){}});
+  vm.runInContext(script,context);
+  vm.runInContext("renderBillFields('winter',answers.bills.winter)",context);
+  vm.runInContext("saveBillEditsNoLoop()",context);
+  assert.deepEqual(answers.bills.winter.needs_review_fields,['electricity_charges_nzd','billing_days']);
+  const edited=nodes.get('winter_electricity_charges_nzd');
+  edited.value='342.36';
+  edited.listeners.input();
+  vm.runInContext("saveBillEditsNoLoop()",context);
+  assert.equal(answers.bills.winter.electricity_charges_nzd,342.36);
+  assert.deepEqual(answers.bills.winter.needs_review_fields,['billing_days']);
+});
