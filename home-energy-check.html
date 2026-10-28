@@ -801,6 +801,9 @@ async function submitHomeEnergyCheck(){
         ? 'Sent ✓ Solectrics has received your Home Energy Check, and a copy has been emailed to you.'
         : 'Sent ✓ Solectrics has received your Home Energy Check. We could not email your copy, but your submission is complete.')
       : 'Sent ✓ Solectrics has received your Home Energy Check.';
+    if(result.annualReviewSaved){
+      status.textContent += ' Your checked monthly figures were also saved for Solectrics to review.';
+    }
 
     button.textContent =
       'HOME ENERGY CHECK SENT ✓';
@@ -5545,7 +5548,7 @@ function render(result,filename,sheetName,extraWarnings=[],file){
   const header=document.createElement('tr');
   (summary?['Month (year unknown)','Combined bill $']:['Month','Electricity kWh','Electricity-only $','Broadband $','GST basis']).forEach(v=>cell(header,v));
   table.appendChild(header);
-  const onEdit=()=>{clearConfirmation();status.className='bill-status';status.textContent='Monthly figures edited — confirmation needed before the corrections are saved.';};
+  const onEdit=()=>{clearConfirmation();checkbox.checked=false;status.className='bill-status';status.textContent='Monthly figures edited — please review and confirm your corrections.';};
   for(const [i,m] of result.months.entries()){
     const row=document.createElement('tr');
     const values={};
