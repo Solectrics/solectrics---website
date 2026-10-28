@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {parseCsv,reviewMonthlyRows} from "../assets/hec-annual-usage-reader.mjs";
+import {parseCsv,reviewMonthlyRows,reviewMonthlyBillSummary} from "../assets/hec-annual-usage-reader.mjs";
 
 const rows = (headers, build) => [
   headers,
@@ -68,4 +68,29 @@ test("recognises Excel 1904 serials only with the workbook date-system flag",()=
   const r=reviewMonthlyRows(data,{date1904:true});
   assert.equal(r.months[0].month,"2025-01");
   assert.equal(r.totals.kwh,2400);
+});
+
+test("yearless monthly summary keeps combined bill amounts separate from electricity and kWh",()=>{
+  // Synthetic version of a two-column handwritten annual bills worksheet.
+  const labels=["Oct","Sep","Aug","Jul","Jun","May","Apr","Mar","Feb","Jan","Dec","Nov"];
+  const data=[["12 Months Power - Retailer"],[],...labels.map((month,i)=>[month,100+i*10]),
+    ["Total",null],["Less Broadband Charges",1320],
+    ["Notes:","We were overseas for several months"],
+    ["","These bills include a monthly broadband charge of $90 incl GST"]];
+  const r=reviewMonthlyBillSummary(data);
+  assert.ok(r);
+  assert.equal(r.kind,"monthly_bill_summary");
+  assert.equal(r.status,"needs_review");
+  assert.equal(r.months.length,12);
+  assert.equal(r.totals.combinedNzd,1860);
+  assert.equal(r.totals.reportedAfterBroadbandNzd,1320);
+  assert.equal(r.broadbandMonthlyEstimateNzd,90);
+  assert.equal(r.verifiedForModel,false);
+  assert.match(r.warnings.join(" "),/not kWh/);
+  assert.match(r.warnings.join(" "),/unverified/i);
+});
+test("partial and duplicated month summaries cannot be accepted as 12-month histories",()=>{
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov"];
+  assert.equal(reviewMonthlyBillSummary(months.map((m,i)=>[m,200+i])),null);
+  assert.equal(reviewMonthlyBillSummary([...months,"Nov"].map((m,i)=>[m,200+i])),null);
 });
