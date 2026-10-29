@@ -755,10 +755,16 @@ async function submitHomeEnergyCheck(){
 }
 
 function requestHecVisit(){
-  sendHomeEnergyCheck('visit');
+  answers.followUpRequest='free_site_visit';
+  sendHomeEnergyCheck();
 }
 
-  async function sendHomeEnergyCheck(intent='review'){
+function sendHecReview(){
+  answers.followUpRequest='review';
+  sendHomeEnergyCheck();
+}
+
+  async function sendHomeEnergyCheck(){
     const consent =
     document.getElementById('privacyConsent');
 
@@ -775,8 +781,6 @@ function requestHecVisit(){
       'Please tick the privacy consent box before sending.';
     return;
   }
-
-  answers.followUpRequest=intent==='visit'?'free_site_visit':'review';
 
   button.disabled = true;
   button.textContent = 'SENDING…';
@@ -4623,7 +4627,7 @@ ${
   <div class="ss-action-card">
     <h3>2. Send my results to Solectrics</h3>
     <p>We'll review your household information and any electricity bills you've supplied, and contact you about useful next steps.</p>
-    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHomeEnergyCheck()">SEND MY RESULTS TO SOLECTRICS →</button>
+    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHecReview()">SEND MY RESULTS TO SOLECTRICS →</button>
   </div>
   <div class="ss-action-card ss-action-featured">
     <h3>3. Request my free home solar visit</h3>
