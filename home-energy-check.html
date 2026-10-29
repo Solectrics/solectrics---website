@@ -1923,14 +1923,12 @@ function importRateFromBill(
     after fixed daily charges.
   */
 
-  const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill"
-      ]
-    );
+  const electricityOnly = billNumber(bill, ["electricity_total_incl_gst_nzd"]);
+  const combinedTotal = billNumber(bill, ["total_bill_nzd", "total_bill"]);
+  const broadband = billNumber(bill, ["broadband_total_incl_gst_nzd"]);
+  const total = electricityOnly !== null
+    ? electricityOnly
+    : (combinedTotal !== null && broadband !== null ? combinedTotal - broadband : null);
 
 
   const imported =
