@@ -68,3 +68,47 @@ export function compareMonth({
     netCredit:withSolar<0
   };
 }
+
+
+/*
+  Solectrics HEC comparison sizes, not fixed products or quotes.
+  Nominal 9 kWh must never be treated as verified usable energy.
+  PV generation and load-shifting are supplied from a separately
+  validated design/consumption model, not inferred from the label.
+*/
+export const SYSTEM_OPTIONS = Object.freeze({
+  small: Object.freeze({pvKwMin:5,pvKwMax:5,batteryNominalKwh:0}),
+  medium: Object.freeze({pvKwMin:6,pvKwMax:7,batteryNominalKwh:9}),
+  large: Object.freeze({pvKwMin:8,pvKwMax:10,batteryNominalKwh:9})
+});
+
+export function compareSystemMonth({
+  system, pvKw, usableBatteryKwh, withBattery=false,
+  batteryChargeKwh=0, batteryDischargeKwh=0, ...month
+}) {
+  const option=SYSTEM_OPTIONS[system];
+  if (!option) throw new Error("Unknown system option");
+  if (!Number.isFinite(pvKw) || pvKw<option.pvKwMin || pvKw>option.pvKwMax) {
+    throw new Error("PV system size outside chosen comparison range");
+  }
+  if (withBattery) {
+    if (option.batteryNominalKwh===0) throw new Error("Small comparison has no battery");
+    if (!Number.isFinite(usableBatteryKwh) || usableBatteryKwh<=0 ||
+        usableBatteryKwh>option.batteryNominalKwh) {
+      throw new Error("Verified usable battery capacity required");
+    }
+    // A monthly energy total cannot exceed a full cycle per day.
+    // Daily/hourly modelling is still required for a customer forecast.
+    if (batteryChargeKwh>usableBatteryKwh*month.days ||
+        batteryDischargeKwh>usableBatteryKwh*month.days) {
+      throw new Error("Battery throughput exceeds daily usable capacity");
+    }
+  } else if (batteryChargeKwh!==0 || batteryDischargeKwh!==0) {
+    throw new Error("Solar-only comparison cannot dispatch a battery");
+  }
+  return compareMonth({
+    ...month,
+    batteryChargeKwh:withBattery?batteryChargeKwh:0,
+    batteryDischargeKwh:withBattery?batteryDischargeKwh:0
+  });
+}
