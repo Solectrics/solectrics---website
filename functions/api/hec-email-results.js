@@ -16,7 +16,7 @@ export async function onRequestPost({request,env}) {
     if(recipient.length>254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient))
       return Response.json({ok:false,error:"A valid email address is required"},{status:400});
     // Customer email only: do not accept copied internal metadata or file contents.
-    const safe={...answers, customerCopyOptIn:false};
+    const safe={...answers, customerCopyOptIn:false, emailOnly:true};
     delete safe.internalNotes;
     delete safe.supplierPricing;
     delete safe.costing;
