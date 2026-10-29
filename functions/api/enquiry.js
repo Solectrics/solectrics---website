@@ -1,6 +1,6 @@
 import { ensureJobFileRoleColumn, ensureJobTypeColumn } from "./_schema.js";
 import { identifyEnergyDataDetail } from "./job-files.js";
-import { sendHomeEnergyCheckCopy } from "./_hec-customer-copy.js";
+
 
 const MAX_FILE_SIZE = 12 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif", "pdf", "csv", "xls", "xlsx"]);
@@ -10,7 +10,7 @@ function getBucket(env) {
 }
 
 function formFiles(formData, name) {
-  return formData.getAll(name).filter(value => value instanceof File && value.size);
+  return formData.getAll(name).filter(value => value instanceof File && (value.name || value.size));
 }
 
 function extensionOf(file) {
@@ -18,7 +18,9 @@ function extensionOf(file) {
 }
 
 function validateFiles(files) {
+  if (files.length > 24) throw new Error("Please attach at most 24 files.");
   for (const { file } of files) {
+    if (!file.size) throw new Error("An attachment is empty. Please choose a non-empty file.");
     if (file.size > MAX_FILE_SIZE) throw new Error(`${file.name} is over the 12 MB limit`);
     if (!ALLOWED_EXTENSIONS.has(extensionOf(file))) {
       throw new Error(`${file.name} is not a supported image, PDF, CSV or Excel file`);
@@ -34,9 +36,11 @@ function annualUploadRole(file, annualFiles) {
 }
 
 export async function onRequestPost(context) {
+  let enquiryId, jobId, bucket;
+  const storedKeys = [];
+  const db = context.env.DB;
+  let validationError = false;
   try {
-    const db = context.env.DB;
-
     if (!db) {
       return Response.json(
         {
@@ -75,6 +79,10 @@ export async function onRequestPost(context) {
       );
     }
 
+    if (!answers || typeof answers !== "object" || Array.isArray(answers)) {
+      return Response.json({ok:false,error:"Home Energy Check answers must be an object"},{status:400});
+    }
+    answers.customerCopyOptIn = false; // Email delivery requires the protected email-only action.
     const customerName =
       answers.name ||
       answers.customer_name ||
@@ -109,8 +117,14 @@ export async function onRequestPost(context) {
         };
       })
     ];
-    validateFiles(uploads);
-    const bucket = uploads.length ? getBucket(context.env) : null;
+    try { validateFiles(uploads); } catch { validationError = true; throw new Error("Please check attachment types, sizes and file count."); }
+    bucket = uploads.length ? getBucket(context.env) : null;
+    // Multipart bytes are authoritative; never trust a client-supplied attachment list.
+    answers.energyDataUploads = {
+      recentBills: recentBillFiles.map(file => ({name:file.name,type:file.type || "unknown"})),
+      annualUsage: annualFiles.map(file => ({name:file.name,type:file.type || "unknown"}))
+    };
+    answers.attachmentManifest = [];
     if (uploads.length && !bucket) throw new Error("File storage is not available. Please try again later.");
 
     /*
@@ -144,7 +158,7 @@ export async function onRequestPost(context) {
       )
       .run();
 
-    const enquiryId = enquiryResult.meta.last_row_id;
+    enquiryId = enquiryResult.meta.last_row_id;
 
     if (!enquiryId) {
       throw new Error("Enquiry was not created");
@@ -168,91 +182,90 @@ export async function onRequestPost(context) {
       .bind(
         enquiryId,
         "New enquiry",
-        answers.followUpRequest === "free_site_visit"
-          ? "Contact customer to arrange free site visit"
-          : "Review Home Energy Check",
+        answers.followUpRequest === "free_site_visit" ? "Contact customer to arrange free site visit" : "Review Home Energy Check",
         "solar"
       )
       .run();
 
-    const jobId = jobResult.meta.last_row_id;
+    jobId = jobResult.meta.last_row_id;
+    if (!jobId) throw new Error("Linked job was not created");
 
     if (uploads.length) {
-      const storedKeys = [];
-      try {
+      await db.prepare(`
+        CREATE TABLE IF NOT EXISTS job_files (
+          id TEXT PRIMARY KEY,
+          job_id INTEGER NOT NULL,
+          storage_key TEXT NOT NULL UNIQUE,
+          original_name TEXT NOT NULL,
+          content_type TEXT,
+          size_bytes INTEGER NOT NULL,
+          category TEXT NOT NULL,
+          caption TEXT,
+          document_role TEXT,
+          energy_data_detail TEXT,
+          uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run();
+      await ensureJobFileRoleColumn(db);
+      for (const upload of uploads) {
+        const id = crypto.randomUUID();
+        const extension = extensionOf(upload.file);
+        const storageKey = `jobs/${jobId}/${id}${extension ? `.${extension}` : ""}`;
+        const contentType = upload.file.type || "application/octet-stream";
+        const detail = await identifyEnergyDataDetail(upload.file, upload.role);
+        storedKeys.push(storageKey);
+        await bucket.put(storageKey, await upload.file.arrayBuffer(), {
+          httpMetadata: { contentType },
+          customMetadata: { jobId: String(jobId), originalName: upload.file.name }
+        });
         await db.prepare(`
-          CREATE TABLE IF NOT EXISTS job_files (
-            id TEXT PRIMARY KEY,
-            job_id INTEGER NOT NULL,
-            storage_key TEXT NOT NULL UNIQUE,
-            original_name TEXT NOT NULL,
-            content_type TEXT,
-            size_bytes INTEGER NOT NULL,
-            category TEXT NOT NULL,
-            caption TEXT,
-            document_role TEXT,
-            energy_data_detail TEXT,
-            uploaded_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-          )
-        `).run();
-        await ensureJobFileRoleColumn(db);
-        for (const upload of uploads) {
-          const id = crypto.randomUUID();
-          const extension = extensionOf(upload.file);
-          const storageKey = `jobs/${jobId}/${id}${extension ? `.${extension}` : ""}`;
-          const contentType = upload.file.type || "application/octet-stream";
-          const detail = await identifyEnergyDataDetail(upload.file, upload.role);
-          await bucket.put(storageKey, await upload.file.arrayBuffer(), {
-            httpMetadata: { contentType },
-            customMetadata: { jobId: String(jobId), originalName: upload.file.name }
-          });
-          storedKeys.push(storageKey);
-          await db.prepare(`
-            INSERT INTO job_files
-              (id, job_id, storage_key, original_name, content_type, size_bytes,
-               category, caption, document_role, energy_data_detail, uploaded_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'other', ?, ?, ?, ?)
-          `).bind(
-            id, jobId, storageKey, upload.file.name.slice(0, 255), contentType,
-            upload.file.size, upload.caption, upload.role, detail, createdAt
-          ).run();
-        }
-      } catch (error) {
-        await Promise.all(storedKeys.map(key => bucket.delete(key)));
-        await db.prepare("DELETE FROM job_files WHERE job_id = ?").bind(jobId).run();
-        await db.prepare("DELETE FROM jobs WHERE id = ?").bind(jobId).run();
-        await db.prepare("DELETE FROM enquiries WHERE id = ?").bind(enquiryId).run();
-        throw error;
+          INSERT INTO job_files
+            (id, job_id, storage_key, original_name, content_type, size_bytes,
+             category, caption, document_role, energy_data_detail, uploaded_at)
+          VALUES (?, ?, ?, ?, ?, ?, 'other', ?, ?, ?, ?)
+        `).bind(
+          id, jobId, storageKey, upload.file.name.slice(0, 255), contentType,
+          upload.file.size, upload.caption, upload.role, detail, createdAt
+        ).run();
       }
     }
+    answers.attachmentManifest = uploads.map((upload, index) => ({
+      name:upload.file.name.slice(0,255), role:upload.role, size:upload.file.size,
+      id:storedKeys[index].split('/').pop().split('.')[0]
+    }));
+    if (uploads.length) await db.prepare("UPDATE enquiries SET answers_json = ? WHERE id = ?")
+      .bind(JSON.stringify(answers), enquiryId).run();
 
-    const customerCopy = { requested: Boolean(answers.customerCopyOptIn), sent: false };
-    if (customerCopy.requested) {
-      try {
-        await sendHomeEnergyCheckCopy(context.env, answers, email);
-        customerCopy.sent = true;
-      } catch (emailError) {
-        console.error("Home Energy Check was saved, but the customer copy email failed:", emailError);
-      }
-    }
+    const customerCopy = {requested:false,sent:false};
 
     return Response.json({
       ok: true,
       enquiryRef: enquiryId,
       jobId: jobId,
       receivedAt: createdAt,
-      customerCopy
+      customerCopy,
+      attachmentCount: uploads.length
     });
 
   } catch (error) {
-    console.error("Home Energy Check submission error:", error);
+    // Cleanup only records and keys created by this request. Do not log customer data.
+    const cleanup = [];
+    for (const key of storedKeys) cleanup.push(() => bucket.delete(key));
+    if (jobId) {
+      cleanup.push(() => db.prepare("DELETE FROM job_files WHERE job_id = ?").bind(jobId).run());
+      cleanup.push(() => db.prepare("DELETE FROM jobs WHERE id = ?").bind(jobId).run());
+    }
+    if (enquiryId) cleanup.push(() => db.prepare("DELETE FROM enquiries WHERE id = ?").bind(enquiryId).run());
+    let cleanupFailed = false;
+    for (const action of cleanup) { try { await action(); } catch { cleanupFailed = true; } }
+    console.error(cleanupFailed ? "Home Energy Check save failed; cleanup needs operator review." : "Home Energy Check save failed.");
 
     return Response.json(
       {
         ok: false,
-        error: error.message || "Could not save Home Energy Check"
+        error: validationError ? "Please check attachment types, sizes and file count. Files must be non-empty and at most 12 MB each." : "Could not save your Home Energy Check and attachments. Please try again or contact Solectrics."
       },
-      { status: 500 }
+      { status: validationError ? 400 : 500 }
     );
   }
 }

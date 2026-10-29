@@ -30,15 +30,15 @@ test("email-only uses a distinct API and never calls enquiry endpoint",()=>{
 test("email-only endpoint returns success without a DB binding and includes results",async()=>{
   const originalFetch=globalThis.fetch;
   const emails=[];
-  globalThis.fetch=async(url,options)=>{emails.push({url,body:JSON.parse(options.body)});return Response.json({id:"email-test"},{status:200})};
+  globalThis.fetch=async(url,options)=>{if(String(url).includes("siteverify"))return Response.json({success:true,hostname:"example.invalid",action:"hec-email"});emails.push({url,body:JSON.parse(options.body)});return Response.json({id:"email-test"},{status:200})};
   try{
     const response=await onRequestPost({
       request:new Request("https://example.invalid/api/hec-email-results",{
-        method:"POST",headers:{"content-type":"application/json"},
-        body:JSON.stringify({answers:{email:"someone@example.invalid",name:"Example",
+        method:"POST",headers:{"content-type":"application/json","origin":"https://example.invalid","CF-Connecting-IP":"192.0.2.1"},
+        body:JSON.stringify({token:"synthetic-token",answers:{email:"someone@example.invalid",name:"Example",
           hecReportSummary:{estimateSource:"household-benchmark",currentAnnualNzd:1800,solarAnnualNzd:623,smartAnnualNzd:533,batteryAnnualNzd:294}}})
       }),
-      env:{RESEND_API_KEY:"test-key"}
+      env:{RESEND_API_KEY:"test-key",HEC_TURNSTILE_SECRET:"synthetic",HEC_EMAIL_GUARD:{fetch:async()=>new Response(null,{status:204})}}
     });
     assert.equal(response.status,200);
     assert.equal((await response.json()).ok,true);

@@ -1,4 +1,4 @@
-const ANSWER_FIELDS = [
+export const ANSWER_FIELDS = [
   ["name", "Name"],
   ["email", "Email"],
   ["phone", "Phone"],
@@ -76,7 +76,7 @@ export function renderHomeEnergyCheckCopy(answers = {}) {
   const uploadedFiles = uploadedFileRows(answers);
   const summary=answers.hecReportSummary;
   const money=value=>Number.isFinite(Number(value)) ? "$"+Math.round(Number(value)).toLocaleString("en-NZ") : "—";
-  const resultsHtml=summary && summary.financialEstimateReady === true && summary.estimateSource !== "household-benchmark" && ["currentAnnualNzd","solarAnnualNzd","smartAnnualNzd","batteryAnnualNzd"].every(k=>Number.isFinite(Number(summary[k])))
+  const resultsHtml=false && summary && summary.financialEstimateReady === true && summary.estimateSource !== "household-benchmark" && ["currentAnnualNzd","solarAnnualNzd","smartAnnualNzd","batteryAnnualNzd"].every(k=>Number.isFinite(Number(summary[k])))
     ? `<tr><td style="padding:18px 28px"><h2 style="color:#17332d">Your indicative electricity-cost comparison</h2>
        <p style="font-size:14px;color:#61716c">These are modelled annual estimates, not actual electricity bills or a formal quote. ${summary.estimateSource==="household-benchmark"?"No bills were supplied; figures use household benchmarks.":"Figures use the electricity information supplied and indicative seasonal modelling."}</p>
        <p>Today: <strong>${money(summary.currentAnnualNzd)}</strong></p>

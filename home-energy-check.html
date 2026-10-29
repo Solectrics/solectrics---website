@@ -702,6 +702,26 @@ async function submitHomeEnergyCheck(){
   }
 }
 
+async function verifyHecEmail(){
+  const config=await (await fetch('/api/hec-email-results')).json();
+  if(!config.siteKey)throw new Error('Email verification unavailable');
+  if(!window.turnstile){
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
+    });
+  }
+  return new Promise((resolve,reject)=>{
+    const box=document.createElement('div');
+    document.getElementById('sendCheckStatus').after(box);
+    let widget;let timer;
+    const finish=(token)=>{clearTimeout(timer);if(widget!==undefined)window.turnstile.remove(widget);box.remove();token?resolve(token):reject(new Error('Verification failed'));};
+    timer=setTimeout(()=>finish(null),120000);
+    widget=window.turnstile.render(box,{sitekey:config.siteKey,action:'hec-email',callback:finish,'error-callback':()=>finish(null),'expired-callback':()=>finish(null)});
+  });
+}
+
   async function emailHecResults(){
   const button=document.getElementById('emailResultsButton');
   const status=document.getElementById('sendCheckStatus');
@@ -716,9 +736,10 @@ async function submitHomeEnergyCheck(){
   status.className='bill-status';
   status.textContent='Emailing your results…';
   try{
+    const token=await verifyHecEmail();
     const response=await fetch('/api/hec-email-results',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({answers})
+      body:JSON.stringify({answers,token})
     });
     const data=await response.json();
     if(!response.ok || !data.ok) throw new Error(data.error||'Unable to email results');
@@ -887,7 +908,7 @@ Uses:
 • roof direction
 • shading
 • indicative 5 kW solar benchmark
-• indicative 5 kWh usable battery benchmark
+• legacy internal battery heuristic; dollar forecasts withheld
 
 This is an indicative assessment — not a formal quote.
 ========================================================= -->
@@ -4267,10 +4288,12 @@ function renderFinalSmartSolarReport(){
   const wantsBackup =
     wantsBackupPower();
 
-  if(wantsBackup){
+  if(!model.financialEstimateReady && !wantsBackup){
+    batteryAssessment = "The additional financial contribution of a battery needs interval consumption, verified usable capacity and tariff review. Monthly averages cannot establish evening supply or savings.";
+  }else if(wantsBackup){
 
     batteryAssessment =
-      "You specifically told us that backup power during outages matters to you. Electricity-bill saving is therefore only part of the battery decision. The next step is to identify the essential circuits you want available during an outage, then size the battery, inverter and backup arrangement around those needs. The 5 kWh battery used here is only an indicative benchmark — not a recommended battery size for your home.";
+      "You specifically told us that backup power during outages matters to you. Electricity-bill saving is therefore only part of the battery decision. The next step is to identify the essential circuits you want available during an outage, then size the battery, inverter and backup arrangement around those needs. The indicative medium and large comparisons use one nominal 9 kWh battery; usable capacity, reserve and backup capability require manufacturer and site verification.";
 
   }else if(
     batteryExtra >= 500
@@ -4979,7 +5002,7 @@ ${
 
 
               <div class="ss-winter-column">
-                <h4>WITH 5 kWh STORAGE</h4>
+                <h4>WITH BATTERY STORAGE</h4>
 
                 <div class="ss-winter-row">
                   <span>Solar — same habits</span>

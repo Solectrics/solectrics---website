@@ -121,40 +121,9 @@ test("unticked customer copy still creates exactly one enquiry and one linked so
   }
 });
 
-test("ticked customer copy emails the safe HEC and still creates one enquiry/job", async () => {
-  const originalFetch = globalThis.fetch;
-  const emailRequests = [];
-  globalThis.fetch = async (url, options) => {
-    emailRequests.push({ url, options, body: JSON.parse(options.body) });
-    return new Response(JSON.stringify({ id: "email-test-id" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
-  };
-  try {
-    const { response, data, db } = await submit(true, { RESEND_API_KEY: "test-key" });
-    assert.equal(response.status, 200);
-    assert.deepEqual(data.customerCopy, { requested: true, sent: true });
-    assert.equal(db.inserts.enquiries.length, 1);
-    assert.equal(db.inserts.jobs.length, 1);
-    assert.equal(emailRequests.length, 1);
-    assert.equal(db.inserts.jobs[0][0], data.enquiryRef);
-    assert.equal(db.writes.length, 2);
-    assert.equal(emailRequests[0].url, "https://api.resend.com/emails");
-    assert.deepEqual(emailRequests[0].body.to, ["alex@example.com"]);
-    assert.equal(emailRequests[0].body.from, "Jane at Solectrics <jane@solectrics.co.nz>");
-    assert.match(emailRequests[0].body.html, /12 Example Road/);
-    assert.match(emailRequests[0].body.html, /Your completed Home Energy Check/);
-    assert.match(emailRequests[0].body.html, /EFEC3451-B808-452A-8EA2-64B22E36C363\.png/);
-    assert.match(emailRequests[0].body.html, /#17332d|#3c876c/i);
-    assert.match(emailRequests[0].body.html, /#ef9c20/i);
-    assert.match(emailRequests[0].body.html, /Jane, Solectrics/);
-    assert.match(emailRequests[0].body.html, /What happens next\?/);
-    assert.doesNotMatch(emailRequests[0].body.html, /tracking|pixel|utm_|google-analytics|marketing automation/i);
-    assert.doesNotMatch(emailRequests[0].body.html, /SECRET JOB HUB NOTE|SECRET SUPPLIER PRICE|SECRET COSTING|internalNotes|supplierPricing/);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
+test("forged legacy email flag cannot bypass protected email-only action", async()=>{
+ const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;throw Error('unexpected');};
+ try{const {response,data,db}=await submit(true,{RESEND_API_KEY:'test-key'});assert.equal(response.status,200);assert.equal(calls,0);assert.deepEqual(data.customerCopy,{requested:false,sent:false});assert.equal(db.inserts.enquiries.length,1);assert.equal(db.inserts.jobs.length,1);}finally{globalThis.fetch=original;}
 });
 
 test("customer copy renderer escapes customer values and excludes internal fields", () => {
@@ -177,7 +146,7 @@ test("failed email does not undo or duplicate the successful HEC submission", as
   const { response, data, db } = await submit(true);
   assert.equal(response.status, 200);
   assert.equal(data.ok, true);
-  assert.deepEqual(data.customerCopy, { requested: true, sent: false });
+  assert.deepEqual(data.customerCopy, { requested: false, sent: false });
   assert.equal(db.inserts.enquiries.length, 1);
   assert.equal(db.inserts.jobs.length, 1);
   assert.equal(db.writes.length, 2);
@@ -198,8 +167,8 @@ for (const failure of ["provider rejection", "network failure"]) {
       const { response, data, db } = await submit(true, { RESEND_API_KEY: "test-key" });
       assert.equal(response.status, 200);
       assert.equal(data.ok, true);
-      assert.deepEqual(data.customerCopy, { requested: true, sent: false });
-      assert.equal(emailCalls, 1);
+      assert.deepEqual(data.customerCopy, { requested: false, sent: false });
+      assert.equal(emailCalls, 0);
       assert.equal(db.inserts.enquiries.length, 1);
       assert.equal(db.inserts.jobs.length, 1);
       assert.equal(db.inserts.jobs[0][0], data.enquiryRef);
@@ -310,16 +279,13 @@ test(`uploaded bills and usage remain saved when the copy is ${emailAccepted ? "
       }
     }, files);
     assert.equal(response.status, 200);
-    assert.deepEqual(data.customerCopy, { requested: true, sent: emailAccepted });
+    assert.deepEqual(data.customerCopy, { requested: false, sent: false });
     assert.equal(db.inserts.enquiries.length, 1);
     assert.equal(db.inserts.jobs.length, 1);
     assert.equal(db.inserts.files.length, 3);
     assert.deepEqual(db.inserts.files.map(params => params[7]), ["power_bill", "power_bill", "annual_usage"]);
     for (const params of db.inserts.files) assert.equal(params[1], data.jobId);
-    assert.equal(emails.length, 1);
-    assert.doesNotMatch(emails[0].html, /jobs\//);
-    assert.equal(emails[0].attachments, undefined, "validated copy lists file names, without reattaching uploads");
-    for (const [, file] of files) assert.ok(emails[0].html.includes(file.name));
+    assert.equal(emails.length, 0);
   } finally {
     globalThis.fetch = originalFetch;
     console.error = originalError;
@@ -401,11 +367,12 @@ test("customer copy sender remains Jane independently of other email settings", 
     return Response.json({ id: "email-test-id" });
   };
   try {
-    await submit(true, {
+    const {sendHomeEnergyCheckCopy}=await import("../functions/api/_hec-customer-copy.js");
+    await sendHomeEnergyCheckCopy({
       RESEND_API_KEY: "test-key",
       HEC_FROM_EMAIL: "Other Sender <other@example.invalid>",
       FLETCHER_FROM_EMAIL: "Internal Sender <internal@example.invalid>"
-    });
+    },{name:"Synthetic",email:"test@example.invalid"});
     assert.equal(emails.length, 1);
     assert.equal(emails[0].from, "Jane at Solectrics <jane@solectrics.co.nz>");
     assert.doesNotMatch(JSON.stringify(emails[0]), /Job Hub|Internal Sender|Other Sender/);

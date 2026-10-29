@@ -1,0 +1,14 @@
+{
+  // Preparation template only. Allocate unique account-local namespace IDs
+  // before using in an isolated NONPRODUCTION account/environment.
+  "name": "hec-email-guard-nonproduction",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-29",
+  "workers_dev": false,
+  "preview_urls": false,
+  "ratelimits": [
+    {"name":"IP_LIMIT","namespace_id":"REPLACE_WITH_UNIQUE_ID_1","simple":{"limit":5,"period":60}},
+    {"name":"RECIPIENT_LIMIT","namespace_id":"REPLACE_WITH_UNIQUE_ID_2","simple":{"limit":1,"period":60}},
+    {"name":"GLOBAL_LIMIT","namespace_id":"REPLACE_WITH_UNIQUE_ID_3","simple":{"limit":50,"period":60}}
+  ]
+}

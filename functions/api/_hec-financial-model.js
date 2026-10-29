@@ -14,6 +14,7 @@ export function inclusiveRate(cents, gstBasis) {
 
 export function electricityInvoice({electricityInclGst, combinedInclGst, broadbandInclGst}) {
   if (Number.isFinite(electricityInclGst) && electricityInclGst >= 0) {
+    if(Number.isFinite(combinedInclGst)&&Number.isFinite(broadbandInclGst)&&Math.abs(electricityInclGst+broadbandInclGst-combinedInclGst)>.05)return null;
     return electricityInclGst;
   }
   if (Number.isFinite(combinedInclGst) && Number.isFinite(broadbandInclGst) &&
@@ -145,4 +146,55 @@ export function reconcileElectricityBill({
     // retail tariff and not appropriate for TOU / controlled pricing.
     impliedImportCentsInclGst:importKwh>0?(actual-days*fixed)/importKwh*100:null
   };
+}
+
+// Chronological AC-side half-hour simulation. Caller supplies measured or explicitly
+// synthetic profiles; no household questionnaire answer is treated as interval data.
+export function simulateIntervals({intervals, battery=null, evidence='synthetic', exportLimitKw=Infinity}) {
+  if(!Array.isArray(intervals)||!intervals.length)throw Error('Interval profile required');
+  if(!['synthetic','measured','modelled'].includes(evidence))throw Error('Profile provenance required');
+  if(exportLimitKw!==Infinity)valid(exportLimitKw,'export limit');
+  let capacity=0,reserve=0,chargeEfficiency=1,dischargeEfficiency=1,chargeKw=0,dischargeKw=0;
+  if(battery){
+    ({usableKwh:capacity,reserveKwh:reserve=0,chargeEfficiency,dischargeEfficiency,chargeKw,dischargeKw}=battery);
+    if(typeof battery.capacitySource!=='string'||!battery.capacitySource.trim())throw Error('Usable capacity source required');
+    for(const [k,v]of Object.entries({capacity,reserve,chargeKw,dischargeKw}))valid(v,k);
+    if(!capacity||reserve>=capacity||!(chargeEfficiency>0&&chargeEfficiency<=1&&dischargeEfficiency>0&&dischargeEfficiency<=1))throw Error('Invalid battery specification');
+  }
+  let soc=0,previous=null;const days=new Set();
+  const totals={baseline:0,netBill:0,loadKwh:0,pvKwh:0,directKwh:0,chargeKwh:0,dischargeKwh:0,lossKwh:0,exportKwh:0,gridKwh:0,curtailedKwh:0,fixed:0};
+  for(const row of intervals){
+    const stamp=Date.parse(row.start);
+    if(!Number.isFinite(stamp)||!String(row.start).endsWith('Z')||(previous!==null&&stamp-previous!==1800000))throw Error('Consecutive UTC half-hour intervals required');
+    previous=stamp;
+    const {loadKwh,pvKwh,controlledKwh=0,importCents,controlledCents,dailyFixedCents,exportCents,gstBasis,fixedGstBasis,exportGstBasis}=row;
+    for(const [k,v]of Object.entries({loadKwh,pvKwh,controlledKwh}))valid(v,k);
+    if(controlledKwh>loadKwh)throw Error('Controlled load exceeds total');
+    const rate=inclusiveRate(importCents,gstBasis),fixed=inclusiveRate(dailyFixedCents,fixedGstBasis),credit=inclusiveRate(exportCents,exportGstBasis);
+    const controlledRate=controlledKwh?inclusiveRate(controlledCents,row.controlledGstBasis):0;
+    // Controlled circuits remain grid-supplied unless a separate validated profile
+    // explicitly moves that demand to a solar-connected circuit.
+    const eligible=loadKwh-controlledKwh;
+    const direct=Math.min(eligible,pvKwh);
+    let surplus=pvKwh-direct,grid=eligible-direct;
+    const charge=Math.min(surplus,chargeKw*.5,(capacity-reserve-soc)/chargeEfficiency);
+    soc+=charge*chargeEfficiency;surplus-=charge;
+    const discharge=Math.min(grid,dischargeKw*.5,soc*dischargeEfficiency);
+    soc-=discharge/dischargeEfficiency;grid-=discharge;
+    const exported=Math.min(surplus,exportLimitKw*.5),curtailed=surplus-exported;
+    const day=new Date(stamp).toISOString().slice(0,10);const fixedToday=days.has(day)?0:fixed;days.add(day);
+    totals.baseline+=fixedToday+eligible*rate+controlledKwh*controlledRate;
+    totals.netBill+=fixedToday+grid*rate+controlledKwh*controlledRate-exported*credit;
+    totals.fixed+=fixedToday;totals.loadKwh+=loadKwh;totals.pvKwh+=pvKwh;totals.directKwh+=direct;
+    totals.chargeKwh+=charge;totals.dischargeKwh+=discharge;totals.lossKwh+=charge*(1-chargeEfficiency)+discharge/dischargeEfficiency-discharge;
+    totals.exportKwh+=exported;totals.gridKwh+=grid+controlledKwh;totals.curtailedKwh+=curtailed;
+  }
+  return {...totals,savings:totals.baseline-totals.netBill,endingStoredKwh:soc,evidence,
+    forecastApproved:false,limitations:['No grid charging, tariff optimisation, degradation or installed costs.','Controlled circuits stay on grid. Unused final stored energy has no credited value.']};
+}
+
+export function compareIntervalStorage(input){
+ const solarOnly=simulateIntervals({...input,battery:null});
+ const withBattery=simulateIntervals(input);
+ return {solarOnly,withBattery,additionalBatterySavings:solarOnly.netBill-withBattery.netBill,forecastApproved:false};
 }
