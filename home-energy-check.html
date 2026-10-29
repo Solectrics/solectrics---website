@@ -16,7 +16,7 @@ h1{font-size:clamp(38px,9vw,56px);line-height:1.02;margin:0 0 22px}h2{font-size:
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid.five{grid-template-columns:repeat(5,1fr)}.grid .choice{text-align:center;margin:0;padding:16px 8px}
 .actions{display:flex;gap:10px;margin-top:25px}.actions button{flex:1}.back{background:transparent;border:1px solid #c9cbc7;text-align:center}
 .upload{border:2px dashed #c8c8c1;border-radius:16px;padding:18px;margin:12px 0;background:#fff}.upload label{display:block;font-weight:800;margin-bottom:7px}
-input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 12px}label.field{display:block;font-size:13px;font-weight:700;margin-top:8px}
+textarea#energyUsageNotes{display:block;width:100%;min-height:108px;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:#fff;resize:vertical;font:inherit}input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 12px}label.field{display:block;font-size:13px;font-weight:700;margin-top:8px}
 .card{background:white;border-radius:18px;padding:20px;margin:14px 0}.path{border:2px solid transparent}.path.recommended{border-color:var(--orange)}.badge{display:inline-block;background:var(--orange);color:white;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}.hidden{display:none}
 .score{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #ecebe7;padding:12px 0}.score strong{text-align:right}
 .persona-note{display:none;background:#fff7e8;border-left:4px solid var(--orange);border-radius:0 13px 13px 0;padding:14px 16px;margin:18px 0;color:var(--ink);font-size:15px;line-height:1.45}.persona-note.visible{display:block}.persona-note button{border:0;background:transparent;color:var(--ink);font-weight:800;text-decoration:underline;text-decoration-color:var(--orange);text-underline-offset:3px;cursor:pointer;padding:0;margin-left:4px}.detail-panel{margin:16px 0;padding:17px;border:1px solid #e7d9cf;border-radius:16px;background:rgba(255,255,255,.65)}.detail-panel h3{margin:0 0 8px;font-size:18px}.detail-panel .choice{padding:13px 15px}
@@ -1376,6 +1376,15 @@ This is an indicative assessment — not a formal quote.
     grid-template-columns:1fr;
   }
 
+}
+
+/* Keep comparison cards legible in the narrow HEC results column. */
+@media(max-width:1100px){
+  .ss-stages,
+  .ss-battery-grid { grid-template-columns:1fr; }
+  .ss-stages > .ss-stage:first-of-type,
+  .ss-improvement-heading { grid-column:1; }
+  #smartSolarChart { min-width:0; }
 }
 
 </style>
