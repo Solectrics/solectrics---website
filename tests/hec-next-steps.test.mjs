@@ -138,7 +138,7 @@ test("bill-supplied forecasts remain hidden until tax and tariff assumptions are
 
 test("winter cost table is gated until financial estimates are verified",()=>{
   const report=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
-  const winter=report.slice(report.indexOf('summary>SEE MY WINTER ENERGY COMPARISON')-200,report.indexOf('summary>SEE MY WINTER ENERGY COMPARISON')+5000);
+  const winter=report.slice(report.indexOf("Winter energy options")-180,report.indexOf("Winter energy options")+5500);
   assert.match(winter,/model\.financialEstimateReady \? /);
   assert.match(winter,/Dollar comparisons are paused/);
   assert.match(winter,/winterMoney\(winter\.sameNoBattery\)/);
