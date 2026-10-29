@@ -724,6 +724,43 @@ async function submitHomeEnergyCheck(){
   }
 }
 
+  async function emailHecResults(){
+  const button=document.getElementById('emailResultsButton');
+  const status=document.getElementById('sendCheckStatus');
+  if(!button || button.disabled) return;
+  const address=String(answers.email||'').trim();
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(address)){
+    status.className='bill-status bad';
+    status.textContent='Please go back and enter a valid email address.';
+    return;
+  }
+  button.disabled=true;
+  status.className='bill-status';
+  status.textContent='Emailing your results…';
+  try{
+    const response=await fetch('/api/hec-email-results',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({answers})
+    });
+    const data=await response.json();
+    if(!response.ok || !data.ok) throw new Error(data.error||'Unable to email results');
+    button.textContent='RESULTS EMAILED ✓';
+    status.className='bill-status good';
+    status.textContent='A copy of your results has been sent to your email. No enquiry has been created.';
+  }catch(err){
+    button.disabled=false;
+    status.className='bill-status bad';
+    status.textContent='We could not email your results. Please try again.';
+  }
+}
+
+function requestHecVisit(){
+  const button=document.getElementById('sendCheckButton');
+  if(button?.disabled) return;
+  answers.followUpRequest='free_site_visit';
+  sendHomeEnergyCheck();
+}
+
   async function sendHomeEnergyCheck(){
     const consent =
     document.getElementById('privacyConsent');
@@ -734,6 +771,7 @@ async function submitHomeEnergyCheck(){
   const status =
     document.getElementById('sendCheckStatus');
 
+  if(button.disabled) return;
   if (!consent || !consent.checked) {
     status.className = 'bill-status bad';
     status.textContent =
@@ -761,7 +799,13 @@ async function submitHomeEnergyCheck(){
 
     button.textContent =
       'HOME ENERGY CHECK SENT ✓';
-
+    const visitButton=document.getElementById('requestVisitButton');
+    if(visitButton){
+      visitButton.disabled=true;
+      if(answers.followUpRequest==='free_site_visit') visitButton.textContent='SITE VISIT REQUESTED ✓';
+    }
+    if(answers.followUpRequest==='free_site_visit')
+      status.textContent='Your Home Energy Check and free site visit request have been received. We will contact you to arrange a time.';
     consent.disabled = true;
 
   } catch (error) {
@@ -3716,6 +3760,15 @@ function recommendation(
     annual(
       model.batteryCost
     );
+
+  // Safe, limited summary for the customer's emailed results.
+  answers.hecReportSummary={
+    estimateSource:model.estimateSource,
+    currentAnnualNzd:Math.round(currentAnnual),
+    solarAnnualNzd:Math.round(passiveAnnual),
+    smartAnnualNzd:Math.round(smartAnnual),
+    batteryAnnualNzd:Math.round(batteryAnnual)
+  };
 
 
   const batteryExtra =
