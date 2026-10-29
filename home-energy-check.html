@@ -5280,7 +5280,13 @@ ${
 
   if(finalVisitCta){
     const actionPanel=report.querySelector("#sendToSolectrics");
-    if(actionPanel) finalVisitCta.appendChild(actionPanel);
+    const controls=report.querySelector(".ss-controls-box");
+    const explore=document.getElementById("exploreMore");
+    if(actionPanel && controls && controls.parentNode){
+      controls.parentNode.insertBefore(finalVisitCta,controls);
+      finalVisitCta.appendChild(actionPanel);
+      if(explore) controls.parentNode.insertBefore(explore,controls);
+    }
   }
 
 }
