@@ -672,14 +672,12 @@ async function submitHomeEnergyCheck(){
 
     const summerFile=document.getElementById('summerBill')?.files?.[0];
     const winterFile=document.getElementById('winterBill')?.files?.[0];
-    const annualFiles=[];
-    const allFiles=[summerFile,winterFile,...annualFiles].filter(Boolean);
+    const allFiles=[summerFile,winterFile].filter(Boolean);
     const oversized=allFiles.find(file=>file.size>12*1024*1024);
     if(oversized) throw new Error(`${oversized.name} is over the 12 MB file limit`);
 
     answers.energyDataUploads={
-      recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'})),
-      annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
+      recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'}))
     };
 
     answers.energyUsageNotes = (document.getElementById('energyUsageNotes')?.value || '').trim().slice(0,2000);
@@ -692,7 +690,6 @@ async function submitHomeEnergyCheck(){
     );
     if(summerFile) formData.append('summer_bill',summerFile,summerFile.name);
     if(winterFile) formData.append('winter_bill',winterFile,winterFile.name);
-    annualFiles.forEach(file=>formData.append('annual_usage_files',file,file.name));
 
     const response = await fetch(
       '/api/enquiry',
