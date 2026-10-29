@@ -67,10 +67,12 @@ test("copy choice is separate; unticked copy sends to Solectrics, while privacy 
   const section = html.slice(html.indexOf('id="sendToSolectrics"'));
   const privacy = section.indexOf('id="privacyConsent"');
   const copy = section.indexOf('id="customerCopyConsent"');
-  const button = section.indexOf('id="sendCheckButton"');
-  assert.ok(privacy >= 0 && copy > privacy && button > copy);
-  assert.match(section.slice(copy, button), /type="checkbox"/);
-  assert.doesNotMatch(section.slice(copy, button), /required/);
+  const sendButton = section.indexOf('id="sendCheckButton"');
+  const visitButton = section.indexOf('id="requestVisitButton"');
+  const emailButton = section.indexOf('id="emailResultsButton"');
+  assert.ok(privacy >= 0 && copy >= 0 && sendButton >= 0 && visitButton >= 0 && emailButton >= 0);
+  assert.match(section.slice(copy), /type="checkbox"/);
+  assert.doesNotMatch(section.slice(copy, section.indexOf('</label>',copy)), /required/);
   assert.match(section, /I'm happy for Solectrics to receive and use my Home Energy Check/);
   assert.ok(html.includes("answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);"));
   assert.equal(html.split("'/api/enquiry'").length - 1, 1);
