@@ -729,7 +729,7 @@ async function submitHomeEnergyCheck(){
   const status=document.getElementById('sendCheckStatus');
   if(!button || button.disabled) return;
   const address=String(answers.email||'').trim();
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(address)){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)){
     status.className='bill-status bad';
     status.textContent='Please go back and enter a valid email address.';
     return;
