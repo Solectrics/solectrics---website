@@ -484,7 +484,9 @@ const BILL_FIELDS=[
  ['total_import_kwh','Electricity imported (kWh)','number',''],
  ['average_daily_kwh','Average daily use (kWh)','number',''],
  ['total_export_kwh','Solar exported (kWh)','number',''],
- ['total_bill_nzd','Total bill ($)','number',''],
+ ['total_bill_nzd','Total bill including all services, GST incl. ($)','number',''],
+ ['electricity_total_incl_gst_nzd','Electricity portion only, GST incl. ($)','number',''],
+ ['broadband_total_incl_gst_nzd','Broadband/phone portion, GST incl. ($)','number',''],
  ['daily_fixed_charge_cents','Daily fixed charge (c/day)','number',''],
  ['import_rate_cents','Main import rate (c/kWh)','number',''],
  ['peak_rate_cents','Peak rate (c/kWh)','number',''],
@@ -1867,45 +1869,18 @@ function monthlyImport(
 }
 
 
-function monthlyBillCost(
-  bill
-){
-
-  if(!bill){
-    return null;
-  }
-
-
-  const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill",
-        "bill_total"
-      ]
-    );
-
-
-  if(
-    total === null
-  ){
-
-    return null;
-
-  }
-
-
-  return (
-    total /
-    billingDays(
-      bill
-    )
-  ) *
-  30.4375;
-
+function monthlyBillCost(bill){
+  if(!bill) return null;
+  const electricityOnly = billNumber(bill,['electricity_total_incl_gst_nzd']);
+  const total = billNumber(bill,['total_bill_nzd','total_bill','bill_total']);
+  const broadband = billNumber(bill,['broadband_total_incl_gst_nzd']);
+  // Never silently count non-electricity services as electricity.
+  const knownElectricity = electricityOnly !== null
+    ? electricityOnly
+    : (total !== null && broadband !== null ? total - broadband : null);
+  if(knownElectricity === null || knownElectricity < 0) return null;
+  return (knownElectricity / billingDays(bill)) * 30.4375;
 }
-
 
 /* =========================================================
    TARIFF
