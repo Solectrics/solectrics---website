@@ -4170,10 +4170,11 @@ function renderFinalSmartSolarReport(){
   // Safe, limited summary for the customer's emailed results.
   answers.hecReportSummary={
     estimateSource:model.estimateSource,
-    currentAnnualNzd:Math.round(currentAnnual),
-    solarAnnualNzd:Math.round(passiveAnnual),
-    smartAnnualNzd:Math.round(smartAnnual),
-    batteryAnnualNzd:Math.round(batteryAnnual)
+    financialEstimateReady:model.financialEstimateReady,
+    currentAnnualNzd:model.financialEstimateReady?Math.round(currentAnnual):null,
+    solarAnnualNzd:model.financialEstimateReady?Math.round(passiveAnnual):null,
+    smartAnnualNzd:model.financialEstimateReady?Math.round(smartAnnual):null,
+    batteryAnnualNzd:model.financialEstimateReady?Math.round(batteryAnnual):null
   };
 
 
@@ -4978,7 +4979,7 @@ ${
                   <p class="ss-small">
                     The hot-water heat-pump row includes an illustrative
                     efficiency saving of about
-                    <strong>${model.estimateSource === "household-benchmark" ? "a bill-dependent amount" : money(winter.annualHwhpSaving) + " per year"}</strong>.
+                    <strong>${!model.financialEstimateReady ? "a figure to confirm during assessment" : money(winter.annualHwhpSaving) + " per year"}</strong>.
                     It is not included in the other rows.
                   </p>
                 `
