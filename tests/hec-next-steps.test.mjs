@@ -44,7 +44,7 @@ test("email-only endpoint returns success without a DB binding and includes resu
     assert.equal((await response.json()).ok,true);
     assert.equal(emails.length,1);
     assert.equal(emails[0].body.to[0],"someone@example.invalid");
-    assert.match(emails[0].body.html,/\$1,800/);
+    assert.doesNotMatch(emails[0].body.html,/\$1,800|\$623|\$533|\$294/);
     assert.match(emails[0].body.html,/No sales enquiry or site visit request was created/);
   }finally{globalThis.fetch=originalFetch}
 });
@@ -108,4 +108,13 @@ test("only one email-results choice exists, without a duplicate checkbox",()=>{
   assert.equal(html.split('id="emailResultsButton"').length-1,1);
   assert.doesNotMatch(html,/id="customerCopyConsent"/);
   assert.match(html,/answers\.customerCopyOptIn = false;/);
+});
+
+test("no-bill results do not present speculative annual costs or savings",()=>{
+  const report=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
+  assert.match(report,/model\.estimateSource === "household-benchmark" \? `/);
+  assert.match(report,/id="noBillEstimateNotice"/);
+  assert.match(report,/Without an electricity bill, we cannot reliably estimate/);
+  assert.match(report,/Bill needed for estimate/);
+  assert.match(report,/Explore what/);
 });
