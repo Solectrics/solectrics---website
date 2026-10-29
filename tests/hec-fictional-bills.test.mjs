@@ -26,7 +26,7 @@ vm.runInContext([
  slice("seasonalProfile","function directionText("),
  slice("importRateFromBill","function exportRateFromBill("),
  slice("exportRateFromBill","function fixedMonthlyCharge("),
- slice("financialInputAudit","/* =========================================================\\n   SEASONAL DEMAND")
+ slice("financialInputAudit","function seasonalProfile(")
 ].join("\n"),ctx);
 
 for(const sample of cases){
