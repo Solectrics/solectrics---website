@@ -61,3 +61,15 @@ test("site-visit enquiry sets the correct next action in Job Hub",async()=>{
   assert.equal(jobs.length,1);
   assert.equal(jobs[0][2],"Contact customer to arrange free site visit");
 });
+
+test("report summary is calculated only after all annual scenario values exist",()=>{
+  const recommendation=html.slice(html.indexOf("function recommendation("),html.indexOf("function graph("));
+  assert.doesNotMatch(recommendation,/answers\.hecReportSummary/);
+  const render=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
+  const current=render.indexOf("const currentAnnual");
+  const passive=render.indexOf("const passiveAnnual");
+  const smart=render.indexOf("const smartAnnual");
+  const battery=render.indexOf("const batteryAnnual");
+  const summary=render.indexOf("answers.hecReportSummary=");
+  assert.ok(current>=0 && passive>current && smart>passive && battery>smart && summary>battery);
+});
