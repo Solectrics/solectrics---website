@@ -23,7 +23,10 @@ vm.runInContext([
  slice("billNumber","function average("),
  slice("billingDays","function monthlyImport("),
  slice("monthlyBillCost","function importRateFromBill("),
- slice("seasonalProfile","function directionText(")
+ slice("seasonalProfile","function directionText("),
+ slice("importRateFromBill","function exportRateFromBill("),
+ slice("exportRateFromBill","function fixedMonthlyCharge("),
+ slice("financialInputAudit","/* =========================================================\\n   SEASONAL DEMAND")
 ].join("\n"),ctx);
 
 for(const sample of cases){
@@ -87,7 +90,21 @@ test("fictional summer and winter electricity-only bills yield a plausible pre-s
  assert.ok(inflated-baseline>1000, "Broadband must not inflate the annual electricity baseline");
 });
 test("a dollar savings forecast stays blocked without verified tariff and site inputs",()=>{
- assert.match(html,/financialEstimateReady:\s*false/);
+ assert.match(html,/financialEstimateReady:\s*financialAudit\.ready/);
  assert.match(html,/DEFAULT_EXPORT_RATE = 0\.12/);
  assert.match(html,/BASE_ANNUAL_SOLAR = 6250/);
+});
+
+test("financial audit explains why fictional seasonal bills are not yet safe for a public savings forecast",()=>{
+ const audit=vm.runInContext("financialInputAudit",ctx);
+ const sample=(kwh,cost,days)=>({
+    total_import_kwh:kwh,billing_days:days,
+    electricity_total_incl_gst_nzd:cost,daily_fixed_charge_cents:125,
+    import_rate_cents:31
+ });
+ const result=audit(sample(430,197.86,31),sample(1040,413.89,30));
+ assert.equal(result.ready,false);
+ assert.ok(result.issues.some(i=>i.includes("export buy-back tariff")));
+ assert.ok(result.issues.some(i=>i.includes("GST inclusion")));
+ assert.ok(result.issues.some(i=>i.includes("Roof-adjusted PV yield")));
 });
