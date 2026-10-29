@@ -13,7 +13,7 @@ export async function onRequestPost({request,env}) {
     if(!answers || typeof answers!=="object" || Array.isArray(answers))
       return Response.json({ok:false,error:"Invalid results"},{status:400});
     const recipient=String(answers.email||"").trim();
-    if(recipient.length>254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient))
+    if(recipient.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient))
       return Response.json({ok:false,error:"A valid email address is required"},{status:400});
     // Customer email only: do not accept copied internal metadata or file contents.
     const safe={...answers, customerCopyOptIn:false, emailOnly:true};
