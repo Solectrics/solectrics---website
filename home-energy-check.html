@@ -679,7 +679,7 @@ async function submitHomeEnergyCheck(){
 
     answers.energyUsageNotes = (document.getElementById('energyUsageNotes')?.value || '').trim().slice(0,2000);
 
-    answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);
+    answers.customerCopyOptIn = false;
 
     formData.append(
       'answers',
@@ -4644,7 +4644,6 @@ ${
   </div>
   <p class="ss-privacy-text"><strong>Privacy:</strong> We use your details only for the action you choose. Sending an enquiry or requesting a visit lets Solectrics review your answers and contact you. We won't sell your personal information.</p>
   <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>I'm happy for Solectrics to receive and use my Home Energy Check information for this enquiry.</span></label>
-  <label class="ss-consent-label"><input id="customerCopyConsent" type="checkbox"><span>Also email me a copy of my results.</span></label>
   <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
 </div>
       <div class="ss-controls-box">
