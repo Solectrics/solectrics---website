@@ -4336,14 +4336,13 @@ function renderFinalSmartSolarReport(){
       ${
         model.estimateSource === "household-benchmark"
         ? `
-          You didn’t supply electricity bills, so this first estimate
-          uses a Solectrics household benchmark based on the information
-          you gave us — including household size, hot water and selected
-          larger electrical loads.
+          You didn’t supply electricity bills, so we can identify areas
+          worth exploring but cannot yet estimate your actual annual
+          electricity spending or reliable savings.
           <br><br>
-          The figures are indicative rather than a measure of your actual
-          electricity use. Uploading a recent bill will make the estimate
-          more personal, and summer + winter bills will improve it further.
+          Summer and winter bills will help us understand your seasonal
+          use. We’ll confirm tariffs, equipment and the final financial
+          comparison during your assessment.
         `
         : model.estimateSource === "one-bill"
         ? `
@@ -4386,9 +4385,9 @@ function renderFinalSmartSolarReport(){
         <div class="ss-context">
           <strong>HOUSEHOLD BENCHMARK ESTIMATE</strong>
           <br><br>
-          No power bill was supplied. We can explore your household's energy opportunities,
-          but we cannot yet provide a reliable annual electricity-cost or savings estimate.
-          The information below is indicative and is not a formal quote.
+          No power bill was supplied. We can explore your household's energy
+          opportunities, but we cannot yet confirm annual electricity costs
+          or financial savings. This is not a formal quote.
         </div>
       `
       : ""
