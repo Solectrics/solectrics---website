@@ -22,6 +22,7 @@ vm.runInContext([
  'function num(v){const n=Number(v);return Number.isFinite(n)?n:null;}',
  slice("billNumber","function average("),
  slice("billingDays","function monthlyImport("),
+ slice("monthlyImport","function monthlyBillCost("),
  slice("monthlyBillCost","function importRateFromBill("),
  slice("seasonalProfile","function directionText("),
  slice("importRateFromBill","function exportRateFromBill("),
