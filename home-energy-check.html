@@ -4403,15 +4403,22 @@ function renderFinalSmartSolarReport(){
         <div class="ss-context">
           <strong>HOUSEHOLD BENCHMARK ESTIMATE</strong>
           <br><br>
-          No power bill was supplied. All dollar savings below are modelled
-          estimates based on your household answers and indicative electricity
-          rates. They are not a quote or a reading of your actual electricity bill.
+          No power bill was supplied. We can explore your household's energy opportunities,
+          but we cannot yet provide a reliable annual electricity-cost or savings estimate.
+          The information below is indicative and is not a formal quote.
         </div>
       `
       : ""
     }
 
 
+${model.estimateSource === "household-benchmark" ? `
+  <div class="ss-context" id="noBillEstimateNotice">
+    <h3>What could solar do for your home?</h3>
+    <p>Your answers help us explore solar, smarter timing and battery options. Without an electricity bill, we cannot reliably estimate your annual electricity spending or savings.</p>
+    <p>You can upload a summer or winter bill for a more personalised estimate, or ask Solectrics to review your needs during a free home visit.</p>
+  </div>
+` : `
     <h3>
       Four ways your home could use energy
     </h3>
@@ -4605,6 +4612,8 @@ ${
 
     </div>
 
+
+`}
     <div class="ss-smart-box">
 
       <h3>
