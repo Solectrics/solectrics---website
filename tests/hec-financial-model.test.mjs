@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {inclusiveRate,electricityInvoice,compareMonth} from "../functions/api/_hec-financial-model.js";
+import {inclusiveRate,electricityInvoice,compareMonth,compareSystemMonth,SYSTEM_OPTIONS} from "../functions/api/_hec-financial-model.js";
 
 const near=(a,b)=>assert.ok(Math.abs(a-b)<0.001,`Expected ${a} approximately ${b}`);
 test("GST basis must be explicit; exclusive rate converts to inclusive once",()=>{
@@ -47,4 +47,33 @@ test("net export credit is labelled separately from consumption",()=>{
   assert.ok(v.withSolar<0);
   assert.equal(v.netCredit,true);
   assert.ok(v.gridKwh>=0);
+});
+
+test("Solectrics indicative systems use 5 kW solar-only and 9 kWh nominal medium/large batteries",()=>{
+  assert.deepEqual({...SYSTEM_OPTIONS.small},{pvKwMin:5,pvKwMax:5,batteryNominalKwh:0});
+  assert.deepEqual({...SYSTEM_OPTIONS.medium},{pvKwMin:6,pvKwMax:7,batteryNominalKwh:9});
+  assert.deepEqual({...SYSTEM_OPTIONS.large},{pvKwMin:8,pvKwMax:10,batteryNominalKwh:9});
+});
+test("small system is solar-only; medium and large can compare without a battery",()=>{
+  const small=compareSystemMonth({...base,system:"small",pvKw:5});
+  const medium=compareSystemMonth({...base,system:"medium",pvKw:6.5});
+  const large=compareSystemMonth({...base,system:"large",pvKw:9});
+  near(small.savings,medium.savings);
+  near(medium.savings,large.savings);
+  // Only explicit generation may change the result, never the size label alone.
+  assert.throws(()=>compareSystemMonth({...base,system:"small",pvKw:5,withBattery:true,usableBatteryKwh:8}),/no battery/);
+});
+test("one 9 kWh nominal battery requires verified usable capacity and dispatch",()=>{
+  const params={...base,system:"medium",pvKw:6.5,withBattery:true,batteryChargeKwh:100,batteryDischargeKwh:90};
+  assert.throws(()=>compareSystemMonth(params),/usable battery capacity/);
+  const battery=compareSystemMonth({...params,usableBatteryKwh:8});
+  const solar=compareSystemMonth({...base,system:"medium",pvKw:6.5});
+  near(battery.savings-solar.savings,19);
+  assert.throws(()=>compareSystemMonth({...params,usableBatteryKwh:9.1}),/usable battery capacity/);
+  assert.throws(()=>compareSystemMonth({...params,usableBatteryKwh:2}),/throughput/);
+});
+test("system range and solar-only dispatch are validated",()=>{
+  assert.throws(()=>compareSystemMonth({...base,system:"medium",pvKw:5}),/size outside/);
+  assert.throws(()=>compareSystemMonth({...base,system:"large",pvKw:11}),/size outside/);
+  assert.throws(()=>compareSystemMonth({...base,system:"large",pvKw:9,batteryChargeKwh:12}),/Solar-only comparison/);
 });
