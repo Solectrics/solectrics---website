@@ -2122,6 +2122,43 @@ function fixedMonthlyCharge(){
 }
 
 
+/*
+  FINANCIAL MODEL INPUT AUDIT
+  This checks the evidence available for a forecast; it does not
+  approve a customer-facing saving. The bill reader does not yet
+  confirm whether quoted cents/kWh and fixed daily charges include GST,
+  and the proposed PV production/self-use must be site-reviewed.
+*/
+function financialInputAudit(summer,winter){
+  const issues=[];
+  const bills=[summer,winter];
+  if(!summer || !winter){
+    issues.push("Two seasonal bills are required for a full-year comparison.");
+  }
+  bills.forEach(function(bill,index){
+    if(!bill) return;
+    const season=index===0?"Summer":"Winter";
+    if(monthlyImport(bill) === null){
+      issues.push(season+" bill lacks electricity consumption.");
+    }
+    if(monthlyBillCost(bill) === null){
+      issues.push(season+" bill lacks a separable GST-inclusive electricity total.");
+    }
+    if(billNumber(bill,["daily_fixed_charge_cents"]) === null){
+      issues.push(season+" daily fixed charge is unverified.");
+    }
+    if(importRateFromBill(bill) === null){
+      issues.push(season+" import unit rate cannot be determined.");
+    }
+    if(exportRateFromBill(bill) === null){
+      issues.push(season+" export buy-back tariff is unverified.");
+    }
+  });
+  issues.push("GST inclusion for energy and daily fixed unit rates is not confirmed.");
+  issues.push("Roof-adjusted PV yield, hourly self-use and battery dispatch need site validation.");
+  return {ready:false,issues:issues};
+}
+
 /* =========================================================
    SEASONAL DEMAND
 ========================================================= */
@@ -3089,6 +3126,9 @@ function buildModel(){
     );
 
 
+  const financialAudit =
+    financialInputAudit(summer,winter);
+
   const fixedMonthly =
     fixedMonthlyCharge();
 
@@ -3540,7 +3580,8 @@ function buildModel(){
 
     // Public dollar forecasts stay hidden until tariff tax treatment,
     // export buy-back rate, fixed charges and site assumptions are verified.
-    financialEstimateReady: false,
+    financialEstimateReady: financialAudit.ready,
+    financialAuditIssues: financialAudit.issues,
 
     existingSolar:
       (
