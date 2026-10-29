@@ -4865,12 +4865,11 @@ ${
         electricity you buy from the grid.
       </p>
 
-      ${!model.financialEstimateReady ? `
-      <div class="ss-context">
+      <div class="ss-context" style="${model.financialEstimateReady ? 'display:none' : ''}">
         <strong>Winter energy options</strong>
         <p>We can compare heating schedules, solar self-use, hot-water efficiency and battery storage during your home assessment. Dollar comparisons are paused while we verify your electricity tariffs, GST treatment and the proposed solar design.</p>
       </div>
-      ` : `
+      <div style="${model.financialEstimateReady ? '' : 'display:none'}">
       <details class="ss-read-more">
         <summary>SEE MY WINTER ENERGY COMPARISON →</summary>
         <div>
@@ -5005,7 +5004,7 @@ ${
     
         </div>
       </details>
-      `}
+      </div>
     </div>
 
     ${
