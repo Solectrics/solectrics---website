@@ -35,3 +35,10 @@ The scenario's 5 kW saving is not a replication of EECA's calculations. EECA pub
 4. Validate PV yield using roof pitch/orientation/shading and location-specific production data. Test half-hourly self-consumption/EV/hot-water and battery dispatch.
 5. Compare installation costs, annual savings and payback with an appropriate EECA methodology. Do not claim equivalence merely because a single dollar saving is close.
 6. Validate actual PDF extraction in an isolated nonproduction environment, and rate-limit/abuse-protect public email endpoint before release.
+
+## Additional flat-tariff reconciliation (isolated, not customer-facing)
+The new `reconcileElectricityBill` audit calculates expected inclusive electricity-only charges, with broadband excluded and GST included exactly once. With the **illustrative, not verified** 35c/kWh import and $1.50/day daily charge:
+- Summer: modelled $197.00 versus fictional electricity-only bill $197.86 (difference -$0.86).
+- Winter: modelled $409.00 versus fictional electricity-only bill $413.89 (difference -$4.89).
+- The difference is within 2% for both, but this **does not** validate a tariff or justify customer savings: the fictional bills were constructed to be close to those assumptions. Different TOU, controlled loads, discounts or bill adjustments may not be representable by a flat tariff.
+- The audit must reject a missing GST basis, unseparated telecom charges, and materially inconsistent bills. Reconciliation is a prerequisite for further research, not a release gate automatically granting permission to show a forecast.
