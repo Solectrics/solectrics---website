@@ -124,5 +124,5 @@ test("results offer bespoke site visits, not generic price links",()=>{
   const resultScreen=html.slice(html.indexOf('id="resultScreen"'),html.indexOf('const PERSONAS='));
   assert.doesNotMatch(resultScreen,/SEE SMART SOLAR PRICES|Want to explore the costs\?|href="\/smart-solar-prices"/);
   assert.match(resultScreen,/free home visit/);
-  assert.match(resultScreen,/bespoke quote/);
+  assert.match(resultScreen,/free home visit to understand your roof, switchboard, meter, hot-water system/);
 });
