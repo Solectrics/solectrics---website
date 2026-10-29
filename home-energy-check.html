@@ -4514,7 +4514,7 @@ ${model.estimateSource === "household-benchmark" ? `
 
           Smarter timing contributes approximately
           <strong>
-            ${money(smartExtra)}
+            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
           </strong>
           per year beyond solar alone.
 
@@ -4547,7 +4547,7 @@ ${model.estimateSource === "household-benchmark" ? `
 
           Battery storage contributes approximately
           <strong>
-            ${money(batteryExtra)}
+            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(batteryExtra)}
           </strong>
           per year beyond the solar-smart scenario.
 
@@ -4819,7 +4819,7 @@ ${
           </span>
 
           <strong>
-            ${money(smartExtra)}
+            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
           </strong>
 
         </div>
@@ -4861,7 +4861,7 @@ ${
       <p>
         <strong>
           Estimated additional annual saving through smarter timing:
-          ${money(smartExtra)}
+          ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
         </strong>
       </p>
 
@@ -4996,7 +4996,7 @@ ${
                   <p class="ss-small">
                     The hot-water heat-pump row includes an illustrative
                     efficiency saving of about
-                    <strong>${money(winter.annualHwhpSaving)} per year</strong>.
+                    <strong>${model.estimateSource === "household-benchmark" ? "a bill-dependent amount" : money(winter.annualHwhpSaving) + " per year"}</strong>.
                     It is not included in the other rows.
                   </p>
                 `
@@ -5205,7 +5205,7 @@ ${
         <strong>
           Estimated additional annual electricity-bill
           saving from battery storage:
-          ${money(batteryExtra)}
+          ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(batteryExtra)}
         </strong>
 
         <br><br>
