@@ -1424,6 +1424,11 @@ This is an indicative assessment — not a formal quote.
 .ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
 .ss-explore-more{margin:42px 0 20px;padding-top:28px;border-top:2px solid #ef9c20}.ss-explore-more h2{font-size:clamp(26px,6vw,38px);line-height:1.12}.ss-else{display:inline-block;font-size:1.45em;font-weight:900;color:#ef9c20;letter-spacing:.01em}.ss-explore-more p{font-size:16px;line-height:1.6}
 @media(min-width:820px){.ss-choice-panel{grid-template-columns:repeat(3,minmax(0,1fr))}.ss-choice-panel>.ss-privacy-text,.ss-choice-panel>.ss-consent-label,.ss-choice-panel>#sendCheckStatus{grid-column:1/-1}}
+/* The HEC results column is deliberately narrow even on large browser windows.
+   Avoid three unreadably compressed comparison cards regardless of viewport width. */
+.ss-stages { grid-template-columns:minmax(0,1fr) !important; }
+.ss-stages > .ss-stage:first-of-type,.ss-improvement-heading { grid-column:1 !important; }
+#smartSolarChart { min-width:0; }
 /* Keep comparison cards legible in the narrow HEC results column. */
 @media(max-width:1100px){
   .ss-stages,
