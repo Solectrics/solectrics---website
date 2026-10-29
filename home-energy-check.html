@@ -755,13 +755,10 @@ async function submitHomeEnergyCheck(){
 }
 
 function requestHecVisit(){
-  const button=document.getElementById('sendCheckButton');
-  if(button?.disabled) return;
-  answers.followUpRequest='free_site_visit';
-  sendHomeEnergyCheck();
+  sendHomeEnergyCheck('visit');
 }
 
-  async function sendHomeEnergyCheck(){
+  async function sendHomeEnergyCheck(intent='review'){
     const consent =
     document.getElementById('privacyConsent');
 
@@ -778,6 +775,8 @@ function requestHecVisit(){
       'Please tick the privacy consent box before sending.';
     return;
   }
+
+  answers.followUpRequest=intent==='visit'?'free_site_visit':'review';
 
   button.disabled = true;
   button.textContent = 'SENDING…';
@@ -4138,9 +4137,16 @@ function renderFinalSmartSolarReport(){
 
 
   if(old){
-
+    // The next-step section is moved into the report after rendering.
+    // Preserve it and the Explore section if the customer returns
+    // to edit their answers and the report is generated again.
+    for(const id of ["finalVisitCta","exploreMore"]){
+      const element=document.getElementById(id);
+      if(element && old.contains(element)){
+        finalScreen.insertBefore(element,old);
+      }
+    }
     old.remove();
-
   }
 
 
