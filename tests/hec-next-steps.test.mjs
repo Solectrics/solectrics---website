@@ -73,3 +73,14 @@ test("report summary is calculated only after all annual scenario values exist",
   const summary=render.indexOf("answers.hecReportSummary=");
   assert.ok(current>=0 && passive>current && smart>passive && battery>smart && summary>battery);
 });
+
+test("the detailed smart energy sections remain in the full results template",()=>{
+  const template=html.slice(html.indexOf("report.innerHTML = `"),html.indexOf("const finalVisitCta =",html.indexOf("report.innerHTML = `")));
+  for(const section of ["Four ways your home could use energy","See the difference across the year","SMARTER TIMING","WINTER ENERGY","SMARTER HOT WATER","ss-battery-section","Three ways forward"]){
+    assert.ok(template.includes(section),`Missing report section: ${section}`);
+  }
+  const summaryIndex=html.indexOf("answers.hecReportSummary=");
+  const rendererIndex=html.indexOf("function renderFinalSmartSolarReport()");
+  const templateIndex=html.indexOf("report.innerHTML = `",rendererIndex);
+  assert.ok(rendererIndex<summaryIndex && summaryIndex<templateIndex,"summary must be calculated inside renderer before template");
+});
