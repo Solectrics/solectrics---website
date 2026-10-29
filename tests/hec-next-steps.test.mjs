@@ -16,7 +16,7 @@ test("results lead into three choices and then exploring other energy options",(
   assert.match(html,/controls.parentNode.insertBefore\(finalVisitCta,controls\)/);
 });
 test("requesting a visit records the distinct follow-up intent",()=>{
-  assert.match(html,/answers.followUpRequest=intent==='visit'\?'free_site_visit':'review'/);
+  assert.match(html,/answers.followUpRequest='free_site_visit'/);
   assert.match(html,/SITE VISIT REQUESTED/);
 });
 test("email-only uses a distinct API and never calls enquiry endpoint",()=>{
@@ -95,7 +95,7 @@ test("when the customer edits answers, rendering does not delete the three choic
   assert.match(code,/report\.querySelector\("\.ss-controls-box"\)/);
 });
 test("sending a review cannot inherit a previous unsent site visit request",()=>{
-  assert.match(html,/sendHomeEnergyCheck\(intent='review'\)/);
-  assert.match(html,/answers\.followUpRequest=intent==='visit'\?'free_site_visit':'review'/);
-  assert.match(html,/sendHomeEnergyCheck\('visit'\)/);
+  assert.match(html,/function sendHecReview\(\)/);
+  assert.match(html,/answers\.followUpRequest='review'/);
+  assert.match(html,/function requestHecVisit\(\)/);
 });
