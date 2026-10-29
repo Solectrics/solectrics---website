@@ -129,7 +129,7 @@ test("results offer bespoke site visits, not generic price links",()=>{
 
 test("bill-supplied forecasts remain hidden until tax and tariff assumptions are verified",()=>{
   const model=html.slice(html.indexOf("function buildModel()"),html.indexOf("function annual("));
-  assert.match(model,/financialEstimateReady:\s*false/);
+  assert.match(model,/financialEstimateReady:\s*financialAudit\.ready/);
   const report=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
   assert.match(report,/!model\.financialEstimateReady \? `/);
   assert.match(report,/financialEstimateReady:model\.financialEstimateReady/);
