@@ -3538,6 +3538,10 @@ function buildModel(){
     estimateSource:
       estimateSource,
 
+    // Public dollar forecasts stay hidden until tariff tax treatment,
+    // export buy-back rate, fixed charges and site assumptions are verified.
+    financialEstimateReady: false,
+
     existingSolar:
       (
         billHasExport(
@@ -4390,11 +4394,11 @@ function renderFinalSmartSolarReport(){
     }
 
 
-${model.estimateSource === "household-benchmark" ? `
+${!model.financialEstimateReady ? `
   <div class="ss-context" id="noBillEstimateNotice">
     <h3>What could solar do for your home?</h3>
-    <p>Your answers help us explore solar, smarter timing and battery options. Without an electricity bill, we cannot reliably estimate your annual electricity spending or savings.</p>
-    <p>You can upload a summer or winter bill for a more personalised estimate, or ask Solectrics to review your needs during a free home visit.</p>
+    <p>Your answers help us explore solar, smarter timing and battery options. We are not displaying dollar savings until the electricity-only bill charges, GST treatment, import and export tariffs, and site-specific assumptions have been checked.</p>
+    <p>Summer and winter bills help us estimate your electricity use. A Solectrics review and free home visit are needed to confirm a credible savings comparison and bespoke quote.</p>
   </div>
 ` : `
     <h3>
@@ -4492,7 +4496,7 @@ ${model.estimateSource === "household-benchmark" ? `
 
           Smarter timing contributes approximately
           <strong>
-            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
           </strong>
           per year beyond solar alone.
 
@@ -4525,7 +4529,7 @@ ${model.estimateSource === "household-benchmark" ? `
 
           Battery storage contributes approximately
           <strong>
-            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(batteryExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(batteryExtra)}
           </strong>
           per year beyond the solar-smart scenario.
 
@@ -4797,7 +4801,7 @@ ${
           </span>
 
           <strong>
-            ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
           </strong>
 
         </div>
@@ -4839,7 +4843,7 @@ ${
       <p>
         <strong>
           Estimated additional annual saving through smarter timing:
-          ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(smartExtra)}
+          ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
         </strong>
       </p>
 
@@ -5183,7 +5187,7 @@ ${
         <strong>
           Estimated additional annual electricity-bill
           saving from battery storage:
-          ${model.estimateSource === "household-benchmark" ? "Bill needed for estimate" : money(batteryExtra)}
+          ${!model.financialEstimateReady ? "Confirmed during assessment" : money(batteryExtra)}
         </strong>
 
         <br><br>
