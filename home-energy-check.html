@@ -4865,6 +4865,12 @@ ${
         electricity you buy from the grid.
       </p>
 
+      ${!model.financialEstimateReady ? `
+      <div class="ss-context">
+        <strong>Winter energy options</strong>
+        <p>We can compare heating schedules, solar self-use, hot-water efficiency and battery storage during your home assessment. Dollar comparisons are paused while we verify your electricity tariffs, GST treatment and the proposed solar design.</p>
+      </div>
+      ` : `
       <details class="ss-read-more">
         <summary>SEE MY WINTER ENERGY COMPARISON →</summary>
         <div>
@@ -4879,8 +4885,7 @@ ${
       </h3>
 
       <p class="ss-intro">
-        This compares the estimated average June–August electricity bill
-        with and without 5 kWh of battery storage.
+        We can explore how a battery could help with your winter demand.\n        Any dollar comparison will require a verified tariff and site assessment.
       </p>
 
       ${
@@ -5000,6 +5005,7 @@ ${
     
         </div>
       </details>
+      `}
     </div>
 
     ${
