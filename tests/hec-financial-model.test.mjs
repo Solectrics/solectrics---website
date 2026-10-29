@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {inclusiveRate,electricityInvoice,compareMonth,compareSystemMonth,SYSTEM_OPTIONS} from "../functions/api/_hec-financial-model.js";
+import {inclusiveRate,electricityInvoice,compareMonth,compareSystemMonth,SYSTEM_OPTIONS,reconcileElectricityBill} from "../functions/api/_hec-financial-model.js";
 
 const near=(a,b)=>assert.ok(Math.abs(a-b)<0.001,`Expected ${a} approximately ${b}`);
 test("GST basis must be explicit; exclusive rate converts to inclusive once",()=>{
@@ -76,4 +76,28 @@ test("system range and solar-only dispatch are validated",()=>{
   assert.throws(()=>compareSystemMonth({...base,system:"medium",pvKw:5}),/size outside/);
   assert.throws(()=>compareSystemMonth({...base,system:"large",pvKw:11}),/size outside/);
   assert.throws(()=>compareSystemMonth({...base,system:"large",pvKw:9,batteryChargeKwh:12}),/Solar-only comparison/);
+});
+
+test("fictional seasonal electricity bills reconcile without counting broadband",()=>{
+  const tariff={importCents:35,importGstBasis:"inclusive",dailyFixedCents:150,fixedGstBasis:"inclusive"};
+  const summer=reconcileElectricityBill({...tariff,importKwh:430,days:31,
+    electricityInclGst:197.86,combinedInclGst:287.86,broadbandInclGst:90});
+  const winter=reconcileElectricityBill({...tariff,importKwh:1040,days:30,
+    electricityInclGst:413.89,combinedInclGst:503.89,broadbandInclGst:90});
+  near(summer.predicted,197);
+  near(winter.predicted,409);
+  near(summer.actual,197.86);
+  near(winter.actual,413.89);
+  assert.equal(summer.reconciled,true);
+  assert.equal(winter.reconciled,true);
+  assert.ok(summer.impliedImportCentsInclGst>35);
+  assert.ok(winter.impliedImportCentsInclGst>35);
+  // Nearness is only an arithmetic cross-check, not proof of tariff validity.
+});
+test("material tariff errors, unseparated broadband and missing GST basis block reconciliation",()=>{
+  const bill={importKwh:430,days:31,combinedInclGst:287.86,broadbandInclGst:90};
+  const price={importCents:35,importGstBasis:"inclusive",dailyFixedCents:150,fixedGstBasis:"inclusive"};
+  assert.equal(reconcileElectricityBill({...bill,...price,importCents:25}).reconciled,false);
+  assert.equal(reconcileElectricityBill({...bill,...price,broadbandInclGst:undefined}).reconciled,false);
+  assert.throws(()=>reconcileElectricityBill({...bill,...price,fixedGstBasis:undefined}),/GST basis/);
 });
