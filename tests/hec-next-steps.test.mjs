@@ -112,10 +112,10 @@ test("only one email-results choice exists, without a duplicate checkbox",()=>{
 
 test("no-bill results do not present speculative annual costs or savings",()=>{
   const report=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
-  assert.match(report,/model\.estimateSource === "household-benchmark" \? `/);
+  assert.match(report,/!model\.financialEstimateReady \? `/);
   assert.match(report,/id="noBillEstimateNotice"/);
-  assert.match(report,/Without an electricity bill, we cannot reliably estimate/);
-  assert.match(report,/Bill needed for estimate/);
+  assert.match(report,/We are not displaying dollar savings until/);
+  assert.match(report,/Confirmed during assessment/);
   assert.match(html,/id="exploreMore"/);
   assert.match(html,/Explore what <span class="ss-else">ELSE<\/span> is possible/);
 });
@@ -125,4 +125,13 @@ test("results offer bespoke site visits, not generic price links",()=>{
   assert.doesNotMatch(resultScreen,/SEE SMART SOLAR PRICES|Want to explore the costs\?|href="\/smart-solar-prices"/);
   assert.match(resultScreen,/free home visit/);
   assert.match(resultScreen,/free home visit to understand your roof, switchboard, meter, hot-water system/);
+});
+
+test("bill-supplied forecasts remain hidden until tax and tariff assumptions are verified",()=>{
+  const model=html.slice(html.indexOf("function buildModel()"),html.indexOf("function annual("));
+  assert.match(model,/financialEstimateReady:\s*false/);
+  const report=html.slice(html.indexOf("function renderFinalSmartSolarReport()"));
+  assert.match(report,/!model\.financialEstimateReady \? `/);
+  assert.match(report,/financialEstimateReady:model\.financialEstimateReady/);
+  assert.match(mailer,/financialEstimateReady === true/);
 });
