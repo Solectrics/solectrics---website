@@ -105,29 +105,10 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 </div>
 <p class="upload-note">Uploading both gives us a useful summer/winter comparison.</p>
 
-<div class="upload" id="annualUsageUpload">
-  <h3><label for="annualUsageFiles">12 months of electricity use — optional</label></h3>
-  <p class="upload-note">If you have access to 12 months of your electricity-use data, you can upload it here. This gives us the clearest picture of your electricity use throughout the year.</p>
-  <input type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
-  <div id="annualUsageStatus" class="bill-status">You can upload one usage file or several electricity bills. This is optional — you can continue without it.</div>
-  <details class="usage-help">
-    <summary>I don’t know how to get this</summary>
-    <h3>How to get your electricity usage</h3>
-    <ol>
-      <li>Log in to your electricity company’s website or app.</li>
-      <li>Look for <strong>Usage</strong>, <strong>Energy Usage</strong>, <strong>My Usage</strong> or <strong>Consumption</strong>.</li>
-      <li>Select the last 12 months if there is a date-range option.</li>
-      <li>Look for <strong>Download</strong> or <strong>Export</strong>.</li>
-      <li>If you’re offered different types of data, choose detailed or half-hourly usage data if available.</li>
-      <li>Download the file and upload it here.</li>
-    </ol>
-    <p><strong>Can’t find it? That’s okay.</strong></p>
-    <p class="upload-note">Upload your latest electricity bill instead and we can help you work out what to request from your electricity company.</p>
-    <p>If you contact your electricity company, you can ask:</p>
-    <div class="request-copy">“Could you please send me my electricity consumption data for the last 12 months, preferably half-hourly smart-meter data if available?”</div>
-    <p class="upload-note">Then upload the file they send you here.</p>
-    <p><strong>You don’t need to understand the spreadsheet — that’s our job.</strong></p>
-  </details>
+<div class="upload">
+  <h3><label for="energyUsageNotes">Anything else we should know? (optional)</label></h3>
+  <p class="upload-note">For example, time away from home, visitors, a new EV or changes to your usual electricity use.</p>
+  <textarea id="energyUsageNotes" rows="3" maxlength="2000" placeholder="Tell us about anything that might affect your electricity use"></textarea>
 </div>
 
 <!-- Keep these hidden because the existing readBill()
@@ -683,21 +664,6 @@ function escapeHtml(s){
     "'":'&#39;'
   }[m]));
 }
-function updateAnnualUsageSelection(){
-  const input=document.getElementById('annualUsageFiles');
-  const status=document.getElementById('annualUsageStatus');
-  const files=Array.from(input?.files||[]);
-  if(!files.length){
-    status.className='bill-status';
-    status.textContent='Recommended for a more accurate solar and battery assessment — but you can still continue without it. You can upload one usage file or several electricity bills.';
-    return;
-  }
-  const oversized=files.find(file=>file.size>12*1024*1024);
-  status.className=`bill-status ${oversized?'bad':'good'}`;
-  status.textContent=oversized
-    ? `${oversized.name} is over the 12 MB file limit.`
-    : `${files.length} file${files.length===1?'':'s'} ready to send with your Home Energy Check.`;
-}
 async function submitHomeEnergyCheck(){
 
   try {
@@ -706,7 +672,7 @@ async function submitHomeEnergyCheck(){
 
     const summerFile=document.getElementById('summerBill')?.files?.[0];
     const winterFile=document.getElementById('winterBill')?.files?.[0];
-    const annualFiles=Array.from(document.getElementById('annualUsageFiles')?.files||[]);
+    const annualFiles=[];
     const allFiles=[summerFile,winterFile,...annualFiles].filter(Boolean);
     const oversized=allFiles.find(file=>file.size>12*1024*1024);
     if(oversized) throw new Error(`${oversized.name} is over the 12 MB file limit`);
@@ -715,6 +681,8 @@ async function submitHomeEnergyCheck(){
       recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'})),
       annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
     };
+
+    answers.energyUsageNotes = (document.getElementById('energyUsageNotes')?.value || '').trim().slice(0,2000);
 
     answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);
 
