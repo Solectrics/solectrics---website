@@ -112,3 +112,37 @@ export function compareSystemMonth({
     batteryDischargeKwh:withBattery?batteryDischargeKwh:0
   });
 }
+
+
+/*
+  Reconcile *electricity-only, GST-inclusive* bill totals against a
+  candidate flat tariff. The caller must supply the verified GST basis
+  and the correct fixed daily charge. Agreement alone does not prove
+  that the tariff is correct (discounts, demand charges, TOU and credits
+  can offset each other). This is an audit tool, not approval to show
+  customer savings.
+*/
+export function reconcileElectricityBill({
+  importKwh,days,electricityInclGst,combinedInclGst,broadbandInclGst,
+  importCents,importGstBasis,dailyFixedCents,fixedGstBasis
+}) {
+  valid(importKwh,"import kWh");
+  valid(days,"billing days");
+  if (!(days>0 && days<=366)) throw new Error("Invalid billing days");
+  const actual=electricityInvoice({electricityInclGst,combinedInclGst,broadbandInclGst});
+  if (actual===null) return {reconciled:false,reason:"Electricity-only amount unavailable"};
+  const rate=inclusiveRate(importCents,importGstBasis);
+  const fixed=inclusiveRate(dailyFixedCents,fixedGstBasis);
+  const predicted=days*fixed+importKwh*rate;
+  const difference=predicted-actual;
+  return {
+    actual,predicted,difference,
+    absoluteDifference:Math.abs(difference),
+    relativeDifference:actual>0?Math.abs(difference)/actual:null,
+    reconciled:Math.abs(difference)<=Math.max(.02*actual,1),
+    // This is the gross average variable price implied by the invoice
+    // *if* the fixed charge and exclusions are correct; not a validated
+    // retail tariff and not appropriate for TOU / controlled pricing.
+    impliedImportCentsInclGst:importKwh>0?(actual-days*fixed)/importKwh*100:null
+  };
+}
