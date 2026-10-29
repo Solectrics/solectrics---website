@@ -16,7 +16,7 @@ test("results lead into three choices and then exploring other energy options",(
   assert.match(html,/controls.parentNode.insertBefore\(finalVisitCta,controls\)/);
 });
 test("requesting a visit records the distinct follow-up intent",()=>{
-  assert.match(html,/answers.followUpRequest='free_site_visit'/);
+  assert.match(html,/answers.followUpRequest=intent==='visit'\?'free_site_visit':'review'/);
   assert.match(html,/SITE VISIT REQUESTED/);
 });
 test("email-only uses a distinct API and never calls enquiry endpoint",()=>{
@@ -83,4 +83,19 @@ test("the detailed smart energy sections remain in the full results template",()
   const rendererIndex=html.indexOf("function renderFinalSmartSolarReport()");
   const templateIndex=html.indexOf("report.innerHTML = `",rendererIndex);
   assert.ok(rendererIndex<summaryIndex && summaryIndex<templateIndex,"summary must be calculated inside renderer before template");
+});
+
+test("when the customer edits answers, rendering does not delete the three choices or smart sections",()=>{
+  const start=html.indexOf("function renderFinalSmartSolarReport()");
+  const code=html.slice(start);
+  assert.match(code,/old\.contains\(element\)/);
+  assert.match(code,/finalScreen\.insertBefore\(element,old\)/);
+  assert.match(code,/old\.remove\(\)/);
+  assert.match(code,/report\.querySelector\("#sendToSolectrics"\)/);
+  assert.match(code,/report\.querySelector\("\.ss-controls-box"\)/);
+});
+test("sending a review cannot inherit a previous unsent site visit request",()=>{
+  assert.match(html,/sendHomeEnergyCheck\(intent='review'\)/);
+  assert.match(html,/answers\.followUpRequest=intent==='visit'\?'free_site_visit':'review'/);
+  assert.match(html,/sendHomeEnergyCheck\('visit'\)/);
 });
