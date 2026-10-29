@@ -6,14 +6,15 @@ import { identifyEnergyDataDetail } from "../functions/api/job-files.js";
 const hec = await readFile(new URL("../home-energy-check.html", import.meta.url), "utf8");
 const job = await readFile(new URL("../mini-fergus-job.html", import.meta.url), "utf8");
 
-test("Home Energy Check keeps bills and adds optional annual usage upload help", () => {
+test("Home Energy Check uses seasonal bills and optional explanation without customer annual upload", () => {
   assert.match(hec, /id="summerBill"/);
   assert.match(hec, /id="winterBill"/);
-  assert.match(hec, /id="annualUsageFiles"[^>]*multiple/);
-  assert.match(hec, /I don’t know how to get this/);
-  assert.match(hec, /You don’t need to understand the spreadsheet/);
-  assert.match(hec, /Recommended for a more accurate solar and battery assessment/);
-  assert.match(hec, /formData\.append\('annual_usage_files'/);
+  assert.match(hec, /id="energyUsageNotes"/);
+  assert.match(hec, /answers\.energyUsageNotes/);
+  assert.doesNotMatch(hec, /id="annualUsageFiles"/);
+  assert.doesNotMatch(hec, /formData\.append\('annual_usage_files'/);
+  assert.match(hec, /formData\.append\('summer_bill'/);
+  assert.match(hec, /formData\.append\('winter_bill'/);
   assert.match(hec, /Your current electricity plan/);
   assert.match(hec, /EV \/ night rate/);
   assert.match(hec, /Known exit \/ switching cost/);
