@@ -99,3 +99,13 @@ test("sending a review cannot inherit a previous unsent site visit request",()=>
   assert.match(html,/answers\.followUpRequest='review'/);
   assert.match(html,/function requestHecVisit\(\)/);
 });
+
+test("site visit copy includes roof, switchboard, meter and hot water",()=>{
+  assert.match(html,/Your answers allow us to assess which system would suit you best\./);
+  assert.match(html,/free home visit to understand your roof, switchboard, meter, hot-water system/);
+});
+test("only one email-results choice exists, without a duplicate checkbox",()=>{
+  assert.equal(html.split('id="emailResultsButton"').length-1,1);
+  assert.doesNotMatch(html,/id="customerCopyConsent"/);
+  assert.match(html,/answers\.customerCopyOptIn = false;/);
+});
