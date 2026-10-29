@@ -394,23 +394,18 @@ Prepare for future energy needs
   
 
     
-<!-- HOME SOLAR VISIT -->
-<div id="finalVisitCta" style="margin-top:30px">
-  <div class="ss-kicker">BOOK HOME SOLAR VISIT</div>
+<!-- NEXT STEPS: populated with the report's enquiry form after results render -->
+<section id="finalVisitCta" class="ss-next-steps" aria-label="Your next steps">
+  <div class="ss-kicker">WHAT HAPPENS NEXT?</div>
+  <h2>From understanding your energy to designing your solar home.</h2>
+  <p>We've learned a lot about how your household uses energy and what matters to you. To prepare a bespoke quote, the next step is to visit your home, explore the possibilities and discuss a solar and smart-energy system designed around your needs.</p>
+</section>
 
-  <h2>We’ve understood your energy.<br>Now we’d like to understand your home.</h2>
-
-  <p>
-    A short Solectrics Home Solar Visit lets us confirm your roof, shading,
-    switchboard, hot-water system, equipment locations and the right system
-    design for your home, so we can finalise your quote.
-  </p>
-
-  <button class="btn primary" onclick="bookVisit()">
-    BOOK MY FREE HOME SOLAR VISIT →
-  </button>
+<div class="ss-explore-more" id="exploreMore">
+  <span class="ss-kicker">KEEP EXPLORING</span>
+  <h2>Explore what <span class="ss-else">ELSE</span> is possible.</h2>
+  <p>Your solar panels are just the beginning. Discover how smart timing, hot water, batteries and other energy solutions can help you get even more from your solar home.</p>
 </div>
-
 
 <!-- SMART SOLAR PRICES -->
 <div class="ss-pricing-section" style="margin-top:30px">
@@ -1378,6 +1373,10 @@ This is an indicative assessment — not a formal quote.
 
 }
 
+.ss-next-steps{margin:32px 0 24px}.ss-next-steps h2{font-size:clamp(24px,5vw,32px);line-height:1.2}.ss-next-steps p{font-size:16px;line-height:1.6}
+.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
+.ss-explore-more{margin:42px 0 20px;padding-top:28px;border-top:2px solid #ef9c20}.ss-explore-more h2{font-size:clamp(26px,6vw,38px);line-height:1.12}.ss-else{display:inline-block;font-size:1.45em;font-weight:900;color:#ef9c20;letter-spacing:.01em}.ss-explore-more p{font-size:16px;line-height:1.6}
+@media(min-width:820px){.ss-choice-panel{grid-template-columns:repeat(3,minmax(0,1fr))}.ss-choice-panel>.ss-privacy-text,.ss-choice-panel>.ss-consent-label,.ss-choice-panel>#sendCheckStatus{grid-column:1/-1}}
 /* Keep comparison cards legible in the narrow HEC results column. */
 @media(max-width:1100px){
   .ss-stages,
@@ -4554,61 +4553,26 @@ ${
           }
         ).join("")}
       </ul>
-<div id="sendToSolectrics" class="card" style="margin-top:30px;border:1px solid #eadfd7">
-
-  <div class="eyebrow">send to solectrics</div>
-
-  <h2>Would you like us to review your Home Energy Check?</h2>
-
-  <p>
-    Send your completed Home Energy Check to Solectrics and we'll review
-    your results and use them as the starting point for your solar-smart
-    home assessment.
-  </p>
-
-  <p class="muted">
-    <strong>Privacy:</strong> By sending your Home Energy Check, you agree
-    that Solectrics may use the information you've provided to assess your
-    home energy needs, prepare recommendations or a quote, and contact you
-    about your enquiry. We won't sell your personal information to third
-    parties.
-  </p>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
-    <input
-      id="privacyConsent"
-      type="checkbox"
-      style="width:auto;margin-top:3px"
-    >
-    <span>
-      I'm happy for Solectrics to receive and use my Home Energy Check
-      information for this enquiry.
-    </span>
-  </label>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
-    <input
-      id="customerCopyConsent"
-      type="checkbox"
-      style="width:auto;margin-top:3px"
-    >
-    <span>Email me a copy of my completed Home Energy Check</span>
-  </label>
-
-  <button
-    class="btn primary"
-    id="sendCheckButton"
-    type="button"
-    onclick="sendHomeEnergyCheck()">
-    SEND MY HOME ENERGY CHECK TO SOLECTRICS →
-  </button>
-
-  <div
-    id="sendCheckStatus"
-    class="bill-status"
-    aria-live="polite">
+<div id="sendToSolectrics" class="ss-choice-panel">
+  <div class="ss-action-card">
+    <h3>1. Email me my results</h3>
+    <p>Keep a copy of your Home Energy Check to review whenever you like. This does not create a Solectrics enquiry.</p>
+    <button type="button" class="btn ss-action-button" id="emailResultsButton" onclick="emailHecResults()">EMAIL ME MY RESULTS →</button>
   </div>
-
+  <div class="ss-action-card">
+    <h3>2. Send my results to Solectrics</h3>
+    <p>We'll review your household information and any electricity bills you've supplied, and contact you about useful next steps.</p>
+    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHomeEnergyCheck()">SEND MY RESULTS TO SOLECTRICS →</button>
+  </div>
+  <div class="ss-action-card ss-action-featured">
+    <h3>3. Request my free home solar visit</h3>
+    <p>We'll arrange a time to assess your roof, shading, switchboard, hot water and equipment locations before preparing your bespoke quote.</p>
+    <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">REQUEST MY FREE SITE VISIT →</button>
+  </div>
+  <p class="ss-privacy-text"><strong>Privacy:</strong> We use your details only for the action you choose. Sending an enquiry or requesting a visit lets Solectrics review your answers and contact you. We won't sell your personal information.</p>
+  <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>I'm happy for Solectrics to receive and use my Home Energy Check information for this enquiry.</span></label>
+  <label class="ss-consent-label"><input id="customerCopyConsent" type="checkbox"><span>Email me a copy of my completed Home Energy Check when I contact Solectrics.</span></label>
+  <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
 </div>
       <div class="ss-controls-box">
       
@@ -5312,6 +5276,11 @@ ${
     finalScreen.insertBefore(report, finalVisitCta);
   }else{
     finalScreen.appendChild(report);
+  }
+
+  if(finalVisitCta){
+    const actionPanel=report.querySelector("#sendToSolectrics");
+    if(actionPanel) finalVisitCta.appendChild(actionPanel);
   }
 
 }
