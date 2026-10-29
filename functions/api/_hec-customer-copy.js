@@ -74,6 +74,16 @@ function uploadedFileRows(answers) {
 export function renderHomeEnergyCheckCopy(answers = {}) {
   const rows = answerRows(answers);
   const uploadedFiles = uploadedFileRows(answers);
+  const summary=answers.hecReportSummary;
+  const money=value=>Number.isFinite(Number(value)) ? "$"+Math.round(Number(value)).toLocaleString("en-NZ") : "—";
+  const resultsHtml=summary && ["currentAnnualNzd","solarAnnualNzd","smartAnnualNzd","batteryAnnualNzd"].every(k=>Number.isFinite(Number(summary[k])))
+    ? `<tr><td style="padding:18px 28px"><h2 style="color:#17332d">Your indicative electricity-cost comparison</h2>
+       <p style="font-size:14px;color:#61716c">These are modelled annual estimates, not actual electricity bills or a formal quote. ${summary.estimateSource==="household-benchmark"?"No bills were supplied; figures use household benchmarks.":"Figures use the electricity information supplied and indicative seasonal modelling."}</p>
+       <p>Today: <strong>${money(summary.currentAnnualNzd)}</strong></p>
+       <p>With solar: <strong>${money(summary.solarAnnualNzd)}</strong></p>
+       <p>Solar + smart timing: <strong>${money(summary.smartAnnualNzd)}</strong></p>
+       <p>Solar + smart timing + battery: <strong>${money(summary.batteryAnnualNzd)}</strong></p></td></tr>`
+    : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -106,6 +116,7 @@ export function renderHomeEnergyCheckCopy(answers = {}) {
               </table>
             </td>
           </tr>
+          ${resultsHtml}
           ${uploadedFiles ? `
           <tr>
             <td style="padding:18px 28px 4px 28px;">
@@ -123,7 +134,7 @@ export function renderHomeEnergyCheckCopy(answers = {}) {
           <tr>
             <td style="padding:24px 28px;background:#f7f4ed;border-top:4px solid #ef9c20;">
               <h2 style="margin:0 0 8px 0;color:#3c876c;font-size:19px;line-height:1.3;">What happens next?</h2>
-              <p style="margin:0;color:#40554f;font-size:15px;line-height:1.6;">We’ll review what you’ve shared and use it as the starting point for understanding your home, how you use energy and which options may suit you best.</p>
+              <p style="margin:0;color:#40554f;font-size:15px;line-height:1.6;">${answers.emailOnly ? 'This is your personal copy of your Home Energy Check. No sales enquiry or site visit request was created.' : 'We’ll review what you’ve shared and use it as the starting point for understanding your home, how you use energy and which options may suit you best.'}</p>
               <p style="margin:18px 0 0 0;color:#17332d;font-size:15px;line-height:1.5;">Warmly,<br><strong>Jane, Solectrics</strong></p>
             </td>
           </tr>
