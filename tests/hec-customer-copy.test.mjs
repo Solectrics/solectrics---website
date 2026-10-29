@@ -63,18 +63,16 @@ async function submit(optIn, env = {}, files = []) {
   return { response, data: await response.json(), db };
 }
 
-test("copy choice is separate; unticked copy sends to Solectrics, while privacy remains required", async () => {
+test("three distinct actions; enquiry requires privacy consent without duplicate copy checkbox", async () => {
   const section = html.slice(html.indexOf('id="sendToSolectrics"'));
   const privacy = section.indexOf('id="privacyConsent"');
-  const copy = section.indexOf('id="customerCopyConsent"');
   const sendButton = section.indexOf('id="sendCheckButton"');
   const visitButton = section.indexOf('id="requestVisitButton"');
   const emailButton = section.indexOf('id="emailResultsButton"');
-  assert.ok(privacy >= 0 && copy >= 0 && sendButton >= 0 && visitButton >= 0 && emailButton >= 0);
-  assert.match(section.slice(copy), /type="checkbox"/);
-  assert.doesNotMatch(section.slice(copy, section.indexOf('</label>',copy)), /required/);
+  assert.ok(privacy >= 0 && sendButton >= 0 && visitButton >= 0 && emailButton >= 0);
+  assert.doesNotMatch(section, /id="customerCopyConsent"/);
   assert.match(section, /I'm happy for Solectrics to receive and use my Home Energy Check/);
-  assert.ok(html.includes("answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);"));
+  assert.ok(html.includes("answers.customerCopyOptIn = false;"));
   assert.equal(html.split("'/api/enquiry'").length - 1, 1);
 
   const handlerStart = html.indexOf("async function sendHomeEnergyCheck()");
@@ -250,25 +248,22 @@ test("file copy allowlist includes escaped names but excludes keys and other met
   assert.doesNotMatch(rendered, /SECRET_|storage_key|internalNotes|costing|unknownField/);
 });
 
-test("submission payload passes the actual customer-copy choice without adding a second request", async () => {
+test("enquiry submission never requests an automatic second results email", async () => {
   const start = html.indexOf("async function submitHomeEnergyCheck()");
   const handler = html.slice(start, html.indexOf("async function sendHomeEnergyCheck()", start));
-  for (const checked of [false, true]) {
-    const answers = { name: "Alex", email: "alex@example.invalid" };
-    const payloads = [];
-    await new Function("document", "answers", "FormData", "fetch", "console",
-      `${handler}; return submitHomeEnergyCheck();`
-    )({ getElementById: id => id === "customerCopyConsent" ? { checked } : { files: [] } },
-    answers, FormData, async (url, options) => {
-      assert.equal(url, "/api/enquiry");
-      payloads.push(JSON.parse(options.body.get("answers")));
-      return Response.json({ ok: true, enquiryRef: 101, jobId: 102 });
-    }, { log() {}, error() {} });
-    assert.equal(payloads.length, 1);
-    assert.equal(payloads[0].customerCopyOptIn, checked);
-  }
+  const answers = { name: "Alex", email: "alex@example.invalid" };
+  const payloads = [];
+  await new Function("document", "answers", "FormData", "fetch", "console",
+    `${handler}; return submitHomeEnergyCheck();`
+  )({ getElementById: () => ({ files: [] }) },
+  answers, FormData, async (url, options) => {
+    assert.equal(url, "/api/enquiry");
+    payloads.push(JSON.parse(options.body.get("answers")));
+    return Response.json({ ok: true, enquiryRef: 101, jobId: 102 });
+  }, { log() {}, error() {} });
+  assert.equal(payloads.length, 1);
+  assert.equal(payloads[0].customerCopyOptIn, false);
 });
-
 
 
 test("branded customer copy retains the existing safe-field allowlist", () => {
