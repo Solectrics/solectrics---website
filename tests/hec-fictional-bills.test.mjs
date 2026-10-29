@@ -22,7 +22,8 @@ vm.runInContext([
  'function num(v){const n=Number(v);return Number.isFinite(n)?n:null;}',
  slice("billNumber","function average("),
  slice("billingDays","function monthlyImport("),
- slice("monthlyBillCost","function importRateFromBill(")
+ slice("monthlyBillCost","function importRateFromBill("),
+ slice("seasonalProfile","function directionText(")
 ].join("\n"),ctx);
 
 for(const sample of cases){
@@ -70,4 +71,23 @@ test("fictional PDFs require more than two bills to validate savings forecast",(
  assert.ok(html.includes('model.estimateSource === "household-benchmark"'));
  assert.match(html,/one-bill/);
  assert.match(html,/two-bills/);
+});
+
+test("fictional summer and winter electricity-only bills yield a plausible pre-solar baseline",()=>{
+ const cost=vm.runInContext("monthlyBillCost",ctx);
+ const summer=cost({billing_days:31,electricity_total_incl_gst_nzd:197.86,total_bill_nzd:287.86,broadband_total_incl_gst_nzd:90});
+ const winter=cost({billing_days:30,electricity_total_incl_gst_nzd:413.89,total_bill_nzd:503.89,broadband_total_incl_gst_nzd:90});
+ const season=vm.runInContext("seasonalProfile",ctx)(summer,winter);
+ const baseline=Array.from(season).reduce((sum,v)=>sum+v,0);
+ assert.ok(baseline>3000 && baseline<4000, "Seasonally extrapolated pre-solar baseline should reflect real electricity-only charges");
+ // This is a regression cross-check, not a validated customer forecast.
+ const inflated=Array.from(vm.runInContext("seasonalProfile",ctx)(
+   287.86/31*30.4375,503.89/30*30.4375
+ )).reduce((sum,v)=>sum+v,0);
+ assert.ok(inflated-baseline>1000, "Broadband must not inflate the annual electricity baseline");
+});
+test("a dollar savings forecast stays blocked without verified tariff and site inputs",()=>{
+ assert.match(html,/financialEstimateReady:\s*false/);
+ assert.match(html,/DEFAULT_EXPORT_RATE = 0\.12/);
+ assert.match(html,/BASE_ANNUAL_SOLAR = 6250/);
 });
