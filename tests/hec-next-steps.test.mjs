@@ -119,3 +119,10 @@ test("no-bill results do not present speculative annual costs or savings",()=>{
   assert.match(html,/id="exploreMore"/);
   assert.match(html,/Explore what <span class="ss-else">ELSE<\/span> is possible/);
 });
+
+test("results offer bespoke site visits, not generic price links",()=>{
+  const resultScreen=html.slice(html.indexOf('id="resultScreen"'),html.indexOf('const PERSONAS='));
+  assert.doesNotMatch(resultScreen,/SEE SMART SOLAR PRICES|Want to explore the costs\?|href="\/smart-solar-prices"/);
+  assert.match(resultScreen,/free home visit/);
+  assert.match(resultScreen,/bespoke quote/);
+});
