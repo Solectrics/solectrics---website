@@ -116,5 +116,6 @@ test("no-bill results do not present speculative annual costs or savings",()=>{
   assert.match(report,/id="noBillEstimateNotice"/);
   assert.match(report,/Without an electricity bill, we cannot reliably estimate/);
   assert.match(report,/Bill needed for estimate/);
-  assert.match(report,/Explore what/);
+  assert.match(html,/id="exploreMore"/);
+  assert.match(html,/Explore what <span class="ss-else">ELSE<\/span> is possible/);
 });
