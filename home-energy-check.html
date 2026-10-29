@@ -398,7 +398,7 @@ Prepare for future energy needs
 <section id="finalVisitCta" class="ss-next-steps" aria-label="Your next steps">
   <div class="ss-kicker">WHAT HAPPENS NEXT?</div>
   <h2>From understanding your energy to designing your solar home.</h2>
-  <p>We've learned a lot about how your household uses energy and what matters to you. To prepare a bespoke quote, the next step is to visit your home, explore the possibilities and discuss a solar and smart-energy system designed around your needs.</p>
+  <p>Your answers provide a starting point for understanding your energy needs. For a bespoke quote, a free home visit helps us understand your roof, shading, switchboard, hot water, and what matters most to you.</p>
 </section>
 
 <div class="ss-explore-more" id="exploreMore">
@@ -3761,15 +3761,6 @@ function recommendation(
       model.batteryCost
     );
 
-  // Safe, limited summary for the customer's emailed results.
-  answers.hecReportSummary={
-    estimateSource:model.estimateSource,
-    currentAnnualNzd:Math.round(currentAnnual),
-    solarAnnualNzd:Math.round(passiveAnnual),
-    smartAnnualNzd:Math.round(smartAnnual),
-    batteryAnnualNzd:Math.round(batteryAnnual)
-  };
-
 
   const batteryExtra =
     smartAnnual -
@@ -4175,6 +4166,17 @@ function renderFinalSmartSolarReport(){
     annual(
       model.batteryCost
     );
+
+  // Safe, limited summary for the customer's emailed results.
+  answers.hecReportSummary={
+    estimateSource:model.estimateSource,
+    currentAnnualNzd:Math.round(currentAnnual),
+    solarAnnualNzd:Math.round(passiveAnnual),
+    smartAnnualNzd:Math.round(smartAnnual),
+    batteryAnnualNzd:Math.round(batteryAnnual)
+  };
+
+
 
 
   const solarSaving =
