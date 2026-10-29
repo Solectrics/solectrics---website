@@ -168,7 +168,9 @@ export async function onRequestPost(context) {
       .bind(
         enquiryId,
         "New enquiry",
-        "Review Home Energy Check",
+        answers.followUpRequest === "free_site_visit"
+          ? "Contact customer to arrange free site visit"
+          : "Review Home Energy Check",
         "solar"
       )
       .run();
