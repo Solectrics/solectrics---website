@@ -48,3 +48,16 @@ test("email-only endpoint returns success without a DB binding and includes resu
     assert.match(emails[0].body.html,/No sales enquiry or site visit request was created/);
   }finally{globalThis.fetch=originalFetch}
 });
+
+test("site-visit enquiry sets the correct next action in Job Hub",async()=>{
+  const {onRequestPost:submit}=await import("../functions/api/enquiry.js");
+  let id=100;
+  const jobs=[];
+  const db={prepare(sql){return{bind(...params){this.params=params;return this;},async all(){return{results:[]}},async run(){if(/INSERT INTO jobs/i.test(sql))jobs.push(this.params);return{meta:{last_row_id:++id,changes:1}}}}}};
+  const form=new FormData();
+  form.append("answers",JSON.stringify({name:"Test Customer",email:"test@example.invalid",followUpRequest:"free_site_visit"}));
+  const res=await submit({env:{DB:db},request:new Request("https://example.invalid/api/enquiry",{method:"POST",body:form})});
+  assert.equal(res.status,200);
+  assert.equal(jobs.length,1);
+  assert.equal(jobs[0][2],"Contact customer to arrange free site visit");
+});
