@@ -330,6 +330,48 @@ test(`uploaded bills and usage remain saved when the copy is ${emailAccepted ? "
 });
 }
 
+test("seasonal-only HEC saves explanation and two linked original PDFs", async () => {
+  const stored = [];
+  const files = [
+    ["summer_bill", new File(["summer-pdf"], "summer.pdf", { type: "application/pdf" })],
+    ["winter_bill", new File(["winter-pdf"], "winter.pdf", { type: "application/pdf" })]
+  ];
+  const db = makeDb();
+  const answers = {
+    name: "Test Household",
+    email: "test@example.invalid",
+    energyUsageNotes: "Away from home for four months; EV recently added.",
+    bills: { summer: { total_import_kwh: 450 }, winter: { total_import_kwh: 900 } },
+    customerCopyOptIn: false
+  };
+  const formData = new FormData();
+  formData.append("answers", JSON.stringify(answers));
+  for (const [key, file] of files) formData.append(key, file);
+  const response = await onRequestPost({
+    request: new Request("https://solectrics.example/api/enquiry", { method: "POST", body: formData }),
+    env: {
+      DB: db,
+      JOB_FILES: {
+        async put(key, bytes, metadata) { stored.push({ key, bytes, metadata }); },
+        async delete() { assert.fail("original bill uploads should be retained"); }
+      }
+    }
+  });
+  const result = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(result.ok, true);
+  assert.equal(db.inserts.enquiries.length, 1);
+  assert.equal(db.inserts.jobs.length, 1);
+  assert.equal(db.inserts.files.length, 2);
+  assert.equal(stored.length, 2);
+  const savedAnswers = JSON.parse(db.inserts.enquiries[0][6]);
+  assert.equal(savedAnswers.energyUsageNotes, answers.energyUsageNotes);
+  assert.deepEqual(savedAnswers.bills, answers.bills);
+  assert.deepEqual(db.inserts.files.map(params => params[7]), ["power_bill", "power_bill"]);
+  for (const params of db.inserts.files) assert.equal(params[1], result.jobId);
+  assert.deepEqual(stored.map(item => item.metadata.customMetadata.originalName), ["summer.pdf", "winter.pdf"]);
+});
+
 test("failed enquiry save never sends a copy or creates a job", async () => {
   const originalFetch = globalThis.fetch;
   const originalError = console.error;
