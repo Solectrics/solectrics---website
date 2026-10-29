@@ -66,6 +66,8 @@ Return ONLY valid JSON with exactly these keys:
   "average_daily_kwh": number|null,
   "total_export_kwh": number|null,
   "total_bill_nzd": number|null,
+  "electricity_total_incl_gst_nzd": number|null,
+  "broadband_total_incl_gst_nzd": number|null,
   "daily_fixed_charge_cents": number|null,
   "import_rate_cents": number|null,
   "peak_rate_cents": number|null,
@@ -87,7 +89,10 @@ Return ONLY valid JSON with exactly these keys:
 Rules:
 - Rate fields must be numeric cents/kWh.
 - daily_fixed_charge_cents must be numeric cents/day.
-- total_bill_nzd and gst_nzd must be numeric NZ dollars.
+- total_bill_nzd is the total amount payable across all services including GST, not electricity-only. Return null if unclear.
+- electricity_total_incl_gst_nzd is the electricity portion only, including GST and electricity fixed charges, excluding broadband, phone, and other non-electricity services. Calculate only if the bill provides enough detail; otherwise null and mark for review.
+- broadband_total_incl_gst_nzd is the broadband/phone portion including GST where shown or unambiguously calculable; otherwise null.
+- gst_nzd is GST for the entire invoice if shown; do not add GST again to an inclusive total.
 - Dates should be YYYY-MM-DD if clear, otherwise copy the visible date text.
 - confidence must be 0 to 1.
 - If a field is unclear, return null for that field and include its exact key in needs_review_fields.
@@ -164,7 +169,7 @@ function getOutputText(response) {
 function sanitise(x) {
   const numeric = [
     "billing_days","total_import_kwh","average_daily_kwh","total_export_kwh",
-    "total_bill_nzd","daily_fixed_charge_cents","import_rate_cents",
+    "total_bill_nzd","electricity_total_incl_gst_nzd","broadband_total_incl_gst_nzd","daily_fixed_charge_cents","import_rate_cents",
     "peak_rate_cents","offpeak_rate_cents","controlled_rate_cents",
     "ev_night_rate_cents","export_rate_cents","peak_export_rate_cents",
     "exit_cost_nzd","gst_nzd","confidence"
