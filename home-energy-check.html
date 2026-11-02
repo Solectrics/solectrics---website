@@ -403,12 +403,8 @@ Prepare for future energy needs
   
 
     
-<!-- NEXT STEPS: populated with the report's enquiry form after results render -->
-<section id="finalVisitCta" class="ss-next-steps" aria-label="Your next steps">
-  <div class="ss-kicker">WHAT HAPPENS NEXT?</div>
-  <h2>From understanding your energy to designing your solar home.</h2>
-  <p>Your answers allow us to assess which system would suit you best. Next, we’ll need a free home visit to understand your roof, switchboard, meter, hot-water system and any other unique features that could benefit from smart devices.</p>
-</section>
+<!-- Report insertion anchor; customer actions are inside the report directly after the results chart. -->
+<div id="resultReportAnchor" hidden></div>
 
 <div class="ss-explore-more" id="exploreMore">
   <span class="ss-kicker">KEEP EXPLORING</span>
@@ -4257,10 +4253,9 @@ function renderFinalSmartSolarReport(){
 
 
   if(old){
-    // The next-step section is moved into the report after rendering.
-    // Preserve it and the Explore section if the customer returns
+    // Preserve the educational Explore section if the customer returns
     // to edit their answers and the report is generated again.
-    for(const id of ["finalVisitCta","exploreMore"]){
+    for(const id of ["exploreMore"]){
       const element=document.getElementById(id);
       if(element && old.contains(element)){
         finalScreen.insertBefore(element,old);
@@ -4752,14 +4747,14 @@ ${
     <button type="button" class="btn ss-action-button" id="emailResultsButton" onclick="emailHecResults()">EMAIL ME MY RESULTS →</button>
   </div>
   <div class="ss-action-card">
-    <h3>2. Send my results to Solectrics</h3>
+    <h3>2. Send my Home Energy Check to Solectrics</h3>
     <p>We'll review your household information and any electricity bills you've supplied, and contact you about useful next steps.</p>
-    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHecReview()">SEND MY RESULTS TO SOLECTRICS →</button>
+    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHecReview()">SEND MY HOME ENERGY CHECK TO SOLECTRICS →</button>
   </div>
   <div class="ss-action-card ss-action-featured">
-    <h3>3. Request my free home solar visit</h3>
+    <h3>3. Book my free home solar visit</h3>
     <p>We'll arrange a time to assess your roof, shading, switchboard, hot water and equipment locations before preparing your bespoke quote.</p>
-    <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">REQUEST MY FREE SITE VISIT →</button>
+    <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
   </div>
   <p class="ss-privacy-text"><strong>Privacy:</strong> We use your details only for the action you choose. Sending an enquiry or requesting a visit lets Solectrics review your answers and contact you. We won't sell your personal information.</p>
   <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>I'm happy for Solectrics to receive and use my Home Energy Check information for this enquiry.</span></label>
@@ -5467,23 +5462,30 @@ ${
     Put the personalised report on the FINAL result screen.
   */
 
-  const finalVisitCta = document.getElementById("finalVisitCta");
+  const reportAnchor=document.getElementById("resultReportAnchor");
 
-  if(finalVisitCta && finalVisitCta.parentNode === finalScreen){
-    finalScreen.insertBefore(report, finalVisitCta);
+  if(reportAnchor && reportAnchor.parentNode === finalScreen){
+    finalScreen.insertBefore(report, reportAnchor);
   }else{
     finalScreen.appendChild(report);
   }
 
-  if(finalVisitCta){
-    const actionPanel=report.querySelector("#sendToSolectrics");
-    const controls=report.querySelector(".ss-controls-box");
-    const explore=document.getElementById("exploreMore");
-    if(actionPanel && controls && controls.parentNode){
-      controls.parentNode.insertBefore(finalVisitCta,controls);
-      finalVisitCta.appendChild(actionPanel);
-      if(explore) controls.parentNode.insertBefore(explore,controls);
-    }
+  // Keep all three distinct customer actions directly after the main
+  // estimates and graph, before tariff notes and smart-energy reading.
+  const actionPanel=report.querySelector("#sendToSolectrics");
+  const tariffPanel=report.querySelector("#hecTariffReview");
+  const smartBox=report.querySelector(".ss-smart-box");
+  if(actionPanel && smartBox && smartBox.parentNode){
+    smartBox.parentNode.insertBefore(actionPanel,smartBox);
+    if(tariffPanel) smartBox.parentNode.insertBefore(tariffPanel,smartBox);
+  }
+
+  // Retain the 'Keep exploring' content, but not a second visit
+  // promotion or another prices CTA at the bottom of the results.
+  const controls=report.querySelector(".ss-controls-box");
+  const explore=document.getElementById("exploreMore");
+  if(explore && controls && controls.parentNode){
+    controls.parentNode.insertBefore(explore,controls);
   }
 
 }
