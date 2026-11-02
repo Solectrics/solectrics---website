@@ -4141,6 +4141,58 @@ function graph(
    FINAL REPORT
 ========================================================= */
 
+/* Informational tariff review only: does not alter solar or bill calculations. */
+function renderTariffInformation(){
+  const summer=getBill("summer");
+  const winter=getBill("winter");
+  const bills=[["Summer",summer],["Winter",winter]].filter(([,bill])=>Boolean(bill));
+  const safe=value=>escapeHtml(String(value));
+  const textField=(bill,key)=>bill && typeof bill[key]==="string" ? bill[key].trim() : "";
+  const row=(label,value)=>'<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #e4e8e6"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong></div>';
+  const cents=(bill,key)=> {
+    const n=billNumber(bill,[key]);
+    return n!==null && n>=0 ? n.toFixed(2)+" c" : null;
+  };
+  const details=[];
+  const notes=[];
+  if(bills.length){
+    for(const [season,bill] of bills){
+      const prefix=bills.length===2?season+" — ":"";
+      const retailer=textField(bill,"retailer");
+      const plan=textField(bill,"plan_name");
+      if(retailer) details.push(row(prefix+"Retailer",retailer));
+      if(plan) details.push(row(prefix+"Plan",plan));
+      for(const [key,label,unit] of [
+        ["import_rate_cents","Main import rate","/kWh"],
+        ["daily_fixed_charge_cents","Daily fixed charge","/day"],
+        ["export_rate_cents","Solar export rate","/kWh"],
+        ["peak_rate_cents","Peak import rate","/kWh"],
+        ["offpeak_rate_cents","Off-peak import rate","/kWh"],
+        ["controlled_rate_cents","Controlled/hot-water rate","/kWh"],
+        ["ev_night_rate_cents","EV/night rate","/kWh"]
+      ]){
+        const value=cents(bill,key);
+        if(value!==null)details.push(row(prefix+label,value+unit));
+      }
+    }
+    const hasTOU=bills.some(([,bill])=>billNumber(bill,["peak_rate_cents"])!==null || billNumber(bill,["offpeak_rate_cents"])!==null || billNumber(bill,["ev_night_rate_cents"])!==null);
+    const hasControlled=bills.some(([,bill])=>billNumber(bill,["controlled_rate_cents"])!==null);
+    if(hasTOU)notes.push("Your bill shows a time-dependent rate. The value of changing when you use electricity depends on your actual usage times and the plan terms.");
+    if(hasControlled)notes.push("A controlled or hot-water rate appears on your bill. Check its conditions before considering changes to hot-water timing.");
+    if(answers && (answers.ev || (Array.isArray(answers.loads) && answers.loads.some(x=>/EV|electric vehicle/i.test(String(x))))))notes.push("If you charge an EV at home, an off-peak plan may be worth investigating. Actual savings require usage and tariff verification.");
+    if(!notes.length)notes.push("Comparing your current plan with other available plans may be worthwhile, particularly before adding solar or a battery.");
+  }
+  const heading='<div class="ss-kicker">YOUR ELECTRICITY PLAN</div><h3 style="margin:8px 0 12px">Your electricity plan &amp; smart energy opportunities</h3>';
+  const comparison='<p style="margin:14px 0 8px">For independent plan comparisons, visit <a href="https://www.powerswitch.org.nz/" target="_blank" rel="noopener noreferrer">Powerswitch</a> or <a href="https://billy.govt.nz/" target="_blank" rel="noopener noreferrer">Billy</a>.</p>';
+  const contents=bills.length
+    ? '<p>These details were identified from the bill information provided. Please check them against your actual bills.</p>'+
+      (details.length?details.join(""):'<p>Retailer and tariff charges could not be confirmed from the supplied bill details.</p>')+
+      '<p style="font-size:.9em;margin-top:10px">Rates are shown as recorded on your bills. GST treatment, current availability and plan conditions have not been verified; summer and winter details may differ.</p>'+
+      '<h4 style="margin:18px 0 6px">Opportunities to explore</h4><ul>'+notes.map(x=>'<li>'+safe(x)+'</li>').join("")+'</ul>'
+    : '<p>No electricity bills were supplied, so we cannot identify your current retailer or tariff. You can still compare plans using the independent services below.</p>';
+  return '<section id="hecTariffReview" aria-label="Electricity plan and smart energy opportunities" style="margin:22px 0;padding:20px;border:1px solid #d9e4de;border-radius:14px;background:#f8faf8">'+heading+contents+comparison+'<p style="font-size:.9em">This is general information, not a personalised tariff recommendation or a calculation of switching savings. A reliable time-of-use comparison may require smart-meter interval data.</p></section>';
+}
+
 function renderFinalSmartSolarReport(){
 
   /*
@@ -4701,6 +4753,7 @@ ${
   <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>I'm happy for Solectrics to receive and use my Home Energy Check information for this enquiry.</span></label>
   <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
 </div>
+      ${renderTariffInformation()}
       <div class="ss-controls-box">
       
 <div class="ss-winter-section">
