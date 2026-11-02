@@ -384,23 +384,6 @@ Prepare for future energy needs
   <option value="Not sure">I'm not sure</option>
 </select>
 
-<label class="field" for="financePlan">How are you thinking of funding your solar installation?</label>
-<select id="financePlan" onchange="document.getElementById('greenLoanBankField').hidden=this.value!=='Bank green loan';if(this.value!=='Bank green loan')document.getElementById('greenLoanBank').value=''">
-  <option value="">Please select (optional)</option>
-  <option value="Own funds or finance arranged">I have my own funds or finance arranged</option>
-  <option value="Bank green loan">I'm interested in a green loan through my bank</option>
-  <option value="Other financing">I'd like to explore other financing options</option>
-  <option value="Not sure">I'm not sure yet</option>
-</select>
-
-<div id="greenLoanBankField" hidden>
-  <label class="field" for="greenLoanBank">Which bank? (optional)</label>
-  <select id="greenLoanBank">
-    <option value="">Please select</option>
-    <option>ASB</option><option>Westpac</option><option>BNZ</option>
-    <option>ANZ</option><option>Kiwibank</option><option>Other</option>
-  </select>
-</div>
 <div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
@@ -475,8 +458,7 @@ function selectEvDayHome(value,el){
 function saveHouse(){answers.roof=document.getElementById('roof').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value;
 answers.roofCondition=document.getElementById('roofCondition').value;
 answers.roofConditionSiteVisitFlag=['May need repairs or replacement','Not sure'].includes(answers.roofCondition);
-answers.financePlan=document.getElementById('financePlan').value;
-answers.greenLoanBank=answers.financePlan==='Bank green loan'?document.getElementById('greenLoanBank').value:''}
+}
 
 const BILL_FIELDS=[
  ['retailer','Retailer','text','full'],
