@@ -1,7 +1,17 @@
-const CANONICAL_HOSTNAME = "solectrics.co.nz";
-
+// PREVIEW-ONLY middleware. Do not merge this file into the release or main.
+// Read-only browser preview: static assets work; APIs cannot touch production.
 function isPagesHostname(hostname) {
   return hostname === "pages.dev" || hostname.endsWith(".pages.dev");
+}
+
+function denyPreviewRequest() {
+  return new Response("Unavailable in this read-only preview", {
+    status: 404,
+    headers: {
+      "Cache-Control": "no-store",
+      "Content-Type": "text/plain; charset=utf-8"
+    }
+  });
 }
 
 export async function onRequest(context) {
@@ -11,18 +21,18 @@ export async function onRequest(context) {
     return context.next();
   }
 
-  if (context.request.method === "GET" || context.request.method === "HEAD") {
-    url.protocol = "https:";
-    url.hostname = CANONICAL_HOSTNAME;
-    url.port = "";
-    return Response.redirect(url.toString(), 308);
+  // Protect customer data: no API access or form submissions in preview.
+  if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
+    return denyPreviewRequest();
+  }
+  if (context.request.method !== "GET" && context.request.method !== "HEAD") {
+    return denyPreviewRequest();
   }
 
-  return new Response("Not found", {
-    status: 404,
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Type": "text/plain; charset=utf-8"
-    }
-  });
+  const staticResource = url.pathname === "/" ||
+    /\.(?:html?|css|js|mjs|png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf)$/i.test(url.pathname);
+  if (staticResource) {
+    return context.next();
+  }
+  return denyPreviewRequest();
 }
