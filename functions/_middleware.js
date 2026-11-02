@@ -29,7 +29,15 @@ export async function onRequest(context) {
     return denyPreviewRequest();
   }
 
-  const staticResource = url.pathname === "/" ||
+  // Cloudflare Pages automatically redirects /page.html to /page.
+  // Allow only public, known HTML pages at those clean URLs.
+  const cleanPublicPages = new Set([
+    "/",
+    "/home-energy-check",
+    "/smart-energy",
+    "/smart-solar-prices"
+  ]);
+  const staticResource = cleanPublicPages.has(url.pathname) ||
     /\.(?:html?|css|js|mjs|png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf)$/i.test(url.pathname);
   if (staticResource) {
     return context.next();
