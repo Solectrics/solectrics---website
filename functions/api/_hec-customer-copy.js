@@ -9,6 +9,7 @@ export const ANSWER_FIELDS = [
   ["loads", "Appliances and energy uses"],
   ["evDayHome", "Electric vehicle use"],
   ["roof", "Roof"],
+  ["roofCondition", "Roof condition"],
   ["direction", "Roof direction"],
   ["shade", "Shading"],
   ["existingSolar", "Existing solar"],
