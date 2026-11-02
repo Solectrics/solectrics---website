@@ -375,7 +375,16 @@ Prepare for future energy needs
 </div>
 </section>
 <section class="screen" data-stage="your plans"><div class="eyebrow">today and tomorrow</div><h2>What is already there—and what might change?</h2><label class="field" for="existingSolar">Existing solar</label><select id="existingSolar" onchange="answers.existingSolar=this.value"><option>No existing solar</option><option>Solar already installed</option><option>Solar and battery already installed</option><option>Not sure</option></select><label class="field" for="batteryInterest">How do you feel about a battery?</label><select id="batteryInterest" onchange="answers.batteryInterest=this.value"><option>Open to advice</option><option>Interested if the numbers support it</option><option>Backup power is important</option><option>Prefer solar without a battery</option><option>Not sure</option></select><div class="detail-panel"><h3>Any planned changes?</h3><p class="muted">Choose everything that may happen in the next few years.</p><button class="choice" onclick="multi('plannedChanges','EV or another EV',this)">EV or another EV</button><button class="choice" onclick="multi('plannedChanges','Hot-water heat pump',this)">Hot-water heat pump</button><button class="choice" onclick="multi('plannedChanges','More electric heating',this)">More electric heating</button><button class="choice" onclick="multi('plannedChanges','Pool or spa',this)">Pool or spa</button><button class="choice" onclick="multi('plannedChanges','Home extension or more occupants',this)">Home extension or more occupants</button><button class="choice" onclick="multi('plannedChanges','No major changes planned',this)">No major changes planned</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="savePlans();next()">CONTINUE →</button></div></section>
-<section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
+<section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select>
+<label class="field" for="roofCondition">Is your roof in good condition, with no major repairs or replacement expected in the next 10 years?</label>
+<select id="roofCondition">
+  <option value="">Please select (optional)</option>
+  <option value="Good condition">Yes, my roof is in good condition</option>
+  <option value="May need repairs or replacement">No, it may need repairs or replacement</option>
+  <option value="Not sure">I'm not sure</option>
+</select>
+
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
 
@@ -446,7 +455,10 @@ function selectEvDayHome(value,el){
   if(box) box.querySelectorAll('.ev-day-choice').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
 }
-function saveHouse(){answers.roof=document.getElementById('roof').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value}
+function saveHouse(){answers.roof=document.getElementById('roof').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value;
+answers.roofCondition=document.getElementById('roofCondition').value;
+answers.roofConditionSiteVisitFlag=['May need repairs or replacement','Not sure'].includes(answers.roofCondition);
+}
 
 const BILL_FIELDS=[
  ['retailer','Retailer','text','full'],
