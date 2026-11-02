@@ -922,6 +922,42 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
+  <h3>5. Funding information (optional)</h3>
+  <p class="placeholder">Ask only if the customer wishes to discuss funding. Solectrics provides links to banks' official, current green-loan information; we do not provide financial advice, arrange loans or assess eligibility.</p>
+  <div class="grid">
+    <div>
+      <label for="visit_funding_interest">Would the customer like information about green loans?</label>
+      <select id="visit_funding_interest">
+        <option value="">Not discussed</option>
+        <option value="yes">Yes — send official bank information</option>
+        <option value="no">No</option>
+        <option value="undecided">Undecided</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_funding_bank">Customer's bank (if volunteered)</label>
+      <select id="visit_funding_bank">
+        <option value="">Not provided</option>
+        <option value="ASB">ASB</option>
+        <option value="Westpac">Westpac</option>
+        <option value="ANZ">ANZ</option>
+        <option value="BNZ">BNZ</option>
+        <option value="Kiwibank">Kiwibank</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_funding_links">Official bank information</label>
+      <select id="visit_funding_links">
+        <option value="">Not yet provided</option>
+        <option value="shared">Official link(s) shared with customer</option>
+        <option value="follow_up">Follow-up needed</option>
+        <option value="not_requested">Not requested</option>
+      </select>
+    </div>
+  </div>
+  <p class="placeholder">Any interest rates, eligibility criteria and product availability must be checked by the customer directly with their bank. Do not recommend or compare loan suitability.</p>
+
   <br>
   <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 </section>
@@ -2992,7 +3028,8 @@ const siteVisitFieldIds = [
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
   "visit_battery_location", "visit_cable_route", "visit_access_notes",
-  "visit_general_notes"
+  "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
+  "visit_funding_links"
 ];
 
 let loadedSiteVisit = {};
