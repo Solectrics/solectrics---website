@@ -514,7 +514,11 @@ window.currentAnswers = answers;
           "Daytime use": answers.dayHome,
           "Hot water": answers.hotWater,
           "Meter": answers.meter,
-          "Shade": answers.shade
+          "Shade": answers.shade,
+          "Roof condition": answers.roofCondition,
+          "Roof follow-up": answers.roofConditionSiteVisitFlag ? "Assess at site visit" : undefined,
+          "Financing preference": answers.financePlan,
+          "Green loan bank": answers.financePlan === "Bank green loan" ? answers.greenLoanBank : undefined
         };
 
         page.innerHTML = `
