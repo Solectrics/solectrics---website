@@ -35,7 +35,8 @@ export async function onRequest(context) {
     "/",
     "/home-energy-check",
     "/smart-energy",
-    "/smart-solar-prices"
+    "/smart-solar-prices",
+    "/home-battery-guide"
   ]);
   const staticResource = cleanPublicPages.has(url.pathname) ||
     /\.(?:html?|css|js|mjs|png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf)$/i.test(url.pathname);
