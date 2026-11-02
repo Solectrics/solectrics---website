@@ -16,7 +16,7 @@ h1{font-size:clamp(38px,9vw,56px);line-height:1.02;margin:0 0 22px}h2{font-size:
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid.five{grid-template-columns:repeat(5,1fr)}.grid .choice{text-align:center;margin:0;padding:16px 8px}
 .actions{display:flex;gap:10px;margin-top:25px}.actions button{flex:1}.back{background:transparent;border:1px solid #c9cbc7;text-align:center}
 .upload{border:2px dashed #c8c8c1;border-radius:16px;padding:18px;margin:12px 0;background:#fff}.upload label{display:block;font-weight:800;margin-bottom:7px}
-input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 12px}label.field{display:block;font-size:13px;font-weight:700;margin-top:8px}
+textarea#energyUsageNotes{display:block;width:100%;min-height:108px;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:#fff;resize:vertical;font:inherit}input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],input[type=number],select{width:100%;padding:14px;border:1px solid #cfd1cc;border-radius:12px;background:white;margin:5px 0 12px}label.field{display:block;font-size:13px;font-weight:700;margin-top:8px}
 .card{background:white;border-radius:18px;padding:20px;margin:14px 0}.path{border:2px solid transparent}.path.recommended{border-color:var(--orange)}.badge{display:inline-block;background:var(--orange);color:white;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}.hidden{display:none}
 .score{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #ecebe7;padding:12px 0}.score strong{text-align:right}
 .persona-note{display:none;background:#fff7e8;border-left:4px solid var(--orange);border-radius:0 13px 13px 0;padding:14px 16px;margin:18px 0;color:var(--ink);font-size:15px;line-height:1.45}.persona-note.visible{display:block}.persona-note button{border:0;background:transparent;color:var(--ink);font-weight:800;text-decoration:underline;text-decoration-color:var(--orange);text-underline-offset:3px;cursor:pointer;padding:0;margin-left:4px}.detail-panel{margin:16px 0;padding:17px;border:1px solid #e7d9cf;border-radius:16px;background:rgba(255,255,255,.65)}.detail-panel h3{margin:0 0 8px;font-size:18px}.detail-panel .choice{padding:13px 15px}
@@ -105,29 +105,10 @@ input[type=file]{width:100%}input[type=text],input[type=email],input[type=tel],i
 </div>
 <p class="upload-note">Uploading both gives us a useful summer/winter comparison.</p>
 
-<div class="upload" id="annualUsageUpload">
-  <h3><label for="annualUsageFiles">12 months of electricity use — optional</label></h3>
-  <p class="upload-note">If you have access to 12 months of your electricity-use data, you can upload it here. This gives us the clearest picture of your electricity use throughout the year.</p>
-  <input type="file" id="annualUsageFiles" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple onchange="updateAnnualUsageSelection()">
-  <div id="annualUsageStatus" class="bill-status">You can upload one usage file or several electricity bills. This is optional — you can continue without it.</div>
-  <details class="usage-help">
-    <summary>I don’t know how to get this</summary>
-    <h3>How to get your electricity usage</h3>
-    <ol>
-      <li>Log in to your electricity company’s website or app.</li>
-      <li>Look for <strong>Usage</strong>, <strong>Energy Usage</strong>, <strong>My Usage</strong> or <strong>Consumption</strong>.</li>
-      <li>Select the last 12 months if there is a date-range option.</li>
-      <li>Look for <strong>Download</strong> or <strong>Export</strong>.</li>
-      <li>If you’re offered different types of data, choose detailed or half-hourly usage data if available.</li>
-      <li>Download the file and upload it here.</li>
-    </ol>
-    <p><strong>Can’t find it? That’s okay.</strong></p>
-    <p class="upload-note">Upload your latest electricity bill instead and we can help you work out what to request from your electricity company.</p>
-    <p>If you contact your electricity company, you can ask:</p>
-    <div class="request-copy">“Could you please send me my electricity consumption data for the last 12 months, preferably half-hourly smart-meter data if available?”</div>
-    <p class="upload-note">Then upload the file they send you here.</p>
-    <p><strong>You don’t need to understand the spreadsheet — that’s our job.</strong></p>
-  </details>
+<div class="upload">
+  <h3><label for="energyUsageNotes">Anything else we should know? (optional)</label></h3>
+  <p class="upload-note">For example, time away from home, visitors, a new EV or changes to your usual electricity use.</p>
+  <textarea id="energyUsageNotes" rows="3" maxlength="2000" placeholder="Tell us about anything that might affect your electricity use"></textarea>
 </div>
 
 <!-- Keep these hidden because the existing readBill()
@@ -394,7 +375,16 @@ Prepare for future energy needs
 </div>
 </section>
 <section class="screen" data-stage="your plans"><div class="eyebrow">today and tomorrow</div><h2>What is already there—and what might change?</h2><label class="field" for="existingSolar">Existing solar</label><select id="existingSolar" onchange="answers.existingSolar=this.value"><option>No existing solar</option><option>Solar already installed</option><option>Solar and battery already installed</option><option>Not sure</option></select><label class="field" for="batteryInterest">How do you feel about a battery?</label><select id="batteryInterest" onchange="answers.batteryInterest=this.value"><option>Open to advice</option><option>Interested if the numbers support it</option><option>Backup power is important</option><option>Prefer solar without a battery</option><option>Not sure</option></select><div class="detail-panel"><h3>Any planned changes?</h3><p class="muted">Choose everything that may happen in the next few years.</p><button class="choice" onclick="multi('plannedChanges','EV or another EV',this)">EV or another EV</button><button class="choice" onclick="multi('plannedChanges','Hot-water heat pump',this)">Hot-water heat pump</button><button class="choice" onclick="multi('plannedChanges','More electric heating',this)">More electric heating</button><button class="choice" onclick="multi('plannedChanges','Pool or spa',this)">Pool or spa</button><button class="choice" onclick="multi('plannedChanges','Home extension or more occupants',this)">Home extension or more occupants</button><button class="choice" onclick="multi('plannedChanges','No major changes planned',this)">No major changes planned</button></div><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="savePlans();next()">CONTINUE →</button></div></section>
-<section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
+<section class="screen" data-stage="your home"><div class="eyebrow">your roof</div><h2>Just a little about the house itself.</h2><label class="field">Roof type</label><select id="roof"><option>Metal / corrugated</option><option>Tile</option><option>Flat / membrane</option><option>Other</option><option>I don’t know</option></select><label class="field">Main roof direction</label><select id="direction"><option>North</option><option>East</option><option>West</option><option>Several directions</option><option>I don’t know</option></select><label class="field">Significant shading?</label><select id="shade"><option>Very little</option><option>Some</option><option>A lot</option><option>I don’t know</option></select>
+<label class="field" for="roofCondition">Is your roof in good condition, with no major repairs or replacement expected in the next 10 years?</label>
+<select id="roofCondition">
+  <option value="">Please select (optional)</option>
+  <option value="Good condition">Yes, my roof is in good condition</option>
+  <option value="May need repairs or replacement">No, it may need repairs or replacement</option>
+  <option value="Not sure">I'm not sure</option>
+</select>
+
+<div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="saveHouse();next()">CONTINUE →</button></div></section>
 
 <section class="screen" data-stage="your result"><div class="eyebrow">nearly there</div><h2>Where should we send your Smart Solar Home Check?</h2><label class="field">First name</label><input id="name" type="text"><label class="field">Email</label><input id="email" type="email"><label class="field">Phone</label><input id="phone" type="tel"><label class="field">Property address</label><input id="address" type="text"><div class="actions"><button class="btn back" onclick="back()">← Back</button><button class="btn primary" onclick="showResult()">SHOW ME MY RESULTS →</button></div></section>
 
@@ -413,46 +403,16 @@ Prepare for future energy needs
   
 
     
-<!-- HOME SOLAR VISIT -->
-<div id="finalVisitCta" style="margin-top:30px">
-  <div class="ss-kicker">BOOK HOME SOLAR VISIT</div>
+<!-- Report insertion anchor; customer actions are inside the report directly after the results chart. -->
+<div id="resultReportAnchor" hidden></div>
 
-  <h2>We’ve understood your energy.<br>Now we’d like to understand your home.</h2>
-
-  <p>
-    A short Solectrics Home Solar Visit lets us confirm your roof, shading,
-    switchboard, hot-water system, equipment locations and the right system
-    design for your home, so we can finalise your quote.
-  </p>
-
-  <button class="btn primary" onclick="bookVisit()">
-    BOOK MY FREE HOME SOLAR VISIT →
-  </button>
+<div class="ss-explore-more" id="exploreMore">
+  <span class="ss-kicker">KEEP EXPLORING</span>
+  <h2>Discover what <span class="ss-else">ELSE</span> is possible.</h2>
+  <p>Solar is just the beginning. From smarter hot water and EV charging to intelligent controls and energy monitoring, there may be more ways to make your home energy-smart.</p>
+  <p>Our free home visit helps us identify which opportunities are right for your home.</p>
 </div>
 
-
-<!-- SMART SOLAR PRICES -->
-<div class="ss-pricing-section" style="margin-top:30px">
-  <div class="ss-kicker">SMART SOLAR PRICES</div>
-
-  <h2>Want to explore the costs?</h2>
-
-  <p>
-    Every home is different. See our current guide prices for solar,
-    smart controls, hot water and battery options.
-  </p>
-
-  <p>
-    You don't have to do everything at once. Start where the savings
-    make sense for your home and build from there.
-  </p>
-
-  <a href="/smart-solar-prices"
-     class="btn primary"
-     style="display:block;text-align:center;text-decoration:none;margin-top:20px;">
-    SEE SMART SOLAR PRICES →
-  </a>
-</div>
 
 </div>
 </section>
@@ -492,7 +452,10 @@ function selectEvDayHome(value,el){
   if(box) box.querySelectorAll('.ev-day-choice').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
 }
-function saveHouse(){answers.roof=document.getElementById('roof').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value}
+function saveHouse(){answers.roof=document.getElementById('roof').value;answers.direction=document.getElementById('direction').value;answers.shade=document.getElementById('shade').value;
+answers.roofCondition=document.getElementById('roofCondition').value;
+answers.roofConditionSiteVisitFlag=['May need repairs or replacement','Not sure'].includes(answers.roofCondition);
+}
 
 const BILL_FIELDS=[
  ['retailer','Retailer','text','full'],
@@ -503,7 +466,9 @@ const BILL_FIELDS=[
  ['total_import_kwh','Electricity imported (kWh)','number',''],
  ['average_daily_kwh','Average daily use (kWh)','number',''],
  ['total_export_kwh','Solar exported (kWh)','number',''],
- ['total_bill_nzd','Total bill ($)','number',''],
+ ['total_bill_nzd','Total bill including all services, GST incl. ($)','number',''],
+ ['electricity_total_incl_gst_nzd','Electricity portion only, GST incl. ($)','number',''],
+ ['broadband_total_incl_gst_nzd','Broadband/phone portion, GST incl. ($)','number',''],
  ['daily_fixed_charge_cents','Daily fixed charge (c/day)','number',''],
  ['import_rate_cents','Main import rate (c/kWh)','number',''],
  ['peak_rate_cents','Peak rate (c/kWh)','number',''],
@@ -683,21 +648,6 @@ function escapeHtml(s){
     "'":'&#39;'
   }[m]));
 }
-function updateAnnualUsageSelection(){
-  const input=document.getElementById('annualUsageFiles');
-  const status=document.getElementById('annualUsageStatus');
-  const files=Array.from(input?.files||[]);
-  if(!files.length){
-    status.className='bill-status';
-    status.textContent='Recommended for a more accurate solar and battery assessment — but you can still continue without it. You can upload one usage file or several electricity bills.';
-    return;
-  }
-  const oversized=files.find(file=>file.size>12*1024*1024);
-  status.className=`bill-status ${oversized?'bad':'good'}`;
-  status.textContent=oversized
-    ? `${oversized.name} is over the 12 MB file limit.`
-    : `${files.length} file${files.length===1?'':'s'} ready to send with your Home Energy Check.`;
-}
 async function submitHomeEnergyCheck(){
 
   try {
@@ -706,17 +656,17 @@ async function submitHomeEnergyCheck(){
 
     const summerFile=document.getElementById('summerBill')?.files?.[0];
     const winterFile=document.getElementById('winterBill')?.files?.[0];
-    const annualFiles=Array.from(document.getElementById('annualUsageFiles')?.files||[]);
-    const allFiles=[summerFile,winterFile,...annualFiles].filter(Boolean);
+    const allFiles=[summerFile,winterFile].filter(Boolean);
     const oversized=allFiles.find(file=>file.size>12*1024*1024);
     if(oversized) throw new Error(`${oversized.name} is over the 12 MB file limit`);
 
     answers.energyDataUploads={
-      recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'})),
-      annualUsage:annualFiles.map(file=>({name:file.name,type:file.type||'unknown'}))
+      recentBills:[summerFile,winterFile].filter(Boolean).map(file=>({name:file.name,type:file.type||'unknown'}))
     };
 
-    answers.customerCopyOptIn = Boolean(document.getElementById('customerCopyConsent')?.checked);
+    answers.energyUsageNotes = (document.getElementById('energyUsageNotes')?.value || '').trim().slice(0,2000);
+
+    answers.customerCopyOptIn = false;
 
     formData.append(
       'answers',
@@ -724,7 +674,6 @@ async function submitHomeEnergyCheck(){
     );
     if(summerFile) formData.append('summer_bill',summerFile,summerFile.name);
     if(winterFile) formData.append('winter_bill',winterFile,winterFile.name);
-    annualFiles.forEach(file=>formData.append('annual_usage_files',file,file.name));
 
     const response = await fetch(
       '/api/enquiry',
@@ -762,6 +711,67 @@ async function submitHomeEnergyCheck(){
   }
 }
 
+async function verifyHecEmail(){
+  const config=await (await fetch('/api/hec-email-results')).json();
+  if(!config.siteKey)throw new Error('Email verification unavailable');
+  if(!window.turnstile){
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
+    });
+  }
+  return new Promise((resolve,reject)=>{
+    const box=document.createElement('div');
+    document.getElementById('sendCheckStatus').after(box);
+    let widget;let timer;
+    const finish=(token)=>{clearTimeout(timer);if(widget!==undefined)window.turnstile.remove(widget);box.remove();token?resolve(token):reject(new Error('Verification failed'));};
+    timer=setTimeout(()=>finish(null),120000);
+    widget=window.turnstile.render(box,{sitekey:config.siteKey,action:'hec-email',callback:finish,'error-callback':()=>finish(null),'expired-callback':()=>finish(null)});
+  });
+}
+
+  async function emailHecResults(){
+  const button=document.getElementById('emailResultsButton');
+  const status=document.getElementById('sendCheckStatus');
+  if(!button || button.disabled) return;
+  const address=String(answers.email||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)){
+    status.className='bill-status bad';
+    status.textContent='Please go back and enter a valid email address.';
+    return;
+  }
+  button.disabled=true;
+  status.className='bill-status';
+  status.textContent='Emailing your results…';
+  try{
+    const token=await verifyHecEmail();
+    const response=await fetch('/api/hec-email-results',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({answers,token})
+    });
+    const data=await response.json();
+    if(!response.ok || !data.ok) throw new Error(data.error||'Unable to email results');
+    button.textContent='RESULTS EMAILED ✓';
+    status.className='bill-status good';
+    status.textContent='A copy of your results has been sent to your email. No enquiry has been created.';
+  }catch(err){
+    button.disabled=false;
+    status.className='bill-status bad';
+    status.textContent='We could not email your results. Please try again.';
+  }
+}
+
+function requestHecVisit(){
+  answers.followUpRequest='free_site_visit';
+  sendHomeEnergyCheck();
+}
+
+function sendHecReview(){
+  answers.followUpRequest='review';
+  sendHomeEnergyCheck();
+}
+
   async function sendHomeEnergyCheck(){
     const consent =
     document.getElementById('privacyConsent');
@@ -772,6 +782,7 @@ async function submitHomeEnergyCheck(){
   const status =
     document.getElementById('sendCheckStatus');
 
+  if(button.disabled) return;
   if (!consent || !consent.checked) {
     status.className = 'bill-status bad';
     status.textContent =
@@ -799,7 +810,13 @@ async function submitHomeEnergyCheck(){
 
     button.textContent =
       'HOME ENERGY CHECK SENT ✓';
-
+    const visitButton=document.getElementById('requestVisitButton');
+    if(visitButton){
+      visitButton.disabled=true;
+      if(typeof answers !== 'undefined' && answers.followUpRequest==='free_site_visit') visitButton.textContent='SITE VISIT REQUESTED ✓';
+    }
+    if(typeof answers !== 'undefined' && answers.followUpRequest==='free_site_visit')
+      status.textContent='Your Home Energy Check and free site visit request have been received. We will contact you to arrange a time.';
     consent.disabled = true;
 
   } catch (error) {
@@ -900,7 +917,7 @@ Uses:
 • roof direction
 • shading
 • indicative 5 kW solar benchmark
-• indicative 5 kWh usable battery benchmark
+• legacy internal battery heuristic; dollar forecasts withheld
 
 This is an indicative assessment — not a formal quote.
 ========================================================= -->
@@ -1411,6 +1428,33 @@ This is an indicative assessment — not a formal quote.
 
 }
 
+.ss-battery-ready details.ss-read-more{margin:10px 0;border:1px solid #e4dfd6;border-radius:11px;background:white;padding:12px 14px}
+.ss-battery-ready details.ss-read-more summary{font-size:13px;font-weight:800;cursor:pointer}
+.ss-battery-ready .ss-battery-context{font-size:13px;color:#52615b;margin-top:15px}
+.ss-battery-ready .ss-battery-learn a{display:inline-block;font-size:14px;font-weight:800;color:#155a49;text-decoration:underline;text-underline-offset:3px}
+.ss-battery-ready .ss-battery-small{font-size:13px;margin-top:15px}
+#smartSolarReport .ss-paths-intro{font-size:14px;color:#52615b;margin-top:0}
+.ss-next-steps{margin:32px 0 24px}.ss-next-steps h2{font-size:clamp(24px,5vw,32px);line-height:1.2}.ss-next-steps p{font-size:16px;line-height:1.6}
+.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
+.ss-explore-more{margin:42px 0 20px;padding-top:28px;border-top:2px solid #ef9c20}.ss-explore-more h2{font-size:clamp(26px,6vw,38px);line-height:1.12}.ss-else{display:inline-block;font-size:1.45em;font-weight:900;color:#ef9c20;letter-spacing:.01em}.ss-explore-more p{font-size:16px;line-height:1.6}
+/* The personalised report is narrower than the viewport: show full-width actions. */
+.ss-choice-panel{grid-template-columns:minmax(0,1fr)}
+.ss-action-button{width:100%;display:block}
+
+/* The HEC results column is deliberately narrow even on large browser windows.
+   Avoid three unreadably compressed comparison cards regardless of viewport width. */
+.ss-stages { grid-template-columns:minmax(0,1fr) !important; }
+.ss-stages > .ss-stage:first-of-type,.ss-improvement-heading { grid-column:1 !important; }
+#smartSolarChart { min-width:0; }
+/* Keep comparison cards legible in the narrow HEC results column. */
+@media(max-width:1100px){
+  .ss-stages,
+  .ss-battery-grid { grid-template-columns:1fr; }
+  .ss-stages > .ss-stage:first-of-type,
+  .ss-improvement-heading { grid-column:1; }
+  #smartSolarChart { min-width:0; }
+}
+
 </style>
 
 
@@ -1902,45 +1946,18 @@ function monthlyImport(
 }
 
 
-function monthlyBillCost(
-  bill
-){
-
-  if(!bill){
-    return null;
-  }
-
-
-  const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill",
-        "bill_total"
-      ]
-    );
-
-
-  if(
-    total === null
-  ){
-
-    return null;
-
-  }
-
-
-  return (
-    total /
-    billingDays(
-      bill
-    )
-  ) *
-  30.4375;
-
+function monthlyBillCost(bill){
+  if(!bill) return null;
+  const electricityOnly = billNumber(bill,['electricity_total_incl_gst_nzd']);
+  const total = billNumber(bill,['total_bill_nzd','total_bill','bill_total']);
+  const broadband = billNumber(bill,['broadband_total_incl_gst_nzd']);
+  // Never silently count non-electricity services as electricity.
+  const knownElectricity = electricityOnly !== null
+    ? electricityOnly
+    : (total !== null && broadband !== null ? total - broadband : null);
+  if(knownElectricity === null || knownElectricity < 0) return null;
+  return (knownElectricity / billingDays(bill)) * 30.4375;
 }
-
 
 /* =========================================================
    TARIFF
@@ -1983,14 +2000,12 @@ function importRateFromBill(
     after fixed daily charges.
   */
 
-  const total =
-    billNumber(
-      bill,
-      [
-        "total_bill_nzd",
-        "total_bill"
-      ]
-    );
+  const electricityOnly = billNumber(bill, ["electricity_total_incl_gst_nzd"]);
+  const combinedTotal = billNumber(bill, ["total_bill_nzd", "total_bill"]);
+  const broadband = billNumber(bill, ["broadband_total_incl_gst_nzd"]);
+  const total = electricityOnly !== null
+    ? electricityOnly
+    : (combinedTotal !== null && broadband !== null ? combinedTotal - broadband : null);
 
 
   const imported =
@@ -2142,6 +2157,43 @@ function fixedMonthlyCharge(){
 
 }
 
+
+/*
+  FINANCIAL MODEL INPUT AUDIT
+  This checks the evidence available for a forecast; it does not
+  approve a customer-facing saving. The bill reader does not yet
+  confirm whether quoted cents/kWh and fixed daily charges include GST,
+  and the proposed PV production/self-use must be site-reviewed.
+*/
+function financialInputAudit(summer,winter){
+  const issues=[];
+  const bills=[summer,winter];
+  if(!summer || !winter){
+    issues.push("Two seasonal bills are required for a full-year comparison.");
+  }
+  bills.forEach(function(bill,index){
+    if(!bill) return;
+    const season=index===0?"Summer":"Winter";
+    if(monthlyImport(bill) === null){
+      issues.push(season+" bill lacks electricity consumption.");
+    }
+    if(monthlyBillCost(bill) === null){
+      issues.push(season+" bill lacks a separable GST-inclusive electricity total.");
+    }
+    if(billNumber(bill,["daily_fixed_charge_cents"]) === null){
+      issues.push(season+" daily fixed charge is unverified.");
+    }
+    if(importRateFromBill(bill) === null){
+      issues.push(season+" import unit rate cannot be determined.");
+    }
+    if(exportRateFromBill(bill) === null){
+      issues.push(season+" export buy-back tariff is unverified.");
+    }
+  });
+  issues.push("GST inclusion for energy and daily fixed unit rates is not confirmed.");
+  issues.push("Roof-adjusted PV yield, hourly self-use and battery dispatch need site validation.");
+  return {ready:false,issues:issues};
+}
 
 /* =========================================================
    SEASONAL DEMAND
@@ -3110,6 +3162,9 @@ function buildModel(){
     );
 
 
+  const financialAudit =
+    financialInputAudit(summer,winter);
+
   const fixedMonthly =
     fixedMonthlyCharge();
 
@@ -3558,6 +3613,11 @@ function buildModel(){
 
     estimateSource:
       estimateSource,
+
+    // Public dollar forecasts stay hidden until tariff tax treatment,
+    // export buy-back rate, fixed charges and site assumptions are verified.
+    financialEstimateReady: financialAudit.ready,
+    financialAuditIssues: financialAudit.issues,
 
     existingSolar:
       (
@@ -4096,6 +4156,58 @@ function graph(
    FINAL REPORT
 ========================================================= */
 
+/* Informational tariff review only: does not alter solar or bill calculations. */
+function renderTariffInformation(){
+  const summer=getBill("summer");
+  const winter=getBill("winter");
+  const bills=[["Summer",summer],["Winter",winter]].filter(([,bill])=>Boolean(bill));
+  const safe=value=>escapeHtml(String(value));
+  const textField=(bill,key)=>bill && typeof bill[key]==="string" ? bill[key].trim() : "";
+  const row=(label,value)=>'<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #e4e8e6"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong></div>';
+  const cents=(bill,key)=> {
+    const n=billNumber(bill,[key]);
+    return n!==null && n>=0 ? n.toFixed(2)+" c" : null;
+  };
+  const details=[];
+  const notes=[];
+  if(bills.length){
+    for(const [season,bill] of bills){
+      const prefix=bills.length===2?season+" — ":"";
+      const retailer=textField(bill,"retailer");
+      const plan=textField(bill,"plan_name");
+      if(retailer) details.push(row(prefix+"Retailer",retailer));
+      if(plan) details.push(row(prefix+"Plan",plan));
+      for(const [key,label,unit] of [
+        ["import_rate_cents","Main import rate","/kWh"],
+        ["daily_fixed_charge_cents","Daily fixed charge","/day"],
+        ["export_rate_cents","Solar export rate","/kWh"],
+        ["peak_rate_cents","Peak import rate","/kWh"],
+        ["offpeak_rate_cents","Off-peak import rate","/kWh"],
+        ["controlled_rate_cents","Controlled/hot-water rate","/kWh"],
+        ["ev_night_rate_cents","EV/night rate","/kWh"]
+      ]){
+        const value=cents(bill,key);
+        if(value!==null)details.push(row(prefix+label,value+unit));
+      }
+    }
+    const hasTOU=bills.some(([,bill])=>billNumber(bill,["peak_rate_cents"])!==null || billNumber(bill,["offpeak_rate_cents"])!==null || billNumber(bill,["ev_night_rate_cents"])!==null);
+    const hasControlled=bills.some(([,bill])=>billNumber(bill,["controlled_rate_cents"])!==null);
+    if(hasTOU)notes.push("Your bill shows a time-dependent rate. The value of changing when you use electricity depends on your actual usage times and the plan terms.");
+    if(hasControlled)notes.push("A controlled or hot-water rate appears on your bill. Check its conditions before considering changes to hot-water timing.");
+    if(answers && (answers.ev || (Array.isArray(answers.loads) && answers.loads.some(x=>/EV|electric vehicle/i.test(String(x))))))notes.push("If you charge an EV at home, an off-peak plan may be worth investigating. Actual savings require usage and tariff verification.");
+    if(!notes.length)notes.push("Comparing your current plan with other available plans may be worthwhile, particularly before adding solar or a battery.");
+  }
+  const heading='<div class="ss-kicker">YOUR ELECTRICITY PLAN</div><h3 style="margin:8px 0 12px">Your electricity plan &amp; smart energy opportunities</h3>';
+  const comparison='<p style="margin:14px 0 8px">For independent plan comparisons, visit <a href="https://www.powerswitch.org.nz/" target="_blank" rel="noopener noreferrer">Powerswitch</a> or <a href="https://billy.govt.nz/" target="_blank" rel="noopener noreferrer">Billy</a>.</p>';
+  const contents=bills.length
+    ? '<p>These details were identified from the bill information provided. Please check them against your actual bills.</p>'+
+      (details.length?details.join(""):'<p>Retailer and tariff charges could not be confirmed from the supplied bill details.</p>')+
+      '<p style="font-size:.9em;margin-top:10px">Rates are shown as recorded on your bills. GST treatment, current availability and plan conditions have not been verified; summer and winter details may differ.</p>'+
+      '<h4 style="margin:18px 0 6px">Opportunities to explore</h4><ul>'+notes.map(x=>'<li>'+safe(x)+'</li>').join("")+'</ul>'
+    : '<p>No electricity bills were supplied, so we cannot identify your current retailer or tariff. You can still compare plans using the independent services below.</p>';
+  return '<section id="hecTariffReview" aria-label="Electricity plan and smart energy opportunities" style="margin:22px 0;padding:20px;border:1px solid #d9e4de;border-radius:14px;background:#f8faf8">'+heading+contents+comparison+'<p style="font-size:.9em">This is general information, not a personalised tariff recommendation or a calculation of switching savings. A reliable time-of-use comparison may require smart-meter interval data.</p></section>';
+}
+
 function renderFinalSmartSolarReport(){
 
   /*
@@ -4148,9 +4260,15 @@ function renderFinalSmartSolarReport(){
 
 
   if(old){
-
+    // Preserve the educational Explore section if the customer returns
+    // to edit their answers and the report is generated again.
+    for(const id of ["exploreMore"]){
+      const element=document.getElementById(id);
+      if(element && old.contains(element)){
+        finalScreen.insertBefore(element,old);
+      }
+    }
     old.remove();
-
   }
 
 
@@ -4176,6 +4294,18 @@ function renderFinalSmartSolarReport(){
     annual(
       model.batteryCost
     );
+
+  // Safe, limited summary for the customer's emailed results.
+  answers.hecReportSummary={
+    estimateSource:model.estimateSource,
+    financialEstimateReady:model.financialEstimateReady,
+    currentAnnualNzd:model.financialEstimateReady?Math.round(currentAnnual):null,
+    solarAnnualNzd:model.financialEstimateReady?Math.round(passiveAnnual):null,
+    smartAnnualNzd:model.financialEstimateReady?Math.round(smartAnnual):null,
+    batteryAnnualNzd:model.financialEstimateReady?Math.round(batteryAnnual):null
+  };
+
+
 
 
   const solarSaving =
@@ -4224,10 +4354,12 @@ function renderFinalSmartSolarReport(){
   const wantsBackup =
     wantsBackupPower();
 
-  if(wantsBackup){
+  if(!model.financialEstimateReady && !wantsBackup){
+    batteryAssessment = "The additional financial contribution of a battery needs interval consumption, verified usable capacity and tariff review. Monthly averages cannot establish evening supply or savings.";
+  }else if(wantsBackup){
 
     batteryAssessment =
-      "You specifically told us that backup power during outages matters to you. Electricity-bill saving is therefore only part of the battery decision. The next step is to identify the essential circuits you want available during an outage, then size the battery, inverter and backup arrangement around those needs. The 5 kWh battery used here is only an indicative benchmark — not a recommended battery size for your home.";
+      "You specifically told us that backup power during outages matters to you. Electricity-bill saving is therefore only part of the battery decision. The next step is to identify the essential circuits you want available during an outage, then size the battery, inverter and backup arrangement around those needs. The indicative medium and large comparisons use one nominal 9 kWh battery; usable capacity, reserve and backup capability require manufacturer and site verification.";
 
   }else if(
     batteryExtra >= 500
@@ -4334,14 +4466,13 @@ function renderFinalSmartSolarReport(){
       ${
         model.estimateSource === "household-benchmark"
         ? `
-          You didn’t supply electricity bills, so this first estimate
-          uses a Solectrics household benchmark based on the information
-          you gave us — including household size, hot water and selected
-          larger electrical loads.
+          You didn’t supply electricity bills, so we can identify areas
+          worth exploring but cannot yet estimate your actual annual
+          electricity spending or reliable savings.
           <br><br>
-          The figures are indicative rather than a measure of your actual
-          electricity use. Uploading a recent bill will make the estimate
-          more personal, and summer + winter bills will improve it further.
+          Summer and winter bills will help us understand your seasonal
+          use. We’ll confirm tariffs, equipment and the final financial
+          comparison during your assessment.
         `
         : model.estimateSource === "one-bill"
         ? `
@@ -4384,15 +4515,22 @@ function renderFinalSmartSolarReport(){
         <div class="ss-context">
           <strong>HOUSEHOLD BENCHMARK ESTIMATE</strong>
           <br><br>
-          No power bill was supplied. All dollar savings below are modelled
-          estimates based on your household answers and indicative electricity
-          rates. They are not a quote or a reading of your actual electricity bill.
+          No power bill was supplied. We can explore your household's energy
+          opportunities, but we cannot yet confirm annual electricity costs
+          or financial savings. This is not a formal quote.
         </div>
       `
       : ""
     }
 
 
+${!model.financialEstimateReady ? `
+  <div class="ss-context" id="noBillEstimateNotice">
+    <h3>What could solar do for your home?</h3>
+    <p>Your answers help us explore solar, smarter timing and battery options. We are not displaying dollar savings until the electricity-only bill charges, GST treatment, import and export tariffs, and site-specific assumptions have been checked.</p>
+    <p>Summer and winter bills help us estimate your electricity use. A Solectrics review and free home visit are needed to confirm a credible savings comparison and bespoke quote.</p>
+  </div>
+` : `
     <h3>
       Four ways your home could use energy
     </h3>
@@ -4488,7 +4626,7 @@ function renderFinalSmartSolarReport(){
 
           Smarter timing contributes approximately
           <strong>
-            ${money(smartExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
           </strong>
           per year beyond solar alone.
 
@@ -4521,7 +4659,7 @@ function renderFinalSmartSolarReport(){
 
           Battery storage contributes approximately
           <strong>
-            ${money(batteryExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(batteryExtra)}
           </strong>
           per year beyond the solar-smart scenario.
 
@@ -4586,18 +4724,16 @@ ${
 
     </div>
 
+
+`}
     <div class="ss-smart-box">
 
       <h3>
-        Your solar-smart opportunity
+        Your solar-smart opportunities
       </h3>
 
-      <div class="ss-rating">
-        ${model.smart.rating}
-      </div>
-
       <p>
-        <strong>Opportunities we noticed from your answers:</strong>
+        Based on your answers, here are some ways your home could make better use of solar energy.
       </p>
 
       <ul class="ss-opportunity-list">
@@ -4607,62 +4743,27 @@ ${
           }
         ).join("")}
       </ul>
-<div id="sendToSolectrics" class="card" style="margin-top:30px;border:1px solid #eadfd7">
-
-  <div class="eyebrow">send to solectrics</div>
-
-  <h2>Would you like us to review your Home Energy Check?</h2>
-
-  <p>
-    Send your completed Home Energy Check to Solectrics and we'll review
-    your results and use them as the starting point for your solar-smart
-    home assessment.
-  </p>
-
-  <p class="muted">
-    <strong>Privacy:</strong> By sending your Home Energy Check, you agree
-    that Solectrics may use the information you've provided to assess your
-    home energy needs, prepare recommendations or a quote, and contact you
-    about your enquiry. We won't sell your personal information to third
-    parties.
-  </p>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
-    <input
-      id="privacyConsent"
-      type="checkbox"
-      style="width:auto;margin-top:3px"
-    >
-    <span>
-      I'm happy for Solectrics to receive and use my Home Energy Check
-      information for this enquiry.
-    </span>
-  </label>
-
-  <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:14px;line-height:1.45">
-    <input
-      id="customerCopyConsent"
-      type="checkbox"
-      style="width:auto;margin-top:3px"
-    >
-    <span>Email me a copy of my completed Home Energy Check</span>
-  </label>
-
-  <button
-    class="btn primary"
-    id="sendCheckButton"
-    type="button"
-    onclick="sendHomeEnergyCheck()">
-    SEND MY HOME ENERGY CHECK TO SOLECTRICS →
-  </button>
-
-  <div
-    id="sendCheckStatus"
-    class="bill-status"
-    aria-live="polite">
+<div id="sendToSolectrics" class="ss-choice-panel">
+  <div class="ss-action-card">
+    <h3>1. Email me my results</h3>
+    <p>Keep a copy of your Home Energy Check to review whenever you like. This does not create a Solectrics enquiry.</p>
+    <button type="button" class="btn ss-action-button" id="emailResultsButton" onclick="emailHecResults()">EMAIL ME MY RESULTS →</button>
   </div>
-
+  <div class="ss-action-card">
+    <h3>2. Send my Home Energy Check to Solectrics</h3>
+    <p>We'll review your household information and any electricity bills you've supplied, and contact you about useful next steps.</p>
+    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHecReview()">SEND MY HOME ENERGY CHECK TO SOLECTRICS →</button>
+  </div>
+  <div class="ss-action-card ss-action-featured">
+    <h3>3. Book my free home solar visit</h3>
+    <p>We'll arrange a time to assess your roof, shading, switchboard, hot water and equipment locations before preparing your bespoke quote.</p>
+    <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
+  </div>
+  <p class="ss-privacy-text"><strong>Privacy:</strong> We use your details only for the action you choose. Sending an enquiry or requesting a visit lets Solectrics review your answers and contact you. We won't sell your personal information.</p>
+  <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>I'm happy for Solectrics to receive and use my Home Energy Check information for this enquiry.</span></label>
+  <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
 </div>
+      ${renderTariffInformation()}
       <div class="ss-controls-box">
       
 <div class="ss-winter-section">
@@ -4827,7 +4928,7 @@ ${
           </span>
 
           <strong>
-            ${money(smartExtra)}
+            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
           </strong>
 
         </div>
@@ -4869,7 +4970,7 @@ ${
       <p>
         <strong>
           Estimated additional annual saving through smarter timing:
-          ${money(smartExtra)}
+          ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
         </strong>
       </p>
 
@@ -4891,6 +4992,11 @@ ${
         electricity you buy from the grid.
       </p>
 
+      <div class="ss-context" style="${model.financialEstimateReady ? 'display:none' : ''}">
+        <strong>Winter energy options</strong>
+        <p>We can compare heating schedules, solar self-use, hot-water efficiency and battery storage during your home assessment. Dollar comparisons are paused while we verify your electricity tariffs, GST treatment and the proposed solar design.</p>
+      </div>
+      <div style="${model.financialEstimateReady ? '' : 'display:none'}">
       <details class="ss-read-more">
         <summary>SEE MY WINTER ENERGY COMPARISON →</summary>
         <div>
@@ -4905,8 +5011,7 @@ ${
       </h3>
 
       <p class="ss-intro">
-        This compares the estimated average June–August electricity bill
-        with and without 5 kWh of battery storage.
+        We can explore how a battery could help with your winter demand.\n        Any dollar comparison will require a verified tariff and site assessment.
       </p>
 
       ${
@@ -4960,7 +5065,7 @@ ${
 
 
               <div class="ss-winter-column">
-                <h4>WITH 5 kWh STORAGE</h4>
+                <h4>WITH BATTERY STORAGE</h4>
 
                 <div class="ss-winter-row">
                   <span>Solar — same habits</span>
@@ -5004,7 +5109,7 @@ ${
                   <p class="ss-small">
                     The hot-water heat-pump row includes an illustrative
                     efficiency saving of about
-                    <strong>${money(winter.annualHwhpSaving)} per year</strong>.
+                    <strong>${!model.financialEstimateReady ? "a figure to confirm during assessment" : money(winter.annualHwhpSaving) + " per year"}</strong>.
                     It is not included in the other rows.
                   </p>
                 `
@@ -5026,6 +5131,7 @@ ${
     
         </div>
       </details>
+      </div>
     </div>
 
     ${
@@ -5092,10 +5198,6 @@ ${
                 and battery storage before you decide where to spend.
               </p>
 
-              <button type="button" class="btn primary"
-                onclick="compareHotWaterBattery()">
-                COMPARE HOT WATER + BATTERY OPTIONS
-              </button>
             </div>
           </details>
         </div>
@@ -5105,219 +5207,51 @@ ${
 
 
     <div class="ss-battery-ready">
-      <h3>Not ready for a battery? That’s okay.</h3>
+      <h3>Is a home battery right for you?</h3>
 
-      <p>
-        <strong>Your Solectrics solar system can be designed battery-ready from day one.</strong>
-        Start with solar and smarter energy use now, then add storage later if it makes sense.
-      </p>
+      <p>A battery can store surplus solar electricity for use later, including after sunset. But how much is available depends on the season, weather and how much electricity your home uses during the day.</p>
+      <p><strong>A battery doesn't create electricity — it can only store what's available.</strong></p>
 
       <details class="ss-read-more">
-        <summary>WHEN DOES A BATTERY MAKE SENSE? →</summary>
+        <summary>WILL MY BATTERY WORK AS WELL IN WINTER? →</summary>
         <div>
-          <p>
-            Battery storage can be useful when you have daytime solar surplus
-            that would otherwise be exported, significant evening or overnight
-            demand, or a specific need for backup during outages.
-          </p>
-          <p>
-            Solectrics can design the initial solar system with future storage
-            in mind — including inverter choice, compatibility and equipment
-            location — so you don’t have to make the battery decision today.
-          </p>
-          <p><strong>Solar now. Smarter use now. Storage when it makes sense.</strong></p>
+          <p>In summer, longer sunny days often provide more surplus solar electricity to charge a battery. In winter, shorter days, cloud cover and higher household demand may leave little or no surplus.</p>
+          <p>A battery might only partly charge, or not charge from solar on some days. You'll still be able to use grid electricity when needed. Some systems can also charge from the grid, depending on their settings and your electricity plan.</p>
         </div>
       </details>
+
+      <details class="ss-read-more">
+        <summary>WILL A BATTERY POWER MY HOME DURING AN OUTAGE? →</summary>
+        <div>
+          <p>Potentially — but backup must be designed into your system. Not every battery installation supplies power during a grid outage.</p>
+          <p>What stays on, and for how long, depends on the charge available, usable capacity, reserved backup energy, inverter output and the circuits or appliances you need.</p>
+        </div>
+      </details>
+
+      <p class="ss-battery-context">Battery savings and evening coverage cannot be reliably predicted from monthly bills alone. We'll look more closely at your usage and seasonal solar generation during the home assessment.</p>
+      <p class="ss-battery-learn"><a href="/home-battery-guide">Understanding home batteries: summer, winter and backup →</a></p>
+      <p class="ss-battery-small"><strong>Not ready for a battery?</strong> Your initial solar system can be designed to accommodate suitable storage later, subject to equipment compatibility and system design.</p>
     </div>
 
-<div class="ss-battery-section">
-
-      <h3>
-        What does the battery change?
-      </h3>
-
-
-      <p>
-
-        After we have first allowed for sensible
-        solar-smart behaviour, a battery works with
-        the surplus solar that remains.
-
-      </p>
-
-
-      <div class="ss-battery-grid">
-
-
-        <div class="ss-benefit">
-
-          <h4>
-            1 — Use more of your own solar
-          </h4>
-
-          Instead of exporting all unused daytime
-          generation, a battery can capture some of
-          that electricity for your home to use later.
-
-        </div>
-
-
-        <div class="ss-benefit">
-
-          <h4>
-            2 — Extend your solar day
-          </h4>
-
-          Your panels naturally stop generating as
-          daylight fades.
-
-          Stored solar can continue supplying part
-          of your household demand after sunset.
-
-          <br><br>
-
-          In simple terms, a battery can turn
-          <strong>
-            daytime solar into evening energy.
-          </strong>
-
-        </div>
-
-
-        <div class="ss-benefit">
-
-          <h4>
-            3 — Comfort during grid outages
-          </h4>
-
-          With the right battery, inverter and backup
-          configuration, selected essential circuits
-          can continue operating when the grid goes down.
-
-          <br><br>
-
-          That could include things such as
-          <strong>
-            refrigeration, lights, Wi-Fi, phone charging,
-            water pumping or other selected critical loads.
-          </strong>
-
-        </div>
-
-
-      </div>
-
-
-      <div class="ss-context">
-
-        <strong>
-          Estimated additional annual electricity-bill
-          saving from battery storage:
-          ${money(batteryExtra)}
-        </strong>
-
-        <br><br>
-
-        ${batteryAssessment}
-
-        <br><br>
-
-        <strong>
-          But electricity-bill savings are not the
-          whole value of a battery.
-        </strong>
-
-        <br><br>
-
-        For some households, the ability to use more
-        of their own clean energy after sunset and the
-        comfort and security of keeping essential
-        services available during an outage can be
-        extremely valuable even where the financial
-        payback on the battery alone is modest.
-
-        <br><br>
-
-        <strong>
-          Backup needs to be designed in.
-        </strong>
-
-        Not every battery installation automatically
-        supplies the house during a grid outage.
-
-        At the home assessment, Solectrics can discuss
-        which circuits matter most to you and design
-        the appropriate backup arrangement.
-
-      </div>
-
-    </div>
-
-
-    <h3>
-      Three ways forward
-    </h3>
-
+    <h3>Three ways forward</h3>
+    <p class="ss-paths-intro">These are possibilities to discuss, not a final system recommendation.</p>
 
     <div class="ss-paths">
-
-
-      <div class="ss-path${recClass(1)}">
-
-        ${recLabel(1)}
-
-        <h4>
-          1 — SOLAR START
-        </h4>
-
-        Start generating your own clean energy with
-        a well-designed solar system.
-
-        <br><br>
-        <strong>Battery ready:</strong> we’ll design the system with future
-        storage in mind, so you don’t need to decide on a battery today.
-
+      <div class="ss-path">
+        <h4>1 — SOLAR START</h4>
+        <p>Start generating your own electricity with a well-designed solar system. Plan for possible battery storage later if it suits your needs.</p>
       </div>
 
-
-      <div class="ss-path${recClass(2)}">
-
-        ${recLabel(2)}
-
-        <h4>
-          2 — SOLAR SMART
-        </h4>
-
-        Design solar around how your household actually
-        uses electricity and use timers, scheduling and
-        smart controls to increase the amount of your own
-        clean energy used at home.
-
-        <br><br>
-        <strong>Battery ready:</strong> start with solar-smart living now and
-        add storage later if your evening use, backup needs or budget make it worthwhile.
-
+      <div class="ss-path">
+        <h4>2 — SOLAR SMART</h4>
+        <p>Use timers and smart controls to make better use of solar electricity during the day, without necessarily adding a battery.</p>
       </div>
 
-
-      <div class="ss-path${recClass(3)}">
-
-        ${recLabel(3)}
-
-        <h4>
-          3 — USE MORE SOLAR DIRECT + STORAGE FOR EVENINGS
-        </h4>
-
-        Use more of your solar directly during the day,
-        then store surplus solar for use in the evening.
-        Where backup matters, the battery system can also
-        be designed to support selected essential circuits.
-
+      <div class="ss-path">
+        <h4>3 — SOLAR SMART + BATTERY</h4>
+        <p>Store <strong>available surplus solar</strong> for later use when there is enough to charge the battery. Winter charging and evening coverage can be limited; backup requires the right system design.</p>
       </div>
-
-
     </div>
-
 
     <p class="ss-note">
 
@@ -5359,12 +5293,30 @@ ${
     Put the personalised report on the FINAL result screen.
   */
 
-  const finalVisitCta = document.getElementById("finalVisitCta");
+  const reportAnchor=document.getElementById("resultReportAnchor");
 
-  if(finalVisitCta && finalVisitCta.parentNode === finalScreen){
-    finalScreen.insertBefore(report, finalVisitCta);
+  if(reportAnchor && reportAnchor.parentNode === finalScreen){
+    finalScreen.insertBefore(report, reportAnchor);
   }else{
     finalScreen.appendChild(report);
+  }
+
+  // Keep all three distinct customer actions directly after the main
+  // estimates and graph, before tariff notes and smart-energy reading.
+  const actionPanel=report.querySelector("#sendToSolectrics");
+  const tariffPanel=report.querySelector("#hecTariffReview");
+  const smartBox=report.querySelector(".ss-smart-box");
+  if(actionPanel && smartBox && smartBox.parentNode){
+    smartBox.parentNode.insertBefore(actionPanel,smartBox);
+    if(tariffPanel) smartBox.parentNode.insertBefore(tariffPanel,smartBox);
+  }
+
+  // Retain the 'Keep exploring' content, but not a second visit
+  // promotion or another prices CTA at the bottom of the results.
+  const controls=report.querySelector(".ss-controls-box");
+  const explore=document.getElementById("exploreMore");
+  if(explore && controls && controls.parentNode){
+    controls.parentNode.insertBefore(explore,controls);
   }
 
 }
