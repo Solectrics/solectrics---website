@@ -206,7 +206,7 @@ function fillEmptyDraftFields(saved, derived) {
   return result;
 }
 
-function deriveCurrentPlan(answers = {}) {
+export function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
   // Current tariff fields must all come from the same (most recent) bill.
   // Do not combine a new retailer's name with an older retailer's rate.
