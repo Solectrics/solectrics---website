@@ -172,6 +172,14 @@
       if (button) open(button.dataset.siteJump);
     });
     byId("goToSystemDesignFromVisit")?.addEventListener("click", () => {
+      // The handoff should describe the saved survey, not unsaved edits or
+      // photographs still in flight. Keep the user in Site Visit for retry.
+      if (dirty || saving || photoUploads) {
+        const message = byId("siteVisitMessage");
+        if (message) message.textContent =
+          "Please finish saving the Site Visit and any photographs before opening System Design.";
+        return;
+      }
       // Existing navigation function owns job-section visibility.
       if (typeof selectJobWorkspace === "function") selectJobWorkspace("design");
       refresh();
