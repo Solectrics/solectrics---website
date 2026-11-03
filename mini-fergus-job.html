@@ -1135,6 +1135,23 @@ window.currentAnswers = answers;
         <option value="review">To be confirmed during design</option>
       </select>
     </div>
+    <div>
+      <label for="visit_wifi_strength">Good Wi-Fi strength at proposed equipment location?</label>
+      <select id="visit_wifi_strength">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_clearance_900mm">900 mm clearance around proposed equipment location?</label>
+      <select id="visit_clearance_900mm">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <p class="placeholder">Site observation only. Confirm actual manufacturer clearance and electrical requirements during design.</p>
+    </div>
     <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
     <div><label for="visit_cable_length_m">Approximate cable length needed (metres)</label><input type="number" min="0" step="0.5" id="visit_cable_length_m" placeholder="Estimate only"></div>
     <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
@@ -3435,7 +3452,7 @@ const siteVisitFieldIds = [
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
-  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
+  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_wifi_strength", "visit_clearance_900mm", "visit_access_notes",
   "visit_panel_count", "visit_panel_wattage", "visit_inverter_model", "visit_inverter_kw", "visit_battery_model", "visit_battery_kwh",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
@@ -3541,6 +3558,8 @@ function applySiteVisitToSystemDesign(visit) {
     visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
     visit.visit_inverter_mount === "ground" && visit.visit_inverter_pad && `Ground inverter pad / base needed: ${{yes:"Yes",no:"No",review:"Needs design confirmation"}[visit.visit_inverter_pad] || visit.visit_inverter_pad}`,
     visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
+    visit.visit_wifi_strength && `Good Wi-Fi signal at proposed equipment location: ${visit.visit_wifi_strength === "yes" ? "Yes" : "No"}`,
+    visit.visit_clearance_900mm && `900 mm clearance observed around proposed equipment location: ${visit.visit_clearance_900mm === "yes" ? "Yes" : "No"} (verify equipment-specific requirements)`,
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
     visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
