@@ -133,7 +133,28 @@ function billValues(answers) {
 }
 
 function firstKnown(bills, key) {
-  return bills.map(bill => bill?.[key]).find(value => value !== null && value !== undefined && value !== "") ?? null;
+  // Never auto-populate fields the Home Energy Check bill reader marked uncertain.
+  return bills.map(bill => {
+    if (Array.isArray(bill?.needs_review_fields) && bill.needs_review_fields.includes(key)) return null;
+    return bill?.[key];
+  }).find(value => value !== null && value !== undefined && value !== "") ?? null;
+}
+
+function fillEmptyDraftFields(saved, derived) {
+  if (!saved || saved.status !== "draft") return saved;
+  const result = { ...saved };
+  for (const part of ["current_plan", "baseline", "proposed_system"]) {
+    const existing = object(saved[part]);
+    const incoming = object(derived[part]);
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(incoming)) {
+      const oldValue = existing[key];
+      const missing = oldValue === null || oldValue === undefined || oldValue === "" || oldValue === "needs_review";
+      if (missing && value !== null && value !== undefined && value !== "") merged[key] = value;
+    }
+    result[part] = merged;
+  }
+  return result;
 }
 
 function deriveCurrentPlan(answers = {}) {
@@ -264,7 +285,7 @@ async function loadBundle(db, jobId) {
     proposed_system: deriveProposedSystem(answers, assessment || {}, object(designRow?.data_json))
   };
   const saved = decodeReview(reviewRow);
-  const review = saved || {
+  const review = saved ? fillEmptyDraftFields(saved, derived) : {
     job_id: jobId,
     status: "draft",
     ...derived,
