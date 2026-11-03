@@ -146,3 +146,26 @@ test("the user can jump directly from the Site Visit finish screen to Design", (
   element("goToSystemDesignFromVisit").listeners.click();
   assert.equal(state.selectedWorkspace, "design");
 });
+
+test("a photograph upload in progress prevents accidental navigation away", () => {
+  const { guide, windowEvents } = setup();
+  const exitAttempt = () => {
+    const event = { prevented: false, preventDefault() { this.prevented = true; }, returnValue: null };
+    windowEvents.beforeunload(event);
+    return event.prevented;
+  };
+  guide.photoStarted();
+  assert.equal(exitAttempt(), true);
+  guide.photoFinished();
+  assert.equal(exitAttempt(), false);
+});
+
+test("System Design opens as five compact sections without changing field IDs", () => {
+  const design = page.split('id="systemDesignSection"')[1].split('id="energyTariffReviewSection"')[0];
+  assert.equal([...design.matchAll(/class="design-fold"/g)].length, 5);
+  for (const id of ["design_icp","designRoofs","design_panel_model",
+    "design_battery_kwh","design_string_count","design_reviewed","designReadiness"]) {
+    assert.match(design, new RegExp('id="' + id + '"'));
+  }
+  assert.match(page, /OpenSolar is used to prepare the roof\/panel layout/);
+});
