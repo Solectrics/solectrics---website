@@ -150,6 +150,45 @@ function firstKnown(bills, key) {
   }).find(value => value !== null && value !== undefined && value !== "") ?? null;
 }
 
+
+/**
+ * Read-only evidence from the existing job records. A bill-reader result is
+ * never proof of the meter/ICP arrangement or an approved network connection.
+ */
+export function buildIcpEvidence(answers = {}, visit = {}, design = {}) {
+  const sources = [];
+  for (const [season, label] of [["summer", "Summer bill"], ["winter", "Winter bill"]]) {
+    const bill = answers?.bills?.[season];
+    if (!bill || typeof bill !== "object") continue;
+    sources.push({
+      source: label,
+      icp: text(bill.icp, 100),
+      retailer: text(bill.retailer, 200),
+      date: text(bill.billing_period_end, 30),
+      needs_review: Array.isArray(bill.needs_review_fields) && bill.needs_review_fields.includes("icp")
+    });
+  }
+  if (visit?.visit_icp) sources.push({
+    source: "Site Visit", icp: text(visit.visit_icp, 100),
+    date: text(visit.visit_date, 30), needs_review: false
+  });
+  if (design?.design_icp) sources.push({
+    source: "System Design", icp: text(design.design_icp, 100),
+    date: "", needs_review: false
+  });
+  const normalise = value => String(value || "").replace(/[\s-]+/g, "").toUpperCase();
+  const distinct = rows => new Set(rows.map(row => normalise(row.icp)).filter(Boolean)).size > 1;
+  return {
+    sources,
+    conflicting: distinct(sources),
+    // An unconfirmed disagreement between two bills must not auto-fill the
+    // current-plan ICP, but it must remain visible to the office for review.
+    bill_conflict: distinct(sources.filter(row => row.source.endsWith("bill") && !row.needs_review)),
+    physical_match: text(visit?.visit_hw_physical_match, 100) || "not_compared",
+    lookup_connected: false
+  };
+}
+
 function fillEmptyDraftFields(saved, derived) {
   if (!saved || saved.status !== "draft") return saved;
   const result = { ...saved };
@@ -167,7 +206,7 @@ function fillEmptyDraftFields(saved, derived) {
   return result;
 }
 
-function deriveCurrentPlan(answers = {}) {
+export function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
   // Current tariff fields must all come from the same (most recent) bill.
   // Do not combine a new retailer's name with an older retailer's rate.
@@ -182,7 +221,7 @@ function deriveCurrentPlan(answers = {}) {
   return {
     retailer: currentValue("retailer") || "",
     plan_name: currentValue("plan_name") || "",
-    icp: currentValue("icp") || "",
+    icp: buildIcpEvidence(answers).bill_conflict ? "" : (currentValue("icp") || ""),
     billing_period_start: currentValue("billing_period_start") || "",
     billing_period_end: currentValue("billing_period_end") || "",
     daily_charge_cents: currentValue("daily_fixed_charge_cents"),
@@ -291,7 +330,7 @@ function decodeTariff(row) {
     peak_import_periods: array(row.peak_import_periods_json),
     offpeak_import_periods: array(row.offpeak_import_periods_json),
     peak_export_periods: array(row.peak_export_periods_json),
-    source_complete: Boolean(row.source_url && (row.last_verified_date || row.effective_date))
+    source_complete: Boolean(row.source_url && row.last_verified_date)
   };
 }
 
@@ -301,9 +340,10 @@ async function loadBundle(db, jobId) {
     FROM jobs JOIN enquiries ON jobs.enquiry_id = enquiries.id WHERE jobs.id = ?`, jobId);
   if (!job) return null;
   const answers = object(job.answers_json);
-  const [assessment, designRow, files, reviewRow, tariffRows] = await Promise.all([
+  const [assessment, designRow, siteRow, files, reviewRow, tariffRows] = await Promise.all([
     optionalFirst(db, "SELECT * FROM assessments WHERE job_id = ?", jobId),
     optionalFirst(db, "SELECT data_json FROM system_designs WHERE job_id = ?", jobId),
+    optionalFirst(db, "SELECT data_json FROM site_visits WHERE job_id = ?", jobId),
     optionalAll(db, "SELECT document_role, energy_data_detail, original_name, uploaded_at FROM job_files WHERE job_id = ?", jobId),
     optionalFirst(db, "SELECT * FROM energy_reviews WHERE job_id = ?", jobId),
     optionalAll(db, "SELECT * FROM job_energy_tariffs WHERE job_id = ? ORDER BY is_current_plan DESC, updated_at DESC", jobId)
@@ -335,6 +375,7 @@ async function loadBundle(db, jobId) {
     review,
     derived,
     files,
+    icp_evidence: buildIcpEvidence(answers, object(siteRow?.data_json), object(designRow?.data_json)),
     tariffs,
     comparisons,
     future_import: { format: "EIEP14A", status: "prepared_not_built" }

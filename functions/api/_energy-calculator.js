@@ -99,7 +99,7 @@ export function compareTariffs(model, tariffs = []) {
     tariff_id: tariff.id,
     retailer: tariff.retailer,
     plan_name: tariff.plan_name,
-    source_complete: Boolean(tariff.source_url && (tariff.last_verified_date || tariff.effective_date)),
+    source_complete: Boolean(tariff.source_url && tariff.last_verified_date),
     ...calculateTariffCost(model, tariff)
   })).sort((a, b) => {
     if (a.recurring_annual_cost_nzd === null) return 1;

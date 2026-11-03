@@ -11,12 +11,38 @@
 <body>
 <main class="wrap">
   <div class="top"><div><div class="brand">solectrics</div><div class="eyebrow">Internal workspace</div><h1 class="title">Retailer &amp; Tariff Review</h1><div class="address" id="customerHeading">Loading job…</div></div><a class="back" id="backLink" href="/mini-fergus">← Back to Job</a></div>
-  <div class="workflow">Enquiry → HEC → 12-month data → Site visit → Proposed system → <b>Energy modelling → Tariff review</b> → Final proposal → Acceptance/deposit → DG/metering → Installation</div>
+  <div class="workflow">Enquiry → HEC → summer/winter bills → Site visit → Proposed system → <b>Energy modelling → Tariff review</b> → Final proposal → Acceptance/deposit → DG/metering → Installation</div>
   <div class="layout"><div class="main">
     <section class="card">
       <h2>1. Your current electricity plan</h2>
       <p class="muted">Values extracted from customer bills are brought in automatically. Blank or unclear information stays marked “Needs review”—Job Hub will not invent a tariff value.</p>
+      <div id="icpEvidence" class="source-line" aria-live="polite">Checking available ICP evidence…</div>
       <div class="grid three" id="currentPlanFields"></div>
+      <details class="source-line" style="margin-top:18px" id="eaRegistryLookup">
+        <summary style="cursor:pointer;font-weight:800">Electricity Authority meter &amp; network lookup — office only</summary>
+        <p class="muted">Look up the address or ICP on the official public site, then record what is shown. This is a manual evidence note, not a connected API or proof of Vector approval, export metering or a tariff contract.</p>
+        <div class="button-row">
+          <a class="button secondary" href="https://www.ea.govt.nz/your-power/your-meter/icp/" target="_blank" rel="noopener noreferrer">LOOK UP BY ICP</a>
+          <a class="button secondary" href="https://www.ea.govt.nz/your-power/your-meter/address/" target="_blank" rel="noopener noreferrer">LOOK UP BY ADDRESS</a>
+          <button type="button" class="secondary" id="copyIcpForLookup">COPY CURRENT ICP</button>
+        </div>
+        <div class="muted" id="copyIcpMessage" role="status"></div>
+        <div id="registryWarnings" class="notice" role="status" style="margin:12px 0"></div>
+        <div class="grid three">
+          <div><label class="field" for="registry_icp">ICP shown by Authority</label><input id="registry_icp" placeholder="Needs review"></div>
+          <div><label class="field" for="registry_network">Network / distributor</label><input id="registry_network" placeholder="As shown on lookup"></div>
+          <div><label class="field" for="registry_retailer">Retailer / trader</label><input id="registry_retailer" placeholder="As shown on lookup"></div>
+          <div class="full"><label class="field" for="registry_address">Connection address shown</label><input id="registry_address" placeholder="May differ from postal address"></div>
+          <div><label class="field" for="registry_meter_type">Meter type / configuration</label><input id="registry_meter_type" placeholder="As shown on lookup"></div>
+          <div><label class="field" for="registry_price_category">Distribution price category</label><input id="registry_price_category" placeholder="If displayed"></div>
+          <div><label class="field" for="registry_controlled_load">Controlled-load record</label><select id="registry_controlled_load"><option value="">Not checked / not shown</option><option value="yes">Shown</option><option value="no">Not shown</option><option value="unclear">Unclear</option></select></div>
+          <div><label class="field" for="registry_generation">Registered generation</label><select id="registry_generation"><option value="">Not checked / not shown</option><option value="yes">Shown</option><option value="no">Not shown</option><option value="unclear">Unclear</option></select></div>
+          <div><label class="field" for="registry_checked_on">Date manually checked</label><input id="registry_checked_on" type="date"></div>
+          <div><label class="field" for="registry_checked_by">Checked by</label><input id="registry_checked_by" placeholder="Office team member"></div>
+          <div class="full"><label class="field" for="registry_notes">Registry lookup notes / outstanding checks</label><textarea id="registry_notes" placeholder="Record what needs confirmation with retailer, metering provider or Vector"></textarea></div>
+        </div>
+        <p class="muted">Saved with this job's energy review. It does not update System Design, Site Visit, retailer tariff prices or any submitted documents. Use <strong>SAVE ENERGY REVIEW</strong> when finished.</p>
+      </details>
     </section>
 
     <section class="card">
@@ -143,7 +169,76 @@ function kwh(v){return v===null||v===undefined?'Needs review':`${Number(v).toLoc
 function inputMarkup(prefix,[key,label,type],value){const id=`${prefix}_${key}`;if(type==='select'){const options=key==='pricing_type'?[['needs_review','Needs review'],['flat','Flat / anytime rate'],['time_of_use','Time-of-use']]:[['needs_review','Needs review'],['yes','Yes'],['no','No']];return `<div><label class="field" for="${id}">${esc(label)}</label><select id="${id}" data-key="${key}">${options.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></div>`}if(type==='textarea')return `<div class="full"><label class="field" for="${id}">${esc(label)}</label><textarea id="${id}" data-key="${key}" placeholder="Needs review">${esc(value??'')}</textarea></div>`;if(type==='checkbox')return `<label class="check full"><input id="${id}" data-key="${key}" type="checkbox" ${value?'checked':''}> ${esc(label)}</label>`;return `<div><label class="field" for="${id}">${esc(label)}</label><input class="needs-review" id="${id}" data-key="${key}" type="${type}" ${type==='number'?'min="0" step="any"':''} value="${esc(value??'')}" placeholder="Needs review"></div>`}
 function buildFields(container,prefix,fields,values){container.innerHTML=fields.map(field=>inputMarkup(prefix,field,values?.[field[0]])).join('');fields.filter(f=>f[2]==='select').forEach(([key])=>{const el=document.getElementById(`${prefix}_${key}`);if(el)el.value=values?.[key]||'needs_review'})}
 function readFields(prefix,fields){const out={};fields.forEach(([key,,type])=>{const el=document.getElementById(`${prefix}_${key}`);if(!el)return;if(type==='checkbox')out[key]=el.checked;else if(type==='number')out[key]=n(el.value);else out[key]=el.value.trim()});return out}
-function renderCurrentPlan(){buildFields(document.getElementById('currentPlanFields'),'current',currentPlanFields,state.review.current_plan)}
+function renderIcpEvidence(){
+  const evidence=state.bundle?.icp_evidence||{};
+  const items=evidence.sources||[];
+  const label={
+    yes:'Tom recorded that the meter / hot-water circuit appears consistent with office bill information.',
+    no:'Tom found a physical mismatch — investigate before confirming metering or controlled-load assumptions.',
+    investigate:'Tom marked the physical arrangement for further investigation.',
+    no_office_info:'Tom did not have office bill information available to compare.',
+    not_compared:'Tom has not compared the physical arrangement against office bill information.'
+  }[evidence.physical_match]||'Physical arrangement has not been confirmed.';
+  const status=evidence.conflicting
+    ? '<div class="flag">⚠ Different ICP values are recorded. Check the original bills and meter label before using an ICP in a supplier or Vector application. No record has been overwritten.</div>'
+    : '<div class="muted">No differing ICP values found in the available records; this is not network verification.</div>';
+  const sources=items.length
+    ? '<div class="grid" style="margin-top:10px">'+items.map(item=>
+        '<div><strong>'+esc(item.source)+'</strong><div>ICP: '+esc(item.icp||'Needs review')+
+        '</div><div class="muted">'+(item.retailer?'Retailer: '+esc(item.retailer)+' · ':'')+
+        (item.date?'Date: '+esc(item.date):'Date not recorded')+
+        (item.needs_review?' · Bill reader flagged ICP for review':'')+'</div></div>'
+      ).join('')+'</div>'
+    : '<div class="muted">No ICP recorded yet on the supplied bills or saved Site Visit / System Design.</div>';
+  document.getElementById('icpEvidence').innerHTML=
+    '<strong>ICP and meter evidence — office review</strong>'+
+    '<p class="muted">Customer-bill extraction is provisional. Site Visit records physical observations, not tariff prices or Vector approval. No live ICP registry lookup is connected.</p>'+
+    status+sources+'<p class="muted">'+esc(label)+'</p>';
+}
+const registryKeys=['icp','network','retailer','address','meter_type','price_category','controlled_load','generation','checked_on','checked_by','notes'];
+function collectRegistryCheck(){
+  return Object.fromEntries(registryKeys.map(k=>[k,document.getElementById('registry_'+k).value.trim()]));
+}
+function renderRegistryCheck(){
+  const saved=state.review?.current_plan?.registry_check||{};
+  for(const key of registryKeys)document.getElementById('registry_'+key).value=saved[key]||'';
+}
+function updateRegistryWarnings(){
+  const registry=collectRegistryCheck();
+  const evidence=state.bundle?.icp_evidence||{};
+  const norm=v=>String(v||'').replace(/[\s-]+/g,'').toUpperCase();
+  const recorded=(evidence.sources||[]).map(x=>x.icp).filter(Boolean);
+  const differs=Boolean(registry.icp)&&recorded.some(icp=>norm(icp)!==norm(registry.icp));
+  const planRetailer=document.getElementById('current_retailer')?.value.trim()||'';
+  const changedRetailer=registry.retailer&&planRetailer&&registry.retailer.toLowerCase()!==planRetailer.toLowerCase();
+  const warnings=[];
+  if(evidence.conflicting)warnings.push('Existing bill, Site Visit or Design ICP values already disagree.');
+  if(differs)warnings.push('The ICP entered from the Authority differs from one or more existing job records. Investigate before using it for an application.');
+  if(changedRetailer)warnings.push('The Authority retailer differs from the bill-derived retailer. Check whether the customer has switched providers.');
+  if(!registry.checked_on)warnings.push('No lookup date recorded. These details have not been marked as checked.');
+  if(!registry.icp)warnings.push('Authority ICP has not been recorded.');
+  document.getElementById('registryWarnings').textContent=warnings.length
+    ? warnings.join(' ')
+    : 'Lookup notes recorded; still confirm network/metering requirements before submitting applications.';
+}
+function renderCurrentPlan(){
+  buildFields(document.getElementById('currentPlanFields'),'current',currentPlanFields,state.review.current_plan);
+  renderRegistryCheck();
+  renderIcpEvidence();
+  updateRegistryWarnings();
+}
+async function copyCurrentIcp(){
+  const message=document.getElementById('copyIcpMessage');
+  if(state.bundle?.icp_evidence?.bill_conflict){message.textContent='Bills disagree on ICP: check the source records before choosing one.';return;}
+  const icp=document.getElementById('current_icp')?.value.trim();
+  if(!icp){message.textContent='No current-plan ICP recorded. Use the Authority address search instead.';return;}
+  try{
+    await navigator.clipboard.writeText(icp);
+    message.textContent='ICP copied. Paste it into the Electricity Authority lookup.';
+  }catch{
+    message.textContent='Copy unavailable in this browser. Select the ICP in Current Plan and copy manually.';
+  }
+}
 function renderBaseline(){const b=state.review.baseline||{};document.getElementById('qualityLine').innerHTML=`<strong>Data quality:</strong> ${esc(b.data_quality||'Needs review')}`;document.getElementById('baselineSummary').innerHTML=[['Annual use',kwh(b.annual_consumption_kwh)],['Annual spend',money(b.annual_expenditure_nzd)],['Average daily use',b.average_daily_consumption_kwh==null?'Needs review':`${b.average_daily_consumption_kwh} kWh/day`],['Annual fixed charges',money(b.annual_fixed_charges_nzd)]].map(([l,v])=>`<div class="metric"><small>${l}</small><strong>${v}</strong></div>`).join('');document.querySelectorAll('.baseline-number').forEach(el=>el.value=b[el.dataset.key]??'');document.getElementById('baseline_seasonal_pattern').value=b.seasonal_pattern||'';document.getElementById('baseline_notes').value=b.notes||'';document.getElementById('consumption_period_start').value=state.review.consumption_period_start||b.consumption_period_start||'';document.getElementById('consumption_period_end').value=state.review.consumption_period_end||b.consumption_period_end||''}
 function renderProposed(){const p=state.review.proposed_system||{};buildFields(document.getElementById('proposedSystemFields'),'proposed',proposedFields,p);document.getElementById('smartOptions').innerHTML=smartFields.map(([key,label])=>`<label class="check"><input type="checkbox" data-smart="${key}" ${p[key]?'checked':''}> ${esc(label)}</label>`).join('')+`<div class="full"><label class="field">EV charging strategy</label><input id="ev_charging_strategy" value="${esc(p.ev_charging_strategy||'')}" placeholder="Needs review"></div><div class="full"><label class="field">Other smart / flexible loads</label><textarea id="other_flexible_loads">${esc(p.other_flexible_loads||'')}</textarea></div>`}
 function currentProposed(){return {...readFields('proposed',proposedFields),...Object.fromEntries([...document.querySelectorAll('[data-smart]')].map(el=>[el.dataset.smart,el.checked])),ev_charging_strategy:document.getElementById('ev_charging_strategy').value.trim(),other_flexible_loads:document.getElementById('other_flexible_loads').value.trim()}}
@@ -156,15 +251,34 @@ function updateResultMeta(){const key=document.querySelector('input[name="scenar
 function updateChecks(){const r=state.review,p=r.proposed_system||{},count=state.tariffs.length;const checks=[Boolean(r.current_plan?.retailer),Boolean(r.baseline?.annual_consumption_kwh||r.baseline?.data_quality_code==='interval_uploaded'),Boolean(p.solar_array_kw||p.estimated_annual_solar_generation_kwh),Boolean(r.model?.model_ready),count>=3&&count<=5&&state.tariffs.every(t=>t.source_complete)];document.querySelectorAll('#reviewChecks li').forEach((el,i)=>el.classList.toggle('done',checks[i]))}
 function applyBundle(data){state.bundle=data;state.review=data.review;state.tariffs=data.tariffs||[];state.comparisons=data.comparisons||[];document.getElementById('customerHeading').textContent=`${data.customer.name||'Customer'} · ${data.customer.address||'Address not supplied'}`;document.getElementById('review_status').value=state.review.status||'draft';document.getElementById('tariffs_checked_date').value=state.review.tariffs_checked_date||'';document.getElementById('post_install_review_due').value=state.review.post_install_review_due||'';document.getElementById('customer_summary').value=state.review.customer_summary||'';renderCurrentPlan();renderBaseline();renderProposed();renderScenarios();renderModel();renderTariffs();renderComparison();updateResultMeta();updateChecks()}
 async function api(body){const response=await fetch('/api/energy-review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({job_id:Number(jobId),...body})});const data=await response.json();if(!response.ok||!data.ok)throw new Error(data.detail||data.error||'Request failed');return data}
-function collectReview(){const baseline={...state.review.baseline};document.querySelectorAll('.baseline-number').forEach(el=>baseline[el.dataset.key]=n(el.value));baseline.seasonal_pattern=document.getElementById('baseline_seasonal_pattern').value.trim();baseline.notes=document.getElementById('baseline_notes').value.trim();const model=readFields('model',modelFields);model.model_ready=document.getElementById('model_ready').checked;return {status:document.getElementById('review_status').value,current_plan:readFields('current',currentPlanFields),baseline,proposed_system:currentProposed(),scenario:{},model,assumptions:document.getElementById('assumptions').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),selected_scenario:document.querySelector('input[name="scenario"]:checked')?.value||'solar_smart',customer_summary:document.getElementById('customer_summary').value.trim(),tariffs_checked_date:document.getElementById('tariffs_checked_date').value,consumption_period_start:document.getElementById('consumption_period_start').value,consumption_period_end:document.getElementById('consumption_period_end').value,post_install_review_due:document.getElementById('post_install_review_due').value}}
+function collectReview(){const baseline={...state.review.baseline};document.querySelectorAll('.baseline-number').forEach(el=>baseline[el.dataset.key]=n(el.value));baseline.seasonal_pattern=document.getElementById('baseline_seasonal_pattern').value.trim();baseline.notes=document.getElementById('baseline_notes').value.trim();const model=readFields('model',modelFields);model.model_ready=document.getElementById('model_ready').checked;return {status:document.getElementById('review_status').value,current_plan:{...state.review.current_plan,...readFields('current',currentPlanFields),registry_check:collectRegistryCheck()},baseline,proposed_system:currentProposed(),scenario:{},model,assumptions:document.getElementById('assumptions').value.split(/\n+/).map(x=>x.trim()).filter(Boolean),selected_scenario:document.querySelector('input[name="scenario"]:checked')?.value||'solar_smart',customer_summary:document.getElementById('customer_summary').value.trim(),tariffs_checked_date:document.getElementById('tariffs_checked_date').value,consumption_period_start:document.getElementById('consumption_period_start').value,consumption_period_end:document.getElementById('consumption_period_end').value,post_install_review_due:document.getElementById('post_install_review_due').value}}
 async function saveReview(){const m=document.getElementById('saveMessage');m.textContent='Saving…';try{applyBundle(await api({action:'save_review',review:collectReview()}));m.textContent='✓ Energy review saved'}catch(e){m.textContent=`Could not save: ${e.message}`}}
 function openTariff(t={}){document.getElementById('tariffForm').classList.remove('hidden');document.getElementById('tariffFormTitle').textContent=t.id?'Edit retailer plan':'Add retailer plan';buildFields(document.getElementById('tariffFields'),'tariff',tariffFields,t);document.getElementById('tariff_id').value=t.id||'';document.getElementById('tariffForm').scrollIntoView({behavior:'smooth',block:'start'})}
 function closeTariff(){document.getElementById('tariffForm').classList.add('hidden');document.getElementById('tariffMessage').textContent=''}
-function currentPlanAsTariff(){const existing=state.tariffs.find(t=>t.is_current_plan);if(!existing&&state.tariffs.length>=5){alert('This review already has five plans. Edit or remove one before adding the current plan.');return}const p=readFields('current',currentPlanFields);openTariff({...p,id:existing?.id||'',is_current_plan:true,source_name:'Customer electricity bill',last_verified_date:new Date().toISOString().slice(0,10),notes:p.notes})}
+function currentPlanAsTariff(){
+  const existing=state.tariffs.find(t=>t.is_current_plan);
+  if(!existing&&state.tariffs.length>=5){
+    alert('This review already has five plans. Edit or remove one before adding the current plan.');
+    return;
+  }
+  const p=readFields('current',currentPlanFields);
+  // A prior source check is valid for the same plan/rates, not a new bill with
+  // different plan details. Re-check changed rates before marking verified.
+  const checkedKeys=['retailer','plan_name','daily_charge_cents','standard_import_rate_cents',
+    'peak_import_rate_cents','offpeak_import_rate_cents','controlled_import_rate_cents',
+    'ev_night_rate_cents','solar_export_rate_cents','exit_cost_nzd'];
+  const unchanged=Boolean(existing)&&checkedKeys.every(key=>String(existing[key]??'').trim()===String(p[key]??'').trim());
+  openTariff({...p,id:existing?.id||'',is_current_plan:true,
+    source_name:unchanged?(existing.source_name||'Customer electricity bill (needs manual verification)'):'Customer electricity bill (needs manual verification)',
+    source_url:unchanged?(existing.source_url||''):'',
+    last_verified_date:unchanged?(existing.last_verified_date||''):'',
+    effective_date:unchanged?(existing.effective_date||''):'',
+    notes:existing?.notes||p.notes});
+}
 async function saveTariff(event){event.preventDefault();const m=document.getElementById('tariffMessage');m.textContent='Saving…';const tariff={...readFields('tariff',tariffFields),id:document.getElementById('tariff_id').value};['peak_import_periods','offpeak_import_periods','peak_export_periods'].forEach(k=>tariff[k]=String(tariff[k]||'').split(/[,;]+/).map(x=>x.trim()).filter(Boolean));try{applyBundle(await api({action:'save_tariff',tariff}));closeTariff()}catch(e){m.textContent=`Could not save: ${e.message}`}}
 async function deleteTariff(id){if(!confirm('Remove this tariff from this customer comparison?'))return;try{applyBundle(await api({action:'delete_tariff',tariff_id:id}))}catch(e){alert(e.message)}}
 async function load(){if(!jobId){document.getElementById('customerHeading').textContent='No Job ID supplied';return}document.getElementById('backLink').href=`/mini-fergus-job.html?id=${encodeURIComponent(jobId)}`;try{const response=await fetch(`/api/energy-review?job_id=${encodeURIComponent(jobId)}`),data=await response.json();if(!response.ok||!data.ok)throw new Error(data.detail||data.error);applyBundle(data)}catch(e){document.getElementById('customerHeading').textContent=`Could not load this review: ${e.message}`}}
-document.getElementById('saveReview').addEventListener('click',saveReview);document.getElementById('newTariff').addEventListener('click',()=>openTariff());document.getElementById('useCurrentPlan').addEventListener('click',currentPlanAsTariff);document.getElementById('cancelTariff').addEventListener('click',closeTariff);document.getElementById('tariffForm').addEventListener('submit',saveTariff);document.addEventListener('click',e=>{if(e.target.dataset.edit)openTariff(state.tariffs.find(t=>t.id===e.target.dataset.edit));if(e.target.dataset.delete)deleteTariff(e.target.dataset.delete)});document.addEventListener('change',e=>{if(e.target.matches('[data-smart],input[name="scenario"],#tariffs_checked_date,#consumption_period_start,#consumption_period_end')){if(e.target.matches('[data-smart]'))renderScenarios();updateResultMeta()}});load();
+document.getElementById('saveReview').addEventListener('click',saveReview);document.getElementById('copyIcpForLookup').addEventListener('click',copyCurrentIcp);document.addEventListener('input',e=>{if(e.target.id.startsWith('registry_')||e.target.id==='current_retailer')updateRegistryWarnings()});document.getElementById('newTariff').addEventListener('click',()=>openTariff());document.getElementById('useCurrentPlan').addEventListener('click',currentPlanAsTariff);document.getElementById('cancelTariff').addEventListener('click',closeTariff);document.getElementById('tariffForm').addEventListener('submit',saveTariff);document.addEventListener('click',e=>{if(e.target.dataset.edit)openTariff(state.tariffs.find(t=>t.id===e.target.dataset.edit));if(e.target.dataset.delete)deleteTariff(e.target.dataset.delete)});document.addEventListener('change',e=>{if(e.target.matches('[data-smart],input[name="scenario"],#tariffs_checked_date,#consumption_period_start,#consumption_period_end')){if(e.target.matches('[data-smart]'))renderScenarios();updateResultMeta()}});load();
 </script>
 </body>
 </html>
