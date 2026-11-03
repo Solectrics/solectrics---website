@@ -3589,6 +3589,7 @@ async function loadSiteVisit() {
 async function saveSiteVisit({ officeOnly = false } = {}) {
   const message = document.getElementById(officeOnly ? "officeFundingMessage" : "siteVisitMessage");
   const siteVisit = collectSiteVisit();
+  const guideVersion = officeOnly ? null : window.jobhubSiteGuide?.saveStarted();
   message.textContent = " Saving...";
 
   try {
@@ -3601,6 +3602,7 @@ async function saveSiteVisit({ officeOnly = false } = {}) {
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
     loadedSiteVisit = { ...siteVisit };
+    if (!officeOnly) window.jobhubSiteGuide?.saveFinished(guideVersion, true);
     if (officeOnly) {
       // Office-only funding questions must not overwrite edited System Design.
       message.textContent = " ✓ Office follow-up saved";
@@ -3620,6 +3622,7 @@ async function saveSiteVisit({ officeOnly = false } = {}) {
       : " Site visit saved, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
+    if (!officeOnly) window.jobhubSiteGuide?.saveFinished(guideVersion, false);
     message.textContent = officeOnly ? " Could not save office follow-up" : " Could not save site visit";
   }
 }
