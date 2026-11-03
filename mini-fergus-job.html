@@ -703,7 +703,7 @@ window.currentAnswers = answers;
 
   <div>
     <label>Panel wattage (W)</label>
-    <input type="number" id="panel_wattage" value="445">
+    <input type="number" id="panel_wattage" placeholder="e.g. 475">
   </div>
 
   <div>
@@ -2577,6 +2577,7 @@ function applyJobWorkspaceVisibility() {
 function selectJobWorkspace(workspace) {
   if (!validJobWorkspaces.has(workspace)) return;
   activeJobWorkspace = workspace;
+  if (workspace === "office") syncLinkedEquipmentFields();
   applyJobWorkspaceVisibility();
   const nav = document.getElementById("jobWorkspaceNav");
   if (nav) nav.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -2704,7 +2705,7 @@ async function saveGeneralJobDetails() {
     const a = data.assessment;
 
     document.getElementById("panel_wattage").value =
-      a.panel_wattage ?? 445;
+      a.panel_wattage ?? "";
     document.getElementById("panel_count").value =
       a.panel_count ?? "";
     document.getElementById("solar_kw").value =
@@ -2987,6 +2988,91 @@ function suggestTariff() {
 
   tariffNotes.value = notes.join(" ");
 }
+function fillBlankField(targetId, sourceValue) {
+  const target = document.getElementById(targetId);
+  if (!target || sourceValue === null || sourceValue === undefined ||
+      String(sourceValue).trim() === "" || String(target.value || "").trim() !== "") return false;
+  target.value = String(sourceValue);
+  return true;
+}
+
+function syncAssessmentFromSystemDesign() {
+  const mappings = [
+    ["design_panel_count", "panel_count"],
+    ["design_panel_wattage", "panel_wattage"],
+    ["design_inverter_model", "inverter"],
+    ["design_battery_kwh", "battery_kwh"]
+  ];
+  let changed = false;
+  for (const [source, destination] of mappings) {
+    const value = document.getElementById(source)?.value;
+    if (fillBlankField(destination, value)) changed = true;
+  }
+  const roofDirection = document.querySelector("#designRoofs .design-roof .roof_orientation_design")?.value;
+  const direction = document.getElementById("roof_orientation");
+  if (direction && !direction.value && roofDirection) {
+    const match = Array.from(direction.options || []).find(option =>
+      String(option.value).toLowerCase() === String(roofDirection).toLowerCase());
+    if (match) {
+      direction.value = match.value;
+      changed = true;
+    }
+  }
+  const estimatedKw = document.getElementById("solar_kw");
+  if (estimatedKw && !estimatedKw.value) calculateSolarSize();
+  // Do not recalculate a pre-existing, manually revised generation estimate.
+  const generation = document.getElementById("estimated_generation_kwh");
+  if (generation && !generation.value && estimatedKw?.value) calculateEstimatedGeneration();
+  return changed;
+}
+
+function prefillLinkedQuoteField(id, value) {
+  const target = document.getElementById(id);
+  const clean = String(value ?? "").trim();
+  if (!target || !clean) return false;
+  const lastAutomatic = target.dataset.autoPrefilledValue;
+  const current = String(target.value || "");
+  if (current.trim() && (!lastAutomatic || current !== lastAutomatic)) return false;
+  if (current === clean) return false;
+  target.value = clean;
+  target.dataset.autoPrefilledValue = clean;
+  return true;
+}
+
+function prefillQuoteFromDesign() {
+  // Legacy quote fields are draft working copy. Do not alter sent or accepted
+  // summaries, and never overwrite a person's edited description.
+  const status = document.getElementById("quote_status")?.value;
+  if (["sent", "accepted", "declined"].includes(status)) return false;
+  const value = id => String(document.getElementById(id)?.value || "").trim();
+  const count = value("design_panel_count") || value("panel_count");
+  const wattage = value("design_panel_wattage") || value("panel_wattage");
+  const power = value("design_array_kw") || value("solar_kw");
+  const inverterModel = value("design_inverter_model") || value("inverter");
+  const inverterKw = value("design_inverter_kw");
+  const batteryModel = value("design_battery_model");
+  const batteryKwh = value("design_battery_kwh") || value("battery_kwh");
+  const solarDescription = [
+    power ? Number.isFinite(Number(power)) && Number(power) > 0
+      ? Number(power).toFixed(2) + " kWp solar" : "" : "",
+    count && wattage ? count + " × " + wattage + " W panels" : count ? count + " panels" : ""
+  ].filter(Boolean).join(" — ");
+  const inverterDescription = [inverterModel, inverterKw ? inverterKw + " kW" : ""].filter(Boolean).join(" · ");
+  const batteryDescription = [batteryModel, batteryKwh ? batteryKwh + " kWh" : ""].filter(Boolean).join(" · ");
+  const smartDescription = [value("hot_water_strategy"), value("smart_controls")].filter(Boolean).join(" ");
+  return [
+    ["quote_solar_system", solarDescription],
+    ["quote_inverter", inverterDescription],
+    ["quote_battery", batteryDescription],
+    ["quote_smart_energy", smartDescription]
+  ].some(([id, description]) => prefillLinkedQuoteField(id, description));
+}
+
+function syncLinkedEquipmentFields() {
+  syncAssessmentFromSystemDesign();
+  prefillQuoteFromDesign();
+}
+
 function generateRecommendation() {
   const solarKw =
     document.getElementById("solar_kw")?.value || "";
@@ -3109,31 +3195,8 @@ const orientation = orientationField ? orientationField.value : "";
   }
 
   recommendation.value = paragraphs.join("\n\n");
-  // Populate Quote section from Assessment & Design
-const quoteSolarSystem = document.getElementById("quote_solar_system");
-const quoteInverter = document.getElementById("quote_inverter");
-const quoteBattery = document.getElementById("quote_battery");
-const quoteSmartEnergy = document.getElementById("quote_smart_energy");
-
-if (quoteSolarSystem) {
-  quoteSolarSystem.value =
-    `${solarKw} kWp solar — ${panelCount} × ${document.getElementById("panel_wattage")?.value || ""} W panels`;
-}
-
-if (quoteInverter) {
-  quoteInverter.value =
-    document.getElementById("inverter")?.value || "";
-}
-
-if (quoteBattery) {
-  quoteBattery.value = battery || "";
-}
-
-if (quoteSmartEnergy) {
-  quoteSmartEnergy.value = [hotWater, smartControls]
-    .filter(Boolean)
-    .join(" ");
-}
+  // Use the reviewed design where available, and preserve manual quote edits.
+  syncLinkedEquipmentFields();
 }
 
 
@@ -3220,6 +3283,7 @@ async function saveAssessment() {
     }
 
     message.textContent = " ✓ Assessment saved";
+    prefillQuoteFromDesign();
 
   } catch (error) {
     console.error(error);
@@ -4182,6 +4246,7 @@ async function saveSystemDesign() {
 
     message.textContent = " ✓ System design saved";
     updateSystemDesignReadiness();
+    syncLinkedEquipmentFields();
     return true;
   } catch (error) {
     console.error("Could not save system design:", error);
@@ -5080,8 +5145,7 @@ loadJob().then(() => {
       roofOrientationField.value = window.currentAnswers.direction;
     }
 
-    calculateSolarSize();
-    calculateEstimatedGeneration();
+    syncLinkedEquipmentFields();
   });
 });
   </script>
