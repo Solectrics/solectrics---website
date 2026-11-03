@@ -3029,10 +3029,17 @@ function syncAssessmentFromSystemDesign() {
 function prefillLinkedQuoteField(id, value) {
   const target = document.getElementById(id);
   const clean = String(value ?? "").trim();
-  if (!target || !clean) return false;
+  if (!target) return false;
   const lastAutomatic = target.dataset.autoPrefilledValue;
   const current = String(target.value || "");
-  if (current.trim() && (!lastAutomatic || current !== lastAutomatic)) return false;
+  // If the old automatic value is no longer supported by the design, clear it.
+  // Never erase a manually edited quote description.
+  if (!clean && lastAutomatic && current === lastAutomatic) {
+    target.value = "";
+    delete target.dataset.autoPrefilledValue;
+    return true;
+  }
+  if (!clean || (current.trim() && (!lastAutomatic || current !== lastAutomatic))) return false;
   if (current === clean) return false;
   target.value = clean;
   target.dataset.autoPrefilledValue = clean;
@@ -3047,18 +3054,23 @@ function prefillQuoteFromDesign() {
   const value = id => String(document.getElementById(id)?.value || "").trim();
   const count = value("design_panel_count") || value("panel_count");
   const wattage = value("design_panel_wattage") || value("panel_wattage");
-  const power = value("design_array_kw") || value("solar_kw");
+  const existingPower = value("design_array_kw") || value("solar_kw");
+  // Derive draft quote kWp from actual panel quantity and wattage when both
+  // exist, rather than reusing a potentially stale read-only array total.
+  const computedPower = Number(count) > 0 && Number(wattage) > 0 &&
+    Number.isFinite(Number(count) * Number(wattage))
+    ? (Number(count) * Number(wattage)) / 1000 : null;
+  const power = computedPower !== null ? computedPower : Number(existingPower);
   const inverterModel = value("design_inverter_model") || value("inverter");
   const inverterKw = value("design_inverter_kw");
   const batteryModel = value("design_battery_model");
   const batteryKwh = value("design_battery_kwh") || value("battery_kwh");
   const solarDescription = [
-    power ? Number.isFinite(Number(power)) && Number(power) > 0
-      ? Number(power).toFixed(2) + " kWp solar" : "" : "",
+    Number.isFinite(power) && power > 0 ? power.toFixed(2) + " kWp solar" : "",
     count && wattage ? count + " × " + wattage + " W panels" : count ? count + " panels" : ""
   ].filter(Boolean).join(" — ");
   const inverterDescription = [inverterModel, inverterKw ? inverterKw + " kW" : ""].filter(Boolean).join(" · ");
-  const batteryDescription = [batteryModel, batteryKwh ? batteryKwh + " kWh" : ""].filter(Boolean).join(" · ");
+  const batteryDescription = [batteryModel, batteryKwh ? batteryKwh + " kWh" : ""].filter(Boolean).join(" · ") || value("battery_option");
   const smartDescription = [value("hot_water_strategy"), value("smart_controls")].filter(Boolean).join(" ");
   let updated = false;
   for (const [id, description] of [
