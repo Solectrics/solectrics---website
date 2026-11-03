@@ -50,6 +50,8 @@
       { step: "supply", name: "Electrical supply, ICP and switchboard", ready:
         Boolean(value("visit_connection_type") && value("visit_icp") && value("visit_switchboard")) },
       { step: "hot-water", name: "Hot-water system checked or recorded", ready: Boolean(value("visit_hw_system")) },
+      { step: "conditions", name: "Site hazards and access assessed", ready:
+        Boolean(byId("visit_site_hazards_checked")?.checked) },
       { step: "roof", name: "Main roof measurements and orientation", ready:
         Boolean(value("visit_roof_length") && value("visit_roof_width") &&
           value("visit_roof_pitch") && value("visit_roof_orientation")) },
