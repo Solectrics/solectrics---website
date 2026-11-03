@@ -882,7 +882,124 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
 
-  <h3>2. Main roof face</h3>
+  <h3>2. Hot water, ripple control &amp; flexible loads</h3>
+  <div class="placeholder">
+    <strong>From the customer's Home Energy Check (unverified):</strong>
+    Hot water: ${escapeHtml(String(answers.hotWater || "Not supplied"))};
+    control: ${escapeHtml(String(answers.hotWaterControl || "Not supplied"))};
+    cylinder: ${escapeHtml(String(answers.cylinderSize || "Not supplied"))}.
+    Confirm details on site rather than assuming these answers are electrically verified.
+  </div>
+  <div class="grid">
+    <div>
+      <label for="visit_hw_system">Existing hot-water system</label>
+      <select id="visit_hw_system">
+        <option value="">Not checked</option>
+        <option value="electric_cylinder">Electric cylinder</option>
+        <option value="solar_thermal_electric">Solar thermal + electric backup</option>
+        <option value="heat_pump_water_heater">Heat-pump water heater</option>
+        <option value="gas">Gas</option>
+        <option value="other">Other / mixed</option>
+      </select>
+    </div>
+    <div><label for="visit_hw_cylinder_l">Cylinder capacity (litres)</label><input type="number" min="0" step="1" id="visit_hw_cylinder_l" placeholder="Not checked"></div>
+    <div><label for="visit_hw_element_kw">Electric element rating (kW)</label><input type="number" min="0" step="0.1" id="visit_hw_element_kw" placeholder="Not checked"></div>
+    <div>
+      <label for="visit_hw_condition">Cylinder / system condition</label>
+      <select id="visit_hw_condition">
+        <option value="">Not checked</option>
+        <option value="appears_suitable">Appears suitable</option>
+        <option value="aging">Aging / replacement may be due</option>
+        <option value="review">Further technical review needed</option>
+        <option value="not_applicable">Not applicable</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_ripple">Ripple / network load control present?</label>
+      <select id="visit_hw_ripple">
+        <option value="">Not checked</option>
+        <option value="yes">Yes — evidence seen</option>
+        <option value="no">No — verified</option>
+        <option value="uncertain">Uncertain — check meter / retailer</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_controlled_tariff">Controlled-load or special hot-water tariff?</label>
+      <select id="visit_hw_controlled_tariff">
+        <option value="">Not checked</option>
+        <option value="yes">Yes — shown on bill / retailer confirmed</option>
+        <option value="no">No — verified</option>
+        <option value="verify">Unclear — verify with retailer</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_meter_circuit">Hot-water meter / circuit arrangement</label>
+      <select id="visit_hw_meter_circuit">
+        <option value="">Not checked</option>
+        <option value="dedicated">Dedicated controlled circuit identified</option>
+        <option value="uncontrolled">Uncontrolled supply identified</option>
+        <option value="trace">Tracing / switchboard check required</option>
+        <option value="other">Other arrangement</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_wiring">Wiring / contactor suitability for controls</label>
+      <select id="visit_hw_wiring">
+        <option value="">Not checked</option>
+        <option value="verified_suitable">Verified suitable by electrician</option>
+        <option value="upgrade">Electrical changes may be needed</option>
+        <option value="review">Electrician to confirm</option>
+        <option value="not_applicable">Not applicable</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_timing">Current hot-water heating timing</label>
+      <select id="visit_hw_timing">
+        <option value="">Not checked</option>
+        <option value="always">Available throughout day</option>
+        <option value="overnight">Mainly overnight</option>
+        <option value="daytime">Daytime timer / smart schedule</option>
+        <option value="controlled">Network controlled / ripple</option>
+        <option value="other">Other / uncertain</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_strategy">Possible smart-energy approach (not yet approved)</label>
+      <select id="visit_hw_strategy">
+        <option value="">Not assessed</option>
+        <option value="keep_existing">Keep existing arrangement</option>
+        <option value="timer">Assess solar-timed controller</option>
+        <option value="diverter">Assess solar diverter</option>
+        <option value="smart_relay">Assess suitable smart relay / controller</option>
+        <option value="heat_pump">Assess heat-pump water heating</option>
+        <option value="review">Further design review needed</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_retailer_check">Retailer / tariff confirmation</label>
+      <select id="visit_hw_retailer_check">
+        <option value="">Not checked</option>
+        <option value="pending">Verification needed</option>
+        <option value="confirmed">Confirmed with retailer</option>
+        <option value="not_applicable">Not applicable</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_hw_network_check">Network / controlled-load requirements</label>
+      <select id="visit_hw_network_check">
+        <option value="">Not checked</option>
+        <option value="pending">Network requirements to confirm</option>
+        <option value="confirmed">Confirmed with network</option>
+        <option value="not_applicable">Not applicable</option>
+      </select>
+    </div>
+    <div><label for="visit_hw_other_loads">Other flexible loads (EV, heating, appliances)</label><textarea id="visit_hw_other_loads" placeholder="Type or dictate what could be shifted to solar hours"></textarea></div>
+    <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea id="visit_hw_evidence" placeholder="Photos taken, label details, wiring observations"></textarea></div>
+  </div>
+  <div style="margin-top:16px;"><label for="visit_hw_outstanding">Unverified items / follow-up before design or quote</label><textarea id="visit_hw_outstanding" placeholder="Record anything still to be checked with electrician, retailer or Vector"></textarea></div>
+  <p class="placeholder">Site observations are provisional. Confirm electrical safety, hot-water temperature requirements, controlled-load obligations and retailer/network conditions before recommending changes. Existing customer bills remain internal to Job Hub.</p>
+
+  <h3>3. Main roof face</h3>
   <div class="grid">
     <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
     <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
@@ -901,7 +1018,7 @@ window.currentAnswers = answers;
   <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
   <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
 
-  <h3>3. Site conditions</h3>
+  <h3>4. Site conditions</h3>
   <div class="grid">
     <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
     <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
@@ -913,7 +1030,7 @@ window.currentAnswers = answers;
     <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
   </div>
 
-  <h3>4. Locations and dictated notes</h3>
+  <h3>5. Locations and dictated notes</h3>
   <div class="grid">
     <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
     <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
@@ -922,7 +1039,7 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
-  <h3>5. Funding information (optional)</h3>
+  <h3>6. Funding information (optional)</h3>
   <p class="placeholder">Ask only if the customer wishes to discuss funding. Solectrics provides links to banks' official, current green-loan information; we do not provide financial advice, arrange loans or assess eligibility.</p>
   <div class="grid">
     <div>
@@ -3029,7 +3146,8 @@ const siteVisitFieldIds = [
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
   "visit_battery_location", "visit_cable_route", "visit_access_notes",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
-  "visit_funding_links"
+  "visit_funding_links",
+  "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_hw_ripple", "visit_hw_controlled_tariff", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_strategy", "visit_hw_retailer_check", "visit_hw_network_check", "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding"
 ];
 
 let loadedSiteVisit = {};
