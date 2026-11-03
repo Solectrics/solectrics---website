@@ -183,6 +183,13 @@
       overflow-wrap: anywhere;
     }
 
+    .site-photo-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 18px; }
+    .site-photo-item { background:#faf9f5; border:1px solid #e5dbcc; border-radius:12px; padding:13px; min-width:0; }
+    .site-photo-item label { font-weight:700; display:block; margin-bottom:8px; font-size:14px; }
+    .site-photo-item input[type="file"] { display:block; width:100%; min-height:44px; font-size:14px; }
+    .site-photo-status { font-size:13px; color:#62736b; margin-top:6px; overflow-wrap:anywhere; }
+    .site-photo-status a { color:#17635b; font-weight:700; }
+    @media(max-width:700px){.site-photo-grid{grid-template-columns:1fr}}
     .job-workspace-nav { display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px; margin: 0 0 18px; position: sticky; top: 0; z-index: 8; background: #f7f5ef; scrollbar-width: thin; }
     .job-workspace-button { flex: 0 0 auto; min-height: 44px; padding: 10px 15px; border: 2px solid #e5dbcc; border-radius: 11px; background: #fff; color: #173f3f; font-size: 14px; font-weight: 700; cursor: pointer; }
     .job-workspace-button[aria-pressed="true"] { background: #ef9c20; border-color: #ef9c20; color: #17332d; }
@@ -892,6 +899,18 @@ window.currentAnswers = answers;
     </div>
   </div>
   <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_meter_ICP">Take a meter / ICP photograph</label>
+  <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+    <div class="site-photo-item">
+  <label for="visit_photo_switchboard">Take a switchboard photograph</label>
+  <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
 
   <h3>2. Hot water, ripple control &amp; flexible loads</h3>
   <div class="placeholder">
@@ -980,6 +999,13 @@ window.currentAnswers = answers;
     <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea id="visit_hw_evidence" placeholder="Photos taken, label details, wiring observations"></textarea></div>
   </div>
   <div style="margin-top:16px;"><label for="visit_hw_outstanding">Physical checks outstanding / follow-up for office or Ben</label><textarea id="visit_hw_outstanding" placeholder="Record any on-site checks still needed; flag tariff or network questions for the office"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_hot_water_equipment">Take a cylinder / hot-water equipment photograph</label>
+  <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
   <p class="placeholder">Record physical evidence, not retailer prices or tariff assumptions. The office reviews bills and checks retailer/network requirements separately. Electrical safety and hot-water temperature requirements still need professional verification before changes are recommended.</p>
 
   <h3>3. Main roof face</h3>
@@ -1000,6 +1026,13 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
   <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_roof">Take a roof photograph</label>
+  <input type="file" id="visit_photo_roof" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="roof" data-photo-caption="Site visit: roof">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
 
   <h3>4. Site conditions</h3>
   <div class="grid">
@@ -1015,8 +1048,20 @@ window.currentAnswers = answers;
 
   <h3>5. Locations and dictated notes</h3>
   <div class="grid">
-    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
-    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea>
+      <div class="site-photo-grid"><div class="site-photo-item">
+  <label for="visit_photo_inverter_location">Take an inverter location photograph</label>
+  <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: inverter location">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div></div>
+    </div>
+    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea>
+      <div class="site-photo-grid"><div class="site-photo-item">
+  <label for="visit_photo_battery_location">Take a battery location photograph</label>
+  <input type="file" id="visit_photo_battery_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: battery location">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div></div>
+    </div>
     <div>
       <label for="visit_inverter_mount">How will the inverter be mounted?</label>
       <select id="visit_inverter_mount" onchange="updateInverterPadVisibility()">
