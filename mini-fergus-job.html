@@ -200,6 +200,9 @@
     .site-guide-check span { flex:1; }
     .site-guide-check button { min-height:42px; flex:0 0 auto; }
     .site-guide-photo-count { padding:12px; margin:12px 0; background:#f8f6f1; border-radius:10px; }
+    .design-fold { border:1px solid #ddd8cf; border-radius:12px; margin:14px 0; padding:6px 15px 15px; }
+    .design-fold > summary { padding:12px 0; font-weight:800; color:#173f3f; cursor:pointer; font-size:17px; min-height:44px; }
+    .design-fold[open] > summary { border-bottom:1px solid #e5dbcc; margin-bottom:12px; }
     .design-site-handoff { background:#f8f6f1; border:1px solid #ddd8cf; border-radius:12px; padding:15px; margin:18px 0; }
     .design-site-handoff ul { padding-left:20px; margin:10px 0; }
     .design-site-handoff li { margin:6px 0; }
@@ -1434,6 +1437,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  <p class="placeholder">Open only the part of System Design you need. All existing fields still autosave; Ben's reviewed design is protected from Site Visit prefills.</p>
+  <details class="design-fold" open>
+    <summary>1 · Site and electrical supply</summary>
   <!-- SITE & SUPPLY -->
 
   <h3>1. Site & electrical supply</h3>
@@ -1496,6 +1502,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>2 · Roof and environment</summary>
   <!-- ROOF & ARRAY -->
 
   <h3>2. Roof & array survey</h3>
@@ -1649,6 +1658,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>3 · Proposed panels, inverter, battery and backup</summary>
   <!-- EQUIPMENT -->
 
   <h3>4. Proposed system</h3>
@@ -1719,6 +1731,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>4 · Electrical design and protection</summary>
   <!-- ELECTRICAL DESIGN -->
 
   <h3>5. Electrical design</h3>
@@ -1785,6 +1800,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>5 · Documents, Ben's review and outputs</summary>
   <!-- DESIGN DOCUMENTS -->
 
   <h3>6. Design documents</h3>
@@ -1895,8 +1913,8 @@ window.currentAnswers = answers;
 
   </div>
 
+  </details>
   <br>
-
   <span id="systemDesignMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 
 </section>
