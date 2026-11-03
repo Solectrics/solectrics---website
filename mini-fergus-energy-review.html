@@ -206,7 +206,7 @@ function renderRegistryCheck(){
 function updateRegistryWarnings(){
   const registry=collectRegistryCheck();
   const evidence=state.bundle?.icp_evidence||{};
-  const norm=v=>String(v||'').replace(/[\\s-]+/g,'').toUpperCase();
+  const norm=v=>String(v||'').replace(/[\s-]+/g,'').toUpperCase();
   const recorded=(evidence.sources||[]).map(x=>x.icp).filter(Boolean);
   const differs=Boolean(registry.icp)&&recorded.some(icp=>norm(icp)!==norm(registry.icp));
   const planRetailer=document.getElementById('current_retailer')?.value.trim()||'';
