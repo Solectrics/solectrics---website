@@ -85,17 +85,17 @@ test("only one Site Visit step is displayed on a phone at a time", () => {
 test("the finish checklist shows missing physical observations but does not block saving", () => {
   const { guide, element } = setup();
   guide.open("review", false);
-  assert.match(element("siteGuideChecklist").innerHTML, /0 of 5 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /0 of 7 core checks recorded/);
   assert.match(element("siteGuideChecklist").innerHTML, /needs checking/);
   assert.match(element("siteGuidePhotoCount").textContent, /2 of 6 photo locations/);
   element("visit_connection_type").value = "single_phase";
   element("visit_icp").value = "000123";
   element("visit_switchboard").value = "review";
   guide.refresh();
-  assert.match(element("siteGuideChecklist").innerHTML, /1 of 5 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /1 of 7 core checks recorded/);
   element("visit_battery_model").value = "Battery model";
   guide.refresh();
-  assert.match(element("siteGuideChecklist").innerHTML, /1 of 6 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /1 of 8 core checks recorded/);
 });
 
 test("design handoff is read-only and respects reviewed System Design", () => {
@@ -212,4 +212,28 @@ test("Design handoff does not open while Site Visit edits or photo uploads are p
   guide.photoFinished();
   element("goToSystemDesignFromVisit").listeners.click();
   assert.equal(state.selectedWorkspace, "design");
+});
+
+test("Wi-Fi and 900 mm clearance have explicit yes/no with unverified default", () => {
+  const visit = page.split('data-site-step="locations"')[1].split('data-site-step="review"')[0];
+  for (const fieldId of ["visit_wifi_strength", "visit_clearance_900mm"]) {
+    const fragment = visit.match(new RegExp('<select id="' + fieldId + '">([\\s\\S]*?)<\\/select>'));
+    assert.ok(fragment, fieldId + " must appear in locations");
+    assert.match(fragment[1], /<option value="">Not checked<\/option>/);
+    assert.match(fragment[1], /<option value="yes">Yes<\/option>/);
+    assert.match(fragment[1], /<option value="no">No<\/option>/);
+  }
+  assert.match(page, /"visit_wifi_strength", "visit_clearance_900mm"/);
+  assert.match(page, /visit\.visit_wifi_strength &&/);
+  assert.match(page, /visit\.visit_clearance_900mm &&/);
+});
+
+test("negative Wi-Fi or clearance observations are visible in Design and the finish check", () => {
+  const { guide, element } = setup();
+  element("visit_wifi_strength").value = "no";
+  element("visit_clearance_900mm").value = "no";
+  guide.open("review", false);
+  assert.match(element("siteGuideChecklist").innerHTML, /2 of 7 core checks recorded/);
+  assert.match(element("designSiteHandoffSummary").innerHTML, /Good Wi-Fi signal at equipment location:<\/strong> No — follow up/);
+  assert.match(element("designSiteHandoffSummary").innerHTML, /900 mm space around equipment location:<\/strong> No — design follow-up required/);
 });
