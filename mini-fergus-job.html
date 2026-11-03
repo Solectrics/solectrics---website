@@ -3072,7 +3072,32 @@ function prefillQuoteFromDesign() {
   return updated;
 }
 
+function syncDesignFromAssessment() {
+  // Keep an existing System Design and all reviewed designs authoritative.
+  if (document.getElementById("design_reviewed")?.checked) return false;
+  let changed = false;
+  for (const [source, target] of [
+    ["panel_count", "design_panel_count"],
+    ["panel_wattage", "design_panel_wattage"],
+    ["inverter", "design_inverter_model"],
+    ["battery_kwh", "design_battery_kwh"]
+  ]) {
+    if (fillBlankField(target, document.getElementById(source)?.value)) changed = true;
+  }
+  const array = document.getElementById("design_array_kw");
+  const wattage = Number(document.getElementById("design_panel_wattage")?.value) || 0;
+  const count = Number(document.getElementById("design_panel_count")?.value) || 0;
+  if (array && !array.value && count > 0 && wattage > 0) {
+    array.value = ((count * wattage) / 1000).toFixed(3);
+    changed = true;
+  }
+  return changed;
+}
+
 function syncLinkedEquipmentFields() {
+  // Sync empty draft fields both ways so reopening a job never requires
+  // retyping an assessment figure that already exists in System Design.
+  syncDesignFromAssessment();
   syncAssessmentFromSystemDesign();
   prefillQuoteFromDesign();
 }
