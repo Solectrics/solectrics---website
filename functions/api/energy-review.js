@@ -129,7 +129,16 @@ async function optionalAll(db, sql, value) {
 }
 
 function billValues(answers) {
-  return [answers?.bills?.summer, answers?.bills?.winter].filter(Boolean);
+  // When two bills have different retailers or rates, the more recent billing
+  // period is the better starting point for the *current* electricity plan.
+  const endDate = bill => {
+    const date = String(bill?.billing_period_end || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return 0;
+    const timestamp = Date.parse(date + "T00:00:00Z");
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
+  return [answers?.bills?.summer, answers?.bills?.winter].filter(Boolean)
+    .sort((a, b) => endDate(b) - endDate(a));
 }
 
 function firstKnown(bills, key) {
@@ -143,7 +152,7 @@ function firstKnown(bills, key) {
 function fillEmptyDraftFields(saved, derived) {
   if (!saved || saved.status !== "draft") return saved;
   const result = { ...saved };
-  for (const part of ["current_plan", "baseline", "proposed_system"]) {
+  for (const part of ["current_plan", "baseline"]) {
     const existing = object(saved[part]);
     const incoming = object(derived[part]);
     const merged = { ...existing };
@@ -183,9 +192,18 @@ function deriveBaseline(answers = {}, files = []) {
   const bills = billValues(answers);
   const dailyUse = bills.map(bill => number(bill.average_daily_kwh)).filter(value => value !== null);
   const dailySpend = bills.map(bill => {
-    const total = number(bill.total_bill_nzd);
     const days = number(bill.billing_days);
-    return total !== null && days ? total / days : null;
+    // Electricity bills can include broadband/phone charges. Never treat a
+    // combined bill total as electricity-only spend unless separated clearly.
+    const electricityOnly = number(firstKnown([bill], "electricity_total_incl_gst_nzd"));
+    const total = number(firstKnown([bill], "total_bill_nzd"));
+    const broadband = number(firstKnown([bill], "broadband_total_incl_gst_nzd"));
+    const knownElectricitySpend = electricityOnly !== null
+      ? electricityOnly
+      : total !== null && broadband !== null && broadband <= total
+        ? total - broadband
+        : null;
+    return knownElectricitySpend !== null && days && days > 0 ? knownElectricitySpend / days : null;
   }).filter(value => value !== null);
   const interval = files.some(file => file.document_role === "annual_usage" && file.energy_data_detail === "half_hourly");
   const annualFiles = files.filter(file => file.document_role === "annual_usage");
