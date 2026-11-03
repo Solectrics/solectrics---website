@@ -8,6 +8,7 @@
   let started = false;
   let dirty = false;
   let saving = false;
+  let photoUploads = 0;
   let changeVersion = 0;
 
   const byId = id => document.getElementById(id);
@@ -141,6 +142,11 @@
     refresh();
   }
 
+  function photoStarted() { photoUploads++; }
+  function photoFinished() {
+    photoUploads = Math.max(0, photoUploads - 1);
+    refresh();
+  }
   function saveStarted() { saving = true; return changeVersion; }
   function saveFinished(version, ok) {
     saving = false;
@@ -178,7 +184,7 @@
     document.addEventListener("input", markDirty);
     document.addEventListener("change", markDirty);
     window.addEventListener("beforeunload", event => {
-      if (!dirty && !saving) return;
+      if (!dirty && !saving && !photoUploads) return;
       event.preventDefault();
       event.returnValue = "";
     });
@@ -188,5 +194,5 @@
     refresh();
   }
 
-  window.jobhubSiteGuide = { init, open, refresh, checks, saveStarted, saveFinished };
+  window.jobhubSiteGuide = { init, open, refresh, checks, saveStarted, saveFinished, photoStarted, photoFinished };
 })();
