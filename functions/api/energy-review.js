@@ -330,7 +330,7 @@ function decodeTariff(row) {
     peak_import_periods: array(row.peak_import_periods_json),
     offpeak_import_periods: array(row.offpeak_import_periods_json),
     peak_export_periods: array(row.peak_export_periods_json),
-    source_complete: Boolean(row.source_url && (row.last_verified_date || row.effective_date))
+    source_complete: Boolean(row.source_url && row.last_verified_date)
   };
 }
 
