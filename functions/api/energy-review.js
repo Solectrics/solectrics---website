@@ -168,23 +168,27 @@ function fillEmptyDraftFields(saved, derived) {
 
 function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
+  // Current tariff fields must all come from the same (most recent) bill.
+  // Do not combine a new retailer's name with an older retailer's rate.
+  const latest = bills[0] ? [bills[0]] : [];
+  const currentValue = key => firstKnown(latest, key);
   return {
-    retailer: firstKnown(bills, "retailer") || "",
-    plan_name: firstKnown(bills, "plan_name") || "",
-    icp: firstKnown(bills, "icp") || "",
-    billing_period_start: firstKnown(bills, "billing_period_start") || "",
-    billing_period_end: firstKnown(bills, "billing_period_end") || "",
-    daily_charge_cents: firstKnown(bills, "daily_fixed_charge_cents"),
-    standard_import_rate_cents: firstKnown(bills, "import_rate_cents"),
-    peak_import_rate_cents: firstKnown(bills, "peak_rate_cents"),
-    offpeak_import_rate_cents: firstKnown(bills, "offpeak_rate_cents"),
-    controlled_import_rate_cents: firstKnown(bills, "controlled_rate_cents"),
-    ev_night_rate_cents: firstKnown(bills, "ev_night_rate_cents"),
-    solar_export_rate_cents: firstKnown(bills, "export_rate_cents"),
-    fixed_term: firstKnown(bills, "fixed_term") || "needs_review",
-    exit_cost_nzd: firstKnown(bills, "exit_cost_nzd"),
-    other_tariff_information: firstKnown(bills, "other_tariff_information") || "",
-    notes: bills.map(bill => bill?.notes).filter(Boolean).join(" ")
+    retailer: currentValue("retailer") || "",
+    plan_name: currentValue("plan_name") || "",
+    icp: currentValue("icp") || "",
+    billing_period_start: currentValue("billing_period_start") || "",
+    billing_period_end: currentValue("billing_period_end") || "",
+    daily_charge_cents: currentValue("daily_fixed_charge_cents"),
+    standard_import_rate_cents: currentValue("import_rate_cents"),
+    peak_import_rate_cents: currentValue("peak_rate_cents"),
+    offpeak_import_rate_cents: currentValue("offpeak_rate_cents"),
+    controlled_import_rate_cents: currentValue("controlled_rate_cents"),
+    ev_night_rate_cents: currentValue("ev_night_rate_cents"),
+    solar_export_rate_cents: currentValue("export_rate_cents"),
+    fixed_term: currentValue("fixed_term") || "needs_review",
+    exit_cost_nzd: currentValue("exit_cost_nzd"),
+    other_tariff_information: currentValue("other_tariff_information") || "",
+    notes: latest.map(bill => bill?.notes).filter(Boolean).join(" ")
   };
 }
 
