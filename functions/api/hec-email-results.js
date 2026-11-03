@@ -38,13 +38,19 @@ export async function onRequestPost({request,env}) {
   // A signed booking link is included only when the submitted HEC enquiry
   // exists and its stored email matches this verified recipient.
   let visitBookingUrl=null;
+  let uploadedBillCount=0;
   if (payload.enquiryRef !== undefined) {
     const enquiryId=Number(payload.enquiryRef);
     if (!Number.isSafeInteger(enquiryId) || enquiryId<1 || !env.DB)
       return reply(403,"Invalid enquiry reference");
-    const record=await env.DB.prepare("SELECT email FROM enquiries WHERE id = ?").bind(enquiryId).first();
+    const record=await env.DB.prepare("SELECT email, answers_json FROM enquiries WHERE id = ?").bind(enquiryId).first();
     if (!record || String(record.email||"").trim().toLowerCase()!==recipient.toLowerCase())
       return reply(403,"Invalid enquiry reference");
+    try {
+      const storedAnswers=JSON.parse(record.answers_json||"{}");
+      const bills=storedAnswers?.energyDataUploads?.recentBills;
+      if(Array.isArray(bills))uploadedBillCount=Math.max(0,Math.min(2,bills.length));
+    }catch{}
     const visitToken=await createVisitToken(env,enquiryId);
     const bookingUrl=new URL("/free-home-solar-visit.html",url.origin);
     bookingUrl.searchParams.set("token",visitToken);
@@ -52,7 +58,7 @@ export async function onRequestPost({request,env}) {
   }
   await sendHomeEnergyCheckCopy(env,{
     ...safe,email:recipient,emailOnly:!visitBookingUrl,
-    customerCopyOptIn:false,visitBookingUrl
+    customerCopyOptIn:false,visitBookingUrl,uploadedBillCount
   },recipient);
   return reply(200);
  }catch {console.error('HEC email-only request failed.');return reply(502,'Could not send results');}
