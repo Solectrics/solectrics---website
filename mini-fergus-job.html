@@ -185,6 +185,7 @@
 
 
     /* Mobile-first guided site survey: existing inputs/storage are unchanged. */
+    #siteVisitSection { scroll-margin-top:80px; }
     .site-guide-intro { background:#f8f6f1; border:1px solid #ddd8cf; border-radius:12px; padding:14px 16px; margin:14px 0; }
     .site-guide-tabs { display:flex; gap:7px; overflow-x:auto; padding:4px 0 12px; margin-bottom:10px; scrollbar-width:thin; }
     .site-guide-tab { flex:0 0 auto; min-height:48px; padding:10px 13px; border:2px solid #ddd8cf; border-radius:10px; background:white; color:#173f3f; font-size:14px; font-weight:700; }
@@ -3786,6 +3787,7 @@ async function uploadInlineSitePhoto(input) {
     return;
   }
   input.disabled = true;
+  window.jobhubSiteGuide?.photoStarted();
   status.textContent = "Uploading photograph…";
   try {
     const form = new FormData();
@@ -3806,6 +3808,7 @@ async function uploadInlineSitePhoto(input) {
     input.value = "";
   } finally {
     input.disabled = false;
+    window.jobhubSiteGuide?.photoFinished();
   }
 }
 
