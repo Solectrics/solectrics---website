@@ -3496,6 +3496,64 @@ function formatFileSize(bytes) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function renderSiteVisitPhotoStatuses(files) {
+  document.querySelectorAll(".site-photo-input").forEach(input => {
+    const status = input.closest(".site-photo-item")?.querySelector(".site-photo-status");
+    if (!status || input.disabled) return;
+    const matches = files.filter(file =>
+      file.category === input.dataset.photoCategory &&
+      file.caption === input.dataset.photoCaption
+    );
+    status.replaceChildren();
+    if (!matches.length) {
+      status.textContent = "Take or upload a photo here";
+      return;
+    }
+    const anchor = document.createElement("a");
+    anchor.href = `/api/job-file?id=${encodeURIComponent(matches[0].id)}`;
+    anchor.target = "_blank";
+    anchor.rel = "noopener";
+    anchor.textContent = `✓ ${matches.length} photo${matches.length === 1 ? "" : "s"} saved · View`;
+    status.append(anchor);
+  });
+}
+
+async function uploadInlineSitePhoto(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const status = input.closest(".site-photo-item")?.querySelector(".site-photo-status");
+  if (!status) return;
+  if (file.size > 12 * 1024 * 1024) {
+    status.textContent = "Photo exceeds 12 MB. Choose a smaller photo.";
+    return;
+  }
+  if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)) {
+    status.textContent = "Please choose a photograph.";
+    return;
+  }
+  input.disabled = true;
+  status.textContent = "Uploading photograph…";
+  try {
+    const form = new FormData();
+    form.append("job_id", jobId);
+    form.append("file", file);
+    form.append("category", input.dataset.photoCategory);
+    form.append("caption", input.dataset.photoCaption);
+    form.append("document_role", "general");
+    const response = await fetch("/api/job-files", { method: "POST", body: form });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Upload failed");
+    input.value = "";
+    status.textContent = "✓ Photograph saved to this job";
+    await loadJobFiles();
+  } catch (error) {
+    console.error("Could not upload site visit photo:", error);
+    status.textContent = `Could not upload: ${error.message}. Please try again.`;
+  } finally {
+    input.disabled = false;
+  }
+}
+
 function renderSelectedJobFiles() {
   const input = document.getElementById("jobFileInput");
   const selection = document.getElementById("jobFileSelection");
@@ -3529,6 +3587,7 @@ async function loadJobFiles() {
 
     renderJobPhotoChecklist(data.files);
     renderEnergyData(data.files);
+    renderSiteVisitPhotoStatuses(data.files);
 
     if (!data.files.length) {
       list.className = "placeholder";
@@ -4897,7 +4956,7 @@ const autosavePending = new Set();
 
 function autosaveTarget(event) {
   const target = event.target;
-  if (!target || target.disabled || target.readOnly) return null;
+  if (!target || target.disabled || target.readOnly || target.matches?.(".site-photo-input")) return null;
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
@@ -4943,6 +5002,9 @@ function scheduleSectionAutosave(event) {
     }
   }, 1100));
 }
+document.addEventListener("change", (event) => {
+  if (event.target?.matches?.(".site-photo-input")) uploadInlineSitePhoto(event.target);
+});
 document.addEventListener("input", scheduleSectionAutosave);
 document.addEventListener("change", scheduleSectionAutosave);
 
