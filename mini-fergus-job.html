@@ -3286,7 +3286,7 @@ async function saveSiteVisit() {
     applySiteVisitToSystemDesign(siteVisit);
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
-      ? " ✓ Site visit saved and System Design updated"
+      ? " ✓ Site visit saved; matching existing fields updated in System Design"
       : " Site visit saved, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
