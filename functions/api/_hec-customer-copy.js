@@ -140,6 +140,16 @@ ${prioritiesHtml}
 <p style="font-size:15px;line-height:1.6;margin:8px 0;"><strong>Solar Smart + Battery:</strong> Store available surplus solar for later; backup and winter performance depend on the design.</p>
 <p style="font-size:12px;color:#66736d;line-height:1.6;">These are options to explore, not a final recommendation or formal quote.</p>
 </td></tr>
+<tr><td style="padding:24px 28px;border-bottom:1px solid #eee5d9;">
+<p style="font-size:12px;font-weight:800;color:#ef9c20;letter-spacing:.1em;margin:0 0 7px;">YOUR ELECTRICITY PLAN</p>
+<h2 style="font-size:21px;margin:0 0 12px;color:#17332d;">Your electricity plan &amp; smart energy opportunities</h2>
+<p style="font-size:15px;line-height:1.6;color:#40554f;">${uploadedBillCount
+  ? "You've supplied electricity bill information, which Solectrics can review to understand your current retailer, tariff and charges. Any recommendations depend on verifying the rates, plan terms and your actual usage."
+  : "No electricity bills were supplied, so we can't identify your current retailer or tariff. You can still explore independent electricity-plan comparisons."}</p>
+<p style="font-size:15px;line-height:1.6;color:#40554f;">For independent plan comparisons, visit <a href="https://www.powerswitch.org.nz/" style="font-weight:700;color:#147258;">Powerswitch</a> or <a href="https://billy.govt.nz/" style="font-weight:700;color:#147258;">Billy</a>.</p>
+<p style="font-size:15px;line-height:1.6;"><a href="https://solectrics.co.nz/smart-energy.html#electricity-plans" style="font-weight:700;color:#147258;">How tariffs affect smarter solar choices →</a></p>
+<p style="font-size:12px;line-height:1.6;color:#61716c;">This is general information, not a personalised tariff recommendation or an estimate of switching savings. A reliable time-of-use comparison may require smart-meter interval data.</p>
+</td></tr>
 <tr><td style="padding:25px 28px 22px;">
 <h2 style="font-size:21px;margin:0 0 12px;color:#17332d;">Explore more with Solectrics</h2>
 <p style="margin:9px 0;font-size:15px;line-height:1.5;"><a href="https://solectrics.co.nz/smart-energy.html" style="font-weight:700;color:#147258;">Smart energy for your home →</a><br><span style="color:#62716b;">Hot water, energy controls and EV charging.</span></p>
