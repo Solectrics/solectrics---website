@@ -1196,10 +1196,6 @@ window.currentAnswers = answers;
   <button type="button" id="uploadJobFile" hidden>RETRY UPLOAD</button>
   <span id="jobFileMessage" aria-live="polite">Files upload automatically after selection.</span>
 
-  <h3>Photo evidence checklist</h3>
-  <div class="placeholder">This updates automatically when files are uploaded.</div>
-  <div id="jobPhotoChecklist" class="photo-checklist"></div>
-
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
 </section>
@@ -3468,6 +3464,7 @@ const electricalPhotoChecklistItems = [
 
 function renderJobPhotoChecklist(files) {
   const checklist = document.getElementById("jobPhotoChecklist");
+  if (!checklist) return;
   const checklistItems = currentJobType === "general_electrical"
     ? electricalPhotoChecklistItems
     : solarPhotoChecklistItems;
@@ -3616,8 +3613,6 @@ async function loadJobFiles() {
     `).join("");
   } catch (error) {
     console.error("Could not load job files:", error);
-    document.getElementById("jobPhotoChecklist").innerHTML =
-      '<div class="error">Could not load the photo checklist.</div>';
     list.className = "error";
     list.textContent = "Could not load job files.";
   }
