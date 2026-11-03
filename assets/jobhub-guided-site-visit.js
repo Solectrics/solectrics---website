@@ -56,7 +56,11 @@
         Boolean(value("visit_roof_length") && value("visit_roof_width") &&
           value("visit_roof_pitch") && value("visit_roof_orientation")) },
       { step: "locations", name: "Inverter location and cable route", ready:
-        Boolean(value("visit_inverter_location") && value("visit_cable_route")) }
+        Boolean(value("visit_inverter_location") && value("visit_cable_route")) },
+      { step: "locations", name: "Wi-Fi strength at equipment location", ready:
+        Boolean(value("visit_wifi_strength")) },
+      { step: "locations", name: "900 mm space around equipment location", ready:
+        Boolean(value("visit_clearance_900mm")) }
     ];
     if (value("visit_battery_model") || value("visit_battery_kwh")) {
       result.push({ step: "locations", name: "Possible battery location", ready:
@@ -108,6 +112,8 @@
       ["Hot-water system", value("visit_hw_system").replace(/_/g, " ")],
       ["Inverter location", value("visit_inverter_location")],
       ["Battery location", value("visit_battery_location")],
+      ["Good Wi-Fi signal at equipment location", value("visit_wifi_strength") === "yes" ? "Yes" : value("visit_wifi_strength") === "no" ? "No — follow up" : ""],
+      ["900 mm space around equipment location", value("visit_clearance_900mm") === "yes" ? "Yes — observed (verify equipment-specific clearances)" : value("visit_clearance_900mm") === "no" ? "No — design follow-up required" : ""],
       ["Cable route", value("visit_cable_route")],
       ["Site equipment discussed", [
         value("visit_panel_count") ? value("visit_panel_count") + " panels" : "",
