@@ -3333,6 +3333,7 @@ function siteVisitFollowupItems(visit) {
   add(visit.visit_hw_meter_circuit === "trace", "Electrical: unable to confirm hot-water circuit — further check needed");
   add(["upgrade","review"].includes(visit.visit_hw_wiring), "Electrical: inspect hot-water wiring / contactor");
   add(["no","investigate"].includes(visit.visit_hw_physical_match), "Office: compare hot-water circuit with electricity bills");
+  add(visit.visit_hw_physical_match === "no_office_info", "Office: obtain electricity bill / tariff details for hot-water comparison");
   if (visit.visit_ev_existing === "yes") {
     for (const [id, label] of [
       ["visit_ev_circuit","Dedicated EV circuit / supply"],
@@ -3467,6 +3468,12 @@ function applySiteVisitToSystemDesign(visit) {
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
     visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
+    visit.visit_heating_arrangement && ("Existing heating: " + ({
+      heat_pump:"Heat pump", electric_heaters:"Electric heaters", wood_burner:"Wood burner",
+      gas:"Gas", mixed:"Multiple types", none:"None", other:"Other"
+    }[visit.visit_heating_arrangement] || visit.visit_heating_arrangement)),
+    visit.visit_heating_notes && `Heating notes: ${visit.visit_heating_notes}`,
+    visit.visit_hw_other_loads && `Other significant loads: ${visit.visit_hw_other_loads}`,
     visit.visit_general_notes
   ].filter(Boolean).join("\n");
 
