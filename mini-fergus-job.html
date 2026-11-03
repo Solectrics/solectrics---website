@@ -183,6 +183,17 @@
       overflow-wrap: anywhere;
     }
 
+    .site-photo-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 18px; }
+    .site-photo-item { background:#faf9f5; border:1px solid #e5dbcc; border-radius:12px; padding:13px; min-width:0; }
+    .site-photo-item label { font-weight:700; display:block; margin-bottom:8px; font-size:14px; }
+    .site-photo-item input[type="file"] { display:block; width:100%; min-height:44px; font-size:14px; }
+    .site-photo-status { font-size:13px; color:#62736b; margin-top:6px; overflow-wrap:anywhere; }
+    .site-photo-status a { color:#17635b; font-weight:700; }
+    @media(max-width:700px){.site-photo-grid{grid-template-columns:1fr}}
+    .job-workspace-nav { display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px; margin: 0 0 18px; position: sticky; top: 0; z-index: 8; background: #f7f5ef; scrollbar-width: thin; }
+    .job-workspace-button { flex: 0 0 auto; min-height: 44px; padding: 10px 15px; border: 2px solid #e5dbcc; border-radius: 11px; background: #fff; color: #173f3f; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .job-workspace-button[aria-pressed="true"] { background: #ef9c20; border-color: #ef9c20; color: #17332d; }
+    [data-job-workspace][hidden], .job-workspace-button[hidden] { display: none !important; }
     .photo-checklist {
       display: grid;
       gap: 8px;
@@ -526,8 +537,17 @@ window.currentAnswers = answers;
           <div class="address">${escapeHtml(job.address || "")}</div>
 
           <div class="status">${escapeHtml(formatStatus(job.job_status))}</div>
+          <nav class="job-workspace-nav" id="jobWorkspaceNav" aria-label="Job sections">
+            <button type="button" class="job-workspace-button" data-workspace-button="overview" onclick="selectJobWorkspace('overview')">Overview</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="hec" data-solar-workspace="true" onclick="selectJobWorkspace('hec')">Home Energy Check</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="visit" data-solar-workspace="true" onclick="selectJobWorkspace('visit')">Site Visit</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="design" data-solar-workspace="true" onclick="selectJobWorkspace('design')">System Design</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="office" onclick="selectJobWorkspace('office')">Office &amp; Quote</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="photos" onclick="selectJobWorkspace('photos')">Photos &amp; Files</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="records" onclick="selectJobWorkspace('records')">Work &amp; EWRB</button>
+          </nav>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Customer</h2>
 
             <div class="grid">
@@ -553,14 +573,14 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Next action</h2>
             <div class="value">
               ${escapeHtml(job.next_action || "Review Home Energy Check")}
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Job type</h2>
             <p class="placeholder">General electrical jobs do not require the solar assessment or design sections.</p>
             <select id="jobType">
@@ -570,7 +590,7 @@ window.currentAnswers = answers;
             <span id="jobTypeMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
-          <section class="card general-job general-only" id="generalJobSection" hidden>
+          <section class="card general-job general-only" id="generalJobSection" data-job-workspace="overview" hidden>
             <h2>Electrical Job Brief</h2>
             <div style="margin:16px 0;">
               <label for="general_billing_route">How should this job be billed?</label>
@@ -634,7 +654,7 @@ window.currentAnswers = answers;
             <span id="generalJobMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
-<section class="card solar-only">
+<section class="card solar-only" data-job-workspace="hec">
             <h2>Home Energy Check</h2>
 
             <h3>Home & energy use</h3>
@@ -667,7 +687,7 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card solar-only">
+          <section class="card solar-only" data-job-workspace="design">
   <h2>Assessment & design</h2>
 
   <div class="placeholder">
@@ -846,7 +866,7 @@ window.currentAnswers = answers;
 
 <!-- TOM'S SITE VISIT -->
 
-<section class="card site-visit solar-only" id="siteVisitSection">
+<section class="card site-visit solar-only" id="siteVisitSection" data-job-workspace="visit">
   <h2>Tom's Site Visit</h2>
   <div class="placeholder">
     Record the onsite facts once. Saving this form also copies the matching
@@ -879,6 +899,18 @@ window.currentAnswers = answers;
     </div>
   </div>
   <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_meter_ICP">Take a meter / ICP photograph</label>
+  <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+    <div class="site-photo-item">
+  <label for="visit_photo_switchboard">Take a switchboard photograph</label>
+  <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
 
   <h3>2. Hot water, ripple control &amp; flexible loads</h3>
   <div class="placeholder">
@@ -967,6 +999,13 @@ window.currentAnswers = answers;
     <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea id="visit_hw_evidence" placeholder="Photos taken, label details, wiring observations"></textarea></div>
   </div>
   <div style="margin-top:16px;"><label for="visit_hw_outstanding">Physical checks outstanding / follow-up for office or Ben</label><textarea id="visit_hw_outstanding" placeholder="Record any on-site checks still needed; flag tariff or network questions for the office"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_hot_water_equipment">Take a cylinder / hot-water equipment photograph</label>
+  <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
   <p class="placeholder">Record physical evidence, not retailer prices or tariff assumptions. The office reviews bills and checks retailer/network requirements separately. Electrical safety and hot-water temperature requirements still need professional verification before changes are recommended.</p>
 
   <h3>3. Main roof face</h3>
@@ -987,6 +1026,13 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>Shading / obstructions</label><textarea id="visit_roof_shading"></textarea></div>
   <div style="margin-top:16px;"><label>Roof and fixing notes</label><textarea id="visit_roof_notes"></textarea></div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+  <label for="visit_photo_roof">Take a roof photograph</label>
+  <input type="file" id="visit_photo_roof" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="roof" data-photo-caption="Site visit: roof">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div>
+  </div>
 
   <h3>4. Site conditions</h3>
   <div class="grid">
@@ -1002,8 +1048,20 @@ window.currentAnswers = answers;
 
   <h3>5. Locations and dictated notes</h3>
   <div class="grid">
-    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
-    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea>
+      <div class="site-photo-grid"><div class="site-photo-item">
+  <label for="visit_photo_inverter_location">Take an inverter location photograph</label>
+  <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: inverter location">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div></div>
+    </div>
+    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea>
+      <div class="site-photo-grid"><div class="site-photo-item">
+  <label for="visit_photo_battery_location">Take a battery location photograph</label>
+  <input type="file" id="visit_photo_battery_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: battery location">
+  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+</div></div>
+    </div>
     <div>
       <label for="visit_inverter_mount">How will the inverter be mounted?</label>
       <select id="visit_inverter_mount" onchange="updateInverterPadVisibility()">
@@ -1033,7 +1091,7 @@ window.currentAnswers = answers;
 </section>
 
 <!-- OFFICE FOLLOW-UP: NOT PART OF TOM'S PHYSICAL SITE VISIT -->
-<section class="card solar-only" id="officeFundingSection">
+<section class="card solar-only" id="officeFundingSection" data-job-workspace="office">
   <h2>Office follow-up — funding (optional)</h2>
   <p class="placeholder">Office-only discussion. Existing funding answers stay saved with this job; Tom can concentrate on physical observations.</p>
   <h3>Funding information (optional)</h3>
@@ -1078,7 +1136,7 @@ window.currentAnswers = answers;
 
 <!-- JOB PHOTOS & DOCUMENTS -->
 
-<section class="card job-files" id="jobFilesSection">
+<section class="card job-files" id="jobFilesSection" data-job-workspace="photos">
   <h2>Job Photos & Documents</h2>
   <div class="placeholder">
     Add site photos, switchboard and meter photos, drawings, supplier documents
@@ -1138,16 +1196,12 @@ window.currentAnswers = answers;
   <button type="button" id="uploadJobFile" hidden>RETRY UPLOAD</button>
   <span id="jobFileMessage" aria-live="polite">Files upload automatically after selection.</span>
 
-  <h3>Photo evidence checklist</h3>
-  <div class="placeholder">This updates automatically when files are uploaded.</div>
-  <div id="jobPhotoChecklist" class="photo-checklist"></div>
-
   <h3>Files on this job</h3>
   <div id="jobFilesList" class="placeholder">No files uploaded yet.</div>
 </section>
 
 <!-- MATERIALS ACTUALLY USED -->
-<section class="card" id="jobMaterialsSection">
+<section class="card" id="jobMaterialsSection" data-job-workspace="office">
   <h2>Materials actually used</h2>
   <p class="placeholder">Upload a supplier invoice, select it below, then let Job Hub read its totals and material lines. Check the preview before adding anything. Record stock taken from the van separately.</p>
   <button type="button" id="uploadMaterialsInvoice">UPLOAD SUPPLIER INVOICE</button>
@@ -1187,7 +1241,7 @@ window.currentAnswers = answers;
 
 <!-- DAILY WORK & EWRB RECORD -->
 
-<section class="card" id="workLogSection">
+<section class="card" id="workLogSection" data-job-workspace="records">
   <h2>Work & EWRB Record</h2>
   <div class="placeholder">
     Record Tom's work across one or more dates, supervision and competency evidence. On a phone,
@@ -1284,7 +1338,7 @@ window.currentAnswers = answers;
 
 <!-- SYSTEM DESIGN -->
 
-<section class="card solar-only" id="systemDesignSection">
+<section class="card solar-only" id="systemDesignSection" data-job-workspace="design">
 
   <h2>SYSTEM DESIGN</h2>
 
@@ -1761,7 +1815,7 @@ window.currentAnswers = answers;
 
 </section>
 
-<section class="card solar-only" id="energyTariffReviewSection">
+<section class="card solar-only" id="energyTariffReviewSection" data-job-workspace="office">
   <h2>Energy → Retailer &amp; Tariff Review</h2>
   <p class="placeholder">
     Complete the pre-install energy baseline, connect the proposed solar and smart-energy system,
@@ -1775,7 +1829,7 @@ window.currentAnswers = answers;
 
 <!-- SUPPLIER PRICING -->
 
-<section class="card solar-only" id="supplierPricingSection">
+<section class="card solar-only" id="supplierPricingSection" data-job-workspace="office">
 
   <h2>SUPPLIER PRICING</h2>
 
@@ -2124,7 +2178,7 @@ window.currentAnswers = answers;
 
 </section>
 
-<section class="card" id="internalCostingSection">
+<section class="card" id="internalCostingSection" data-job-workspace="office">
   <h2>INTERNAL COSTING</h2>
   <p class="placeholder">
     Build the job cost once, then use it for the customer quote. Supplier costs,
@@ -2224,7 +2278,7 @@ window.currentAnswers = answers;
   </div>
 </section>
 
-          <section class="card solar-only">
+          <section class="card solar-only" data-job-workspace="office">
   <h2>Quote</h2>
 
   <p class="placeholder">
@@ -2488,6 +2542,31 @@ applyJobTypeVisibility(job.job_type || "solar");
 
 
 
+let activeJobWorkspace = "overview";
+const validJobWorkspaces = new Set(["overview", "hec", "visit", "design", "office", "photos", "records"]);
+
+function applyJobWorkspaceVisibility() {
+  const isSolar = currentJobType !== "general_electrical";
+  if (!isSolar && ["hec", "visit", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
+  document.querySelectorAll("[data-job-workspace]").forEach(section => {
+    const allowedForType = !(section.classList.contains("solar-only") && !isSolar) &&
+      !(section.classList.contains("general-only") && isSolar);
+    section.hidden = !allowedForType || section.dataset.jobWorkspace !== activeJobWorkspace;
+  });
+  document.querySelectorAll("[data-workspace-button]").forEach(button => {
+    button.hidden = !isSolar && button.dataset.solarWorkspace === "true";
+    button.setAttribute("aria-pressed", String(button.dataset.workspaceButton === activeJobWorkspace));
+  });
+}
+
+function selectJobWorkspace(workspace) {
+  if (!validJobWorkspaces.has(workspace)) return;
+  activeJobWorkspace = workspace;
+  applyJobWorkspaceVisibility();
+  const nav = document.getElementById("jobWorkspaceNav");
+  if (nav) nav.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+
 function applyJobTypeVisibility(jobType) {
   currentJobType = jobType;
   const isSolar = jobType !== "general_electrical";
@@ -2503,6 +2582,7 @@ function applyJobTypeVisibility(jobType) {
   });
   const fileRole = document.getElementById("jobFileRole");
   if (!isSolar && fileRole?.selectedOptions[0]?.disabled) fileRole.value = "general";
+  applyJobWorkspaceVisibility();
 }
 
 async function saveJobType() {
@@ -3384,6 +3464,7 @@ const electricalPhotoChecklistItems = [
 
 function renderJobPhotoChecklist(files) {
   const checklist = document.getElementById("jobPhotoChecklist");
+  if (!checklist) return;
   const checklistItems = currentJobType === "general_electrical"
     ? electricalPhotoChecklistItems
     : solarPhotoChecklistItems;
@@ -3410,6 +3491,65 @@ function formatFileSize(bytes) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function renderSiteVisitPhotoStatuses(files) {
+  document.querySelectorAll(".site-photo-input").forEach(input => {
+    const status = input.closest(".site-photo-item")?.querySelector(".site-photo-status");
+    if (!status) return;
+    const matches = files.filter(file =>
+      file.category === input.dataset.photoCategory &&
+      file.caption === input.dataset.photoCaption
+    );
+    status.replaceChildren();
+    if (!matches.length) {
+      status.textContent = "Take or upload a photo here";
+      return;
+    }
+    const anchor = document.createElement("a");
+    anchor.href = `/api/job-file?id=${encodeURIComponent(matches[0].id)}`;
+    anchor.target = "_blank";
+    anchor.rel = "noopener";
+    anchor.textContent = `✓ ${matches.length} photo${matches.length === 1 ? "" : "s"} saved · View`;
+    status.append(anchor);
+  });
+}
+
+async function uploadInlineSitePhoto(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const status = input.closest(".site-photo-item")?.querySelector(".site-photo-status");
+  if (!status) return;
+  if (file.size > 12 * 1024 * 1024) {
+    status.textContent = "Photo exceeds 12 MB. Choose a smaller photo.";
+    return;
+  }
+  if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)) {
+    status.textContent = "Please choose a photograph.";
+    return;
+  }
+  input.disabled = true;
+  status.textContent = "Uploading photograph…";
+  try {
+    const form = new FormData();
+    form.append("job_id", jobId);
+    form.append("file", file);
+    form.append("category", input.dataset.photoCategory);
+    form.append("caption", input.dataset.photoCaption);
+    form.append("document_role", "general");
+    const response = await fetch("/api/job-files", { method: "POST", body: form });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.detail || data.error || "Upload failed");
+    input.value = "";
+    status.textContent = "✓ Photograph saved to this job";
+    await loadJobFiles();
+  } catch (error) {
+    console.error("Could not upload site visit photo:", error);
+    status.textContent = `Could not upload: ${error.message}. Choose the photo again to retry.`;
+    input.value = "";
+  } finally {
+    input.disabled = false;
+  }
 }
 
 function renderSelectedJobFiles() {
@@ -3445,6 +3585,7 @@ async function loadJobFiles() {
 
     renderJobPhotoChecklist(data.files);
     renderEnergyData(data.files);
+    renderSiteVisitPhotoStatuses(data.files);
 
     if (!data.files.length) {
       list.className = "placeholder";
@@ -3473,8 +3614,6 @@ async function loadJobFiles() {
     `).join("");
   } catch (error) {
     console.error("Could not load job files:", error);
-    document.getElementById("jobPhotoChecklist").innerHTML =
-      '<div class="error">Could not load the photo checklist.</div>';
     list.className = "error";
     list.textContent = "Could not load job files.";
   }
@@ -4813,7 +4952,7 @@ const autosavePending = new Set();
 
 function autosaveTarget(event) {
   const target = event.target;
-  if (!target || target.disabled || target.readOnly) return null;
+  if (!target || target.disabled || target.readOnly || target.matches?.(".site-photo-input")) return null;
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
@@ -4859,6 +4998,9 @@ function scheduleSectionAutosave(event) {
     }
   }, 1100));
 }
+document.addEventListener("change", (event) => {
+  if (event.target?.matches?.(".site-photo-input")) uploadInlineSitePhoto(event.target);
+});
 document.addEventListener("input", scheduleSectionAutosave);
 document.addEventListener("change", scheduleSectionAutosave);
 
