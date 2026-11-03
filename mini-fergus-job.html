@@ -868,8 +868,6 @@ window.currentAnswers = answers;
     </div>
     <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
     <div><label>ICP</label><input type="text" id="visit_icp"></div>
-    <div><label>Electricity retailer</label><input type="text" id="visit_retailer"></div>
-    <div><label>Distribution network</label><input type="text" id="visit_network"></div>
     <div>
       <label>Existing switchboard</label>
       <select id="visit_switchboard">
@@ -920,16 +918,7 @@ window.currentAnswers = answers;
         <option value="">Not checked</option>
         <option value="yes">Yes — evidence seen</option>
         <option value="no">No — verified</option>
-        <option value="uncertain">Uncertain — check meter / retailer</option>
-      </select>
-    </div>
-    <div>
-      <label for="visit_hw_controlled_tariff">Controlled-load or special hot-water tariff?</label>
-      <select id="visit_hw_controlled_tariff">
-        <option value="">Not checked</option>
-        <option value="yes">Yes — shown on bill / retailer confirmed</option>
-        <option value="no">No — verified</option>
-        <option value="verify">Unclear — verify with retailer</option>
+        <option value="uncertain">Uncertain — check meter / control equipment</option>
       </select>
     </div>
     <div>
@@ -963,41 +952,22 @@ window.currentAnswers = answers;
         <option value="other">Other / uncertain</option>
       </select>
     </div>
+    <div><label for="visit_hw_existing_controls">Existing timer, diverter, relay or other control seen</label><textarea id="visit_hw_existing_controls" placeholder="Record the actual installed equipment or settings observed"></textarea></div>
     <div>
-      <label for="visit_hw_strategy">Possible smart-energy approach (not yet approved)</label>
-      <select id="visit_hw_strategy">
-        <option value="">Not assessed</option>
-        <option value="keep_existing">Keep existing arrangement</option>
-        <option value="timer">Assess solar-timed controller</option>
-        <option value="diverter">Assess solar diverter</option>
-        <option value="smart_relay">Assess suitable smart relay / controller</option>
-        <option value="heat_pump">Assess heat-pump water heating</option>
-        <option value="review">Further design review needed</option>
+      <label for="visit_hw_physical_match">Does the meter / hot-water circuit match the office bill information?</label>
+      <select id="visit_hw_physical_match">
+        <option value="">Not compared</option>
+        <option value="yes">Yes — appears consistent</option>
+        <option value="no">No — difference found</option>
+        <option value="investigate">Needs further investigation</option>
+        <option value="no_office_info">Office bill details not available</option>
       </select>
     </div>
-    <div>
-      <label for="visit_hw_retailer_check">Retailer / tariff confirmation</label>
-      <select id="visit_hw_retailer_check">
-        <option value="">Not checked</option>
-        <option value="pending">Verification needed</option>
-        <option value="confirmed">Confirmed with retailer</option>
-        <option value="not_applicable">Not applicable</option>
-      </select>
-    </div>
-    <div>
-      <label for="visit_hw_network_check">Network / controlled-load requirements</label>
-      <select id="visit_hw_network_check">
-        <option value="">Not checked</option>
-        <option value="pending">Network requirements to confirm</option>
-        <option value="confirmed">Confirmed with network</option>
-        <option value="not_applicable">Not applicable</option>
-      </select>
-    </div>
-    <div><label for="visit_hw_other_loads">Other flexible loads (EV, heating, appliances)</label><textarea id="visit_hw_other_loads" placeholder="Type or dictate what could be shifted to solar hours"></textarea></div>
+    <div><label for="visit_hw_other_loads">Existing EV charger, heating and other large loads</label><textarea id="visit_hw_other_loads" placeholder="Record equipment seen and relevant physical connections"></textarea></div>
     <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea id="visit_hw_evidence" placeholder="Photos taken, label details, wiring observations"></textarea></div>
   </div>
-  <div style="margin-top:16px;"><label for="visit_hw_outstanding">Unverified items / follow-up before design or quote</label><textarea id="visit_hw_outstanding" placeholder="Record anything still to be checked with electrician, retailer or Vector"></textarea></div>
-  <p class="placeholder">Site observations are provisional. Confirm electrical safety, hot-water temperature requirements, controlled-load obligations and retailer/network conditions before recommending changes. Existing customer bills remain internal to Job Hub.</p>
+  <div style="margin-top:16px;"><label for="visit_hw_outstanding">Physical checks outstanding / follow-up for office or Ben</label><textarea id="visit_hw_outstanding" placeholder="Record any on-site checks still needed; flag tariff or network questions for the office"></textarea></div>
+  <p class="placeholder">Record physical evidence, not retailer prices or tariff assumptions. The office reviews bills and checks retailer/network requirements separately. Electrical safety and hot-water temperature requirements still need professional verification before changes are recommended.</p>
 
   <h3>3. Main roof face</h3>
   <div class="grid">
@@ -1034,12 +1004,39 @@ window.currentAnswers = answers;
   <div class="grid">
     <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea></div>
     <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea></div>
+    <div>
+      <label for="visit_inverter_mount">How will the inverter be mounted?</label>
+      <select id="visit_inverter_mount" onchange="updateInverterPadVisibility()">
+        <option value="">Not checked</option>
+        <option value="wall">Wall-mounted</option>
+        <option value="ground">Ground-mounted / freestanding</option>
+        <option value="other">Other / to be determined</option>
+      </select>
+    </div>
+    <div id="visit_inverter_pad_row" hidden>
+      <label for="visit_inverter_pad">Ground-mounted: will it need a pad / support base?</label>
+      <select id="visit_inverter_pad">
+        <option value="">Not assessed</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="review">To be confirmed during design</option>
+      </select>
+    </div>
     <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
+    <div><label for="visit_cable_length_m">Approximate cable length needed (metres)</label><input type="number" min="0" step="0.5" id="visit_cable_length_m" placeholder="Estimate only"></div>
     <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
   </div>
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
-  <h3>6. Funding information (optional)</h3>
+  <br>
+  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+</section>
+
+<!-- OFFICE FOLLOW-UP: NOT PART OF TOM'S PHYSICAL SITE VISIT -->
+<section class="card solar-only" id="officeFundingSection">
+  <h2>Office follow-up — funding (optional)</h2>
+  <p class="placeholder">Office-only discussion. Existing funding answers stay saved with this job; Tom can concentrate on physical observations.</p>
+  <h3>Funding information (optional)</h3>
   <p class="placeholder">Ask only if the customer wishes to discuss funding. Solectrics provides links to banks' official, current green-loan information; we do not provide financial advice, arrange loans or assess eligibility.</p>
   <div class="grid">
     <div>
@@ -1075,8 +1072,8 @@ window.currentAnswers = answers;
   </div>
   <p class="placeholder">Any interest rates, eligibility criteria and product availability must be checked by the customer directly with their bank. Do not recommend or compare loan suitability.</p>
 
-  <br>
-  <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+
+  <span id="officeFundingMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 </section>
 
 <!-- JOB PHOTOS & DOCUMENTS -->
@@ -1103,7 +1100,6 @@ window.currentAnswers = answers;
         <option value="switchboard">Switchboard</option>
         <option value="meter">Meter / ICP</option>
         <option value="roof">Roof</option>
-        <option value="cable_route">Cable route</option>
         <option value="fixings">Mounting / fixings</option>
         <option value="equipment">Equipment location</option>
         <option value="wiring">Wiring before covers</option>
@@ -3139,15 +3135,15 @@ async function saveAssessment() {
 
 const siteVisitFieldIds = [
   "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
-  "visit_icp", "visit_retailer", "visit_network", "visit_switchboard",
+  "visit_icp", "visit_switchboard",
   "visit_supply_notes", "visit_roof_length", "visit_roof_width",
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
-  "visit_battery_location", "visit_cable_route", "visit_access_notes",
+  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
-  "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_hw_ripple", "visit_hw_controlled_tariff", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_strategy", "visit_hw_retailer_check", "visit_hw_network_check", "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding"
+  "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_hw_ripple", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_existing_controls", "visit_hw_physical_match", "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding"
 ];
 
 let loadedSiteVisit = {};
@@ -3156,6 +3152,16 @@ const siteVisitCheckboxIds = [
   "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
   "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
 ];
+
+function updateInverterPadVisibility() {
+  const isGround = document.getElementById("visit_inverter_mount")?.value === "ground";
+  const row = document.getElementById("visit_inverter_pad_row");
+  if (row) row.hidden = !isGround;
+  if (!isGround) {
+    const pad = document.getElementById("visit_inverter_pad");
+    if (pad) pad.value = "";
+  }
+}
 
 function collectSiteVisit() {
   // Retain legacy fields that are no longer shown, without asking Tom to
@@ -3175,8 +3181,6 @@ function applySiteVisitToSystemDesign(visit) {
     visit_connection_type: "design_connection_type",
     visit_main_supply: "design_main_supply",
     visit_icp: "design_icp",
-    visit_retailer: "design_retailer",
-    visit_network: "design_network",
     visit_switchboard: "design_switchboard",
     visit_supply_notes: "design_supply_notes"
   };
@@ -3221,8 +3225,11 @@ function applySiteVisitToSystemDesign(visit) {
   const environmentNotes = [
     visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
     visit.visit_inverter_location && `Possible inverter location: ${visit.visit_inverter_location}`,
+    visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
+    visit.visit_inverter_mount === "ground" && visit.visit_inverter_pad && `Ground inverter pad / base needed: ${{yes:"Yes",no:"No",review:"Needs design confirmation"}[visit.visit_inverter_pad] || visit.visit_inverter_pad}`,
     visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
+    visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
     visit.visit_general_notes
   ].filter(Boolean).join("\n");
@@ -3249,6 +3256,7 @@ async function loadSiteVisit() {
     if (!data.site_visit) {
       const date = document.getElementById("visit_date");
       if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
+      updateInverterPadVisibility();
       return;
     }
 
@@ -3261,6 +3269,7 @@ async function loadSiteVisit() {
       const field = document.getElementById(id);
       if (field) field.checked = Boolean(data.site_visit[id]);
     });
+    updateInverterPadVisibility();
   } catch (error) {
     console.error("Could not load site visit:", error);
     const message = document.getElementById("siteVisitMessage");
@@ -3268,8 +3277,8 @@ async function loadSiteVisit() {
   }
 }
 
-async function saveSiteVisit() {
-  const message = document.getElementById("siteVisitMessage");
+async function saveSiteVisit({ officeOnly = false } = {}) {
+  const message = document.getElementById(officeOnly ? "officeFundingMessage" : "siteVisitMessage");
   const siteVisit = collectSiteVisit();
   message.textContent = " Saving...";
 
@@ -3283,6 +3292,11 @@ async function saveSiteVisit() {
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
     loadedSiteVisit = { ...siteVisit };
+    if (officeOnly) {
+      // Office-only funding questions must not overwrite edited System Design.
+      message.textContent = " ✓ Office follow-up saved";
+      return;
+    }
     applySiteVisitToSystemDesign(siteVisit);
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
@@ -3290,7 +3304,7 @@ async function saveSiteVisit() {
       : " Site visit saved, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
-    message.textContent = " Could not save site visit";
+    message.textContent = officeOnly ? " Could not save office follow-up" : " Could not save site visit";
   }
 }
 
@@ -3360,7 +3374,7 @@ function renderEnergyData(files) {
 }
 
 const solarPhotoChecklistItems = [
-  "site_photo", "switchboard", "meter", "cable_route", "fixings",
+  "site_photo", "switchboard", "meter", "fixings",
   "equipment", "wiring", "labels", "testing", "completed", "certificate"
 ];
 
@@ -4803,6 +4817,7 @@ function autosaveTarget(event) {
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
+  if (target.closest("#officeFundingSection")) return ["siteVisit", () => saveSiteVisit({officeOnly:true}), "officeFundingMessage"];
   if (target.closest("#systemDesignSection")) return ["systemDesign", saveSystemDesign, "systemDesignMessage"];
   if (target.closest("#supplierPricingSection")) return ["supplierPricing", saveSupplierPricing, "supplierPricingMessage"];
   if (target.closest("#internalCostingSection")) return ["costing", saveInternalCosting, "costingMessage"];
