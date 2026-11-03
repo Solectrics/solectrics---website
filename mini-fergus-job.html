@@ -3496,7 +3496,7 @@ function formatFileSize(bytes) {
 function renderSiteVisitPhotoStatuses(files) {
   document.querySelectorAll(".site-photo-input").forEach(input => {
     const status = input.closest(".site-photo-item")?.querySelector(".site-photo-status");
-    if (!status || input.disabled) return;
+    if (!status) return;
     const matches = files.filter(file =>
       file.category === input.dataset.photoCategory &&
       file.caption === input.dataset.photoCaption
@@ -3545,7 +3545,8 @@ async function uploadInlineSitePhoto(input) {
     await loadJobFiles();
   } catch (error) {
     console.error("Could not upload site visit photo:", error);
-    status.textContent = `Could not upload: ${error.message}. Please try again.`;
+    status.textContent = `Could not upload: ${error.message}. Choose the photo again to retry.`;
+    input.value = "";
   } finally {
     input.disabled = false;
   }
