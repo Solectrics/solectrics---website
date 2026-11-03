@@ -302,44 +302,51 @@
 
     .extras-grid{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-columns:repeat(2,minmax(0,1fr));
       gap:16px;
     }
 
     .extra-option{
-      padding:22px;
+      padding:24px;
       background:white;
       border:1px solid var(--line);
       border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      min-height:195px;
     }
 
     .extra-option h4{
-      font-size:18px;
-      margin:0 0 6px;
+      font-size:20px;
+      line-height:1.25;
+      margin:0 0 12px;
+    }
+
+    .extra-price{
+      font-size:26px;
+      line-height:1.2;
+      font-weight:800;
+      color:var(--green);
+      margin:auto 0 12px;
     }
 
     .extra-option p{
       color:var(--muted);
       margin:0;
       font-size:14px;
+      line-height:1.5;
     }
 
-    .extra-price{
-      margin:12px 0 9px;
-      font-size:15px;
-      line-height:1.4;
-      font-weight:800;
-      color:var(--green);
-    }
-
-    .extra-option .extra-link{
-      margin-top:14px;
+    .extras-source{
       font-size:13px;
+      line-height:1.55;
+      color:var(--muted);
+      margin:18px 0 0;
     }
 
-    .extra-link a{
-      font-weight:800;
+    .extras-source a{
       color:var(--green);
+      font-weight:700;
       text-underline-offset:2px;
     }
 
@@ -579,32 +586,31 @@
     </div>
 
     <div class="extras" id="smart-controls">
-      <h3>Smarter timing for your home's bigger energy loads</h3>
-      <p class="extras-intro">Beyond basic plug-in timers, we can help match hot-water heating, EV charging and everyday household loads to your solar generation and electricity tariff. Often the best first step is to use controls already built into your equipment. These options are <strong>separate from the solar package prices above</strong>. For practical ways to reduce your home's energy use, see our <a href="/smart-energy.html">Smart Home Energy guide</a>.</p>
+      <h3>Indicative smart-energy upgrade prices</h3>
+      <p class="extras-intro">A few practical ways to make your home more energy-efficient and solar-smart. These are <strong>EECA guide estimates, not fixed Solectrics prices</strong>, and are separate from the solar packages above.</p>
       <div class="extras-grid">
         <div class="extra-option">
-          <h4>Electric hot water</h4>
-          <p>For a conventional electric hot-water cylinder, a professionally installed timer can heat water when solar is available. A <strong>solar-surplus diverter</strong> can send otherwise-exported solar electricity into your cylinder, while a suitable smart hot-water controller may offer app-based or more flexible control.</p>
-          <div class="extra-price">EECA calculator examples: about $200 installed for a timer, or $1,000 installed for a solar diverter.</div>
-          <p>These are EECA calculator assumptions, not a Solectrics fixed quote. We check cylinder controls and existing ripple-control arrangements before recommending changes. Some hot-water heat pumps already have scheduling controls, depending on model.</p>
-          <p class="extra-link"><a href="https://www.eeca.govt.nz/for-homes/solar-for-homes/solar-power-calculator/" target="_blank" rel="noopener">EECA solar payback calculator</a></p>
+          <h4>Conventional Electric Hot Water Cylinder</h4>
+          <div class="extra-price">Est. $200 installed</div>
+          <p>Hot-water timer; alternatively, an installed solar diverter is estimated at $1,000.</p>
         </div>
         <div class="extra-option">
-          <h4>Smart EV charging</h4>
-          <p>A dedicated smart wall charger can schedule charging for cheaper tariff periods. Some models can prioritise surplus solar; others require compatible home-energy management. We assess charger location, circuit capacity and any load-management requirements.</p>
-          <div class="extra-price">EECA guide: around $1,500–$2,500 supplied and installed.</div>
-          <p>EECA estimates $1,000–$1,500 for a smart charger plus $500–$1,000 for installation. Complex wiring or switchboard work can cost more. Your Solectrics price is quoted after assessment.</p>
-          <p class="extra-link"><a href="https://www.eeca.govt.nz/for-homes/vehicles/smart-ev-chargers/" target="_blank" rel="noopener">EECA smart EV charger guidance</a></p>
+          <h4>Hot Water Heat Pump</h4>
+          <div class="extra-price">Est. $7,000 supplied &amp; installed</div>
+          <p>Efficient hot-water heating; many models have their own scheduling controls.</p>
         </div>
         <div class="extra-option">
-          <h4>Washing machines and other household loads</h4>
-          <p>Washing machines, dishwashers and dryers often already have a <strong>delay-start</strong> setting. We can help you use that to run appliances in solar hours or off-peak tariff periods, without buying extra hardware.</p>
-          <div class="extra-price">Often no new device or installation cost.</div>
-          <p>For more coordinated automation, we can assess suitable integrated home-energy controls and quote any additional work. Ordinary plug-in smart timers are not a safe universal solution for high-power or hardwired appliances. Room heat pumps also commonly have their own built-in timers.</p>
-          <p class="extra-link"><a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/control-more-of-your-electricity-use/" target="_blank" rel="noopener">EECA advice on smarter electricity use</a></p>
+          <h4>Smart EV Charging</h4>
+          <div class="extra-price">Est. $1,500–$2,500 supplied &amp; installed</div>
+          <p>Schedule charging for suitable solar-production or lower-cost electricity periods.</p>
+        </div>
+        <div class="extra-option">
+          <h4>Washing Machines and Other Household Loads</h4>
+          <div class="extra-price">$0 extra equipment cost</div>
+          <p>Use built-in delay-start timers on suitable washing machines, dishwashers and dryers.</p>
         </div>
       </div>
-      <p class="extras-intro" style="margin-top:16px;font-size:14px">Prices above are examples from EECA, not fixed Solectrics offers. We'll recommend a worthwhile solution only after checking your existing appliances, tariff and electrical setup.</p>
+      <p class="extras-source"><strong>Pricing guidance:</strong> EECA's solar calculator assumes $200 for a hot-water timer and $1,000 for a diverter; EECA estimates around $7,000 for a hot-water heat pump and $1,500–$2,500 for a smart EV charger, supplied and installed. Using existing appliance timers generally needs no new equipment. These are indicative NZ benchmarks; actual installations may vary and Solectrics quotes separately. Sources: <a href="https://www.eeca.govt.nz/for-homes/solar-for-homes/solar-power-calculator/" target="_blank" rel="noopener">solar calculator</a>, <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/water-heating/hot-water-heat-pumps/" target="_blank" rel="noopener">hot-water heat pumps</a>, <a href="https://www.eeca.govt.nz/for-homes/vehicles/smart-ev-chargers/" target="_blank" rel="noopener">EV charging</a> and <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/control-more-of-your-electricity-use/" target="_blank" rel="noopener">smart-energy controls</a>. <a href="/smart-energy.html#smart-appliances">Read how these options work in our Smart Home Energy guide</a>.</p>
     </div>
 
     <div class="note">
