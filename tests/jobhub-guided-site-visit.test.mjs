@@ -195,3 +195,21 @@ test("autosave does not conceal an unsuccessful System Design handoff", () => {
   assert.match(page, /!status\.textContent\.toLowerCase\(\)\.includes\("could not"\)/);
   assert.match(page, /Site visit saved, but System Design could not be updated/);
 });
+
+test("Design handoff does not open while Site Visit edits or photo uploads are pending", () => {
+  const { guide, element, state, documentEvents } = setup();
+  documentEvents.input({ target: {
+    closest: () => ({}), matches: () => false, tagName: "INPUT"
+  } });
+  element("goToSystemDesignFromVisit").listeners.click();
+  assert.equal(state.selectedWorkspace, null);
+  assert.match(element("siteVisitMessage").textContent, /Please finish saving/);
+  const version = guide.saveStarted();
+  guide.saveFinished(version, true);
+  guide.photoStarted();
+  element("goToSystemDesignFromVisit").listeners.click();
+  assert.equal(state.selectedWorkspace, null);
+  guide.photoFinished();
+  element("goToSystemDesignFromVisit").listeners.click();
+  assert.equal(state.selectedWorkspace, "design");
+});
