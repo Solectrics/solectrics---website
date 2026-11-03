@@ -129,32 +129,73 @@ async function optionalAll(db, sql, value) {
 }
 
 function billValues(answers) {
-  return [answers?.bills?.summer, answers?.bills?.winter].filter(Boolean);
+  // When two bills have different retailers or rates, the more recent billing
+  // period is the better starting point for the *current* electricity plan.
+  const endDate = bill => {
+    if (Array.isArray(bill?.needs_review_fields) && bill.needs_review_fields.includes("billing_period_end")) return 0;
+    const date = String(bill?.billing_period_end || "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return 0;
+    const timestamp = Date.parse(date + "T00:00:00Z");
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
+  return [answers?.bills?.summer, answers?.bills?.winter].filter(Boolean)
+    .sort((a, b) => endDate(b) - endDate(a));
 }
 
 function firstKnown(bills, key) {
-  return bills.map(bill => bill?.[key]).find(value => value !== null && value !== undefined && value !== "") ?? null;
+  // Never auto-populate fields the Home Energy Check bill reader marked uncertain.
+  return bills.map(bill => {
+    if (Array.isArray(bill?.needs_review_fields) && bill.needs_review_fields.includes(key)) return null;
+    return bill?.[key];
+  }).find(value => value !== null && value !== undefined && value !== "") ?? null;
+}
+
+function fillEmptyDraftFields(saved, derived) {
+  if (!saved || saved.status !== "draft") return saved;
+  const result = { ...saved };
+  for (const part of ["current_plan", "baseline"]) {
+    const existing = object(saved[part]);
+    const incoming = object(derived[part]);
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(incoming)) {
+      const oldValue = existing[key];
+      const missing = oldValue === null || oldValue === undefined || oldValue === "" || oldValue === "needs_review";
+      if (missing && value !== null && value !== undefined && value !== "") merged[key] = value;
+    }
+    result[part] = merged;
+  }
+  return result;
 }
 
 function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
+  // Current tariff fields must all come from the same (most recent) bill.
+  // Do not combine a new retailer's name with an older retailer's rate.
+  const latestBill = bills[0];
+  const date = String(latestBill?.billing_period_end || "");
+  const reliableDate = /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    !(latestBill?.needs_review_fields || []).includes("billing_period_end") &&
+    Number.isFinite(Date.parse(date + "T00:00:00Z"));
+  // With two undated bills we cannot know which tariff is current.
+  const latest = latestBill && (bills.length === 1 || reliableDate) ? [latestBill] : [];
+  const currentValue = key => firstKnown(latest, key);
   return {
-    retailer: firstKnown(bills, "retailer") || "",
-    plan_name: firstKnown(bills, "plan_name") || "",
-    icp: firstKnown(bills, "icp") || "",
-    billing_period_start: firstKnown(bills, "billing_period_start") || "",
-    billing_period_end: firstKnown(bills, "billing_period_end") || "",
-    daily_charge_cents: firstKnown(bills, "daily_fixed_charge_cents"),
-    standard_import_rate_cents: firstKnown(bills, "import_rate_cents"),
-    peak_import_rate_cents: firstKnown(bills, "peak_rate_cents"),
-    offpeak_import_rate_cents: firstKnown(bills, "offpeak_rate_cents"),
-    controlled_import_rate_cents: firstKnown(bills, "controlled_rate_cents"),
-    ev_night_rate_cents: firstKnown(bills, "ev_night_rate_cents"),
-    solar_export_rate_cents: firstKnown(bills, "export_rate_cents"),
-    fixed_term: firstKnown(bills, "fixed_term") || "needs_review",
-    exit_cost_nzd: firstKnown(bills, "exit_cost_nzd"),
-    other_tariff_information: firstKnown(bills, "other_tariff_information") || "",
-    notes: bills.map(bill => bill?.notes).filter(Boolean).join(" ")
+    retailer: currentValue("retailer") || "",
+    plan_name: currentValue("plan_name") || "",
+    icp: currentValue("icp") || "",
+    billing_period_start: currentValue("billing_period_start") || "",
+    billing_period_end: currentValue("billing_period_end") || "",
+    daily_charge_cents: currentValue("daily_fixed_charge_cents"),
+    standard_import_rate_cents: currentValue("import_rate_cents"),
+    peak_import_rate_cents: currentValue("peak_rate_cents"),
+    offpeak_import_rate_cents: currentValue("offpeak_rate_cents"),
+    controlled_import_rate_cents: currentValue("controlled_rate_cents"),
+    ev_night_rate_cents: currentValue("ev_night_rate_cents"),
+    solar_export_rate_cents: currentValue("export_rate_cents"),
+    fixed_term: currentValue("fixed_term") || "needs_review",
+    exit_cost_nzd: currentValue("exit_cost_nzd"),
+    other_tariff_information: currentValue("other_tariff_information") || "",
+    notes: latest.map(bill => bill?.notes).filter(Boolean).join(" ")
   };
 }
 
@@ -162,9 +203,18 @@ function deriveBaseline(answers = {}, files = []) {
   const bills = billValues(answers);
   const dailyUse = bills.map(bill => number(bill.average_daily_kwh)).filter(value => value !== null);
   const dailySpend = bills.map(bill => {
-    const total = number(bill.total_bill_nzd);
     const days = number(bill.billing_days);
-    return total !== null && days ? total / days : null;
+    // Electricity bills can include broadband/phone charges. Never treat a
+    // combined bill total as electricity-only spend unless separated clearly.
+    const electricityOnly = number(firstKnown([bill], "electricity_total_incl_gst_nzd"));
+    const total = number(firstKnown([bill], "total_bill_nzd"));
+    const broadband = number(firstKnown([bill], "broadband_total_incl_gst_nzd"));
+    const knownElectricitySpend = electricityOnly !== null
+      ? electricityOnly
+      : total !== null && broadband !== null && broadband <= total
+        ? total - broadband
+        : null;
+    return knownElectricitySpend !== null && days && days > 0 ? knownElectricitySpend / days : null;
   }).filter(value => value !== null);
   const interval = files.some(file => file.document_role === "annual_usage" && file.energy_data_detail === "half_hourly");
   const annualFiles = files.filter(file => file.document_role === "annual_usage");
@@ -264,7 +314,7 @@ async function loadBundle(db, jobId) {
     proposed_system: deriveProposedSystem(answers, assessment || {}, object(designRow?.data_json))
   };
   const saved = decodeReview(reviewRow);
-  const review = saved || {
+  const review = saved ? fillEmptyDraftFields(saved, derived) : {
     job_id: jobId,
     status: "draft",
     ...derived,
