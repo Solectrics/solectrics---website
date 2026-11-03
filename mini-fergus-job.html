@@ -183,6 +183,10 @@
       overflow-wrap: anywhere;
     }
 
+    .job-workspace-nav { display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px; margin: 0 0 18px; position: sticky; top: 0; z-index: 8; background: #f7f5ef; scrollbar-width: thin; }
+    .job-workspace-button { flex: 0 0 auto; min-height: 44px; padding: 10px 15px; border: 2px solid #e5dbcc; border-radius: 11px; background: #fff; color: #173f3f; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .job-workspace-button[aria-pressed="true"] { background: #ef9c20; border-color: #ef9c20; color: #17332d; }
+    [data-job-workspace][hidden], .job-workspace-button[hidden] { display: none !important; }
     .photo-checklist {
       display: grid;
       gap: 8px;
@@ -526,8 +530,17 @@ window.currentAnswers = answers;
           <div class="address">${escapeHtml(job.address || "")}</div>
 
           <div class="status">${escapeHtml(formatStatus(job.job_status))}</div>
+          <nav class="job-workspace-nav" id="jobWorkspaceNav" aria-label="Job sections">
+            <button type="button" class="job-workspace-button" data-workspace-button="overview" onclick="selectJobWorkspace('overview')">Overview</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="hec" data-solar-workspace="true" onclick="selectJobWorkspace('hec')">Home Energy Check</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="visit" data-solar-workspace="true" onclick="selectJobWorkspace('visit')">Site Visit</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="design" data-solar-workspace="true" onclick="selectJobWorkspace('design')">System Design</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="office" onclick="selectJobWorkspace('office')">Office &amp; Quote</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="photos" onclick="selectJobWorkspace('photos')">Photos &amp; Files</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="records" onclick="selectJobWorkspace('records')">Work &amp; EWRB</button>
+          </nav>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Customer</h2>
 
             <div class="grid">
@@ -553,14 +566,14 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Next action</h2>
             <div class="value">
               ${escapeHtml(job.next_action || "Review Home Energy Check")}
             </div>
           </section>
 
-          <section class="card">
+          <section class="card" data-job-workspace="overview">
             <h2>Job type</h2>
             <p class="placeholder">General electrical jobs do not require the solar assessment or design sections.</p>
             <select id="jobType">
@@ -570,7 +583,7 @@ window.currentAnswers = answers;
             <span id="jobTypeMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
-          <section class="card general-job general-only" id="generalJobSection" hidden>
+          <section class="card general-job general-only" id="generalJobSection" data-job-workspace="overview" hidden>
             <h2>Electrical Job Brief</h2>
             <div style="margin:16px 0;">
               <label for="general_billing_route">How should this job be billed?</label>
@@ -634,7 +647,7 @@ window.currentAnswers = answers;
             <span id="generalJobMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
           </section>
 
-<section class="card solar-only">
+<section class="card solar-only" data-job-workspace="hec">
             <h2>Home Energy Check</h2>
 
             <h3>Home & energy use</h3>
@@ -667,7 +680,7 @@ window.currentAnswers = answers;
             </div>
           </section>
 
-          <section class="card solar-only">
+          <section class="card solar-only" data-job-workspace="design">
   <h2>Assessment & design</h2>
 
   <div class="placeholder">
@@ -846,7 +859,7 @@ window.currentAnswers = answers;
 
 <!-- TOM'S SITE VISIT -->
 
-<section class="card site-visit solar-only" id="siteVisitSection">
+<section class="card site-visit solar-only" id="siteVisitSection" data-job-workspace="visit">
   <h2>Tom's Site Visit</h2>
   <div class="placeholder">
     Record the onsite facts once. Saving this form also copies the matching
@@ -1033,7 +1046,7 @@ window.currentAnswers = answers;
 </section>
 
 <!-- OFFICE FOLLOW-UP: NOT PART OF TOM'S PHYSICAL SITE VISIT -->
-<section class="card solar-only" id="officeFundingSection">
+<section class="card solar-only" id="officeFundingSection" data-job-workspace="office">
   <h2>Office follow-up — funding (optional)</h2>
   <p class="placeholder">Office-only discussion. Existing funding answers stay saved with this job; Tom can concentrate on physical observations.</p>
   <h3>Funding information (optional)</h3>
@@ -1078,7 +1091,7 @@ window.currentAnswers = answers;
 
 <!-- JOB PHOTOS & DOCUMENTS -->
 
-<section class="card job-files" id="jobFilesSection">
+<section class="card job-files" id="jobFilesSection" data-job-workspace="photos">
   <h2>Job Photos & Documents</h2>
   <div class="placeholder">
     Add site photos, switchboard and meter photos, drawings, supplier documents
@@ -1147,7 +1160,7 @@ window.currentAnswers = answers;
 </section>
 
 <!-- MATERIALS ACTUALLY USED -->
-<section class="card" id="jobMaterialsSection">
+<section class="card" id="jobMaterialsSection" data-job-workspace="office">
   <h2>Materials actually used</h2>
   <p class="placeholder">Upload a supplier invoice, select it below, then let Job Hub read its totals and material lines. Check the preview before adding anything. Record stock taken from the van separately.</p>
   <button type="button" id="uploadMaterialsInvoice">UPLOAD SUPPLIER INVOICE</button>
@@ -1187,7 +1200,7 @@ window.currentAnswers = answers;
 
 <!-- DAILY WORK & EWRB RECORD -->
 
-<section class="card" id="workLogSection">
+<section class="card" id="workLogSection" data-job-workspace="records">
   <h2>Work & EWRB Record</h2>
   <div class="placeholder">
     Record Tom's work across one or more dates, supervision and competency evidence. On a phone,
@@ -1284,7 +1297,7 @@ window.currentAnswers = answers;
 
 <!-- SYSTEM DESIGN -->
 
-<section class="card solar-only" id="systemDesignSection">
+<section class="card solar-only" id="systemDesignSection" data-job-workspace="design">
 
   <h2>SYSTEM DESIGN</h2>
 
@@ -1761,7 +1774,7 @@ window.currentAnswers = answers;
 
 </section>
 
-<section class="card solar-only" id="energyTariffReviewSection">
+<section class="card solar-only" id="energyTariffReviewSection" data-job-workspace="office">
   <h2>Energy → Retailer &amp; Tariff Review</h2>
   <p class="placeholder">
     Complete the pre-install energy baseline, connect the proposed solar and smart-energy system,
@@ -1775,7 +1788,7 @@ window.currentAnswers = answers;
 
 <!-- SUPPLIER PRICING -->
 
-<section class="card solar-only" id="supplierPricingSection">
+<section class="card solar-only" id="supplierPricingSection" data-job-workspace="office">
 
   <h2>SUPPLIER PRICING</h2>
 
@@ -2124,7 +2137,7 @@ window.currentAnswers = answers;
 
 </section>
 
-<section class="card" id="internalCostingSection">
+<section class="card" id="internalCostingSection" data-job-workspace="office">
   <h2>INTERNAL COSTING</h2>
   <p class="placeholder">
     Build the job cost once, then use it for the customer quote. Supplier costs,
@@ -2224,7 +2237,7 @@ window.currentAnswers = answers;
   </div>
 </section>
 
-          <section class="card solar-only">
+          <section class="card solar-only" data-job-workspace="office">
   <h2>Quote</h2>
 
   <p class="placeholder">
@@ -2488,6 +2501,31 @@ applyJobTypeVisibility(job.job_type || "solar");
 
 
 
+let activeJobWorkspace = "overview";
+const validJobWorkspaces = new Set(["overview", "hec", "visit", "design", "office", "photos", "records"]);
+
+function applyJobWorkspaceVisibility() {
+  const isSolar = currentJobType !== "general_electrical";
+  if (!isSolar && ["hec", "visit", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
+  document.querySelectorAll("[data-job-workspace]").forEach(section => {
+    const allowedForType = !(section.classList.contains("solar-only") && !isSolar) &&
+      !(section.classList.contains("general-only") && isSolar);
+    section.hidden = !allowedForType || section.dataset.jobWorkspace !== activeJobWorkspace;
+  });
+  document.querySelectorAll("[data-workspace-button]").forEach(button => {
+    button.hidden = !isSolar && button.dataset.solarWorkspace === "true";
+    button.setAttribute("aria-pressed", String(button.dataset.workspaceButton === activeJobWorkspace));
+  });
+}
+
+function selectJobWorkspace(workspace) {
+  if (!validJobWorkspaces.has(workspace)) return;
+  activeJobWorkspace = workspace;
+  applyJobWorkspaceVisibility();
+  const nav = document.getElementById("jobWorkspaceNav");
+  if (nav) nav.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+
 function applyJobTypeVisibility(jobType) {
   currentJobType = jobType;
   const isSolar = jobType !== "general_electrical";
@@ -2503,6 +2541,7 @@ function applyJobTypeVisibility(jobType) {
   });
   const fileRole = document.getElementById("jobFileRole");
   if (!isSolar && fileRole?.selectedOptions[0]?.disabled) fileRole.value = "general";
+  applyJobWorkspaceVisibility();
 }
 
 async function saveJobType() {
