@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Request your free home solar visit | Solectrics</title>
+<link rel="icon" href="/favicon.png?v=2">
+<style>
+:root{--green:#17332d;--orange:#ef9c20;--cream:#f7f4ed}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--green)}
+main{max-width:560px;margin:35px auto;padding:0 20px 45px}
+header{max-width:560px;margin:25px auto 0;padding:0 20px}
+header img{width:165px;max-width:100%}
+.card{background:#fff;border-radius:17px;padding:30px 26px;box-shadow:0 8px 32px #152b2320}
+.kicker{color:var(--orange);font-size:12px;letter-spacing:1.2px;font-weight:800;text-transform:uppercase}
+h1{font-size:clamp(27px,6vw,38px);line-height:1.13}
+p{line-height:1.55;font-size:16px}
+button{width:100%;border:0;border-radius:11px;background:var(--orange);color:#fff;padding:17px 15px;font-weight:800;font-size:15px;cursor:pointer}
+button:disabled{opacity:.65;cursor:default}
+#message{margin-top:17px;line-height:1.5;font-weight:700}
+.error{color:#963b32}.good{color:#25694b}
+.small{font-size:13px;color:#50605a}
+a{color:#11614e}
+</style>
+</head>
+<body>
+<header><a href="/"><img src="/EFEC3451-B808-452A-8EA2-64B22E36C363.png" alt="Solectrics"></a></header>
+<main><section class="card">
+<div class="kicker">Your next step</div>
+<h1>Book your free home solar visit</h1>
+<p>Your Home Energy Check is already with us. There is <strong>no need to complete it again.</strong></p>
+<p>We'll review your roof, shading, switchboard, hot water and opportunities for smarter energy use. Following the visit, we can prepare your free bespoke solar quotation.</p>
+<p><strong>Choose below to request your visit.</strong> We'll then contact you to agree a convenient time. This does not confirm an appointment automatically.</p>
+<button id="confirm" type="button">REQUEST MY FREE HOME SOLAR VISIT →</button>
+<div id="message" role="status" aria-live="polite"></div>
+<p class="small">Your personal booking link expires after 14 days. If it has expired, <a href="mailto:jane@solectrics.co.nz?subject=Request%20my%20free%20home%20solar%20visit">email Solectrics</a> instead.</p>
+</section></main>
+<script>
+(function(){
+  const token=new URLSearchParams(location.search).get("token");
+  const button=document.getElementById("confirm"),message=document.getElementById("message");
+  if(!token || !/^[1-9][0-9]{0,14}\.[0-9]{10}\.[a-f0-9]{64}$/.test(token)){
+    button.disabled=true;message.className="error";message.textContent="This link is missing or invalid. Please email Solectrics to arrange your visit.";return;
+  }
+  button.addEventListener("click",async function(){
+    if(button.disabled)return;
+    button.disabled=true;message.className="";message.textContent="Saving your visit request…";
+    try{
+      const res=await fetch("/api/hec-visit-request",{
+        method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token})
+      });
+      const body=await res.json();
+      if(!res.ok||!body.ok)throw new Error(body.message||"Could not save request");
+      message.className="good";
+      message.textContent="Thank you! Your free home solar visit request is with Solectrics. We'll contact you to arrange the visit and prepare your bespoke quote afterward.";
+      button.textContent="VISIT REQUEST RECEIVED ✓";
+      history.replaceState({},document.title,location.pathname);
+    }catch(err){
+      button.disabled=false;message.className="error";message.textContent=err.message||"Please try again";
+    }
+  });
+})();
+</script>
+</body>
+</html>
