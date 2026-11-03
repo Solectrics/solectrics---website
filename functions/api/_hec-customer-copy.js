@@ -135,9 +135,9 @@ ${prioritiesHtml}
 </td></tr>
 <tr><td style="padding:24px 28px;background:#f7f7f2;border-top:1px solid #eee5d9;border-bottom:1px solid #eee5d9;">
 <h2 style="font-size:21px;margin:0 0 10px;color:#17332d;">Three pathways worth discussing</h2>
-<p style="font-size:15px;line-height:1.6;margin:8px 0;"><strong>Solar Start:</strong> Generate electricity on your roof, with the possibility of adding storage later.</p>
-<p style="font-size:15px;line-height:1.6;margin:8px 0;"><strong>Solar Smart:</strong> Use timers and suitable controls to move hot water, EV charging and other flexible loads into solar hours.</p>
-<p style="font-size:15px;line-height:1.6;margin:8px 0;"><strong>Solar Smart + Battery:</strong> Store available surplus solar for later; backup and winter performance depend on the design.</p>
+<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>1. Solar Start:</strong> Solar panels generate electricity, and an inverter converts their DC output into AC electricity for use in your home. Battery storage may be added later if the system is designed with compatible equipment.</p>
+<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>2. Solar Smart:</strong> Solar panels and an inverter, together with suitable timers and smart controls to help use more solar electricity as it is generated. Depending on your home and tariff, this might include scheduling hot water, EV charging and other flexible loads during solar-producing hours.</p>
+<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>3. Solar Smart + Battery:</strong> Solar panels, a compatible inverter and battery storage to keep available surplus solar electricity for later use, including after sunset. With the right backup equipment and electrical design, the system may also power selected essential circuits during a grid outage. How long they can run depends on battery charge, usable capacity, essential loads and available solar generation — particularly in winter.</p>
 <p style="font-size:12px;color:#66736d;line-height:1.6;">These are options to explore, not a final recommendation or formal quote.</p>
 </td></tr>
 <tr><td style="padding:24px 28px;border-bottom:1px solid #eee5d9;">
