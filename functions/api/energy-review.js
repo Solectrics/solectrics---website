@@ -132,6 +132,7 @@ function billValues(answers) {
   // When two bills have different retailers or rates, the more recent billing
   // period is the better starting point for the *current* electricity plan.
   const endDate = bill => {
+    if (Array.isArray(bill?.needs_review_fields) && bill.needs_review_fields.includes("billing_period_end")) return 0;
     const date = String(bill?.billing_period_end || "");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return 0;
     const timestamp = Date.parse(date + "T00:00:00Z");
@@ -170,7 +171,13 @@ function deriveCurrentPlan(answers = {}) {
   const bills = billValues(answers);
   // Current tariff fields must all come from the same (most recent) bill.
   // Do not combine a new retailer's name with an older retailer's rate.
-  const latest = bills[0] ? [bills[0]] : [];
+  const latestBill = bills[0];
+  const date = String(latestBill?.billing_period_end || "");
+  const reliableDate = /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    !(latestBill?.needs_review_fields || []).includes("billing_period_end") &&
+    Number.isFinite(Date.parse(date + "T00:00:00Z"));
+  // With two undated bills we cannot know which tariff is current.
+  const latest = latestBill && (bills.length === 1 || reliableDate) ? [latestBill] : [];
   const currentValue = key => firstKnown(latest, key);
   return {
     retailer: currentValue("retailer") || "",
