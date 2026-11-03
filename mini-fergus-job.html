@@ -183,6 +183,39 @@
       overflow-wrap: anywhere;
     }
 
+
+    /* Mobile-first guided site survey: existing inputs/storage are unchanged. */
+    #siteVisitSection { scroll-margin-top:80px; }
+    .site-guide-intro { background:#f8f6f1; border:1px solid #ddd8cf; border-radius:12px; padding:14px 16px; margin:14px 0; }
+    .site-guide-tabs { display:flex; gap:7px; overflow-x:auto; padding:4px 0 12px; margin-bottom:10px; scrollbar-width:thin; }
+    .site-guide-tab { flex:0 0 auto; min-height:48px; padding:10px 13px; border:2px solid #ddd8cf; border-radius:10px; background:white; color:#173f3f; font-size:14px; font-weight:700; }
+    .site-guide-tab[aria-pressed="true"] { border-color:#173f3f; background:#173f3f; color:white; }
+    .site-guide-step[hidden] { display:none!important; }
+    .site-guide-step > h3:first-child { margin-top:12px; }
+    .site-guide-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:20px 0 10px; }
+    .site-guide-actions button { min-height:48px; }
+    .site-guide-actions .site-guide-next { background:#ef9c20; color:#173f3f; }
+    .site-guide-actions .site-guide-position { margin-right:auto; font-weight:700; color:#52635e; }
+    .site-guide-checks { display:grid; gap:10px; margin:12px 0; }
+    .site-guide-check { display:flex; justify-content:space-between; align-items:center; gap:10px; background:#f8f6f1; border-radius:10px; padding:10px 12px; }
+    .site-guide-check span { flex:1; }
+    .site-guide-check button { min-height:42px; flex:0 0 auto; }
+    .site-guide-photo-count { padding:12px; margin:12px 0; background:#f8f6f1; border-radius:10px; }
+    .design-fold { border:1px solid #ddd8cf; border-radius:12px; margin:14px 0; padding:6px 15px 15px; }
+    .design-fold > summary { padding:12px 0; font-weight:800; color:#173f3f; cursor:pointer; font-size:17px; min-height:44px; }
+    .design-fold[open] > summary { border-bottom:1px solid #e5dbcc; margin-bottom:12px; }
+    .design-site-handoff { background:#f8f6f1; border:1px solid #ddd8cf; border-radius:12px; padding:15px; margin:18px 0; }
+    .design-site-handoff ul { padding-left:20px; margin:10px 0; }
+    .design-site-handoff li { margin:6px 0; }
+    @media(max-width:700px) {
+      .site-guide-tabs { margin-left:-4px; margin-right:-4px; }
+      .site-guide-actions { display:grid; grid-template-columns:1fr 1fr; }
+      .site-guide-actions .site-guide-position { grid-column:1/-1; }
+      .site-guide-actions button { width:100%; }
+      .site-guide-check { align-items:flex-start; }
+      .site-guide-check button { padding:10px; }
+    }
+
     .site-photo-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 18px; }
     .site-photo-item { background:#faf9f5; border:1px solid #e5dbcc; border-radius:12px; padding:13px; min-width:0; }
     .site-photo-item label { font-weight:700; display:block; margin-bottom:8px; font-size:14px; }
@@ -868,11 +901,20 @@ window.currentAnswers = answers;
 
 <section class="card site-visit solar-only" id="siteVisitSection" data-job-workspace="visit">
   <h2>Tom's Site Visit</h2>
-  <div class="placeholder">
-    Record the onsite facts once. Saving this form also copies the matching
-    information into System Design. Phone dictation can be used in the notes fields.
+  <div class="site-guide-intro">
+    One step at a time. Use the phone camera beside each observation and dictate notes if easier.
+    Your answers save automatically when connected, and you can save explicitly at the end.
+    Details only prefill <strong>empty, unreviewed</strong> System Design fields.
   </div>
-
+  <nav class="site-guide-tabs" aria-label="Site visit steps">
+    <button type="button" class="site-guide-tab" data-site-step-tab="supply">1 · Supply</button>
+    <button type="button" class="site-guide-tab" data-site-step-tab="hot-water">2 · Hot water</button>
+    <button type="button" class="site-guide-tab" data-site-step-tab="roof">3 · Roof</button>
+    <button type="button" class="site-guide-tab" data-site-step-tab="conditions">4 · Site</button>
+    <button type="button" class="site-guide-tab" data-site-step-tab="locations">5 · Locations</button>
+    <button type="button" class="site-guide-tab" data-site-step-tab="review">6 · Finish</button>
+  </nav>
+  <section class="site-guide-step" data-site-step="supply">
   <h3>1. Visit and electrical supply</h3>
   <div class="grid">
     <div><label>Visit date</label><input type="date" id="visit_date"></div>
@@ -912,6 +954,8 @@ window.currentAnswers = answers;
 </div>
   </div>
 
+  </section>
+  <section class="site-guide-step" data-site-step="hot-water" hidden>
   <h3>2. Hot water, ripple control &amp; flexible loads</h3>
   <div class="placeholder">
     <strong>From the customer's Home Energy Check (unverified):</strong>
@@ -1008,6 +1052,8 @@ window.currentAnswers = answers;
   </div>
   <p class="placeholder">Record physical evidence, not retailer prices or tariff assumptions. The office reviews bills and checks retailer/network requirements separately. Electrical safety and hot-water temperature requirements still need professional verification before changes are recommended.</p>
 
+  </section>
+  <section class="site-guide-step" data-site-step="roof" hidden>
   <h3>3. Main roof face</h3>
   <div class="grid">
     <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
@@ -1034,7 +1080,10 @@ window.currentAnswers = answers;
 </div>
   </div>
 
+  </section>
+  <section class="site-guide-step" data-site-step="conditions" hidden>
   <h3>4. Site conditions</h3>
+  <p class="placeholder">Tick any hazards observed. When you have assessed the site, mark the check below—even if none of these hazards were found.</p>
   <div class="grid">
     <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
     <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
@@ -1045,7 +1094,13 @@ window.currentAnswers = answers;
     <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
     <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
   </div>
+  <label class="site-guide-check" style="margin-top:14px">
+    <input type="checkbox" id="visit_site_hazards_checked">
+    <span>I've assessed site hazards and access conditions (no issues is a valid outcome)</span>
+  </label>
 
+  </section>
+  <section class="site-guide-step" data-site-step="locations" hidden>
   <h3>5. Locations and dictated notes</h3>
   <div class="grid">
     <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea>
@@ -1080,6 +1135,23 @@ window.currentAnswers = answers;
         <option value="review">To be confirmed during design</option>
       </select>
     </div>
+    <div>
+      <label for="visit_wifi_strength">Good Wi-Fi strength at proposed equipment location?</label>
+      <select id="visit_wifi_strength">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+    <div>
+      <label for="visit_clearance_900mm">900 mm clearance around proposed equipment location?</label>
+      <select id="visit_clearance_900mm">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+      <p class="placeholder">Site observation only. Confirm actual manufacturer clearance and electrical requirements during design.</p>
+    </div>
     <div><label>Likely cable route</label><textarea id="visit_cable_route"></textarea></div>
     <div><label for="visit_cable_length_m">Approximate cable length needed (metres)</label><input type="number" min="0" step="0.5" id="visit_cable_length_m" placeholder="Estimate only"></div>
     <div><label>Access / safety notes</label><textarea id="visit_access_notes"></textarea></div>
@@ -1100,7 +1172,21 @@ window.currentAnswers = answers;
     <p class="placeholder">These are provisional observations, not a final engineering design or approved quotation.</p>
   </details>
 
-  <br>
+  </section>
+  <section class="site-guide-step" data-site-step="review" hidden>
+    <h3>6. Before you leave</h3>
+    <p class="placeholder">Check the main observations and photographs. You can save an incomplete visit; anything not checked stays outstanding for the office or Ben. This is not an electrical design approval.</p>
+    <div id="siteGuideChecklist" class="site-guide-checks" aria-live="polite"></div>
+    <div id="siteGuidePhotoCount" class="site-guide-photo-count" aria-live="polite">Checking saved site photographs…</div>
+    <button type="button" id="saveSiteVisit">SAVE SITE VISIT NOW</button>
+    <button type="button" id="goToSystemDesignFromVisit" class="secondary">OPEN SYSTEM DESIGN HANDOFF</button>
+    <p class="placeholder">Save before leaving this page. If the connection fails, the message below will tell you and the visit must be saved again when online.</p>
+  </section>
+  <div class="site-guide-actions" id="siteGuideActions">
+    <button type="button" class="secondary" id="siteGuidePrevious">BACK</button>
+    <span class="site-guide-position" id="siteGuidePosition" aria-live="polite">Step 1 of 6</span>
+    <button type="button" class="site-guide-next" id="siteGuideNext">NEXT STEP</button>
+  </div>
   <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 </section>
 
@@ -1356,6 +1442,17 @@ window.currentAnswers = answers;
 
   <h2>SYSTEM DESIGN</h2>
 
+  <div class="design-site-handoff">
+    <h3 style="margin-top:0">Site Visit → Design handoff</h3>
+    <p class="placeholder">Tom's saved site observations are provisional. This summary helps the office and Ben check what was recorded without typing it again. Existing or reviewed design details are never replaced automatically.</p>
+    <div id="designSiteHandoffSummary" aria-live="polite">Loading site observations…</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button type="button" id="designReturnToSiteVisit" class="secondary">BACK TO SITE VISIT</button>
+      <button type="button" id="designOpenSiteReview" class="secondary">SEE BEFORE-LEAVING CHECK</button>
+    </div>
+    <p class="placeholder">OpenSolar is used to prepare the roof/panel layout for the supplier. Inverter, battery, electrical design and Ben's review remain in Job Hub. Upload the finished roof layout to Photos &amp; Files.</p>
+  </div>
+
   <div class="placeholder">
     Build the installation design from the Home Energy Check, site survey
     and Solectrics assessment. This information can then be used for the
@@ -1363,6 +1460,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  <p class="placeholder">Open only the part of System Design you need. All existing fields still autosave; Ben's reviewed design is protected from Site Visit prefills.</p>
+  <details class="design-fold" open>
+    <summary>1 · Site and electrical supply</summary>
   <!-- SITE & SUPPLY -->
 
   <h3>1. Site & electrical supply</h3>
@@ -1425,6 +1525,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>2 · Roof and environment</summary>
   <!-- ROOF & ARRAY -->
 
   <h3>2. Roof & array survey</h3>
@@ -1578,6 +1681,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>3 · Proposed panels, inverter, battery and backup</summary>
   <!-- EQUIPMENT -->
 
   <h3>4. Proposed system</h3>
@@ -1648,6 +1754,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>4 · Electrical design and protection</summary>
   <!-- ELECTRICAL DESIGN -->
 
   <h3>5. Electrical design</h3>
@@ -1714,6 +1823,9 @@ window.currentAnswers = answers;
   </div>
 
 
+  </details>
+  <details class="design-fold">
+    <summary>5 · Documents, Ben's review and outputs</summary>
   <!-- DESIGN DOCUMENTS -->
 
   <h3>6. Design documents</h3>
@@ -1824,8 +1936,8 @@ window.currentAnswers = answers;
 
   </div>
 
+  </details>
   <br>
-
   <span id="systemDesignMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 
 </section>
@@ -3340,7 +3452,7 @@ const siteVisitFieldIds = [
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
-  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
+  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_wifi_strength", "visit_clearance_900mm", "visit_access_notes",
   "visit_panel_count", "visit_panel_wattage", "visit_inverter_model", "visit_inverter_kw", "visit_battery_model", "visit_battery_kwh",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
@@ -3351,7 +3463,8 @@ let loadedSiteVisit = {};
 
 const siteVisitCheckboxIds = [
   "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
-  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
+  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite",
+  "visit_site_hazards_checked"
 ];
 
 function updateInverterPadVisibility() {
@@ -3445,6 +3558,8 @@ function applySiteVisitToSystemDesign(visit) {
     visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
     visit.visit_inverter_mount === "ground" && visit.visit_inverter_pad && `Ground inverter pad / base needed: ${{yes:"Yes",no:"No",review:"Needs design confirmation"}[visit.visit_inverter_pad] || visit.visit_inverter_pad}`,
     visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
+    visit.visit_wifi_strength && `Good Wi-Fi signal at proposed equipment location: ${visit.visit_wifi_strength === "yes" ? "Yes" : "No"}`,
+    visit.visit_clearance_900mm && `900 mm clearance observed around proposed equipment location: ${visit.visit_clearance_900mm === "yes" ? "Yes" : "No"} (verify equipment-specific requirements)`,
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
     visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
@@ -3483,6 +3598,13 @@ function applySiteVisitToSystemDesign(visit) {
   return changed;
 }
 
+function localVisitDate(date = new Date()) {
+  // ISO UTC dates can be yesterday in New Zealand. Use the user's local
+  // calendar date instead, without guessing a visit date on saved records.
+  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return shifted.toISOString().slice(0, 10);
+}
+
 async function loadSiteVisit() {
   try {
     const response = await fetch(`/api/site-visit?job_id=${jobId}`);
@@ -3491,8 +3613,9 @@ async function loadSiteVisit() {
 
     if (!data.site_visit) {
       const date = document.getElementById("visit_date");
-      if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
+      if (date && !date.value) date.value = localVisitDate();
       updateInverterPadVisibility();
+      window.jobhubSiteGuide?.refresh();
       return;
     }
 
@@ -3506,6 +3629,7 @@ async function loadSiteVisit() {
       if (field) field.checked = Boolean(data.site_visit[id]);
     });
     updateInverterPadVisibility();
+    window.jobhubSiteGuide?.refresh();
   } catch (error) {
     console.error("Could not load site visit:", error);
     const message = document.getElementById("siteVisitMessage");
@@ -3516,6 +3640,7 @@ async function loadSiteVisit() {
 async function saveSiteVisit({ officeOnly = false } = {}) {
   const message = document.getElementById(officeOnly ? "officeFundingMessage" : "siteVisitMessage");
   const siteVisit = collectSiteVisit();
+  const guideVersion = officeOnly ? null : window.jobhubSiteGuide?.saveStarted();
   message.textContent = " Saving...";
 
   try {
@@ -3528,11 +3653,13 @@ async function saveSiteVisit({ officeOnly = false } = {}) {
     if (!response.ok || !data.ok) throw new Error(data.error || "Save failed");
 
     loadedSiteVisit = { ...siteVisit };
+    if (!officeOnly) window.jobhubSiteGuide?.saveFinished(guideVersion, true);
     if (officeOnly) {
       // Office-only funding questions must not overwrite edited System Design.
       message.textContent = " ✓ Office follow-up saved";
       return;
     }
+    window.jobhubSiteGuide?.refresh();
     const designChanged = applySiteVisitToSystemDesign(siteVisit);
     if (!designChanged) {
       message.textContent = document.getElementById("design_reviewed")?.checked
@@ -3546,6 +3673,7 @@ async function saveSiteVisit({ officeOnly = false } = {}) {
       : " Site visit saved, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
+    if (!officeOnly) window.jobhubSiteGuide?.saveFinished(guideVersion, false);
     message.textContent = officeOnly ? " Could not save office follow-up" : " Could not save site visit";
   }
 }
@@ -3691,6 +3819,7 @@ async function uploadInlineSitePhoto(input) {
     return;
   }
   input.disabled = true;
+  window.jobhubSiteGuide?.photoStarted();
   status.textContent = "Uploading photograph…";
   try {
     const form = new FormData();
@@ -3711,6 +3840,7 @@ async function uploadInlineSitePhoto(input) {
     input.value = "";
   } finally {
     input.disabled = false;
+    window.jobhubSiteGuide?.photoFinished();
   }
 }
 
@@ -3748,6 +3878,7 @@ async function loadJobFiles() {
     renderJobPhotoChecklist(data.files);
     renderEnergyData(data.files);
     renderSiteVisitPhotoStatuses(data.files);
+    window.jobhubSiteGuide?.refresh();
 
     if (!data.files.length) {
       list.className = "placeholder";
@@ -4259,6 +4390,7 @@ async function loadSystemDesign() {
     }
 
     updateSystemDesignReadiness();
+    window.jobhubSiteGuide?.refresh();
   } catch (error) {
     console.error("Could not load system design:", error);
     const message = document.getElementById("systemDesignMessage");
@@ -5141,7 +5273,7 @@ function scheduleSectionAutosave(event) {
     try {
       await save();
       const status = document.getElementById(messageId);
-      if (status && !status.classList.contains("error") && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
+      if (status && !status.classList.contains("error") && !status.textContent.toLowerCase().includes("could not") && !status.textContent.toLowerCase().includes("error")) {
         status.classList.remove("error");
         status.textContent = "✓ Saved automatically";
       }
@@ -5188,9 +5320,14 @@ loadJob().then(() => {
     }
 
     syncLinkedEquipmentFields();
+    window.jobhubSiteGuide?.init();
   });
 });
+// Initialise again on page load in case a cached Job API response completed
+// before the separate guide script was downloaded. init() is idempotent.
+window.addEventListener("load", () => window.jobhubSiteGuide?.init());
   </script>
+  <script src="/assets/jobhub-guided-site-visit.js?v=20261103-1"></script>
   <script src="/assets/fletcher-quote-import.js"></script>
   <script src="/assets/jobhub-materials.js?v=20261001-4"></script>
 </body>
