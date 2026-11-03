@@ -187,7 +187,26 @@ function collectReview(){const baseline={...state.review.baseline};document.quer
 async function saveReview(){const m=document.getElementById('saveMessage');m.textContent='Saving…';try{applyBundle(await api({action:'save_review',review:collectReview()}));m.textContent='✓ Energy review saved'}catch(e){m.textContent=`Could not save: ${e.message}`}}
 function openTariff(t={}){document.getElementById('tariffForm').classList.remove('hidden');document.getElementById('tariffFormTitle').textContent=t.id?'Edit retailer plan':'Add retailer plan';buildFields(document.getElementById('tariffFields'),'tariff',tariffFields,t);document.getElementById('tariff_id').value=t.id||'';document.getElementById('tariffForm').scrollIntoView({behavior:'smooth',block:'start'})}
 function closeTariff(){document.getElementById('tariffForm').classList.add('hidden');document.getElementById('tariffMessage').textContent=''}
-function currentPlanAsTariff(){const existing=state.tariffs.find(t=>t.is_current_plan);if(!existing&&state.tariffs.length>=5){alert('This review already has five plans. Edit or remove one before adding the current plan.');return}const p=readFields('current',currentPlanFields);openTariff({...p,id:existing?.id||'',is_current_plan:true,source_name:existing?.source_name||'Customer electricity bill (needs manual verification)',source_url:existing?.source_url||'',last_verified_date:existing?.last_verified_date||'',effective_date:existing?.effective_date||'',notes:existing?.notes||p.notes})}
+function currentPlanAsTariff(){
+  const existing=state.tariffs.find(t=>t.is_current_plan);
+  if(!existing&&state.tariffs.length>=5){
+    alert('This review already has five plans. Edit or remove one before adding the current plan.');
+    return;
+  }
+  const p=readFields('current',currentPlanFields);
+  // A prior source check is valid for the same plan/rates, not a new bill with
+  // different plan details. Re-check changed rates before marking verified.
+  const checkedKeys=['retailer','plan_name','daily_charge_cents','standard_import_rate_cents',
+    'peak_import_rate_cents','offpeak_import_rate_cents','controlled_import_rate_cents',
+    'ev_night_rate_cents','solar_export_rate_cents','exit_cost_nzd'];
+  const unchanged=Boolean(existing)&&checkedKeys.every(key=>String(existing[key]??'').trim()===String(p[key]??'').trim());
+  openTariff({...p,id:existing?.id||'',is_current_plan:true,
+    source_name:unchanged?(existing.source_name||'Customer electricity bill (needs manual verification)'):'Customer electricity bill (needs manual verification)',
+    source_url:unchanged?(existing.source_url||''):'',
+    last_verified_date:unchanged?(existing.last_verified_date||''):'',
+    effective_date:unchanged?(existing.effective_date||''):'',
+    notes:existing?.notes||p.notes});
+}
 async function saveTariff(event){event.preventDefault();const m=document.getElementById('tariffMessage');m.textContent='Saving…';const tariff={...readFields('tariff',tariffFields),id:document.getElementById('tariff_id').value};['peak_import_periods','offpeak_import_periods','peak_export_periods'].forEach(k=>tariff[k]=String(tariff[k]||'').split(/[,;]+/).map(x=>x.trim()).filter(Boolean));try{applyBundle(await api({action:'save_tariff',tariff}));closeTariff()}catch(e){m.textContent=`Could not save: ${e.message}`}}
 async function deleteTariff(id){if(!confirm('Remove this tariff from this customer comparison?'))return;try{applyBundle(await api({action:'delete_tariff',tariff_id:id}))}catch(e){alert(e.message)}}
 async function load(){if(!jobId){document.getElementById('customerHeading').textContent='No Job ID supplied';return}document.getElementById('backLink').href=`/mini-fergus-job.html?id=${encodeURIComponent(jobId)}`;try{const response=await fetch(`/api/energy-review?job_id=${encodeURIComponent(jobId)}`),data=await response.json();if(!response.ok||!data.ok)throw new Error(data.detail||data.error);applyBundle(data)}catch(e){document.getElementById('customerHeading').textContent=`Could not load this review: ${e.message}`}}
