@@ -1086,6 +1086,20 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
+  <details class="site-visit-equipment" style="margin-top:22px; padding:16px; border:1px solid #ddd8cf; border-radius:12px;">
+    <summary style="cursor:pointer; font-weight:700;">Equipment discussed on site (optional)</summary>
+    <p class="placeholder">Only record preliminary equipment details if discussed. Blank fields are fine. These can fill missing System Design fields without replacing an approved design.</p>
+    <div class="grid">
+      <div><label for="visit_panel_count">Approximate number of panels</label><input type="number" min="0" step="1" id="visit_panel_count" placeholder="Not discussed"></div>
+      <div><label for="visit_panel_wattage">Panel rating (W), if known</label><input type="number" min="0" step="1" id="visit_panel_wattage" placeholder="Not discussed"></div>
+      <div><label for="visit_inverter_model">Inverter make / model discussed</label><input type="text" id="visit_inverter_model" placeholder="Not discussed"></div>
+      <div><label for="visit_inverter_kw">Inverter capacity (kW) discussed</label><input type="number" min="0" step="0.1" id="visit_inverter_kw" placeholder="Not discussed"></div>
+      <div><label for="visit_battery_model">Battery make / model discussed</label><input type="text" id="visit_battery_model" placeholder="Not discussed"></div>
+      <div><label for="visit_battery_kwh">Battery capacity (kWh) discussed</label><input type="number" min="0" step="0.1" id="visit_battery_kwh" placeholder="Not discussed"></div>
+    </div>
+    <p class="placeholder">These are provisional observations, not a final engineering design or approved quotation.</p>
+  </details>
+
   <br>
   <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
 </section>
@@ -1567,6 +1581,7 @@ window.currentAnswers = answers;
   <!-- EQUIPMENT -->
 
   <h3>4. Proposed system</h3>
+  <p class="placeholder">Blank fields may be prefilled from Tom's Site Visit. Those entries are provisional and must be checked against the final electrical design before Ben's review. Existing entries and reviewed designs are not replaced automatically.</p>
 
   <div class="grid">
 
@@ -3221,6 +3236,7 @@ const siteVisitFieldIds = [
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
   "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
+  "visit_panel_count", "visit_panel_wattage", "visit_inverter_model", "visit_inverter_kw", "visit_battery_model", "visit_battery_kwh",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
   "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_hw_ripple", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_existing_controls", "visit_hw_physical_match", "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding"
@@ -3257,17 +3273,31 @@ function collectSiteVisit() {
 }
 
 function applySiteVisitToSystemDesign(visit) {
+  // A reviewed electrical design is authoritative and cannot be silently replaced.
+  if (document.getElementById("design_reviewed")?.checked) return false;
+  let changed = false;
+  function fillEmpty(target, value) {
+    if (!target || value === undefined || value === null || String(value).trim() === "") return;
+    if (String(target.value || "").trim()) return;
+    target.value = value;
+    changed = true;
+  }
   const fieldMap = {
     visit_connection_type: "design_connection_type",
     visit_main_supply: "design_main_supply",
     visit_icp: "design_icp",
     visit_switchboard: "design_switchboard",
-    visit_supply_notes: "design_supply_notes"
+    visit_supply_notes: "design_supply_notes",
+    visit_panel_count: "design_panel_count",
+    visit_panel_wattage: "design_panel_wattage",
+    visit_inverter_model: "design_inverter_model",
+    visit_inverter_kw: "design_inverter_kw",
+    visit_battery_model: "design_battery_model",
+    visit_battery_kwh: "design_battery_kwh"
   };
 
   Object.entries(fieldMap).forEach(([sourceId, targetId]) => {
-    const target = document.getElementById(targetId);
-    if (target) target.value = visit[sourceId] ?? "";
+    fillEmpty(document.getElementById(targetId), visit[sourceId]);
   });
 
   const checkboxMap = {
@@ -3283,7 +3313,10 @@ function applySiteVisitToSystemDesign(visit) {
 
   Object.entries(checkboxMap).forEach(([sourceId, targetId]) => {
     const target = document.getElementById(targetId);
-    if (target) target.checked = Boolean(visit[sourceId]);
+    if (target && visit[sourceId] === true && !target.checked) {
+      target.checked = true;
+      changed = true;
+    }
   });
 
   const firstRoof = document.querySelector("#designRoofs .design-roof");
@@ -3298,8 +3331,7 @@ function applySiteVisitToSystemDesign(visit) {
   };
 
   Object.entries(roofMap).forEach(([sourceId, targetClass]) => {
-    const target = firstRoof?.querySelector(`.${targetClass}`);
-    if (target) target.value = visit[sourceId] ?? "";
+    fillEmpty(firstRoof?.querySelector(`.${targetClass}`), visit[sourceId]);
   });
 
   const environmentNotes = [
@@ -3315,16 +3347,35 @@ function applySiteVisitToSystemDesign(visit) {
   ].filter(Boolean).join("\n");
 
   const environmentField = document.getElementById("design_environment_notes");
-  if (environmentField) environmentField.value = environmentNotes;
+  // Update only notes tagged as generated from Site Visit. Preserve all manual
+  // notes and legacy unmarked text, rather than overwriting them on every save.
+  const noteStart = "[Site Visit observations — auto-populated]";
+  const noteEnd = "[End Site Visit observations]";
+  if (environmentField && environmentNotes) {
+    const current = String(environmentField.value || "");
+    const block = noteStart + "\n" + environmentNotes + "\n" + noteEnd;
+    const start = current.indexOf(noteStart);
+    const end = start < 0 ? -1 : current.indexOf(noteEnd, start + noteStart.length);
+    if (!current.trim()) {
+      environmentField.value = block;
+      changed = true;
+    } else if (start >= 0 && end >= 0) {
+      const updated = current.slice(0, start) + block + current.slice(end + noteEnd.length);
+      if (updated !== current) {
+        environmentField.value = updated;
+        changed = true;
+      }
+    }
+  }
 
   const wattage = Number(document.getElementById("design_panel_wattage")?.value) || 0;
   const panelCount = Number(document.getElementById("design_panel_count")?.value) || 0;
   const arraySize = document.getElementById("design_array_kw");
-  if (arraySize) {
-    arraySize.value = wattage > 0 && panelCount > 0
-      ? ((wattage * panelCount) / 1000).toFixed(3)
-      : "";
+  if (arraySize && !arraySize.value && wattage > 0 && panelCount > 0) {
+    arraySize.value = ((wattage * panelCount) / 1000).toFixed(3);
+    changed = true;
   }
+  return changed;
 }
 
 async function loadSiteVisit() {
@@ -3377,10 +3428,16 @@ async function saveSiteVisit({ officeOnly = false } = {}) {
       message.textContent = " ✓ Office follow-up saved";
       return;
     }
-    applySiteVisitToSystemDesign(siteVisit);
+    const designChanged = applySiteVisitToSystemDesign(siteVisit);
+    if (!designChanged) {
+      message.textContent = document.getElementById("design_reviewed")?.checked
+        ? " ✓ Site visit saved; reviewed System Design unchanged"
+        : " ✓ Site visit saved; existing System Design values preserved";
+      return;
+    }
     const designSaved = await saveSystemDesign();
     message.textContent = designSaved
-      ? " ✓ Site visit saved; matching existing fields updated in System Design"
+      ? " ✓ Site visit saved; missing System Design fields populated"
       : " Site visit saved, but System Design could not be updated";
   } catch (error) {
     console.error("Could not save site visit:", error);
