@@ -3060,12 +3060,16 @@ function prefillQuoteFromDesign() {
   const inverterDescription = [inverterModel, inverterKw ? inverterKw + " kW" : ""].filter(Boolean).join(" · ");
   const batteryDescription = [batteryModel, batteryKwh ? batteryKwh + " kWh" : ""].filter(Boolean).join(" · ");
   const smartDescription = [value("hot_water_strategy"), value("smart_controls")].filter(Boolean).join(" ");
-  return [
+  let updated = false;
+  for (const [id, description] of [
     ["quote_solar_system", solarDescription],
     ["quote_inverter", inverterDescription],
     ["quote_battery", batteryDescription],
     ["quote_smart_energy", smartDescription]
-  ].some(([id, description]) => prefillLinkedQuoteField(id, description));
+  ]) {
+    if (prefillLinkedQuoteField(id, description)) updated = true;
+  }
+  return updated;
 }
 
 function syncLinkedEquipmentFields() {
@@ -4292,28 +4296,29 @@ document.addEventListener("input", function(event) {
     const designCount =
       document.getElementById("design_panel_count");
 
-    if (assessmentWattage && designWattage) {
-      designWattage.value = assessmentWattage.value || "";
+    // Assessment is a working estimate, not authority over System Design.
+    // Fill only missing equipment values and never touch a reviewed design.
+    const reviewed = Boolean(document.getElementById("design_reviewed")?.checked);
+    let addedToDesign = false;
+    if (!reviewed && assessmentWattage && designWattage &&
+        assessmentWattage.value && !designWattage.value) {
+      designWattage.value = assessmentWattage.value;
+      addedToDesign = true;
     }
-
-    if (assessmentCount && designCount) {
-      designCount.value = assessmentCount.value || "";
+    if (!reviewed && assessmentCount && designCount &&
+        assessmentCount.value && !designCount.value) {
+      designCount.value = assessmentCount.value;
+      addedToDesign = true;
     }
-    
-const designArraySize =
-  document.getElementById("design_array_kw");
-
-if (designArraySize && designWattage && designCount) {
-  const wattage = Number(designWattage.value) || 0;
-  const panelCount = Number(designCount.value) || 0;
-
-  if (wattage > 0 && panelCount > 0) {
-    designArraySize.value =
-      ((wattage * panelCount) / 1000).toFixed(3);
-  } else {
-    designArraySize.value = "";
-  }
-}
+    const designArraySize = document.getElementById("design_array_kw");
+    if (!reviewed && addedToDesign && designArraySize && !designArraySize.value) {
+      const wattage = Number(designWattage?.value) || 0;
+      const count = Number(designCount?.value) || 0;
+      if (wattage > 0 && count > 0) {
+        designArraySize.value = ((wattage * count) / 1000).toFixed(3);
+      }
+    }
+    prefillQuoteFromDesign();
 
   }
 
