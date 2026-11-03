@@ -85,17 +85,17 @@ test("only one Site Visit step is displayed on a phone at a time", () => {
 test("the finish checklist shows missing physical observations but does not block saving", () => {
   const { guide, element } = setup();
   guide.open("review", false);
-  assert.match(element("siteGuideChecklist").innerHTML, /0 of 4 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /0 of 5 core checks recorded/);
   assert.match(element("siteGuideChecklist").innerHTML, /needs checking/);
   assert.match(element("siteGuidePhotoCount").textContent, /2 of 6 photo locations/);
   element("visit_connection_type").value = "single_phase";
   element("visit_icp").value = "000123";
   element("visit_switchboard").value = "review";
   guide.refresh();
-  assert.match(element("siteGuideChecklist").innerHTML, /1 of 4 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /1 of 5 core checks recorded/);
   element("visit_battery_model").value = "Battery model";
   guide.refresh();
-  assert.match(element("siteGuideChecklist").innerHTML, /1 of 5 core checks recorded/);
+  assert.match(element("siteGuideChecklist").innerHTML, /1 of 6 core checks recorded/);
 });
 
 test("design handoff is read-only and respects reviewed System Design", () => {
@@ -168,4 +168,30 @@ test("System Design opens as five compact sections without changing field IDs", 
     assert.match(design, new RegExp('id="' + id + '"'));
   }
   assert.match(page, /OpenSolar is used to prepare the roof\/panel layout/);
+});
+
+test("site hazard review is explicit even when no hazard checkbox was selected", () => {
+  const { guide, element } = setup();
+  guide.open("review", false);
+  assert.match(element("siteGuideChecklist").innerHTML, /Site hazards and access assessed · needs checking/);
+  element("visit_site_hazards_checked").checked = true;
+  guide.refresh();
+  assert.match(element("siteGuideChecklist").innerHTML, /Site hazards and access assessed · recorded/);
+  assert.match(page, /"visit_site_hazards_checked"/);
+});
+
+test("new visit date is calculated in local time, not UTC", () => {
+  assert.match(page, /function localVisitDate\(date = new Date\(\)\)/);
+  const fnSource = page.match(/function localVisitDate[\s\S]*?\n\}/)?.[0];
+  assert.ok(fnSource);
+  const localVisitDate = new Function(fnSource + "\nreturn localVisitDate;")();
+  // NZ time at 00:30 on 4 Nov is 11:30 UTC on 3 Nov (UTC+13).
+  const now = new Date("2026-11-03T11:30:00.000Z");
+  const nzOffset = { getTime: () => now.getTime(), getTimezoneOffset: () => -780 };
+  assert.equal(localVisitDate(nzOffset), "2026-11-04");
+});
+
+test("autosave does not conceal an unsuccessful System Design handoff", () => {
+  assert.match(page, /!status\.textContent\.toLowerCase\(\)\.includes\("could not"\)/);
+  assert.match(page, /Site visit saved, but System Design could not be updated/);
 });
