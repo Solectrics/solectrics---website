@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Solar Prices | Solectrics</title>
-  <meta name="description" content="Guide prices for Solectrics solar, smart controls, hot-water heat pumps and battery storage on Waiheke Island.">
+  <meta name="description" content="Indicative GST-inclusive Waiheke solar package prices: solar-only, solar with Sigenergy or Fronius batteries, plus tailored smart-energy options.">
   <style>
     :root{
       --green:#24342f;
@@ -282,6 +282,46 @@
 
     .details-body p{margin:0 0 10px}
 
+
+    .extras{
+      margin-top:28px;
+    }
+
+    .extras h3{
+      font-size:23px;
+      margin:0 0 12px;
+    }
+
+    .extras-intro{
+      color:var(--muted);
+      max-width:760px;
+      margin:0 0 16px;
+    }
+
+    .extras-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .extra-option{
+      padding:22px;
+      background:white;
+      border:1px solid var(--line);
+      border-radius:16px;
+    }
+
+    .extra-option h4{
+      font-size:18px;
+      margin:0 0 6px;
+    }
+
+    .extra-option p{
+      color:var(--muted);
+      margin:0;
+      font-size:14px;
+    }
+
     .note{
       margin-top:22px;
       padding:16px 18px;
@@ -408,6 +448,7 @@
       .hero{padding:52px 0 38px}
       .prices{padding-top:42px}
       .price-grid,
+      .extras-grid,
       .steps{grid-template-columns:1fr}
       .wrap{width:min(100% - 28px,1120px)}
       .price-card{min-height:0}
@@ -454,113 +495,85 @@
     <div class="section-head">
       <h2>What could your Smart Solar Home cost?</h2>
       <p>
-        Guide prices to help you understand the scale of each option before we
-        look at your home in detail.
+        Five installed benchmark packages, based on the configurations in our SolarDarity
+        Waiheke Solar Project submission. Prices include GST; the right system and final
+        fixed quote depend on your home.
       </p>
     </div>
+
 
     <div class="price-grid">
 
       <article class="price-card">
-        <div class="tag">Solar</div>
-        <h3>Generate your own power</h3>
-        <div class="system-spec">Approx. 5 kW solar</div>
+        <div class="tag">A · Small solar only</div>
+        <h3>A smart place to start</h3>
+        <div class="system-spec">9 panels · 4.59 kWp solar</div>
         <div class="battery-status">No battery included</div>
-        <p>Approx. 5 kW solar panels + inverter, designed battery-ready from day one.</p>
-        <div class="price">FROM $8,500</div>
-        <div class="guide-label">Solectrics indicative installed package price.</div>
+        <p>9 × 510 W Suntech panels, Sigenergy 5 kW EC inverter and generation monitoring.</p>
+        <div class="price">$12,600</div>
+        <div class="guide-label">Indicative installed benchmark price, including GST.</div>
+      </article>
+
+      <article class="price-card">
+        <div class="tag">B · Medium solar only</div>
+        <h3>More solar for daily use</h3>
+        <div class="system-spec">14 panels · 7.14 kWp solar</div>
+        <div class="battery-status">No battery included</div>
+        <p>14 × 510 W Suntech panels, Sigenergy 6 kW EC hybrid inverter and monitoring. Storage can be discussed for a later stage.</p>
+        <div class="price">$16,500</div>
+        <div class="guide-label">Indicative installed benchmark price, including GST.</div>
       </article>
 
       <article class="price-card featured">
-        <div class="tag">Solar Smart</div>
-        <h3>Use more solar directly</h3>
-        <div class="system-spec">Smart controls from $200</div>
-        <div class="battery-status">No battery included</div>
-        <p>
-          Timers, scheduling and smart controls can move suitable household loads
-          into solar-producing hours automatically.
-        </p>
-        <div class="price">FROM $200</div>
-        <div class="guide-label">Solectrics indicative installed price.</div>
-
-        <details>
-          <summary>WHAT COULD BE INCLUDED? →</summary>
-          <div class="details-body">
-            <p><strong>Smart timing:</strong> from around $200 installed.</p>
-            <p><strong>Smart hot-water control:</strong> from around $500 installed.</p>
-            <p><strong>Solar-surplus diverter:</strong> from around $1,000 installed.</p>
-            <p>We’ll recommend the simplest control likely to give you worthwhile savings.</p>
-          </div>
-        </details>
+        <div class="tag">C1 · Solar + Sigenergy battery</div>
+        <h3>Store solar for later</h3>
+        <div class="system-spec">7.14 kWp solar · approx. 9 kWh usable storage</div>
+        <div class="battery-status included">Battery and Hybrid Gateway included</div>
+        <p>14 × 510 W Suntech panels, Sigenergy 6 kW EC hybrid inverter, SigenStor BAT10 LFP battery and Hybrid Gateway. Backup circuits are confirmed during design.</p>
+        <div class="price">$24,500</div>
+        <div class="guide-label">Indicative installed benchmark price, including GST.</div>
       </article>
 
       <article class="price-card">
-        <div class="tag">Solar + Smart Hot Water</div>
-        <h3>Generate power and heat water efficiently</h3>
-        <div class="system-spec">Approx. 5 kW solar + hot-water heat pump</div>
-        <div class="battery-status">No battery included</div>
-        <p>
-          A complete solar system plus a suitably sized hot-water heat pump and installation,
-          with solar-smart control where appropriate.
-        </p>
-        <div class="price">INDICATIVE FROM $15,500</div>
-        <div class="guide-label">
-          Solectrics package estimate. On its own, EECA guides around $7,000 for a hot-water
-          heat pump including purchase and installation.
-          <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/water-heating/hot-water-heat-pumps/" target="_blank" rel="noopener">Read the EECA guidance</a>.
-        </div>
-      </article>
-
-      <article class="price-card">
-        <div class="tag">Solar + 5 kWh Storage</div>
-        <h3>Store some solar for later</h3>
-        <div class="system-spec">5 kW solar + 5 kWh battery</div>
-        <div class="battery-status included">Battery included: approx. 5 kWh</div>
-        <p>
-          Approx. 5 kW solar + 5 kWh battery storage for lighter evening use
-          and selected backup needs.
-        </p>
-        <div class="price">INDICATIVE FROM $14,900</div>
-        <div class="small">This is the storage size used in the Home Solar Check modelling.</div>
-        <div class="guide-label">Solectrics package estimate. EECA advises that adding a home battery typically costs $5,000–$15,000, depending on type and capacity.</div>
-      </article>
-
-      <article class="price-card">
-        <div class="tag">Solar + ~10 kWh Storage</div>
-        <h3>More energy after dark</h3>
-        <div class="system-spec">5–6 kW solar + 10 kWh battery</div>
-        <div class="battery-status included">Battery included: approx. 10 kWh</div>
-        <p>
-          Approx. 5–6 kW solar + around 10 kWh battery storage for larger evening
-          and overnight loads, or greater backup capacity.
-        </p>
-        <div class="price">FROM $21,900</div>
-        <div class="guide-label">Solectrics package estimate. EECA’s typical $5,000–$15,000 battery range is additional to the solar system.</div>
+        <div class="tag">C2 · Solar + Fronius battery</div>
+        <h3>Greater storage and backup</h3>
+        <div class="system-spec">7.14 kWp solar · min. 12 kWh usable storage</div>
+        <div class="battery-status included">Battery included · backup design assessed</div>
+        <p>14 × 510 W Suntech panels, Fronius GEN24 8 kW inverter and four Reserva battery modules (LFP). Benchmark backup output up to 8 kW, subject to the home's circuits and design.</p>
+        <div class="price">$31,000</div>
+        <div class="guide-label">Indicative installed benchmark price, including GST. Fronius expertise is available through our SolarDarity collaboration with Solarity.</div>
       </article>
 
       <article class="price-card large-system">
-        <div class="tag">Large Home / High Energy Use</div>
-        <h3>A bigger solar-smart home</h3>
-        <div class="system-spec">30 panels • approx. 14–15 kW solar</div>
-        <div class="battery-status">Battery optional: sized to your needs</div>
-        <p>
-          A larger system for high household use, EV charging, pools or extensive
-          daytime loads, with the option to add around 15 kWh of battery storage.
-        </p>
-        <div class="price">CUSTOM SYSTEM PRICING</div>
-        <div class="small">Designed around your roof, electricity use and backup needs.</div>
+        <div class="tag">D · Large solar + battery</div>
+        <h3>For high-energy homes</h3>
+        <div class="system-spec">22 panels · 11.22 kWp solar</div>
+        <div class="battery-status included">Battery included · min. 18 kWh usable storage</div>
+        <p>22 × 510 W Suntech panels, Sigenergy 10 kW EC hybrid inverter and two SigenStor BAT10 LFP batteries. Suited to larger loads, with backup and Vector export limits considered in the design.</p>
+        <div class="price">$44,290</div>
+        <div class="small">Indicative installed benchmark price, including GST.</div>
       </article>
 
     </div>
 
+    <div class="extras">
+      <h3>Make your solar home smarter</h3>
+      <p class="extras-intro">Good energy design goes beyond panels and batteries. We assess these options alongside your solar system, or as improvements to an existing home. They are <strong>not included in the benchmark package prices</strong> unless specifically stated in your quote.</p>
+      <div class="extras-grid">
+        <div class="extra-option">
+          <h4>Smart timing and load control</h4>
+          <p>Timers, solar-aware hot-water controls, surplus diverters and other ways to use more of your own generation. We recommend what is genuinely worthwhile and quote separately.</p>
+        </div>
+        <div class="extra-option">
+          <h4>Hot water, EV charging and home energy</h4>
+          <p>Hot-water heat pumps, EV charging schedules, tariff reviews and backup planning can be included in a personalised whole-home assessment. Cost depends on your equipment and installation.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="note">
-      Solectrics prices are indicative installed package prices, include GST and assume a
-      straightforward installation on Waiheke Island. EECA publishes broad New Zealand
-      guidance rather than prices for a particular installer or property. Its current guidance
-      says a home battery typically adds $5,000–$15,000 depending on type and capacity, and a
-      hot-water heat pump is around $7,000 supplied and installed. Your home assessment confirms
-      the right system design, installation requirements and final price.
-      <a href="https://www.eeca.govt.nz/for-homes/solar-for-homes/solar-costs-and-savings/" target="_blank" rel="noopener">See EECA solar cost guidance</a>.
+      <strong>About these prices:</strong> These are indicative Waiheke Island installed prices (including GST) for the five standard benchmark configurations submitted by SolarDarity, a collaboration between Solectrics and Solarity. They are not fixed offers for every property. Standard assessment, network application administration, inspection, compliance certificates, handover and ordinary Waiheke freight/travel are allowed for. External retailer/metering charges are excluded; scaffolding, unusual roof or access conditions, additional cable runs, switchboard changes and specialised backup work may alter the final quote. Panel and battery suitability, essential-load or whole-home backup capability, and Vector connection/export requirements are confirmed through site assessment and final design. We provide a tailored written quotation before installation.
+      <a href="https://www.eeca.govt.nz/for-homes/solar-for-homes/solar-costs-and-savings/" target="_blank" rel="noopener">See EECA's general solar cost guidance</a>.
     </div>
 
   </div>
