@@ -1083,6 +1083,7 @@ window.currentAnswers = answers;
   </section>
   <section class="site-guide-step" data-site-step="conditions" hidden>
   <h3>4. Site conditions</h3>
+  <p class="placeholder">Tick any hazards observed. When you have assessed the site, mark the check below—even if none of these hazards were found.</p>
   <div class="grid">
     <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
     <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
@@ -1093,6 +1094,10 @@ window.currentAnswers = answers;
     <label><input type="checkbox" id="visit_vents"> Vent pipes</label>
     <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
   </div>
+  <label class="site-guide-check" style="margin-top:14px">
+    <input type="checkbox" id="visit_site_hazards_checked">
+    <span>I've assessed site hazards and access conditions (no issues is a valid outcome)</span>
+  </label>
 
   </section>
   <section class="site-guide-step" data-site-step="locations" hidden>
@@ -3441,7 +3446,8 @@ let loadedSiteVisit = {};
 
 const siteVisitCheckboxIds = [
   "visit_salt_spray", "visit_high_wind", "visit_trees", "visit_chimneys",
-  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite"
+  "visit_buildings", "visit_aerials", "visit_vents", "visit_satellite",
+  "visit_site_hazards_checked"
 ];
 
 function updateInverterPadVisibility() {
@@ -3573,6 +3579,13 @@ function applySiteVisitToSystemDesign(visit) {
   return changed;
 }
 
+function localVisitDate(date = new Date()) {
+  // ISO UTC dates can be yesterday in New Zealand. Use the user's local
+  // calendar date instead, without guessing a visit date on saved records.
+  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return shifted.toISOString().slice(0, 10);
+}
+
 async function loadSiteVisit() {
   try {
     const response = await fetch(`/api/site-visit?job_id=${jobId}`);
@@ -3581,7 +3594,7 @@ async function loadSiteVisit() {
 
     if (!data.site_visit) {
       const date = document.getElementById("visit_date");
-      if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
+      if (date && !date.value) date.value = localVisitDate();
       updateInverterPadVisibility();
       window.jobhubSiteGuide?.refresh();
       return;
@@ -5241,7 +5254,7 @@ function scheduleSectionAutosave(event) {
     try {
       await save();
       const status = document.getElementById(messageId);
-      if (status && !status.classList.contains("error") && !status.textContent.includes("Could not") && !status.textContent.toLowerCase().includes("error")) {
+      if (status && !status.classList.contains("error") && !status.textContent.toLowerCase().includes("could not") && !status.textContent.toLowerCase().includes("error")) {
         status.classList.remove("error");
         status.textContent = "✓ Saved automatically";
       }
