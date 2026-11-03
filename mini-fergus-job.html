@@ -5291,6 +5291,9 @@ loadJob().then(() => {
     window.jobhubSiteGuide?.init();
   });
 });
+// Initialise again on page load in case a cached Job API response completed
+// before the separate guide script was downloaded. init() is idempotent.
+window.addEventListener("load", () => window.jobhubSiteGuide?.init());
   </script>
   <script src="/assets/jobhub-guided-site-visit.js?v=20261103-1"></script>
   <script src="/assets/fletcher-quote-import.js"></script>
