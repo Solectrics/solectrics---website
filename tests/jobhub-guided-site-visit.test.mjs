@@ -233,6 +233,7 @@ test("negative Wi-Fi or clearance observations are visible in Design and the fin
   element("visit_wifi_strength").value = "no";
   element("visit_clearance_900mm").value = "no";
   guide.open("review", false);
+  guide.refresh();
   assert.match(element("siteGuideChecklist").innerHTML, /2 of 7 core checks recorded/);
   assert.match(element("designSiteHandoffSummary").innerHTML, /Good Wi-Fi signal at equipment location:<\/strong> No — follow up/);
   assert.match(element("designSiteHandoffSummary").innerHTML, /900 mm space around equipment location:<\/strong> No — design follow-up required/);
