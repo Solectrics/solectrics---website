@@ -127,6 +127,14 @@
     .source-note{margin:22px 0 0;color:#66736e;font-size:13px}
     .source-note a{color:#276b58;font-weight:700}
 
+    .smart-load-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .smart-load-card{padding:25px;background:#fff;border:1px solid var(--line);border-radius:18px;scroll-margin-top:95px}
+    .smart-load-card h3{font-size:22px;line-height:1.25;margin:0 0 12px}
+    .smart-load-card p{margin:0 0 12px;color:var(--green-soft);font-size:15px}
+    .smart-load-card p:last-child{margin-bottom:0}
+    .smart-load-intro{font-size:18px;color:var(--green-soft);margin:0}
+    #smart-appliances{scroll-margin-top:95px}
+
     .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
     .step{padding:25px;border-radius:18px;background:rgba(255,255,255,.93);border:1px solid var(--line)}
     .step-number{color:#ef9c20;font-weight:800;font-size:12px;letter-spacing:.12em;margin-bottom:10px}
@@ -151,6 +159,7 @@
       .intro-card p{font-size:23px}
       .section{padding:54px 0}
       .hot-water,.steps,.smart-overview{grid-template-columns:1fr}
+      .smart-load-grid{grid-template-columns:1fr}
       .wrap{width:min(100% - 28px,1120px)}
       body{background-attachment:scroll}
     }
@@ -296,6 +305,34 @@
       </div>
       <div class="buttons" style="justify-content:flex-start;margin-top:28px"><a class="button" href="mailto:jane@solectrics.co.nz?subject=Solar-smart%20heating%20enquiry">ASK ABOUT SOLAR-SMART HEATING →</a></div>
       <p class="source-note">Independent guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/heating-and-cooling/heat-and-cool-efficiently-at-home/" target="_blank" rel="noopener">EECA — heat and cool your home efficiently</a> and <a href="https://www.eeca.govt.nz/for-homes/vehicles/smart-ev-chargers/" target="_blank" rel="noopener">EECA — smart EV chargers</a>.</p>
+    </div>
+  </section>
+
+  <section class="section" id="smart-appliances">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Smarter household electricity use</div>
+        <h2>Make better use of the power you already have.</h2>
+        <p class="smart-load-intro">Before buying another device, we look at what your appliances can already do and whether solar generation or off-peak electricity is the better option for your household.</p>
+      </div>
+      <div class="smart-load-grid">
+        <article class="smart-load-card" id="cylinder-controls">
+          <h3>Conventional electric hot-water cylinders</h3>
+          <p>A properly installed cylinder timer can schedule electric water heating for suitable solar or lower-tariff hours. A solar-surplus diverter can direct otherwise-exported solar electricity into stored hot water; some smart controllers also offer app scheduling.</p>
+          <p>Before recommending a change, we check your existing cylinder, ripple-control arrangement and controlled hot-water tariff. Installation and electrical suitability need professional assessment.</p>
+        </article>
+        <article class="smart-load-card" id="ev-charging">
+          <h3>Smart EV charging</h3>
+          <p>A smart wall charger can time your charging to match a cheaper electricity plan. Some chargers also prioritise surplus solar generation; others need compatible home-energy management to do this.</p>
+          <p>We assess circuit capacity, charger location, cable runs, switchboard requirements and whether load management is appropriate. The right option depends on how and when you drive and charge.</p>
+        </article>
+        <article class="smart-load-card" id="appliance-timing">
+          <h3>Washing machines and other household loads</h3>
+          <p>Many washing machines, dishwashers and dryers have a delay-start setting. This can schedule cycles for sunny periods or off-peak tariffs using the controls you already own, without purchasing another device.</p>
+          <p>Plug-in smart timers are not suitable for every appliance, particularly high-power or hardwired equipment. More coordinated automation is possible if your home and compatible appliances justify it.</p>
+        </article>
+      </div>
+      <p class="source-note">Independent practical guidance: <a href="https://www.eeca.govt.nz/for-homes/energy-saving-technology/control-more-of-your-electricity-use/" target="_blank" rel="noopener">EECA — control more of your electricity use</a>. For cost benchmarks, <a href="/smart-solar-prices.html#smart-controls">see our indicative smart-energy upgrade prices</a>.</p>
     </div>
   </section>
 
