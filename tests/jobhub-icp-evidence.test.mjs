@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { buildIcpEvidence, deriveCurrentPlan } from "../functions/api/energy-review.js";
+import { compareTariffs } from "../functions/api/_energy-calculator.js";
 
 const bill = (icp, end, retailer = "Genesis") => ({
   icp, retailer, billing_period_end: end,
@@ -69,4 +70,17 @@ test("UI does not falsely mark extracted current plan as checked today", () => {
   assert.match(html, /icpEvidence/);
   assert.match(html, /Customer electricity bill \(needs manual verification\)/);
   assert.match(html, /HEC → summer\/winter bills/);
+});
+
+test("published effective date alone does not count as a checked tariff source", () => {
+  const model = { grid_import_standard_kwh: 3000 };
+  const tariff = {
+    id: "current", retailer: "Example", plan_name: "Example",
+    pricing_type: "flat", daily_charge_cents: 100,
+    standard_import_rate_cents: 30,
+    source_url: "https://example.test/tariff",
+    effective_date: "2026-11-01"
+  };
+  assert.equal(compareTariffs(model, [tariff])[0].source_complete, false);
+  assert.equal(compareTariffs(model, [{ ...tariff, last_verified_date: "2026-11-03" }])[0].source_complete, true);
 });
