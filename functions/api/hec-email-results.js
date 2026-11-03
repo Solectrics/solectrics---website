@@ -1,4 +1,5 @@
 import { sendHomeEnergyCheckCopy, ANSWER_FIELDS } from "./_hec-customer-copy.js";
+import { createVisitToken } from "./_hec-visit-token.js";
 const reply=(status,error)=>Response.json({ok:status===200,...(error?{error}:{})},{status,headers:{'Cache-Control':'no-store',...(status===429?{'Retry-After':'60'}:{})}});
 export async function onRequestGet({env}) {
   return Response.json({siteKey:env.HEC_TURNSTILE_SITE_KEY||null},{headers:{'Cache-Control':'no-store'}});
@@ -34,7 +35,31 @@ export async function onRequestPost({request,env}) {
   const verified=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({secret:env.HEC_TURNSTILE_SECRET,response:payload.token,remoteip:ip}),signal:AbortSignal.timeout(10000)});
   const check=await verified.json();
   if(!verified.ok||check.success!==true||check.hostname!==url.hostname||check.action!=='hec-email')return reply(403,'Verification failed; please try again');
-  await sendHomeEnergyCheckCopy(env,{...safe,email:recipient,emailOnly:true,customerCopyOptIn:false},recipient);
+  // A signed booking link is included only when the submitted HEC enquiry
+  // exists and its stored email matches this verified recipient.
+  let visitBookingUrl=null;
+  let uploadedBillCount=0;
+  if (payload.enquiryRef !== undefined) {
+    const enquiryId=Number(payload.enquiryRef);
+    if (!Number.isSafeInteger(enquiryId) || enquiryId<1 || !env.DB)
+      return reply(403,"Invalid enquiry reference");
+    const record=await env.DB.prepare("SELECT email, answers_json FROM enquiries WHERE id = ?").bind(enquiryId).first();
+    if (!record || String(record.email||"").trim().toLowerCase()!==recipient.toLowerCase())
+      return reply(403,"Invalid enquiry reference");
+    try {
+      const storedAnswers=JSON.parse(record.answers_json||"{}");
+      const bills=storedAnswers?.energyDataUploads?.recentBills;
+      if(Array.isArray(bills))uploadedBillCount=Math.max(0,Math.min(2,bills.length));
+    }catch{}
+    const visitToken=await createVisitToken(env,enquiryId);
+    const bookingUrl=new URL("/free-home-solar-visit.html",url.origin);
+    bookingUrl.searchParams.set("token",visitToken);
+    visitBookingUrl=bookingUrl.toString();
+  }
+  await sendHomeEnergyCheckCopy(env,{
+    ...safe,email:recipient,emailOnly:!visitBookingUrl,
+    customerCopyOptIn:false,visitBookingUrl,uploadedBillCount
+  },recipient);
   return reply(200);
  }catch {console.error('HEC email-only request failed.');return reply(502,'Could not send results');}
 }
