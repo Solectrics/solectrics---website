@@ -773,16 +773,10 @@ function sendHecReview(){sendHomeEnergyCheck("review");}
 function requestHecVisit(){sendHomeEnergyCheck("free_site_visit");}
 
 async function sendHomeEnergyCheck(action){
-  const consent=document.getElementById("privacyConsent");
   const reviewButton=document.getElementById("sendCheckButton");
   const visitButton=document.getElementById("requestVisitButton");
   const status=document.getElementById("sendCheckStatus");
   if(hecSubmissionBusy||hecEmailSent)return;
-  if(!hecSavedEnquiryRef && (!consent || !consent.checked)){
-    status.className="bill-status bad";
-    status.textContent="Please tick the consent box before sending your Home Energy Check.";
-    return;
-  }
   const selectedAction=hecSavedAction||action;
   const active=selectedAction==="free_site_visit"?visitButton:reviewButton;
   const alternate=selectedAction==="free_site_visit"?reviewButton:visitButton;
@@ -795,11 +789,11 @@ async function sendHomeEnergyCheck(action){
     if(!hecSavedEnquiryRef){
       answers.followUpRequest=selectedAction;
       answers.customerConsentAt=new Date().toISOString();
+      answers.customerConsentMethod="results_action_button";
       const result=await submitHomeEnergyCheck();
       if(!result?.enquiryRef)throw new Error("Unable to confirm saved enquiry");
       hecSavedEnquiryRef=result.enquiryRef;
       hecSavedAction=selectedAction;
-      consent.disabled=true;
     }
     status.textContent="Your Home Energy Check is saved. Emailing you a copy…";
     await deliverSubmittedHecCopy();
@@ -1435,7 +1429,7 @@ This is an indicative assessment — not a formal quote.
 .ss-battery-ready .ss-battery-small{font-size:13px;margin-top:15px}
 #smartSolarReport .ss-paths-intro{font-size:14px;color:#52615b;margin-top:0}
 .ss-next-steps{margin:32px 0 24px}.ss-next-steps h2{font-size:clamp(24px,5vw,32px);line-height:1.2}.ss-next-steps p{font-size:16px;line-height:1.6}
-.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
+.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-consent{font-size:12px!important;line-height:1.55!important;margin:12px 0 14px!important;padding:11px 12px;background:#fff;border-radius:10px;color:#435950!important}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
 .ss-explore-more{margin:42px 0 20px;padding-top:28px;border-top:2px solid #ef9c20}.ss-explore-more h2{font-size:clamp(26px,6vw,38px);line-height:1.12}.ss-else{display:inline-block;font-size:1.45em;font-weight:900;color:#ef9c20;letter-spacing:.01em}.ss-explore-more p{font-size:16px;line-height:1.6}
 /* The personalised report is narrower than the viewport: show full-width actions. */
 .ss-choice-panel{grid-template-columns:minmax(0,1fr)}
@@ -4692,18 +4686,19 @@ ${
         ).join("")}
       </ul>
 <div id="sendToSolectrics" class="ss-choice-panel">
-  <p class="ss-privacy-text"><strong>Privacy:</strong> Either option sends your check and any uploaded bills to Solectrics, emails you a copy and allows us to contact you about your request. We won't sell your information.</p>
-  <label class="ss-consent-label"><input id="privacyConsent" type="checkbox"><span>Yes, I agree to share my Home Energy Check and any uploaded bills with Solectrics, receive my email copy and be contacted about my enquiry.</span></label>
-  <div class="ss-action-card">
-    <h3>1. Email me a copy &amp; send my Home Energy Check to Solectrics</h3>
-    <p>One click sends your check to us and emails you a useful summary, links and next steps. We'll review your information and contact you if appropriate.</p>
-    <button type="button" class="btn ss-action-button" id="sendCheckButton" onclick="sendHecReview()">EMAIL ME A COPY &amp; SEND TO SOLECTRICS →</button>
+  <div class="ss-action-card ss-action-featured">
+    <h3>1. Email me my results &amp; send my Home Energy Check to Solectrics</h3>
+    <p>One click emails you a copy of your results and sends your Home Energy Check to us. We'll review your information and contact you about useful next steps.</p>
+    <p class="ss-action-consent">By clicking below, you agree to share your Home Energy Check and any uploaded bills with Solectrics, receive your results email and be contacted about your enquiry.</p>
+    <button type="button" class="btn primary ss-action-button" id="sendCheckButton" onclick="sendHecReview()">EMAIL MY RESULTS &amp; SEND TO SOLECTRICS →</button>
   </div>
   <div class="ss-action-card ss-action-featured">
     <h3>2. Book my free home solar visit</h3>
-    <p>Send your check, receive your copy and request a visit. We'll contact you to arrange a convenient time, then prepare a free bespoke quote following our assessment.</p>
+    <p>We'll email your results and use your Home Energy Check to arrange a free home visit and prepare a bespoke quote following the assessment.</p>
+    <p class="ss-action-consent">By clicking below, you agree to share your Home Energy Check and any uploaded bills with Solectrics, receive your results email and be contacted to arrange your free visit.</p>
     <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
   </div>
+  <p class="ss-privacy-text">Your information is used for the action you choose. Solectrics will not sell your personal information. <strong>You'll stay on this results page</strong> and can continue exploring below.</p>
   <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
 </div>
       <div class="ss-controls-box">
