@@ -770,19 +770,15 @@ async function deliverSubmittedHecCopy(){
 }
 
 function sendHecReview(){sendHomeEnergyCheck("review");}
-function requestHecVisit(){sendHomeEnergyCheck("free_site_visit");}
 
 async function sendHomeEnergyCheck(action){
   const reviewButton=document.getElementById("sendCheckButton");
-  const visitButton=document.getElementById("requestVisitButton");
   const status=document.getElementById("sendCheckStatus");
   if(hecSubmissionBusy||hecEmailSent)return;
   const selectedAction=hecSavedAction||action;
-  const active=selectedAction==="free_site_visit"?visitButton:reviewButton;
-  const alternate=selectedAction==="free_site_visit"?reviewButton:visitButton;
+  const active=reviewButton;
   hecSubmissionBusy=true;
   reviewButton.disabled=true;
-  visitButton.disabled=true;
   status.className="bill-status";
   status.textContent=hecSavedEnquiryRef?"Retrying your email copy…":"Sending your Home Energy Check to Solectrics…";
   try{
@@ -798,10 +794,8 @@ async function sendHomeEnergyCheck(action){
     status.textContent="Your Home Energy Check is saved. Emailing you a copy…";
     await deliverSubmittedHecCopy();
     status.className="bill-status good";
-    status.textContent=hecSavedAction==="free_site_visit"
-      ? "Your Home Energy Check and free home solar visit request have been received. Your results email is on its way. We'll contact you to arrange a time."
-      : "Your Home Energy Check has been sent to Solectrics and your results email is on its way. The email also includes a link to request your free home visit.";
-    active.textContent=hecSavedAction==="free_site_visit"?"VISIT REQUESTED & COPY EMAILED ✓":"CHECK SENT & COPY EMAILED ✓";
+    status.textContent="Your Home Energy Check has been sent to Solectrics and your results email is on its way. The email also includes a link to request your free home solar visit.";
+    active.textContent="CHECK SENT & COPY EMAILED ✓";
   }catch(error){
     console.error("HEC submit or email copy failed:",error);
     status.className="bill-status bad";
@@ -811,17 +805,13 @@ async function sendHomeEnergyCheck(action){
       active.disabled=false;
     }else{
       status.textContent="We couldn't save your Home Energy Check. Please try again.";
-      active.textContent=selectedAction==="free_site_visit"
-        ?"BOOK MY FREE HOME SOLAR VISIT →"
-        :"EMAIL ME A COPY & SEND TO SOLECTRICS →";
+      active.textContent="EMAIL MY RESULTS & SEND TO SOLECTRICS →";
       reviewButton.disabled=false;
-      visitButton.disabled=false;
     }
   }finally{
     hecSubmissionBusy=false;
     if(hecEmailSent){
       reviewButton.disabled=true;
-      visitButton.disabled=true;
     }
   }
 }
@@ -1429,7 +1419,8 @@ This is an indicative assessment — not a formal quote.
 .ss-battery-ready .ss-battery-small{font-size:13px;margin-top:15px}
 #smartSolarReport .ss-paths-intro{font-size:14px;color:#52615b;margin-top:0}
 .ss-next-steps{margin:32px 0 24px}.ss-next-steps h2{font-size:clamp(24px,5vw,32px);line-height:1.2}.ss-next-steps p{font-size:16px;line-height:1.6}
-.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-consent{font-size:12px!important;line-height:1.55!important;margin:12px 0 14px!important;padding:11px 12px;background:#fff;border-radius:10px;color:#435950!important}.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
+.ss-choice-panel{display:grid;gap:12px;margin:22px 0}.ss-action-card{padding:18px;border:1px solid #dedbd3;border-radius:15px;background:#fff}.ss-action-card h3{font-size:19px;margin:0 0 6px}.ss-action-card p{font-size:14px;margin:0 0 12px;color:#52615b}.ss-action-featured{border:2px solid #ef9c20;background:#fffaf1}.ss-action-consent{font-size:12px!important;line-height:1.55!important;margin:12px 0 14px!important;padding:11px 12px;background:#fff;border-radius:10px;color:#435950!important}.ss-action-followup{margin:12px 0 0!important;font-size:13px!important;line-height:1.5;color:#40574c!important}
+.ss-action-button{font-size:14px;text-align:center;margin:0;white-space:normal}.ss-privacy-text{font-size:12px!important;color:#52615b}.ss-consent-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}.ss-consent-label input{margin-top:3px;flex:none}
 .ss-explore-more{margin:42px 0 20px;padding-top:28px;border-top:2px solid #ef9c20}.ss-explore-more h2{font-size:clamp(26px,6vw,38px);line-height:1.12}.ss-else{display:inline-block;font-size:1.45em;font-weight:900;color:#ef9c20;letter-spacing:.01em}.ss-explore-more p{font-size:16px;line-height:1.6}
 /* The personalised report is narrower than the viewport: show full-width actions. */
 .ss-choice-panel{grid-template-columns:minmax(0,1fr)}
@@ -4687,16 +4678,11 @@ ${
       </ul>
 <div id="sendToSolectrics" class="ss-choice-panel">
   <div class="ss-action-card ss-action-featured">
-    <h3>1. Email me my results &amp; send my Home Energy Check to Solectrics</h3>
+    <h3>Email me my results &amp; send my Home Energy Check to Solectrics</h3>
     <p>One click emails you a copy of your results and sends your Home Energy Check to us. We'll review your information and contact you about useful next steps.</p>
     <p class="ss-action-consent">By clicking below, you agree to share your Home Energy Check and any uploaded bills with Solectrics, receive your results email and be contacted about your enquiry.</p>
     <button type="button" class="btn primary ss-action-button" id="sendCheckButton" onclick="sendHecReview()">EMAIL MY RESULTS &amp; SEND TO SOLECTRICS →</button>
-  </div>
-  <div class="ss-action-card ss-action-featured">
-    <h3>2. Book my free home solar visit</h3>
-    <p>We'll email your results and use your Home Energy Check to arrange a free home visit and prepare a bespoke quote following the assessment.</p>
-    <p class="ss-action-consent">By clicking below, you agree to share your Home Energy Check and any uploaded bills with Solectrics, receive your results email and be contacted to arrange your free visit.</p>
-    <button type="button" class="btn primary ss-action-button" id="requestVisitButton" onclick="requestHecVisit()">BOOK MY FREE HOME SOLAR VISIT →</button>
+    <p class="ss-action-followup">After sending, your results email includes a button to <strong>book your free home solar visit</strong> and request a bespoke quote.</p>
   </div>
   <p class="ss-privacy-text">Your information is used for the action you choose. Solectrics will not sell your personal information. <strong>You'll stay on this results page</strong> and can continue exploring below.</p>
   <div id="sendCheckStatus" class="bill-status" aria-live="polite"></div>
