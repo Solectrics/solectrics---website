@@ -115,6 +115,24 @@ test("what we can help with appears within the matching HEC answers sections",()
   assert.ok(html.includes('id="homeownerEmailOfficeSection"'));
 });
 
+test("Tom sees a qualified hot-water savings reminder within HEC Hot Water review",()=>{
+  const {api,fields}=demo();
+  api.renderHomeownerReview();
+  const markup=fields.homeownerReviewQuestions.innerHTML;
+  const start=markup.indexOf("2. Existing hot water");
+  const end=markup.indexOf("3. Appliances and other electrical loads",start);
+  assert.ok(start>=0&&end>start);
+  const block=markup.slice(start,end);
+  assert.ok(block.includes("Tom — explain to homeowner"));
+  assert.ok(block.includes("around 30%"));
+  assert.ok(block.includes("surplus daytime solar"));
+  assert.ok(block.includes("sometimes late at night"));
+  assert.ok(block.includes("ripple/controlled-load"));
+  assert.ok(block.includes("safe hot-water storage temperatures"));
+  assert.ok(block.includes('id="hr_hot_water_interest"'));
+  assert.equal(markup.split("Tom — explain to homeowner").length-1,1);
+});
+
 test("email draft reflects opted-in interests but doesn't send",()=>{
   const x=demo();
   x.api.generateHomeownerEmail();
