@@ -20,7 +20,7 @@ test("inline page script is valid JavaScript", () => {
 test("mobile Site Visit contains the consolidated sections, camera and final follow-up", () => {
   const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
   for (const heading of [
-    "Hot Water &amp; Heating", "Hot Water Supply &amp; Ripple Control",
+    "Hot Water &amp; Heating", "Hot-Water Wiring, Timing &amp; Bill Comparison",
     "Other Electrical Loads &amp; EV Charging", "Final Checks &amp; Supervisor Follow-up"
   ]) assert.ok(visit.includes(heading));
   assert.ok(visit.includes('value="trace">Unable to confirm — further electrical check needed'));
