@@ -129,6 +129,18 @@
       line-height: 1.6;
     }
 
+    .homeowner-review input:not([type="checkbox"]), .homeowner-review select, .homeowner-review textarea { width:100%; min-height:44px; margin:6px 0 12px; }
+    .homeowner-review textarea { min-height:80px; }
+    .homeowner-review .hr-button { border:0; cursor:pointer; font:inherit; font-weight:700; margin:6px 10px 16px 0; }
+    .hr-group { border:1px solid #e7e0d5; border-radius:14px; padding:12px 14px; margin-top:13px; }
+    .hr-group summary { cursor:pointer; font-weight:700; min-height:30px; }
+    .hr-row { padding:12px 0; border-top:1px solid #eee7dc; }
+    .hr-original { font-size:13px; color:#69766e; margin:5px 0 8px; overflow-wrap:anywhere; }
+    .hr-checklist { display:grid; gap:12px; margin:12px 0; }
+    .hr-checklist label { display:flex; align-items:flex-start; gap:9px; font-size:14px; }
+    .hr-checklist input { flex-shrink:0; min-width:18px; min-height:18px; margin-top:2px; }
+    .hr-bills { border:1px solid #e7e0d5; border-radius:12px; padding:14px; margin-top:16px; background:#faf9f5; }
+    .hr-bills p { margin:6px 0; font-size:14px; }
     .site-visit input:not([type="checkbox"]),
     .site-visit select,
     .site-visit textarea {
@@ -491,6 +503,7 @@ if (typeof value === "object" && value !== null) {
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
   let currentAnswers = {};
+  let currentJobCustomer = {name:"",email:""};
   let currentJobType = "solar";
 
 async function loadJob() {
@@ -516,6 +529,7 @@ async function loadJob() {
         const job = data.job;
         currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
+        currentJobCustomer = {name:job.customer_name || "", email:job.email || ""};
         
 const answers = currentAnswers;
         
@@ -544,6 +558,7 @@ window.currentAnswers = answers;
             <button type="button" class="job-workspace-button" data-workspace-button="overview" onclick="selectJobWorkspace('overview')">Overview</button>
             <button type="button" class="job-workspace-button" data-workspace-button="hec" data-solar-workspace="true" onclick="selectJobWorkspace('hec')">Home Energy Check</button>
             <button type="button" class="job-workspace-button" data-workspace-button="visit" data-solar-workspace="true" onclick="selectJobWorkspace('visit')">Site Visit</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="homeowner" data-solar-workspace="true" onclick="selectJobWorkspace('homeowner')">Homeowner Review</button>
             <button type="button" class="job-workspace-button" data-workspace-button="design" data-solar-workspace="true" onclick="selectJobWorkspace('design')">System Design</button>
             <button type="button" class="job-workspace-button" data-workspace-button="office" onclick="selectJobWorkspace('office')">Office &amp; Quote</button>
             <button type="button" class="job-workspace-button" data-workspace-button="photos" onclick="selectJobWorkspace('photos')">Photos &amp; Files</button>
@@ -688,6 +703,61 @@ window.currentAnswers = answers;
             <div class="answer-box">
               ${renderObject(answers)}
             </div>
+          </section>
+
+
+          <section class="card solar-only homeowner-review" id="homeownerReviewSection" data-job-workspace="homeowner">
+            <h2>Homeowner Review</h2>
+            <p class="placeholder">After the physical Site Visit, sit down together and revisit the answers from the customer's Home Energy Check. The original HEC remains unchanged. Only confirmed corrections and the conversation notes are saved here.</p>
+            <div id="homeownerReviewQuestions" aria-live="polite">Loading original Home Energy Check answers…</div>
+
+            <h3>Hot water — what should we investigate?</h3>
+            <p class="placeholder">Discuss timing around solar generation and the right tariff, or whether a heat-pump hot-water upgrade is worthwhile. Technical suitability and ripple control must be checked separately.</p>
+            <label for="hr_hot_water_interest">Preferred direction</label>
+            <select id="hr_hot_water_interest">
+              <option value="">Not discussed</option>
+              <option value="timer">Timer / smarter scheduling</option>
+              <option value="diverter">Solar diverter / smart controller</option>
+              <option value="heat_pump">Explore a hot-water heat pump</option>
+              <option value="keep">Keep existing arrangement</option>
+              <option value="advice">Would like Solectrics' advice</option>
+            </select>
+            <label for="hr_hot_water_notes">Hot-water conversation notes</label>
+            <textarea id="hr_hot_water_notes" rows="2" placeholder="Customer preferences and practical details"></textarea>
+
+            <h3>Making more of their solar</h3>
+            <div class="grid">
+              <div><label for="hr_smart_energy_interest">More information on smart home energy management?</label>
+                <select id="hr_smart_energy_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
+              </div>
+              <div><label for="hr_tariff_review_interest">Offer a retailer and tariff review after solar installation?</label>
+                <select id="hr_tariff_review_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
+              </div>
+              <div><label for="hr_cleaning_interest">Would they like a future panel-cleaning introduction?</label>
+                <select id="hr_cleaning_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
+              </div>
+            </div>
+            <label for="hr_other_interests">Other products, questions or opportunities</label>
+            <textarea id="hr_other_interests" rows="2" placeholder="EV charging, backup, energy monitoring or future upgrades"></textarea>
+            <label for="hr_homeowner_notes">Customer's own words / further corrections</label>
+            <textarea id="hr_homeowner_notes" rows="3" placeholder="Tom can dictate a short summary of the conversation here"></textarea>
+
+            <h3>Before leaving — explain the Solectrics aftercare service</h3>
+            <div class="hr-checklist">
+              <label><input id="hr_aftercare_two_week" type="checkbox"> Explained two-week check-in after handover</label>
+              <label><input id="hr_aftercare_one_month" type="checkbox"> Explained one-month check-in after handover</label>
+              <label><input id="hr_aftercare_app_support" type="checkbox"> Explained solar monitoring app support</label>
+              <label><input id="hr_aftercare_cleaning" type="checkbox"> Mentioned future cleaning through Razor Sharp</label>
+            </div>
+            <p id="homeownerReviewMessage" class="autosave-status" role="status" aria-live="polite">Changes save automatically.</p>
+            <button type="button" class="button-link hr-button" onclick="saveHomeownerReview()">Save Homeowner Review</button>
+
+            <h3>Personalised follow-up email — before the quotation</h3>
+            <p class="placeholder">Generate a draft from the homeowner's confirmed interests. Edit and check it before copying to your email app. This does not send an email.</p>
+            <button type="button" class="button-link hr-button" onclick="generateHomeownerEmail()">Prepare email draft</button>
+            <textarea id="hr_email_draft" rows="13" aria-label="Editable follow-up email draft" placeholder="Choose Prepare email draft after the conversation."></textarea>
+            <button type="button" class="button-link hr-button" onclick="copyHomeownerEmail()">Copy email draft</button>
+            <p id="homeownerEmailMessage" class="placeholder" role="status" aria-live="polite"></p>
           </section>
 
           <section class="card solar-only" data-job-workspace="design">
@@ -2539,11 +2609,11 @@ applyJobTypeVisibility(job.job_type || "solar");
 
 
 let activeJobWorkspace = "overview";
-const validJobWorkspaces = new Set(["overview", "hec", "visit", "design", "office", "photos", "records"]);
+const validJobWorkspaces = new Set(["overview", "hec", "visit", "homeowner", "design", "office", "photos", "records"]);
 
 function applyJobWorkspaceVisibility() {
   const isSolar = currentJobType !== "general_electrical";
-  if (!isSolar && ["hec", "visit", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
+  if (!isSolar && ["hec", "visit", "homeowner", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
   document.querySelectorAll("[data-job-workspace]").forEach(section => {
     const allowedForType = !(section.classList.contains("solar-only") && !isSolar) &&
       !(section.classList.contains("general-only") && isSolar);
@@ -5198,6 +5268,7 @@ const autosavePending = new Set();
 function autosaveTarget(event) {
   const target = event.target;
   if (!target || target.disabled || target.readOnly || target.matches?.(".site-photo-input")) return null;
+  if (target.closest("#homeownerReviewSection")) return ["homeowner", saveHomeownerReview, "homeownerReviewMessage"];
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
@@ -5236,7 +5307,7 @@ function scheduleSectionAutosave(event) {
       autosaveBusy.delete(key);
       if (autosavePending.has(key)) {
         autosavePending.delete(key);
-        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType" }[key];
+        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType", homeowner:"#hr_hot_water_interest" }[key];
         const retryTarget = document.querySelector(selector);
         if (retryTarget) scheduleSectionAutosave({ target: retryTarget });
       }
@@ -5262,7 +5333,7 @@ resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadHomeownerReview(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
   ]).then(() => {
     restoreWorkLogDraft();
 
