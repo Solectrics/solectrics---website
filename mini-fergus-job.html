@@ -3459,8 +3459,12 @@ function renderHomeownerReview(){
   }
   for(const name of ["two_week","one_month","app_support","cleaning"]){
     const el=document.getElementById("hr_aftercare_"+name);
-    if(el) el.checked===undefined ? null : el.checked=review["aftercare_"+name]===true;
+    if(el) el.checked=review["aftercare_"+name]===true;
   }
+  homeownerEmailEdited=review.email_draft_edited===true;
+  const emailReviewed=document.getElementById("hr_email_reviewed");
+  if(emailReviewed) emailReviewed.checked=review.email_draft_reviewed===true;
+  renderOfficeEmailState();
 }
 
 async function loadHomeownerReview(){
@@ -3500,12 +3504,56 @@ function collectHomeownerReview(){
   for(const name of ["two_week","one_month","app_support","cleaning"]){
     review["aftercare_"+name]=document.getElementById("hr_aftercare_"+name)?.checked===true;
   }
+  review.email_draft_edited=homeownerEmailEdited;
+  review.email_draft_reviewed=document.getElementById("hr_email_reviewed")?.checked===true;
   return review;
 }
 
+function hasHomeownerConversation(review){
+  return Object.values(review.reviewed||{}).some(Boolean) ||
+    Object.keys(review.corrections||{}).length>0 ||
+    Boolean(review.hot_water_interest||review.smart_energy_interest||review.tariff_review_interest) ||
+    Boolean(String(review.hot_water_notes||"").trim()||String(review.other_interests||"").trim()||String(review.homeowner_notes||"").trim()) ||
+    ["two_week","one_month","app_support","cleaning"].some(key=>review["aftercare_"+key]===true);
+}
+function renderOfficeEmailState(){
+  const message=document.getElementById("homeownerEmailState");
+  const recipient=document.getElementById("homeownerEmailRecipient");
+  const draft=document.getElementById("hr_email_draft")?.value||"";
+  if(recipient) recipient.textContent=currentJobCustomer.email ? "Customer email: "+currentJobCustomer.email : "Customer email not recorded — check contact details before sending.";
+  if(!message)return;
+  if(!draft.trim()){
+    message.textContent="No follow-up draft yet. It will be prepared when Tom saves his Homeowner Review.";
+    return;
+  }
+  if(document.getElementById("hr_email_reviewed")?.checked){
+    message.textContent="✓ Office reviewed — ready to copy into your email app. Nothing has been sent.";
+  } else if(homeownerEmailEdited){
+    message.textContent="Edited draft saved — review it against the latest Homeowner Review before copying.";
+  } else {
+    message.textContent="Automatic draft ready — please review and edit before copying.";
+  }
+}
+let homeownerEmailEdited=false;
 async function saveHomeownerReview(){
   const message=document.getElementById("homeownerReviewMessage");
+  const officeMessage=document.getElementById("homeownerEmailMessage");
   const review=collectHomeownerReview();
+  const emailField=document.getElementById("hr_email_draft");
+  const emailBeforeSave=emailField?.value||"";
+  let generated=false;
+  // Generate only after a conversation is recorded. Never overwrite an office-edited draft.
+  if(hasHomeownerConversation(review) && !review.email_draft_edited){
+    const nextDraft=buildHomeownerEmail(review);
+    if(review.email_draft!==nextDraft){
+      review.email_draft=nextDraft;
+      review.email_draft_reviewed=false;
+      generated=true;
+      if(emailField && emailField.value===emailBeforeSave)emailField.value=nextDraft;
+      const reviewedField=document.getElementById("hr_email_reviewed");
+      if(reviewedField)reviewedField.checked=false;
+    }
+  }
   if(message)message.textContent="Saving homeowner review…";
   try {
     const response=await fetch("/api/homeowner-review",{
@@ -3515,17 +3563,21 @@ async function saveHomeownerReview(){
     const result=await response.json();
     if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
     loadedHomeownerReview=result.review||review;
-    if(message)message.textContent="✓ Homeowner review saved separately from the original HEC";
+    if(message)message.textContent=generated
+      ? "✓ Homeowner Review saved — follow-up email ready in Office & Quote"
+      : "✓ Homeowner Review saved — existing office email edits preserved";
+    if(officeMessage)officeMessage.textContent="Draft saved in Job Hub. Nothing sent automatically.";
+    renderOfficeEmailState();
     return true;
   }catch(error){
     console.error("Homeowner review saving failed:",error);
     if(message)message.textContent="Could not save homeowner review: "+error.message;
+    if(officeMessage)officeMessage.textContent="Could not save draft: "+error.message;
     return false;
   }
 }
 
-function generateHomeownerEmail(){
-  const review=collectHomeownerReview();
+function buildHomeownerEmail(review){
   const first=(currentJobCustomer.name||"").trim().split(/\s+/)[0]||"there";
   const lines=[
     "Subject: Your Solectrics home energy review",
@@ -3551,20 +3603,35 @@ function generateHomeownerEmail(){
   if(review.other_interests.trim())lines.push("","Other topics we discussed: "+review.other_interests.trim());
   lines.push("","As part of our service, we check in approximately two weeks and one month after handover. We're also here to help if you have problems using your solar monitoring app.");
   lines.push("","We'll use what we've discussed to prepare your personalised solar quotation.","","Kind regards,","The Solectrics team");
-  const field=document.getElementById("hr_email_draft");
-  if(field){
-    field.value=lines.join("\n");
-    scheduleSectionAutosave({target:field});
-  }
-  const status=document.getElementById("homeownerEmailMessage");
-  if(status)status.textContent="Draft prepared, not sent. Please review before copying.";
+  return lines.join("\n");
 }
 
+function generateHomeownerEmail(){
+  if(homeownerEmailEdited && !window.confirm("Replace the manually edited draft with a fresh draft from the Homeowner Review?")) return;
+  const field=document.getElementById("hr_email_draft");
+  if(!field)return;
+  const review=collectHomeownerReview();
+  if(!hasHomeownerConversation(review)){
+    const message=document.getElementById("homeownerEmailMessage");
+    if(message)message.textContent="Complete the Homeowner Review first.";
+    return;
+  }
+  field.value=buildHomeownerEmail(review);
+  homeownerEmailEdited=false;
+  const reviewed=document.getElementById("hr_email_reviewed");
+  if(reviewed)reviewed.checked=false;
+  renderOfficeEmailState();
+  scheduleSectionAutosave({target:field});
+}
 async function copyHomeownerEmail(){
   const draft=document.getElementById("hr_email_draft")?.value||"";
   const message=document.getElementById("homeownerEmailMessage");
   if(!draft.trim()){
-    if(message)message.textContent="Prepare a draft first.";
+    if(message)message.textContent="Complete and save the Homeowner Review first.";
+    return;
+  }
+  if(!document.getElementById("hr_email_reviewed")?.checked){
+    if(message)message.textContent="Please review the draft and tick the approval box before copying.";
     return;
   }
   try{
@@ -5506,7 +5573,16 @@ function scheduleSectionAutosave(event) {
     }
   }, 1100));
 }
-document.addEventListener("change", (event) => {
+document.addEventListener("input", event => {
+  if(event.target?.id==="hr_email_draft"){
+    homeownerEmailEdited=true;
+    const reviewed=document.getElementById("hr_email_reviewed");
+    if(reviewed)reviewed.checked=false;
+    renderOfficeEmailState();
+  }
+});
+document.addEventListener("change", event => {
+  if(event.target?.id==="hr_email_reviewed") renderOfficeEmailState();
   if (event.target?.matches?.(".site-photo-input")) uploadInlineSitePhoto(event.target);
 });
 document.addEventListener("change", event => {
