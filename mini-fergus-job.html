@@ -733,9 +733,6 @@ window.currentAnswers = answers;
               <div><label for="hr_tariff_review_interest">Would you like us to compare electricity retailers and tariffs to find the best deal for you after solar installation?</label>
                 <select id="hr_tariff_review_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
               </div>
-              <div><label for="hr_cleaning_interest">Would they like a future panel-cleaning introduction?</label>
-                <select id="hr_cleaning_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
-              </div>
             </div>
             <label for="hr_other_interests">Other products, questions or opportunities</label>
             <textarea id="hr_other_interests" rows="2" placeholder="EV charging, backup, energy monitoring or future upgrades"></textarea>
@@ -3441,7 +3438,7 @@ function renderHomeownerReview(){
     <label><input type="checkbox" data-homeowner-reviewed="bills" ${review.reviewed?.bills?"checked":""}> Reviewed with homeowner</label>
   </div>`;
   root.innerHTML=result;
-  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","cleaning_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
     const el=document.getElementById("hr_"+key);
     if(el) el.value=review[key]||"";
   }
@@ -3482,7 +3479,7 @@ function collectHomeownerReview(){
     reviewed[el.dataset.homeownerReviewed]=el.checked;
   });
   const review={corrections,reviewed};
-  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","cleaning_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
     review[key]=document.getElementById("hr_"+key)?.value||"";
   }
   for(const name of ["two_week","one_month","app_support","cleaning"]){
@@ -3538,8 +3535,6 @@ function generateHomeownerEmail(){
   if(review.tariff_review_interest==="maybe")lines.push("","A post-solar electricity tariff comparison is another option we can discuss.");
   if(review.other_interests.trim())lines.push("","Other topics we discussed: "+review.other_interests.trim());
   lines.push("","As part of our service, we check in approximately two weeks and one month after handover. We're also here to help if you have problems using your solar monitoring app.");
-  if(review.cleaning_interest==="yes")lines.push("","If you would like professional panel cleaning in the future, we can arrange an introduction to Razor Sharp.");
-  if(review.cleaning_interest==="maybe")lines.push("","We can also tell you about our panel-cleaning contact, Razor Sharp, whenever you'd like.");
   lines.push("","We'll use what we've discussed to prepare your personalised solar quotation.","","Kind regards,","The Solectrics team");
   const field=document.getElementById("hr_email_draft");
   if(field){
