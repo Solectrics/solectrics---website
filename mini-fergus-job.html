@@ -137,6 +137,9 @@
     .hr-row { padding:12px 0; border-top:1px solid #eee7dc; }
     .hr-help { background:#f5f8f4; border-left:3px solid #86a69a; border-radius:8px; padding:12px 14px; margin:16px 0; }
     .hr-help h4 { margin:0 0 8px; font-size:15px; }
+    .hr-tom-tip { background:#fffaf0; border:1px solid #e8d8b8; border-radius:9px; padding:12px; margin:12px 0; font-size:14px; line-height:1.55; }
+    .hr-tom-tip p { margin:7px 0; }
+    .hr-tom-tip p:last-child { margin-bottom:0; }
     .hr-help .placeholder { font-size:13px; margin:0 0 12px; }
     .hr-help label { display:block; font-size:14px; font-weight:700; }
     .hr-original { font-size:13px; color:#69766e; margin:5px 0 8px; overflow-wrap:anywhere; }
@@ -3392,7 +3395,12 @@ function homeownerReviewHelpFields(groupKey){
   if(groupKey==="hotwater")return `
     <div class="hr-help" aria-label="Solectrics hot-water options">
       <h4>What Solectrics can help with</h4>
-      <p class="placeholder">We can look at heating water during solar hours or on cheaper tariffs, and whether keeping the cylinder, adding a timer/diverter or upgrading to heat-pump hot water suits the home. Confirm wiring and ripple control separately.</p>
+      <div class="hr-tom-tip" role="note" aria-label="Reminder for Tom about hot-water savings">
+        <strong>Tom — explain to homeowner</strong>
+        <p>Hot-water heating is typically around 30% (roughly one-third) of a New Zealand household's energy use. For homes with an electric cylinder, we may be able to save money by heating water with surplus daytime solar, or during the cheapest suitable off-peak tariff hours (sometimes late at night).</p>
+        <p><strong>Don't promise savings without checking:</strong> the actual hot-water system, solar export value, retailer tariff, cylinder capacity and existing ripple/controlled-load arrangement. Any timer or controller needs an electrical suitability check, and safe hot-water storage temperatures must be maintained.</p>
+      </div>
+      <p class="placeholder">We can explore keeping the existing system, adding a timer or solar diverter, or upgrading to heat-pump hot water if appropriate.</p>
       <label for="hr_hot_water_interest">What would you like us to investigate for hot water?</label>
       <select id="hr_hot_water_interest">
         <option value="">Not discussed</option>
