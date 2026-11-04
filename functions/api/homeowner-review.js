@@ -13,8 +13,8 @@ const CORRECTABLE = new Set([
   "direction","shade","roofCondition","energyUsageNotes","financePlan","greenLoanBank"
 ]);
 const GROUPS = new Set(["household","hotwater","loads","plans","roof","bills"]);
+const HOT_WATER_CHOICES = new Set(["timer","diverter","heat_pump","keep","advice"]);
 const CHOICES = {
-  hot_water_interest: new Set(["","timer","diverter","heat_pump","keep","advice"]),
   smart_energy_interest: new Set(["","yes","maybe","no"]),
   tariff_review_interest: new Set(["","yes","maybe","no"])
 };
@@ -41,6 +41,12 @@ function normalize(input) {
     if (GROUPS.has(key)) reviewed[key] = checked(value);
   }
   const result = { corrections, reviewed };
+  // Single-select strings from earlier reviews migrate to one selected checkbox.
+  const hotWaterRaw = Array.isArray(input.hot_water_interest)
+    ? input.hot_water_interest.slice(0, 20)
+    : typeof input.hot_water_interest === "string" ? [input.hot_water_interest] : [];
+  result.hot_water_interest = [...new Set(hotWaterRaw
+    .filter(value => typeof value === "string" && HOT_WATER_CHOICES.has(value)))];
   for (const [key, possible] of Object.entries(CHOICES)) {
     result[key] = possible.has(input[key]) ? input[key] : "";
   }
