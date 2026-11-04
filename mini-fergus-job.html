@@ -135,6 +135,10 @@
     .hr-group { border:1px solid #e7e0d5; border-radius:14px; padding:12px 14px; margin-top:13px; }
     .hr-group summary { cursor:pointer; font-weight:700; min-height:30px; }
     .hr-row { padding:12px 0; border-top:1px solid #eee7dc; }
+    .hr-help { background:#f5f8f4; border-left:3px solid #86a69a; border-radius:8px; padding:12px 14px; margin:16px 0; }
+    .hr-help h4 { margin:0 0 8px; font-size:15px; }
+    .hr-help .placeholder { font-size:13px; margin:0 0 12px; }
+    .hr-help label { display:block; font-size:14px; font-weight:700; }
     .hr-original { font-size:13px; color:#69766e; margin:5px 0 8px; overflow-wrap:anywhere; }
     .hr-checklist { display:grid; gap:12px; margin:12px 0; }
     .hr-checklist label { display:flex; align-items:flex-start; gap:9px; font-size:14px; }
@@ -713,34 +717,6 @@ window.currentAnswers = answers;
             <h2>Homeowner Review</h2>
             <p class="placeholder">After the physical Site Visit, sit down together and revisit the answers from the customer's Home Energy Check. The original HEC remains unchanged. Only confirmed corrections and the conversation notes are saved here.</p>
             <div id="homeownerReviewQuestions" aria-live="polite">Loading original Home Energy Check answers…</div>
-
-            <h3>Hot water — what should we investigate?</h3>
-            <p class="placeholder">Discuss timing around solar generation and the right tariff, or whether a heat-pump hot-water upgrade is worthwhile. Technical suitability and ripple control must be checked separately.</p>
-            <label for="hr_hot_water_interest">Preferred direction</label>
-            <select id="hr_hot_water_interest">
-              <option value="">Not discussed</option>
-              <option value="timer">Timer / smarter scheduling</option>
-              <option value="diverter">Solar diverter / smart controller</option>
-              <option value="heat_pump">Explore a hot-water heat pump</option>
-              <option value="keep">Keep existing arrangement</option>
-              <option value="advice">Would like Solectrics' advice</option>
-            </select>
-            <label for="hr_hot_water_notes">Hot-water conversation notes</label>
-            <textarea id="hr_hot_water_notes" rows="2" placeholder="Customer preferences and practical details"></textarea>
-
-            <h3>Making more of their solar</h3>
-            <div class="grid">
-              <div><label for="hr_smart_energy_interest">More information on smart home energy management?</label>
-                <select id="hr_smart_energy_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
-              </div>
-              <div><label for="hr_tariff_review_interest">Would you like us to compare electricity retailers and tariffs to find the best deal for you after solar installation?</label>
-                <select id="hr_tariff_review_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select>
-              </div>
-            </div>
-            <label for="hr_other_interests">Other products, questions or opportunities</label>
-            <textarea id="hr_other_interests" rows="2" placeholder="EV charging, backup, energy monitoring or future upgrades"></textarea>
-            <label for="hr_homeowner_notes">Customer's own words / further corrections</label>
-            <textarea id="hr_homeowner_notes" rows="3" placeholder="Tom can dictate a short summary of the conversation here"></textarea>
 
             <h3>Before leaving — explain the Solectrics aftercare service</h3>
             <div class="hr-checklist">
@@ -3410,6 +3386,46 @@ function homeownerCorrectedValue(key,review){
   return Object.prototype.hasOwnProperty.call(corrections,key) ? String(corrections[key]) : homeownerAnswerText(currentAnswers?.[key]);
 }
 
+function homeownerReviewHelpFields(groupKey){
+  // Place the homeowner's options immediately beside the relevant original HEC answers.
+  // Keep IDs unchanged so existing autosave, separate review storage and Office email work.
+  if(groupKey==="hotwater")return `
+    <div class="hr-help" aria-label="Solectrics hot-water options">
+      <h4>What Solectrics can help with</h4>
+      <p class="placeholder">We can look at heating water during solar hours or on cheaper tariffs, and whether keeping the cylinder, adding a timer/diverter or upgrading to heat-pump hot water suits the home. Confirm wiring and ripple control separately.</p>
+      <label for="hr_hot_water_interest">What would you like us to investigate for hot water?</label>
+      <select id="hr_hot_water_interest">
+        <option value="">Not discussed</option>
+        <option value="timer">Timer / smarter scheduling</option>
+        <option value="diverter">Solar diverter / smart controller</option>
+        <option value="heat_pump">Explore a hot-water heat pump</option>
+        <option value="keep">Keep existing arrangement</option>
+        <option value="advice">Would like Solectrics' advice</option>
+      </select>
+      <label for="hr_hot_water_notes">Hot-water conversation notes</label>
+      <textarea id="hr_hot_water_notes" rows="2" placeholder="Customer preferences and practical details"></textarea>
+    </div>`;
+  if(groupKey==="loads")return `
+    <div class="hr-help" aria-label="Solectrics smart-energy opportunities">
+      <h4>What Solectrics can help with</h4>
+      <p class="placeholder">Using more solar when it is generated, scheduling flexible loads, and exploring smart home energy controls.</p>
+      <label for="hr_smart_energy_interest">Would you like more information about smart home energy management?</label>
+      <select id="hr_smart_energy_interest">
+        <option value="">Not discussed</option><option value="yes">Yes</option>
+        <option value="maybe">Maybe</option><option value="no">No</option>
+      </select>
+    </div>`;
+  if(groupKey==="plans")return `
+    <div class="hr-help" aria-label="Solectrics future options">
+      <h4>Anything else we could help with?</h4>
+      <label for="hr_other_interests">Other products, questions or opportunities</label>
+      <textarea id="hr_other_interests" rows="2" placeholder="EV charging, backup, energy monitoring or future upgrades"></textarea>
+      <label for="hr_homeowner_notes">Customer's own words / further corrections</label>
+      <textarea id="hr_homeowner_notes" rows="3" placeholder="Tom can dictate a short summary of the conversation here"></textarea>
+    </div>`;
+  return "";
+}
+
 function renderHomeownerReview(){
   const root=document.getElementById("homeownerReviewQuestions");
   if(!root) return;
@@ -3432,7 +3448,8 @@ function renderHomeownerReview(){
           <input type="text" id="hr_answer_${key}" data-homeowner-answer="${key}"
             value="${escapeHtml(current)}" aria-label="Confirm or correct ${escapeHtml(label)}" maxlength="700">
         </div>`;
-      }).join("") : '<p class="placeholder">No original answers in this group. Add any new details in the notes below.</p>'}
+      }).join("") : '<p class="placeholder">No original HEC answers recorded in this section.</p>'}
+      ${homeownerReviewHelpFields(group.key)}
       <label class="hr-reviewed"><input type="checkbox" data-homeowner-reviewed="${group.key}" ${review.reviewed?.[group.key]?"checked":""}> Reviewed with homeowner</label>
       </div>
     </details>`;
@@ -3446,12 +3463,22 @@ function renderHomeownerReview(){
     const display=(retailer || plan) ? `${retailer}${plan ? " — "+plan:""}` : "Bill supplied";
     billInfo+=`<p><strong>${escapeHtml(season==="summer"?"Summer":"Winter")}:</strong> ${escapeHtml(display)}</p>`;
   }
-  result+=`<div class="hr-bills">
-    <strong>6. Electricity bills and current retailer</strong>
-    ${billInfo || '<p>No parsed summer/winter bills recorded.</p>'}
-    <p class="placeholder">Tariff calculations and bill files are kept in the original HEC/Job Hub. Confirm any billing corrections through the office rather than changing calculated results here.</p>
-    <label><input type="checkbox" data-homeowner-reviewed="bills" ${review.reviewed?.bills?"checked":""}> Reviewed with homeowner</label>
-  </div>`;
+  result+=`<details class="hr-group hr-bills">
+    <summary>6. Electricity bills and current retailer</summary>
+    <div class="hr-body">
+      ${billInfo || '<p>No parsed summer/winter bills recorded.</p>'}
+      <p class="placeholder">Tariff calculations and bill files stay in the original HEC. The office will verify any billing corrections.</p>
+      <div class="hr-help" aria-label="Solectrics retailer and tariff help">
+        <h4>What Solectrics can help with</h4>
+        <label for="hr_tariff_review_interest">Would you like us to compare electricity retailers and tariffs to find the best deal for you after solar installation?</label>
+        <select id="hr_tariff_review_interest">
+          <option value="">Not discussed</option><option value="yes">Yes</option>
+          <option value="maybe">Maybe</option><option value="no">No</option>
+        </select>
+      </div>
+      <label class="hr-reviewed"><input type="checkbox" data-homeowner-reviewed="bills" ${review.reviewed?.bills?"checked":""}> Reviewed with homeowner</label>
+    </div>
+  </details>`;
   root.innerHTML=result;
   for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
     const el=document.getElementById("hr_"+key);
