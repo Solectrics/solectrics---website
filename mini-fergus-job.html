@@ -129,6 +129,33 @@
       line-height: 1.6;
     }
 
+    .homeowner-review input:not([type="checkbox"]), .homeowner-review select, .homeowner-review textarea { width:100%; min-height:44px; margin:6px 0 12px; }
+    .homeowner-review textarea { min-height:80px; }
+    .homeowner-review .hr-button { border:0; cursor:pointer; font:inherit; font-weight:700; margin:6px 10px 16px 0; }
+    .hr-group { border:1px solid #e7e0d5; border-radius:14px; padding:12px 14px; margin-top:13px; }
+    .hr-group summary { cursor:pointer; font-weight:700; min-height:30px; }
+    .hr-row { padding:12px 0; border-top:1px solid #eee7dc; }
+    .hr-help { background:#f5f8f4; border-left:3px solid #86a69a; border-radius:8px; padding:12px 14px; margin:16px 0; }
+    .hr-help h4 { margin:0 0 8px; font-size:15px; }
+    .hr-tom-tip { background:#fffaf0; border:1px solid #e8d8b8; border-radius:9px; padding:12px; margin:12px 0; font-size:14px; line-height:1.55; }
+    .hr-tom-tip p { margin:7px 0; }
+    .hr-tom-tip p:last-child { margin-bottom:0; }
+    .hr-help .placeholder { font-size:13px; margin:0 0 12px; }
+    .hr-help label { display:block; font-size:14px; font-weight:700; }
+    .hr-multi-choice { margin:10px 0 14px; padding:0; border:0; min-width:0; }
+    .hr-multi-choice legend { font-weight:700; font-size:14px; }
+    .hr-multi-choice > label { display:flex; align-items:flex-start; gap:9px; font-size:14px; font-weight:500; padding:7px 0; }
+    .hr-multi-choice input[type="checkbox"] { flex:0 0 20px; width:20px; height:20px; margin:0; accent-color:#173f3f; }
+    .hr-multi-choice .placeholder { margin:6px 0 10px; }
+    .hr-original { font-size:13px; color:#69766e; margin:5px 0 8px; overflow-wrap:anywhere; }
+    .hr-checklist { display:grid; gap:12px; margin:12px 0; }
+    .hr-checklist label { display:flex; align-items:flex-start; gap:9px; font-size:14px; }
+    .hr-checklist input { flex-shrink:0; min-width:18px; min-height:18px; margin-top:2px; }
+    .homeowner-review .hr-reviewed { display:flex; align-items:center; gap:8px; margin:10px 0 16px; }
+    .homeowner-review .hr-reviewed input[type="checkbox"] { min-width:18px; min-height:18px; width:auto; margin:0; }
+    #homeownerEmailState { font-weight:700; color:#17635b; }
+    .hr-bills { border:1px solid #e7e0d5; border-radius:12px; padding:14px; margin-top:16px; background:#faf9f5; }
+    .hr-bills p { margin:6px 0; font-size:14px; }
     .site-visit input:not([type="checkbox"]),
     .site-visit select,
     .site-visit textarea {
@@ -136,9 +163,12 @@
       min-height: 40px;
     }
 
-    .site-visit textarea {
-      min-height: 80px;
-    }
+    .site-visit textarea { min-height: 70px; }
+    .site-visit-followups { border:1px solid #dfb477; background:#fff8ee; border-radius:10px; padding:12px; line-height:1.5; }
+    .site-visit-followups ul { padding-left:20px; margin:8px 0 0; }
+    .site-visit-followups li { margin:4px 0; }
+    .site-visit #visit_ev_details { margin-top:12px; }
+    .site-visit #visit_ev_details[hidden] { display:none; }
 
     .general-job input,
     .general-job select,
@@ -488,6 +518,7 @@ if (typeof value === "object" && value !== null) {
 const params = new URLSearchParams(window.location.search);
 const jobId = params.get("id");
   let currentAnswers = {};
+  let currentJobCustomer = {name:"",email:""};
   let currentJobType = "solar";
 
 async function loadJob() {
@@ -513,6 +544,7 @@ async function loadJob() {
         const job = data.job;
         currentJobType = job.job_type || "solar";
         currentAnswers = parseAnswers(job.answers_json);
+        currentJobCustomer = {name:job.customer_name || "", email:job.email || ""};
         
 const answers = currentAnswers;
         
@@ -541,6 +573,7 @@ window.currentAnswers = answers;
             <button type="button" class="job-workspace-button" data-workspace-button="overview" onclick="selectJobWorkspace('overview')">Overview</button>
             <button type="button" class="job-workspace-button" data-workspace-button="hec" data-solar-workspace="true" onclick="selectJobWorkspace('hec')">Home Energy Check</button>
             <button type="button" class="job-workspace-button" data-workspace-button="visit" data-solar-workspace="true" onclick="selectJobWorkspace('visit')">Site Visit</button>
+            <button type="button" class="job-workspace-button" data-workspace-button="homeowner" data-solar-workspace="true" onclick="selectJobWorkspace('homeowner')">Homeowner Review</button>
             <button type="button" class="job-workspace-button" data-workspace-button="design" data-solar-workspace="true" onclick="selectJobWorkspace('design')">System Design</button>
             <button type="button" class="job-workspace-button" data-workspace-button="office" onclick="selectJobWorkspace('office')">Office &amp; Quote</button>
             <button type="button" class="job-workspace-button" data-workspace-button="photos" onclick="selectJobWorkspace('photos')">Photos &amp; Files</button>
@@ -685,6 +718,26 @@ window.currentAnswers = answers;
             <div class="answer-box">
               ${renderObject(answers)}
             </div>
+          </section>
+
+
+          <section class="card solar-only homeowner-review" id="homeownerReviewSection" data-job-workspace="homeowner">
+            <h2>Homeowner Review</h2>
+            <p class="placeholder">After the physical Site Visit, sit down together and revisit the answers from the customer's Home Energy Check. The original HEC remains unchanged. Only confirmed corrections and the conversation notes are saved here.</p>
+            <div id="homeownerReviewQuestions" aria-live="polite">Loading original Home Energy Check answers…</div>
+
+            <h3>Before leaving — explain the Solectrics aftercare service</h3>
+            <div class="hr-checklist">
+              <label><input id="hr_aftercare_two_week" type="checkbox"> Explained two-week check-in after handover</label>
+              <label><input id="hr_aftercare_one_month" type="checkbox"> Explained one-month check-in after handover</label>
+              <label><input id="hr_aftercare_app_support" type="checkbox"> Explained solar monitoring app support</label>
+              <label><input id="hr_aftercare_cleaning" type="checkbox"> Mentioned future cleaning through Razor Sharp</label>
+            </div>
+            <p id="homeownerReviewMessage" class="autosave-status" role="status" aria-live="polite">Changes save automatically.</p>
+            <button type="button" class="button-link hr-button" onclick="saveHomeownerReview()">Save Homeowner Review</button>
+
+            <p class="placeholder">The personalised follow-up email is prepared automatically from this conversation and appears at the top of <strong>Office &amp; Quote</strong> for review. It will not be sent automatically.</p>
+            <button type="button" class="button-link hr-button" onclick="selectJobWorkspace('office')">View email draft in Office &amp; Quote</button>
           </section>
 
           <section class="card solar-only" data-job-workspace="design">
@@ -873,79 +926,17 @@ window.currentAnswers = answers;
     information into System Design. Phone dictation can be used in the notes fields.
   </div>
 
-  <h3>1. Visit and electrical supply</h3>
+  
+  <h3>1. Visit, meter &amp; switchboard</h3>
   <div class="grid">
     <div><label>Visit date</label><input type="date" id="visit_date"></div>
     <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
-    <div>
-      <label>Electrical connection</label>
-      <select id="visit_connection_type">
-        <option value="">Select...</option>
-        <option value="single_phase">Single phase</option>
-        <option value="dual_phase">Dual phase</option>
-        <option value="three_phase">Three phase</option>
-      </select>
-    </div>
-    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
-    <div><label>ICP</label><input type="text" id="visit_icp"></div>
-    <div>
-      <label>Existing switchboard</label>
-      <select id="visit_switchboard">
-        <option value="">Select...</option>
-        <option value="suitable">Appears suitable</option>
-        <option value="upgrade">Upgrade likely required</option>
-        <option value="review">Needs further review</option>
-      </select>
-    </div>
-  </div>
-  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
-  <div class="site-photo-grid">
-    <div class="site-photo-item">
-  <label for="visit_photo_meter_ICP">Take a meter / ICP photograph</label>
-  <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div>
-    <div class="site-photo-item">
-  <label for="visit_photo_switchboard">Take a switchboard photograph</label>
-  <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div>
   </div>
 
-  <h3>2. Hot water, ripple control &amp; flexible loads</h3>
-  <div class="placeholder">
-    <strong>From the customer's Home Energy Check (unverified):</strong>
-    Hot water: ${escapeHtml(String(answers.hotWater || "Not supplied"))};
-    control: ${escapeHtml(String(answers.hotWaterControl || "Not supplied"))};
-    cylinder: ${escapeHtml(String(answers.cylinderSize || "Not supplied"))}.
-    Confirm details on site rather than assuming these answers are electrically verified.
-  </div>
+  <h4 style="margin:18px 0 10px;">Meter &amp; load control</h4>
   <div class="grid">
-    <div>
-      <label for="visit_hw_system">Existing hot-water system</label>
-      <select id="visit_hw_system">
-        <option value="">Not checked</option>
-        <option value="electric_cylinder">Electric cylinder</option>
-        <option value="solar_thermal_electric">Solar thermal + electric backup</option>
-        <option value="heat_pump_water_heater">Heat-pump water heater</option>
-        <option value="gas">Gas</option>
-        <option value="other">Other / mixed</option>
-      </select>
-    </div>
-    <div><label for="visit_hw_cylinder_l">Cylinder capacity (litres)</label><input type="number" min="0" step="1" id="visit_hw_cylinder_l" placeholder="Not checked"></div>
-    <div><label for="visit_hw_element_kw">Electric element rating (kW)</label><input type="number" min="0" step="0.1" id="visit_hw_element_kw" placeholder="Not checked"></div>
-    <div>
-      <label for="visit_hw_condition">Cylinder / system condition</label>
-      <select id="visit_hw_condition">
-        <option value="">Not checked</option>
-        <option value="appears_suitable">Appears suitable</option>
-        <option value="aging">Aging / replacement may be due</option>
-        <option value="review">Further technical review needed</option>
-        <option value="not_applicable">Not applicable</option>
-      </select>
-    </div>
-    <div>
-      <label for="visit_hw_ripple">Ripple / network load control present?</label>
+    <div><label for="visit_icp">ICP</label><input type="text" id="visit_icp"></div>
+    <div><label for="visit_hw_ripple">Ripple / network load control present?</label>
       <select id="visit_hw_ripple">
         <option value="">Not checked</option>
         <option value="yes">Yes — evidence seen</option>
@@ -953,62 +944,103 @@ window.currentAnswers = answers;
         <option value="uncertain">Uncertain — check meter / control equipment</option>
       </select>
     </div>
-    <div>
-      <label for="visit_hw_meter_circuit">Hot-water meter / circuit arrangement</label>
+    <div><label for="visit_hw_meter_circuit">Hot-water meter / circuit arrangement</label>
       <select id="visit_hw_meter_circuit">
         <option value="">Not checked</option>
         <option value="dedicated">Dedicated controlled circuit identified</option>
         <option value="uncontrolled">Uncontrolled supply identified</option>
-        <option value="trace">Tracing / switchboard check required</option>
+        <option value="trace">Unable to confirm — further electrical check needed</option>
         <option value="other">Other arrangement</option>
       </select>
     </div>
-    <div>
-      <label for="visit_hw_wiring">Wiring / contactor suitability for controls</label>
-      <select id="visit_hw_wiring">
-        <option value="">Not checked</option>
-        <option value="verified_suitable">Verified suitable by electrician</option>
-        <option value="upgrade">Electrical changes may be needed</option>
-        <option value="review">Electrician to confirm</option>
-        <option value="not_applicable">Not applicable</option>
-      </select>
-    </div>
-    <div>
-      <label for="visit_hw_timing">Current hot-water heating timing</label>
-      <select id="visit_hw_timing">
-        <option value="">Not checked</option>
-        <option value="always">Available throughout day</option>
-        <option value="overnight">Mainly overnight</option>
-        <option value="daytime">Daytime timer / smart schedule</option>
-        <option value="controlled">Network controlled / ripple</option>
-        <option value="other">Other / uncertain</option>
-      </select>
-    </div>
-    <div><label for="visit_hw_existing_controls">Existing timer, diverter, relay or other control seen</label><textarea id="visit_hw_existing_controls" placeholder="Record the actual installed equipment or settings observed"></textarea></div>
-    <div>
-      <label for="visit_hw_physical_match">Does the meter / hot-water circuit match the office bill information?</label>
-      <select id="visit_hw_physical_match">
-        <option value="">Not compared</option>
-        <option value="yes">Yes — appears consistent</option>
-        <option value="no">No — difference found</option>
-        <option value="investigate">Needs further investigation</option>
-        <option value="no_office_info">Office bill details not available</option>
-      </select>
-    </div>
-    <div><label for="visit_hw_other_loads">Existing EV charger, heating and other large loads</label><textarea id="visit_hw_other_loads" placeholder="Record equipment seen and relevant physical connections"></textarea></div>
-    <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea id="visit_hw_evidence" placeholder="Photos taken, label details, wiring observations"></textarea></div>
+    <div><label for="visit_meter_notes">Meter / load-control observations</label><textarea id="visit_meter_notes" rows="2" placeholder="Meter model, receiver or control equipment seen"></textarea></div>
   </div>
-  <div style="margin-top:16px;"><label for="visit_hw_outstanding">Physical checks outstanding / follow-up for office or Ben</label><textarea id="visit_hw_outstanding" placeholder="Record any on-site checks still needed; flag tariff or network questions for the office"></textarea></div>
   <div class="site-photo-grid">
     <div class="site-photo-item">
-  <label for="visit_photo_hot_water_equipment">Take a cylinder / hot-water equipment photograph</label>
-  <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div>
+      <label for="visit_photo_meter_ICP">Take a meter / ICP / load-control photograph</label>
+      <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
+      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+    </div>
   </div>
-  <p class="placeholder">Record physical evidence, not retailer prices or tariff assumptions. The office reviews bills and checks retailer/network requirements separately. Electrical safety and hot-water temperature requirements still need professional verification before changes are recommended.</p>
 
-  <h3>3. Main roof face</h3>
+  <h4 style="margin:18px 0 10px;">Switchboard &amp; supply</h4>
+  <div class="grid">
+    <div><label for="visit_connection_type">Electrical connection</label>
+      <select id="visit_connection_type">
+        <option value="">Select...</option>
+        <option value="single_phase">Single phase</option>
+        <option value="dual_phase">Dual phase</option>
+        <option value="three_phase">Three phase</option>
+      </select>
+    </div>
+    <div><label for="visit_main_supply">Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
+    <div><label for="visit_switchboard">Existing switchboard</label>
+      <select id="visit_switchboard">
+        <option value="">Select...</option>
+        <option value="suitable">Appears suitable</option>
+        <option value="upgrade">Upgrade likely required</option>
+        <option value="review">Needs further review</option>
+      </select>
+    </div>
+    <div><label for="visit_supply_notes">Switchboard / supply notes (including earlier combined notes)</label><textarea id="visit_supply_notes" rows="2"></textarea></div>
+  </div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+      <label for="visit_photo_switchboard">Take a switchboard photograph</label>
+      <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
+      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+    </div>
+  </div>
+
+<h3>2. Hot Water &amp; Heating</h3>
+  <div class="placeholder">
+    <strong>From the customer's Home Energy Check (unverified):</strong>
+    Hot water: ${escapeHtml(String(answers.hotWater || "Not supplied"))};
+    control: ${escapeHtml(String(answers.hotWaterControl || "Not supplied"))};
+    cylinder: ${escapeHtml(String(answers.cylinderSize || "Not supplied"))}.
+    Confirm these details on site.
+  </div>
+  <div class="grid">
+    <div><label for="visit_hw_system">Existing hot-water system</label><select id="visit_hw_system"><option value="">Not checked</option><option value="electric_cylinder">Electric cylinder</option><option value="solar_thermal_electric">Solar thermal + electric backup</option><option value="heat_pump_water_heater">Heat-pump water heater</option><option value="gas">Gas</option><option value="other">Other / mixed</option></select></div>
+    <div><label for="visit_hw_cylinder_l">Cylinder capacity (litres)</label><input type="number" id="visit_hw_cylinder_l" placeholder="Not checked" min="0" step="0.1"></div>
+    <div><label for="visit_hw_element_kw">Electric element rating (kW)</label><input type="number" id="visit_hw_element_kw" placeholder="Not checked" min="0" step="0.1"></div>
+    <div><label for="visit_hw_condition">Cylinder / system condition</label><select id="visit_hw_condition"><option value="">Not checked</option><option value="appears_suitable">Appears suitable</option><option value="aging">Aging / replacement may be due</option><option value="review">Further technical review needed</option><option value="not_applicable">Not applicable</option></select></div>
+    <div><label for="visit_heating_arrangement">Existing space heating</label><select id="visit_heating_arrangement"><option value="">Not checked</option><option value="heat_pump">Heat pump</option><option value="electric_heaters">Electric heaters</option><option value="wood_burner">Wood burner</option><option value="gas">Gas</option><option value="mixed">Multiple types</option><option value="none">None</option><option value="other">Other</option></select></div>
+    <div><label for="visit_heating_notes">Heating notes (optional)</label><input type="text" id="visit_heating_notes" placeholder="Type, number and condition"></div>
+  </div>
+  <div class="site-photo-grid"><div class="site-photo-item">
+    <label for="visit_photo_hot_water_equipment">Take a cylinder / hot-water equipment photograph</label>
+    <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
+    <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+  </div></div>
+
+  <h3>3. Hot-Water Wiring, Timing &amp; Bill Comparison</h3>
+  <div class="grid">
+    <div><label for="visit_hw_wiring">Wiring / contactor suitability for controls</label><select id="visit_hw_wiring"><option value="">Not checked</option><option value="verified_suitable">Verified suitable by electrician</option><option value="upgrade">Electrical changes may be needed</option><option value="review">Electrician to confirm</option><option value="not_applicable">Not applicable</option></select></div>
+    <div><label for="visit_hw_timing">Current hot-water heating timing</label><select id="visit_hw_timing"><option value="">Not checked</option><option value="always">Available throughout day</option><option value="overnight">Mainly overnight</option><option value="daytime">Daytime timer / smart schedule</option><option value="controlled">Network controlled / ripple</option><option value="other">Other / uncertain</option></select></div>
+    <div><label for="visit_hw_existing_controls">Existing timer, diverter, relay or control equipment</label><textarea rows="2" id="visit_hw_existing_controls" placeholder="Equipment / settings observed"></textarea></div>
+    <div><label for="visit_hw_physical_match">Meter / circuit matches bill information?</label><select id="visit_hw_physical_match"><option value="">Not compared</option><option value="yes">Yes — appears consistent</option><option value="no">No — difference found</option><option value="investigate">Needs further investigation</option><option value="no_office_info">Office bill details not available</option></select></div>
+    <div><label for="visit_hw_evidence">Meter, cylinder-label and switchboard evidence</label><textarea rows="2" id="visit_hw_evidence" placeholder="Labels, photos or wiring observations"></textarea></div>
+  </div>
+
+  <h3>4. Other Electrical Loads &amp; EV Charging</h3>
+  <div class="grid">
+    <div><label for="visit_hw_other_loads">Other significant loads</label><textarea rows="2" id="visit_hw_other_loads" placeholder="Heat pumps, spa, induction cooking, workshop equipment; earlier notes retained"></textarea></div>
+    <div><label for="visit_ev_existing">Existing EV charging?</label><select id="visit_ev_existing"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+  </div>
+  <div id="visit_ev_details" hidden><div class="grid">
+    <div><label for="visit_ev_charger_type">Existing charger type</label><select id="visit_ev_charger_type"><option value="">Not checked</option><option value="portable_3pin">Portable 3-pin</option><option value="wall">Dedicated wall charger</option><option value="other">Other</option></select></div>
+    <div><label for="visit_ev_make_model">Charger make / model</label><input type="text" id="visit_ev_make_model" placeholder="If known"></div>
+    <div><label for="visit_ev_circuit">Dedicated supply / circuit confirmed?</label><select id="visit_ev_circuit"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    <div><label for="visit_ev_protection">Appropriate RCD / RCBO protection confirmed?</label><select id="visit_ev_protection"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    <div><label for="visit_ev_isolator">Safety isolation switch (where required)?</label><select id="visit_ev_isolator"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option><option value="not_applicable">Not required / N/A</option></select></div>
+    <div><label for="visit_ev_cable">Cable size / circuit suitability confirmed?</label><select id="visit_ev_cable"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+  </div></div>
+  <div class="grid">
+    <div><label for="visit_ev_future_interest">EV charging point installation / upgrade wanted in future?</label><select id="visit_ev_future_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="no">No</option><option value="undecided">Undecided</option></select></div>
+  </div>
+
+  <h3>5. Main roof face</h3>
   <div class="grid">
     <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
     <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
@@ -1034,7 +1066,7 @@ window.currentAnswers = answers;
 </div>
   </div>
 
-  <h3>4. Site conditions</h3>
+  <h3>6. Site conditions</h3>
   <div class="grid">
     <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
     <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
@@ -1046,21 +1078,25 @@ window.currentAnswers = answers;
     <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
   </div>
 
-  <h3>5. Locations and dictated notes</h3>
+  <h3>7. Locations and dictated notes</h3>
   <div class="grid">
-    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea>
+    <div>
+      <label for="visit_inverter_location">Proposed inverter and battery location</label>
+      <textarea id="visit_inverter_location" rows="2" placeholder="Position, mounting surface and access"></textarea>
+      <p id="visit_legacy_battery_note" class="placeholder" hidden></p>
       <div class="site-photo-grid"><div class="site-photo-item">
-  <label for="visit_photo_inverter_location">Take an inverter location photograph</label>
-  <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: inverter location">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div></div>
+        <label for="visit_photo_inverter_location">Take one inverter / battery location photograph</label>
+        <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: combined inverter and battery location">
+        <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+      </div></div>
     </div>
-    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea>
-      <div class="site-photo-grid"><div class="site-photo-item">
-  <label for="visit_photo_battery_location">Take a battery location photograph</label>
-  <input type="file" id="visit_photo_battery_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: battery location">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div></div>
+    <div>
+      <label for="visit_clearance_900mm">900 mm side clearance confirmed?</label>
+      <select id="visit_clearance_900mm">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
     </div>
     <div>
       <label for="visit_inverter_mount">How will the inverter be mounted?</label>
@@ -1086,22 +1122,31 @@ window.currentAnswers = answers;
   </div>
   <div style="margin-top:16px;"><label>General site notes</label><textarea id="visit_general_notes"></textarea></div>
 
-  <details class="site-visit-equipment" style="margin-top:22px; padding:16px; border:1px solid #ddd8cf; border-radius:12px;">
-    <summary style="cursor:pointer; font-weight:700;">Equipment discussed on site (optional)</summary>
-    <p class="placeholder">Only record preliminary equipment details if discussed. Blank fields are fine. These can fill missing System Design fields without replacing an approved design.</p>
-    <div class="grid">
-      <div><label for="visit_panel_count">Approximate number of panels</label><input type="number" min="0" step="1" id="visit_panel_count" placeholder="Not discussed"></div>
-      <div><label for="visit_panel_wattage">Panel rating (W), if known</label><input type="number" min="0" step="1" id="visit_panel_wattage" placeholder="Not discussed"></div>
-      <div><label for="visit_inverter_model">Inverter make / model discussed</label><input type="text" id="visit_inverter_model" placeholder="Not discussed"></div>
-      <div><label for="visit_inverter_kw">Inverter capacity (kW) discussed</label><input type="number" min="0" step="0.1" id="visit_inverter_kw" placeholder="Not discussed"></div>
-      <div><label for="visit_battery_model">Battery make / model discussed</label><input type="text" id="visit_battery_model" placeholder="Not discussed"></div>
-      <div><label for="visit_battery_kwh">Battery capacity (kWh) discussed</label><input type="number" min="0" step="0.1" id="visit_battery_kwh" placeholder="Not discussed"></div>
-    </div>
-    <p class="placeholder">These are provisional observations, not a final engineering design or approved quotation.</p>
-  </details>
 
+
+  <h3>8. Final Checks &amp; Supervisor Follow-up</h3>
+  <div id="visit_auto_followups" class="site-visit-followups" role="status" aria-live="polite">No flagged checks yet.</div>
+  <div style="margin-top:12px;"><label for="visit_hw_outstanding">Other outstanding electrical checks, Ben's review, office actions or technical questions</label>
+    <textarea rows="2" id="visit_hw_outstanding" placeholder="Add only items not already flagged above"></textarea>
+  </div>
   <br>
   <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+</section>
+
+<!-- HOMEOWNER FOLLOW-UP EMAIL: OFFICE REVIEW ONLY; NOTHING IS SENT AUTOMATICALLY -->
+<section class="card solar-only homeowner-review" id="homeownerEmailOfficeSection" data-job-workspace="office">
+  <h2>Homeowner follow-up email — before the quotation</h2>
+  <p class="placeholder">After Tom completes the Homeowner Review, Job Hub automatically drafts a personal email using the confirmed priorities and selected interests. Read and edit it here before sending through your usual email app.</p>
+  <p id="homeownerEmailState" class="placeholder" role="status" aria-live="polite">No homeowner review recorded yet.</p>
+  <p id="homeownerEmailRecipient" class="placeholder"></p>
+  <label for="hr_email_draft">Editable email draft</label>
+  <textarea id="hr_email_draft" rows="14" aria-label="Editable personalised homeowner follow-up email" placeholder="The follow-up draft will appear after Tom saves the Homeowner Review."></textarea>
+  <label class="hr-reviewed"><input type="checkbox" id="hr_email_reviewed"> I have checked this draft and it's ready to copy into an email</label>
+  <div>
+    <button type="button" class="button-link hr-button" onclick="copyHomeownerEmail()">Copy reviewed email</button>
+    <button type="button" class="button-link hr-button" onclick="generateHomeownerEmail()">Rebuild from Homeowner Review</button>
+  </div>
+  <p id="homeownerEmailMessage" class="autosave-status" role="status" aria-live="polite">No email is sent automatically.</p>
 </section>
 
 <!-- OFFICE FOLLOW-UP: NOT PART OF TOM'S PHYSICAL SITE VISIT -->
@@ -1581,7 +1626,8 @@ window.currentAnswers = answers;
   <!-- EQUIPMENT -->
 
   <h3>4. Proposed system</h3>
-  <p class="placeholder">Blank fields may be prefilled from Tom's Site Visit. Those entries are provisional and must be checked against the final electrical design before Ben's review. Existing entries and reviewed designs are not replaced automatically.</p>
+  <p class="placeholder">Choose equipment here after the site visit. Older provisional values fill empty fields only; manually edited and reviewed designs stay unchanged.</p>
+  <p id="design_ev_interest_summary" class="placeholder" aria-live="polite">EV charging request: Not yet recorded.</p>
 
   <div class="grid">
 
@@ -2301,6 +2347,7 @@ window.currentAnswers = answers;
   </p>
 
   <h3>Recommended system</h3>
+  <p id="quote_ev_interest_summary" class="placeholder" aria-live="polite">EV charging request: Not yet recorded.</p>
 
   <div class="grid">
 
@@ -2558,11 +2605,11 @@ applyJobTypeVisibility(job.job_type || "solar");
 
 
 let activeJobWorkspace = "overview";
-const validJobWorkspaces = new Set(["overview", "hec", "visit", "design", "office", "photos", "records"]);
+const validJobWorkspaces = new Set(["overview", "hec", "visit", "homeowner", "design", "office", "photos", "records"]);
 
 function applyJobWorkspaceVisibility() {
   const isSolar = currentJobType !== "general_electrical";
-  if (!isSolar && ["hec", "visit", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
+  if (!isSolar && ["hec", "visit", "homeowner", "design"].includes(activeJobWorkspace)) activeJobWorkspace = "overview";
   document.querySelectorAll("[data-job-workspace]").forEach(section => {
     const allowedForType = !(section.classList.contains("solar-only") && !isSolar) &&
       !(section.classList.contains("general-only") && isSolar);
@@ -3071,7 +3118,8 @@ function prefillQuoteFromDesign() {
   ].filter(Boolean).join(" — ");
   const inverterDescription = [inverterModel, inverterKw ? inverterKw + " kW" : ""].filter(Boolean).join(" · ");
   const batteryDescription = [batteryModel, batteryKwh ? batteryKwh + " kWh" : ""].filter(Boolean).join(" · ") || value("battery_option");
-  const smartDescription = [value("hot_water_strategy"), value("smart_controls")].filter(Boolean).join(" ");
+  const evRequest = document.getElementById("visit_ev_future_interest")?.value === "yes" ? "EV charging point requested (site visit)" : "";
+  const smartDescription = [value("hot_water_strategy"), value("smart_controls"), evRequest].filter(Boolean).join(" ");
   let updated = false;
   for (const [id, description] of [
     ["quote_solar_system", solarDescription],
@@ -3333,18 +3381,342 @@ async function saveAssessment() {
 }
 
 
+
+const homeownerReviewGroups = [{"key":"household","title":"1. Household and daily routine","fields":[["people","People living here"],["homeType","Type of home"],["dayHome","Home during the day"],["workFromHome","Regularly work from home"],["loadTiming","When electricity is used most"]]},{"key":"hotwater","title":"2. Existing hot water","fields":[["hotWater","Hot-water system"],["cylinderSize","Cylinder size"],["hotWaterControl","Controlled / ripple power"],["cylinderCondition","Cylinder condition"]]},{"key":"loads","title":"3. Appliances and other electrical loads","fields":[["loads","Higher-power appliances"],["evDayHome","EV home during main solar hours"]]},{"key":"plans","title":"4. Solar goals and future plans","fields":[["goals","What they want from solar"],["existingSolar","Existing solar"],["batteryInterest","Battery preference"],["plannedChanges","Planned changes"],["energyUsageNotes","Customer's additional electricity-use notes"],["financePlan","Funding preference"],["greenLoanBank","Green-loan bank"]]},{"key":"roof","title":"5. Their understanding of the roof","fields":[["roof","Roof material"],["direction","Roof direction"],["shade","Shading"],["roofCondition","Roof condition"]]}];
+function homeownerAnswerText(v){
+  if (Array.isArray(v)) return v.join(", ");
+  if (v===undefined||v===null) return "";
+  return String(v);
+}
+
+function homeownerCorrectedValue(key,review){
+  const corrections=review?.corrections || {};
+  return Object.prototype.hasOwnProperty.call(corrections,key) ? String(corrections[key]) : homeownerAnswerText(currentAnswers?.[key]);
+}
+
+function homeownerHotWaterChoices(value){
+  const allowed=new Set(["timer","diverter","heat_pump","keep","advice"]);
+  // Older saved Homeowner Reviews contain one string; new reviews contain a list.
+  const selections=Array.isArray(value)?value:(typeof value==="string"?[value]:[]);
+  return [...new Set(selections.filter(choice=>allowed.has(choice)))];
+}
+
+function homeownerReviewHelpFields(groupKey){
+  // Place the homeowner's options immediately beside the relevant original HEC answers.
+  // Keep IDs unchanged so existing autosave, separate review storage and Office email work.
+  if(groupKey==="hotwater")return `
+    <div class="hr-help" aria-label="Solectrics hot-water options">
+      <h4>What Solectrics can help with</h4>
+      <div class="hr-tom-tip" role="note" aria-label="Reminder for Tom about hot-water savings">
+        <strong>Tom — explain to homeowner</strong>
+        <p>Hot-water heating is typically around 30% (roughly one-third) of a New Zealand household's energy use. For homes with an electric cylinder, we may be able to save money by heating water with surplus daytime solar, or during the cheapest suitable off-peak tariff hours (sometimes late at night).</p>
+        <p><strong>Don't promise savings without checking:</strong> the actual hot-water system, solar export value, retailer tariff, cylinder capacity and existing ripple/controlled-load arrangement. Any timer or controller needs an electrical suitability check, and safe hot-water storage temperatures must be maintained.</p>
+      </div>
+      <p class="placeholder">We can explore keeping the existing system, adding a timer or solar diverter, or upgrading to heat-pump hot water if appropriate.</p>
+      <fieldset class="hr-multi-choice">
+        <legend>What would you like us to investigate for hot water?</legend>
+        <p class="placeholder">Tick all that apply.</p>
+        <label><input type="checkbox" data-hot-water-interest value="timer"> Timer / smarter scheduling</label>
+        <label><input type="checkbox" data-hot-water-interest value="diverter"> Solar diverter / smart controller</label>
+        <label><input type="checkbox" data-hot-water-interest value="heat_pump"> Explore a hot-water heat pump</label>
+        <label><input type="checkbox" data-hot-water-interest value="keep"> Keep existing arrangement</label>
+        <label><input type="checkbox" data-hot-water-interest value="advice"> Would like Solectrics' advice</label>
+      </fieldset>
+      <label for="hr_hot_water_notes">Hot-water conversation notes</label>
+      <textarea id="hr_hot_water_notes" rows="2" placeholder="Customer preferences and practical details"></textarea>
+    </div>`;
+  if(groupKey==="loads")return `
+    <div class="hr-help" aria-label="Solectrics smart-energy opportunities">
+      <h4>What Solectrics can help with</h4>
+      <p class="placeholder">Using more solar when it is generated, scheduling flexible loads, and exploring smart home energy controls.</p>
+      <label for="hr_smart_energy_interest">Would you like more information about smart home energy management?</label>
+      <select id="hr_smart_energy_interest">
+        <option value="">Not discussed</option><option value="yes">Yes</option>
+        <option value="maybe">Maybe</option><option value="no">No</option>
+      </select>
+    </div>`;
+  if(groupKey==="plans")return `
+    <div class="hr-help" aria-label="Solectrics future options">
+      <h4>Anything else we could help with?</h4>
+      <label for="hr_other_interests">Other products, questions or opportunities</label>
+      <textarea id="hr_other_interests" rows="2" placeholder="EV charging, backup, energy monitoring or future upgrades"></textarea>
+      <label for="hr_homeowner_notes">Customer's own words / further corrections</label>
+      <textarea id="hr_homeowner_notes" rows="3" placeholder="Tom can dictate a short summary of the conversation here"></textarea>
+    </div>`;
+  return "";
+}
+
+function renderHomeownerReview(){
+  const root=document.getElementById("homeownerReviewQuestions");
+  if(!root) return;
+  const review=loadedHomeownerReview||{};
+  let result="";
+  let groupIndex=0;
+  for(const group of homeownerReviewGroups){
+    const entries=group.fields.filter(([key])=>{
+      const answer=currentAnswers?.[key];
+      return (answer!==undefined && answer!==null && answer!=="" && (!Array.isArray(answer) || answer.length)) ||
+        Object.prototype.hasOwnProperty.call(review.corrections||{},key);
+    });
+    result+=`<details class="hr-group" ${groupIndex++===0 ? "open" : ""}>
+      <summary>${escapeHtml(group.title)}</summary>
+      <div class="hr-body">${entries.length ? entries.map(([key,label])=>{
+        const original=homeownerAnswerText(currentAnswers?.[key]);
+        const current=homeownerCorrectedValue(key,review);
+        return `<div class="hr-row"><label for="hr_answer_${key}">${escapeHtml(label)}</label>
+          <div class="hr-original">Original HEC: <strong>${escapeHtml(original || "Not provided")}</strong></div>
+          <input type="text" id="hr_answer_${key}" data-homeowner-answer="${key}"
+            value="${escapeHtml(current)}" aria-label="Confirm or correct ${escapeHtml(label)}" maxlength="700">
+        </div>`;
+      }).join("") : '<p class="placeholder">No original HEC answers recorded in this section.</p>'}
+      ${homeownerReviewHelpFields(group.key)}
+      <label class="hr-reviewed"><input type="checkbox" data-homeowner-reviewed="${group.key}" ${review.reviewed?.[group.key]?"checked":""}> Reviewed with homeowner</label>
+      </div>
+    </details>`;
+  }
+  const bills=currentAnswers?.bills || {};
+  let billInfo="";
+  for(const season of ["summer","winter"]){
+    const bill=bills[season];
+    if(!bill || typeof bill!=="object") continue;
+    const retailer=homeownerAnswerText(bill.retailer),plan=homeownerAnswerText(bill.plan_name);
+    const display=(retailer || plan) ? `${retailer}${plan ? " — "+plan:""}` : "Bill supplied";
+    billInfo+=`<p><strong>${escapeHtml(season==="summer"?"Summer":"Winter")}:</strong> ${escapeHtml(display)}</p>`;
+  }
+  result+=`<details class="hr-group hr-bills">
+    <summary>6. Electricity bills and current retailer</summary>
+    <div class="hr-body">
+      ${billInfo || '<p>No parsed summer/winter bills recorded.</p>'}
+      <p class="placeholder">Tariff calculations and bill files stay in the original HEC. The office will verify any billing corrections.</p>
+      <div class="hr-help" aria-label="Solectrics retailer and tariff help">
+        <h4>What Solectrics can help with</h4>
+        <label for="hr_tariff_review_interest">Would you like us to compare electricity retailers and tariffs to find the best deal for you after solar installation?</label>
+        <select id="hr_tariff_review_interest">
+          <option value="">Not discussed</option><option value="yes">Yes</option>
+          <option value="maybe">Maybe</option><option value="no">No</option>
+        </select>
+      </div>
+      <label class="hr-reviewed"><input type="checkbox" data-homeowner-reviewed="bills" ${review.reviewed?.bills?"checked":""}> Reviewed with homeowner</label>
+    </div>
+  </details>`;
+  root.innerHTML=result;
+  const selectedHotWater=homeownerHotWaterChoices(review.hot_water_interest);
+  document.querySelectorAll("[data-hot-water-interest]").forEach(el=>{
+    el.checked=selectedHotWater.includes(el.value);
+  });
+  for(const key of ["smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+    const el=document.getElementById("hr_"+key);
+    if(el) el.value=review[key]||"";
+  }
+  for(const name of ["two_week","one_month","app_support","cleaning"]){
+    const el=document.getElementById("hr_aftercare_"+name);
+    if(el) el.checked=review["aftercare_"+name]===true;
+  }
+  // Preserve any email drafted in an earlier version that lacks an edit marker.
+  homeownerEmailEdited=review.email_draft_edited===true ||
+    (Boolean(review.email_draft) && !Object.prototype.hasOwnProperty.call(review,"email_draft_edited"));
+  const emailReviewed=document.getElementById("hr_email_reviewed");
+  if(emailReviewed) emailReviewed.checked=review.email_draft_reviewed===true;
+  renderOfficeEmailState();
+}
+
+async function loadHomeownerReview(){
+  const message=document.getElementById("homeownerReviewMessage");
+  try {
+    const response=await fetch("/api/homeowner-review?job_id="+encodeURIComponent(jobId),{cache:"no-store"});
+    const result=await response.json();
+    if(!response.ok||!result.ok)throw Error(result.error||"Unable to load review");
+    loadedHomeownerReview=result.review||{};
+    renderHomeownerReview();
+    if(message)message.textContent=result.review?"✓ Previous homeowner conversation loaded":"Ready to review the customer's original answers.";
+  }catch(error){
+    console.error("Homeowner review loading failed:",error);
+    if(message)message.textContent="Could not load saved homeowner review. Do not enter customer notes until connected.";
+    const officeMessage=document.getElementById("homeownerEmailMessage");
+    if(officeMessage)officeMessage.textContent="Could not load draft. Office editing is disabled until the connection is restored.";
+    for(const sectionId of ["homeownerReviewSection","homeownerEmailOfficeSection"]){
+      document.getElementById(sectionId)?.querySelectorAll("input, select, textarea, button").forEach(el=>el.disabled=true);
+    }
+    const root=document.getElementById("homeownerReviewQuestions");
+    if(root)root.textContent="Unable to load the homeowner review. Try reloading Job Hub.";
+  }
+}
+
+function collectHomeownerReview(){
+  const corrections={};
+  document.querySelectorAll("[data-homeowner-answer]").forEach(el=>{
+    const answer=el.value.trim();
+    const original=homeownerAnswerText(currentAnswers?.[el.dataset.homeownerAnswer]).trim();
+    if(answer!==original)corrections[el.dataset.homeownerAnswer]=answer;
+  });
+  const reviewed={};
+  document.querySelectorAll("[data-homeowner-reviewed]").forEach(el=>{
+    reviewed[el.dataset.homeownerReviewed]=el.checked;
+  });
+  const review={corrections,reviewed};
+  review.hot_water_interest=Array.from(document.querySelectorAll("[data-hot-water-interest]"))
+    .filter(el=>el.checked).map(el=>el.value);
+  for(const key of ["smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+    review[key]=document.getElementById("hr_"+key)?.value||"";
+  }
+  for(const name of ["two_week","one_month","app_support","cleaning"]){
+    review["aftercare_"+name]=document.getElementById("hr_aftercare_"+name)?.checked===true;
+  }
+  review.email_draft_edited=homeownerEmailEdited;
+  review.email_draft_reviewed=document.getElementById("hr_email_reviewed")?.checked===true;
+  return review;
+}
+
+function hasHomeownerConversation(review){
+  return Object.values(review.reviewed||{}).some(Boolean) ||
+    Object.keys(review.corrections||{}).length>0 ||
+    Boolean(homeownerHotWaterChoices(review.hot_water_interest).length || review.smart_energy_interest || review.tariff_review_interest) ||
+    Boolean(String(review.hot_water_notes||"").trim()||String(review.other_interests||"").trim()||String(review.homeowner_notes||"").trim()) ||
+    ["two_week","one_month","app_support","cleaning"].some(key=>review["aftercare_"+key]===true);
+}
+function renderOfficeEmailState(){
+  const message=document.getElementById("homeownerEmailState");
+  const recipient=document.getElementById("homeownerEmailRecipient");
+  const draft=document.getElementById("hr_email_draft")?.value||"";
+  if(recipient) recipient.textContent=currentJobCustomer.email ? "Customer email: "+currentJobCustomer.email : "Customer email not recorded — check contact details before sending.";
+  if(!message)return;
+  if(!draft.trim()){
+    message.textContent="No follow-up draft yet. It will be prepared when Tom saves his Homeowner Review.";
+    return;
+  }
+  if(document.getElementById("hr_email_reviewed")?.checked){
+    message.textContent="✓ Office reviewed — ready to copy into your email app. Nothing has been sent.";
+  } else if(homeownerEmailEdited){
+    message.textContent="Edited draft saved — review it against the latest Homeowner Review before copying.";
+  } else {
+    message.textContent="Automatic draft ready — please review and edit before copying.";
+  }
+}
+let homeownerEmailEdited=false;
+async function saveHomeownerReview(){
+  const message=document.getElementById("homeownerReviewMessage");
+  const officeMessage=document.getElementById("homeownerEmailMessage");
+  const review=collectHomeownerReview();
+  const emailField=document.getElementById("hr_email_draft");
+  const emailBeforeSave=emailField?.value||"";
+  let generated=false;
+  // Generate only after a conversation is recorded. Never overwrite an office-edited draft.
+  if(hasHomeownerConversation(review) && !review.email_draft_edited){
+    const nextDraft=buildHomeownerEmail(review);
+    if(review.email_draft!==nextDraft){
+      review.email_draft=nextDraft;
+      review.email_draft_reviewed=false;
+      generated=true;
+      if(emailField && emailField.value===emailBeforeSave)emailField.value=nextDraft;
+      const reviewedField=document.getElementById("hr_email_reviewed");
+      if(reviewedField)reviewedField.checked=false;
+    }
+  }
+  if(message)message.textContent="Saving homeowner review…";
+  try {
+    const response=await fetch("/api/homeowner-review",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({job_id:jobId,review})
+    });
+    const result=await response.json();
+    if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
+    loadedHomeownerReview=result.review||review;
+    if(message)message.textContent=generated
+      ? "✓ Homeowner Review saved — follow-up email ready in Office & Quote"
+      : "✓ Homeowner Review saved — existing office email edits preserved";
+    if(officeMessage)officeMessage.textContent="Draft saved in Job Hub. Nothing sent automatically.";
+    renderOfficeEmailState();
+    return true;
+  }catch(error){
+    console.error("Homeowner review saving failed:",error);
+    if(message)message.textContent="Could not save homeowner review: "+error.message;
+    if(officeMessage)officeMessage.textContent="Could not save draft: "+error.message;
+    return false;
+  }
+}
+
+function buildHomeownerEmail(review){
+  const first=(currentJobCustomer.name||"").trim().split(/\s+/)[0]||"there";
+  const lines=[
+    "Subject: Your Solectrics home energy review",
+    "",
+    "Hi "+first+",",
+    "",
+    "Thank you for taking the time to go through your Home Energy Check with Tom. The information you shared has helped us understand your household and what you would like from solar."
+  ];
+  const goals=homeownerCorrectedValue("goals",review).trim();
+  if(goals)lines.push("","You've told us your priorities include: "+goals+".");
+  const hot={
+    timer:"We'll look at how a hot-water timer could shift heating towards sunny hours or cheaper grid electricity.",
+    diverter:"We'll investigate whether a solar diverter or smart hot-water controller is suitable for your home.",
+    heat_pump:"We'll explore whether upgrading to a hot-water heat pump makes sense for your household.",
+    keep:"We've noted your preference to keep your existing hot-water arrangement.",
+    advice:"We'll review your hot-water options and recommend a suitable approach."
+  };
+  for(const choice of homeownerHotWaterChoices(review.hot_water_interest)){
+    if(hot[choice])lines.push("",hot[choice]);
+  }
+  if(review.smart_energy_interest==="yes")lines.push("","We'll also share information about smart home energy management, including ways to use more of your solar power automatically.");
+  if(review.smart_energy_interest==="maybe")lines.push("","We can share information on smart home energy management if you'd like to explore it.");
+  if(review.tariff_review_interest==="yes")lines.push("","Following your solar installation, we'll offer to compare suitable electricity retailers and tariffs, including electricity import and solar export rates.");
+  if(review.tariff_review_interest==="maybe")lines.push("","A post-solar electricity tariff comparison is another option we can discuss.");
+  if(review.other_interests.trim())lines.push("","Other topics we discussed: "+review.other_interests.trim());
+  lines.push("","As part of our service, we check in approximately two weeks and one month after handover. We're also here to help if you have problems using your solar monitoring app.");
+  lines.push("","We'll use what we've discussed to prepare your personalised solar quotation.","","Kind regards,","The Solectrics team");
+  return lines.join("\n");
+}
+
+function generateHomeownerEmail(){
+  if(homeownerEmailEdited && !window.confirm("Replace the manually edited draft with a fresh draft from the Homeowner Review?")) return;
+  const field=document.getElementById("hr_email_draft");
+  if(!field)return;
+  const review=collectHomeownerReview();
+  if(!hasHomeownerConversation(review)){
+    const message=document.getElementById("homeownerEmailMessage");
+    if(message)message.textContent="Complete the Homeowner Review first.";
+    return;
+  }
+  field.value=buildHomeownerEmail(review);
+  homeownerEmailEdited=false;
+  const reviewed=document.getElementById("hr_email_reviewed");
+  if(reviewed)reviewed.checked=false;
+  renderOfficeEmailState();
+  scheduleSectionAutosave({target:field});
+}
+async function copyHomeownerEmail(){
+  const draft=document.getElementById("hr_email_draft")?.value||"";
+  const message=document.getElementById("homeownerEmailMessage");
+  if(!draft.trim()){
+    if(message)message.textContent="Complete and save the Homeowner Review first.";
+    return;
+  }
+  if(!document.getElementById("hr_email_reviewed")?.checked){
+    if(message)message.textContent="Please review the draft and tick the approval box before copying.";
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(draft);
+    if(message)message.textContent="Email draft copied. Paste into your email app and review before sending.";
+  }catch(error){
+    if(message)message.textContent="Copy unavailable. Select the draft text and copy it manually.";
+  }
+}
+let loadedHomeownerReview={};
+
 const siteVisitFieldIds = [
   "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
-  "visit_icp", "visit_switchboard",
+  "visit_icp", "visit_switchboard", "visit_meter_notes",
   "visit_supply_notes", "visit_roof_length", "visit_roof_width",
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
-  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
-  "visit_panel_count", "visit_panel_wattage", "visit_inverter_model", "visit_inverter_kw", "visit_battery_model", "visit_battery_kwh",
+  "visit_clearance_900mm", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
-  "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_hw_ripple", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_existing_controls", "visit_hw_physical_match", "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding"
+  "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_heating_arrangement", "visit_heating_notes",
+  "visit_hw_ripple", "visit_hw_meter_circuit", "visit_hw_wiring", "visit_hw_timing", "visit_hw_existing_controls", "visit_hw_physical_match",
+  "visit_hw_other_loads", "visit_hw_evidence", "visit_hw_outstanding",
+  "visit_ev_existing", "visit_ev_charger_type", "visit_ev_make_model", "visit_ev_circuit", "visit_ev_protection", "visit_ev_isolator", "visit_ev_cable", "visit_ev_future_interest"
 ];
 
 let loadedSiteVisit = {};
@@ -3362,6 +3734,82 @@ function updateInverterPadVisibility() {
     const pad = document.getElementById("visit_inverter_pad");
     if (pad) pad.value = "";
   }
+}
+
+
+function updateLegacyBatteryLocationNote(visit) {
+  const note = document.getElementById("visit_legacy_battery_note");
+  if (!note) return;
+  const old = String(visit.visit_battery_location || "").trim();
+  const current = String(document.getElementById("visit_inverter_location")?.value || "").trim();
+  note.hidden = !old || old === current;
+  note.textContent = note.hidden ? "" : "Previous battery-location note (retained for review): " + old;
+}
+
+function updateEvDetailsVisibility() {
+  const el = document.getElementById("visit_ev_details");
+  if (el) el.hidden = document.getElementById("visit_ev_existing")?.value !== "yes";
+}
+function siteVisitFollowupItems(visit) {
+  const items = [];
+  const add = (trigger, message) => { if (trigger) items.push(message); };
+  add(["upgrade","review"].includes(visit.visit_switchboard), "Electrical: review switchboard suitability");
+  add(["aging","review"].includes(visit.visit_hw_condition), "Hot water: cylinder / system needs review");
+  add(visit.visit_hw_ripple === "uncertain", "Network: confirm ripple / load control");
+  add(visit.visit_hw_meter_circuit === "trace", "Electrical: unable to confirm hot-water circuit — further check needed");
+  add(["upgrade","review"].includes(visit.visit_hw_wiring), "Electrical: inspect hot-water wiring / contactor");
+  add(["no","investigate"].includes(visit.visit_hw_physical_match), "Office: compare hot-water circuit with electricity bills");
+  add(visit.visit_hw_physical_match === "no_office_info", "Office: obtain electricity bill / tariff details for hot-water comparison");
+  if (visit.visit_ev_existing === "yes") {
+    for (const [id, label] of [
+      ["visit_ev_circuit","Dedicated EV circuit / supply"],
+      ["visit_ev_protection","EV RCD / RCBO protection"],
+      ["visit_ev_isolator","EV isolation switch (where required)"],
+      ["visit_ev_cable","EV cable / circuit suitability"]
+    ]) {
+      const answer = visit[id] || "";
+      if (answer === "no") items.push("Electrical: " + label + " — marked No");
+      else if (answer !== "yes" && answer !== "not_applicable") items.push("Electrical: " + label + " — not checked");
+    }
+  }
+  add(visit.visit_clearance_900mm === "no", "Electrical / design: 900 mm side clearance not available — review location");
+  add(Boolean(visit.visit_inverter_location) && !visit.visit_clearance_900mm, "Site visit: 900 mm side clearance not checked");
+  add(visit.visit_ev_future_interest === "undecided", "Office: EV charging installation / upgrade enquiry undecided");
+  return items;
+}
+function renderSiteVisitFollowups() {
+  const el = document.getElementById("visit_auto_followups");
+  if (!el) return;
+  const list = siteVisitFollowupItems(collectSiteVisit());
+  el.replaceChildren();
+  if (!list.length) { el.textContent = "No flagged checks yet."; return; }
+  const title = document.createElement("strong");
+  title.textContent = list.length + " follow-up" + (list.length===1?"":"s") + " flagged automatically";
+  const ul = document.createElement("ul");
+  list.forEach(label => { const li=document.createElement("li"); li.textContent=label; ul.append(li); });
+  el.append(title,ul);
+}
+function updateLinkedEvRequest(visit = collectSiteVisit()) {
+  const value = {yes:"Yes — installation / upgrade requested",no:"No",undecided:"Undecided"}[visit.visit_ev_future_interest] || "Not yet recorded";
+  for (const id of ["design_ev_interest_summary","quote_ev_interest_summary"]) {
+    const el=document.getElementById(id);
+    if (el) el.textContent="EV charging request: " + value;
+  }
+}
+function prefillLegacySiteVisitEquipment() {
+  if (document.getElementById("design_reviewed")?.checked) return false;
+  let changed=false;
+  for (const [source,target] of [
+    ["visit_panel_count","design_panel_count"],["visit_panel_wattage","design_panel_wattage"],
+    ["visit_inverter_model","design_inverter_model"],["visit_inverter_kw","design_inverter_kw"],
+    ["visit_battery_model","design_battery_model"],["visit_battery_kwh","design_battery_kwh"]
+  ]) {
+    const value=loadedSiteVisit[source], el=document.getElementById(target);
+    if (el && value !== undefined && value !== null && String(value).trim() && !String(el.value||"").trim()) {
+      el.value=String(value); changed=true;
+    }
+  }
+  return changed;
 }
 
 function collectSiteVisit() {
@@ -3440,14 +3888,22 @@ function applySiteVisitToSystemDesign(visit) {
   });
 
   const environmentNotes = [
+    visit.visit_meter_notes && `Meter / load control: ${visit.visit_meter_notes}`,
     visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
-    visit.visit_inverter_location && `Possible inverter location: ${visit.visit_inverter_location}`,
+    visit.visit_inverter_location && `Proposed inverter and battery location: ${visit.visit_inverter_location}`,
     visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
     visit.visit_inverter_mount === "ground" && visit.visit_inverter_pad && `Ground inverter pad / base needed: ${{yes:"Yes",no:"No",review:"Needs design confirmation"}[visit.visit_inverter_pad] || visit.visit_inverter_pad}`,
-    visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
+    visit.visit_battery_location && visit.visit_battery_location !== visit.visit_inverter_location && `Older battery location note (verify): ${visit.visit_battery_location}`,
+    visit.visit_clearance_900mm && `900 mm side clearance confirmed: ${visit.visit_clearance_900mm === "yes" ? "Yes" : "No — needs review"}`,
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
     visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
+    visit.visit_heating_arrangement && ("Existing heating: " + ({
+      heat_pump:"Heat pump", electric_heaters:"Electric heaters", wood_burner:"Wood burner",
+      gas:"Gas", mixed:"Multiple types", none:"None", other:"Other"
+    }[visit.visit_heating_arrangement] || visit.visit_heating_arrangement)),
+    visit.visit_heating_notes && `Heating notes: ${visit.visit_heating_notes}`,
+    visit.visit_hw_other_loads && `Other significant loads: ${visit.visit_hw_other_loads}`,
     visit.visit_general_notes
   ].filter(Boolean).join("\n");
 
@@ -3493,6 +3949,9 @@ async function loadSiteVisit() {
       const date = document.getElementById("visit_date");
       if (date && !date.value) date.value = new Date().toISOString().slice(0, 10);
       updateInverterPadVisibility();
+      updateEvDetailsVisibility();
+      renderSiteVisitFollowups();
+      updateLinkedEvRequest();
       return;
     }
 
@@ -3505,7 +3964,17 @@ async function loadSiteVisit() {
       const field = document.getElementById(id);
       if (field) field.checked = Boolean(data.site_visit[id]);
     });
+    // Older site visits may have only a battery-location note. Show it in the
+    // new shared field without discarding the original stored value.
+    const combinedLocation = document.getElementById("visit_inverter_location");
+    if (combinedLocation && !combinedLocation.value && data.site_visit.visit_battery_location) {
+      combinedLocation.value = data.site_visit.visit_battery_location;
+    }
+    updateLegacyBatteryLocationNote(data.site_visit);
     updateInverterPadVisibility();
+    updateEvDetailsVisibility();
+    renderSiteVisitFollowups();
+    updateLinkedEvRequest();
   } catch (error) {
     console.error("Could not load site visit:", error);
     const message = document.getElementById("siteVisitMessage");
@@ -5117,6 +5586,8 @@ const autosavePending = new Set();
 function autosaveTarget(event) {
   const target = event.target;
   if (!target || target.disabled || target.readOnly || target.matches?.(".site-photo-input")) return null;
+  if (target.closest("#homeownerReviewSection")) return ["homeowner", saveHomeownerReview, "homeownerReviewMessage"];
+  if (target.closest("#homeownerEmailOfficeSection")) return ["homeowner", saveHomeownerReview, "homeownerEmailMessage"];
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
@@ -5155,15 +5626,33 @@ function scheduleSectionAutosave(event) {
       autosaveBusy.delete(key);
       if (autosavePending.has(key)) {
         autosavePending.delete(key);
-        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType" }[key];
+        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType", homeowner:"[data-hot-water-interest]" }[key];
         const retryTarget = document.querySelector(selector);
         if (retryTarget) scheduleSectionAutosave({ target: retryTarget });
       }
     }
   }, 1100));
 }
-document.addEventListener("change", (event) => {
+document.addEventListener("input", event => {
+  if(event.target?.id==="hr_email_draft"){
+    homeownerEmailEdited=true;
+    const reviewed=document.getElementById("hr_email_reviewed");
+    if(reviewed)reviewed.checked=false;
+    renderOfficeEmailState();
+  }
+});
+document.addEventListener("change", event => {
+  if(event.target?.id==="hr_email_reviewed") renderOfficeEmailState();
   if (event.target?.matches?.(".site-photo-input")) uploadInlineSitePhoto(event.target);
+});
+document.addEventListener("change", event => {
+  if (event.target?.closest?.("#siteVisitSection")) {
+    updateEvDetailsVisibility();
+    renderSiteVisitFollowups();
+    updateLinkedEvRequest();
+    updateLegacyBatteryLocationNote(collectSiteVisit());
+    prefillQuoteFromDesign();
+  }
 });
 document.addEventListener("input", scheduleSectionAutosave);
 document.addEventListener("change", scheduleSectionAutosave);
@@ -5172,7 +5661,7 @@ resetWorkLogDates();
 
 loadJob().then(() => {
   Promise.all([
-    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
+    loadAssessment(), loadSystemDesign(), loadSiteVisit(), loadHomeownerReview(), loadGeneralJobDetails(), loadSupplierPricing(), loadJobFiles(), loadWorkLogs(), loadCosting(), loadCustomerQuotes(), loadCustomerInvoices(), loadCostingSuppliers()
   ]).then(() => {
     restoreWorkLogDraft();
 
@@ -5187,6 +5676,9 @@ loadJob().then(() => {
       roofOrientationField.value = window.currentAnswers.direction;
     }
 
+    // Fill only previously empty, unreviewed design fields from saved legacy Site Visit data.
+    if (prefillLegacySiteVisitEquipment()) saveSystemDesign();
+    updateLinkedEvRequest();
     syncLinkedEquipmentFields();
   });
 });
