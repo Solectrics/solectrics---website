@@ -133,3 +133,17 @@ test("one shared inverter/battery photo and 900 mm check; legacy notes survive",
   assert.ok(followups({visit_inverter_location:"Garage wall"}).some(x=>x.includes("not checked")));
   assert.ok(!followups({visit_inverter_location:"Garage wall",visit_clearance_900mm:"yes"}).some(x=>x.includes("900 mm")));
 });
+
+test("ripple and hot-water circuit checks are together at meter inspection, with no duplicate questions", () => {
+  const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
+  const meter = visit.slice(visit.indexOf('<h3>1. Visit and electrical supply'), visit.indexOf('<h3>2. Hot Water &amp; Heating'));
+  const otherHotWater = visit.slice(visit.indexOf('<h3>3. Hot-Water Wiring'), visit.indexOf('<h3>4. Other Electrical Loads'));
+  assert.ok(meter.includes('id="visit_hw_ripple"'));
+  assert.ok(meter.includes('id="visit_hw_meter_circuit"'));
+  assert.ok(meter.includes('id="visit_photo_meter_ICP"'));
+  assert.ok(meter.indexOf('id="visit_hw_ripple"') < meter.indexOf('id="visit_photo_meter_ICP"'));
+  assert.ok(!otherHotWater.includes('id="visit_hw_ripple"'));
+  assert.ok(!otherHotWater.includes('id="visit_hw_meter_circuit"'));
+  assert.equal((visit.match(/id="visit_hw_ripple"/g) || []).length, 1);
+  assert.equal((visit.match(/id="visit_hw_meter_circuit"/g) || []).length, 1);
+});
