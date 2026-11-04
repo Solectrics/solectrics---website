@@ -3385,6 +3385,186 @@ async function saveAssessment() {
 }
 
 
+
+const homeownerReviewGroups = [{"key":"household","title":"1. Household and daily routine","fields":[["people","People living here"],["homeType","Type of home"],["dayHome","Home during the day"],["workFromHome","Regularly work from home"],["loadTiming","When electricity is used most"]]},{"key":"hotwater","title":"2. Existing hot water","fields":[["hotWater","Hot-water system"],["cylinderSize","Cylinder size"],["hotWaterControl","Controlled / ripple power"],["cylinderCondition","Cylinder condition"]]},{"key":"loads","title":"3. Appliances and other electrical loads","fields":[["loads","Higher-power appliances"],["evDayHome","EV home during main solar hours"]]},{"key":"plans","title":"4. Solar goals and future plans","fields":[["goals","What they want from solar"],["existingSolar","Existing solar"],["batteryInterest","Battery preference"],["plannedChanges","Planned changes"],["energyUsageNotes","Customer's additional electricity-use notes"],["financePlan","Funding preference"],["greenLoanBank","Green-loan bank"]]},{"key":"roof","title":"5. Their understanding of the roof","fields":[["roof","Roof material"],["direction","Roof direction"],["shade","Shading"],["roofCondition","Roof condition"]]}];
+function homeownerAnswerText(v){
+  if (Array.isArray(v)) return v.join(", ");
+  if (v===undefined||v===null) return "";
+  return String(v);
+}
+
+function homeownerCorrectedValue(key,review){
+  const corrections=review?.corrections || {};
+  return Object.prototype.hasOwnProperty.call(corrections,key) ? String(corrections[key]) : homeownerAnswerText(currentAnswers?.[key]);
+}
+
+function renderHomeownerReview(){
+  const root=document.getElementById("homeownerReviewQuestions");
+  if(!root) return;
+  const review=loadedHomeownerReview||{};
+  let result="";
+  for(const group of homeownerReviewGroups){
+    const entries=group.fields.filter(([key])=>{
+      const answer=currentAnswers?.[key];
+      return (answer!==undefined && answer!==null && answer!=="" && (!Array.isArray(answer) || answer.length)) ||
+        Object.prototype.hasOwnProperty.call(review.corrections||{},key);
+    });
+    result+=`<details class="hr-group" open>
+      <summary>${escapeHtml(group.title)}</summary>
+      <div class="hr-body">${entries.length ? entries.map(([key,label])=>{
+        const original=homeownerAnswerText(currentAnswers?.[key]);
+        const current=homeownerCorrectedValue(key,review);
+        return `<div class="hr-row"><label for="hr_answer_${key}">${escapeHtml(label)}</label>
+          <div class="hr-original">Original HEC: <strong>${escapeHtml(original || "Not provided")}</strong></div>
+          <input type="text" id="hr_answer_${key}" data-homeowner-answer="${key}"
+            value="${escapeHtml(current)}" aria-label="Confirm or correct ${escapeHtml(label)}" maxlength="700">
+        </div>`;
+      }).join("") : '<p class="placeholder">No original answers in this group. Add any new details in the notes below.</p>'}
+      <label class="hr-reviewed"><input type="checkbox" data-homeowner-reviewed="${group.key}" ${review.reviewed?.[group.key]?"checked":""}> Reviewed with homeowner</label>
+      </div>
+    </details>`;
+  }
+  const bills=currentAnswers?.bills || {};
+  let billInfo="";
+  for(const season of ["summer","winter"]){
+    const bill=bills[season];
+    if(!bill || typeof bill!=="object") continue;
+    const retailer=homeownerAnswerText(bill.retailer),plan=homeownerAnswerText(bill.plan_name);
+    const display=(retailer || plan) ? `${retailer}${plan ? " — "+plan:""}` : "Bill supplied";
+    billInfo+=`<p><strong>${escapeHtml(season==="summer"?"Summer":"Winter")}:</strong> ${escapeHtml(display)}</p>`;
+  }
+  result+=`<div class="hr-bills">
+    <strong>6. Electricity bills and current retailer</strong>
+    ${billInfo || '<p>No parsed summer/winter bills recorded.</p>'}
+    <p class="placeholder">Tariff calculations and bill files are kept in the original HEC/Job Hub. Confirm any billing corrections through the office rather than changing calculated results here.</p>
+    <label><input type="checkbox" data-homeowner-reviewed="bills" ${review.reviewed?.bills?"checked":""}> Reviewed with homeowner</label>
+  </div>`;
+  root.innerHTML=result;
+  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","cleaning_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+    const el=document.getElementById("hr_"+key);
+    if(el) el.value=review[key]||"";
+  }
+  for(const name of ["two_week","one_month","app_support","cleaning"]){
+    const el=document.getElementById("hr_aftercare_"+name);
+    if(el) el.checked===undefined ? null : el.checked=review["aftercare_"+name]===true;
+  }
+}
+
+async function loadHomeownerReview(){
+  const message=document.getElementById("homeownerReviewMessage");
+  try {
+    const response=await fetch("/api/homeowner-review?job_id="+encodeURIComponent(jobId),{cache:"no-store"});
+    const result=await response.json();
+    if(!response.ok||!result.ok)throw Error(result.error||"Unable to load review");
+    loadedHomeownerReview=result.review||{};
+    renderHomeownerReview();
+    if(message)message.textContent=result.review?"✓ Previous homeowner conversation loaded":"Ready to review the customer's original answers.";
+  }catch(error){
+    console.error("Homeowner review loading failed:",error);
+    if(message)message.textContent="Could not load saved homeowner review. Do not enter customer notes until connected.";
+    const section=document.getElementById("homeownerReviewSection");
+    section?.querySelectorAll("input, select, textarea, button").forEach(el=>el.disabled=true);
+    const root=document.getElementById("homeownerReviewQuestions");
+    if(root)root.textContent="Unable to load the homeowner review. Try reloading Job Hub.";
+  }
+}
+
+function collectHomeownerReview(){
+  const corrections={};
+  document.querySelectorAll("[data-homeowner-answer]").forEach(el=>{
+    const answer=el.value.trim();
+    const original=homeownerAnswerText(currentAnswers?.[el.dataset.homeownerAnswer]).trim();
+    if(answer!==original)corrections[el.dataset.homeownerAnswer]=answer;
+  });
+  const reviewed={};
+  document.querySelectorAll("[data-homeowner-reviewed]").forEach(el=>{
+    reviewed[el.dataset.homeownerReviewed]=el.checked;
+  });
+  const review={corrections,reviewed};
+  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","cleaning_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+    review[key]=document.getElementById("hr_"+key)?.value||"";
+  }
+  for(const name of ["two_week","one_month","app_support","cleaning"]){
+    review["aftercare_"+name]=document.getElementById("hr_aftercare_"+name)?.checked===true;
+  }
+  return review;
+}
+
+async function saveHomeownerReview(){
+  const message=document.getElementById("homeownerReviewMessage");
+  const review=collectHomeownerReview();
+  if(message)message.textContent="Saving homeowner review…";
+  try {
+    const response=await fetch("/api/homeowner-review",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({job_id:jobId,review})
+    });
+    const result=await response.json();
+    if(!response.ok||!result.ok)throw Error(result.error||"Save failed");
+    loadedHomeownerReview=result.review||review;
+    if(message)message.textContent="✓ Homeowner review saved separately from the original HEC";
+    return true;
+  }catch(error){
+    console.error("Homeowner review saving failed:",error);
+    if(message)message.textContent="Could not save homeowner review: "+error.message;
+    return false;
+  }
+}
+
+function generateHomeownerEmail(){
+  const review=collectHomeownerReview();
+  const first=(currentJobCustomer.name||"").trim().split(/\s+/)[0]||"there";
+  const lines=[
+    "Subject: Your Solectrics home energy review",
+    "",
+    "Hi "+first+",",
+    "",
+    "Thank you for taking the time to go through your Home Energy Check with Tom. The information you shared has helped us understand your household and what you would like from solar."
+  ];
+  const goals=homeownerCorrectedValue("goals",review).trim();
+  if(goals)lines.push("","You've told us your priorities include: "+goals+".");
+  const hot={
+    timer:"We'll look at how a hot-water timer could shift heating towards sunny hours or cheaper grid electricity.",
+    diverter:"We'll investigate whether a solar diverter or smart hot-water controller is suitable for your home.",
+    heat_pump:"We'll explore whether upgrading to a hot-water heat pump makes sense for your household.",
+    keep:"We've noted your preference to keep your existing hot-water arrangement.",
+    advice:"We'll review your hot-water options and recommend a suitable approach."
+  };
+  if(hot[review.hot_water_interest])lines.push("",hot[review.hot_water_interest]);
+  if(review.smart_energy_interest==="yes")lines.push("","We'll also share information about smart home energy management, including ways to use more of your solar power automatically.");
+  if(review.smart_energy_interest==="maybe")lines.push("","We can share information on smart home energy management if you'd like to explore it.");
+  if(review.tariff_review_interest==="yes")lines.push("","Following your solar installation, we'll offer to compare suitable electricity retailers and tariffs, including electricity import and solar export rates.");
+  if(review.tariff_review_interest==="maybe")lines.push("","A post-solar electricity tariff comparison is another option we can discuss.");
+  if(review.other_interests.trim())lines.push("","Other topics we discussed: "+review.other_interests.trim());
+  lines.push("","As part of our service, we check in approximately two weeks and one month after handover. We're also here to help if you have problems using your solar monitoring app.");
+  if(review.cleaning_interest==="yes")lines.push("","If you would like professional panel cleaning in the future, we can arrange an introduction to Razor Sharp.");
+  if(review.cleaning_interest==="maybe")lines.push("","We can also tell you about our panel-cleaning contact, Razor Sharp, whenever you'd like.");
+  lines.push("","We'll use what we've discussed to prepare your personalised solar quotation.","","Kind regards,","The Solectrics team");
+  const field=document.getElementById("hr_email_draft");
+  if(field){
+    field.value=lines.join("\n");
+    scheduleSectionAutosave({target:field});
+  }
+  const status=document.getElementById("homeownerEmailMessage");
+  if(status)status.textContent="Draft prepared, not sent. Please review before copying.";
+}
+
+async function copyHomeownerEmail(){
+  const draft=document.getElementById("hr_email_draft")?.value||"";
+  const message=document.getElementById("homeownerEmailMessage");
+  if(!draft.trim()){
+    if(message)message.textContent="Prepare a draft first.";
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(draft);
+    if(message)message.textContent="Email draft copied. Paste into your email app and review before sending.";
+  }catch(error){
+    if(message)message.textContent="Copy unavailable. Select the draft text and copy it manually.";
+  }
+}
+let loadedHomeownerReview={};
+
 const siteVisitFieldIds = [
   "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
   "visit_icp", "visit_switchboard", "visit_meter_notes",
