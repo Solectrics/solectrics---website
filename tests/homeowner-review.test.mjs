@@ -154,7 +154,8 @@ test("updated homeowner interests refresh only automatically generated drafts an
   assert.equal(x.requests.at(-1).review.email_draft_reviewed,false);
   assert.equal(x.requests.at(-1).review.email_draft_edited,false);
 });
-\ntest("server validates separate review storage and strips unrelated keys",async()=>{
+
+test("server validates separate review storage and strips unrelated keys",async()=>{
   const mod=new Function(backend.replace(/export async function/g,"async function")+"\nreturn {normalize,onRequestGet,onRequestPost};")();
   const cleaned=mod.normalize({
     corrections:{people:"3",customer_password:"example"},
