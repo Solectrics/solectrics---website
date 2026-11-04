@@ -876,12 +876,46 @@ window.currentAnswers = answers;
     information into System Design. Phone dictation can be used in the notes fields.
   </div>
 
-  <h3>1. Visit and electrical supply</h3>
+  
+  <h3>1. Visit, meter &amp; switchboard</h3>
   <div class="grid">
     <div><label>Visit date</label><input type="date" id="visit_date"></div>
     <div><label>Visited by</label><input type="text" id="visit_by" value="Tom Ratcliffe"></div>
-    <div>
-      <label>Electrical connection</label>
+  </div>
+
+  <h4 style="margin:18px 0 10px;">Meter &amp; load control</h4>
+  <div class="grid">
+    <div><label for="visit_icp">ICP</label><input type="text" id="visit_icp"></div>
+    <div><label for="visit_hw_ripple">Ripple / network load control present?</label>
+      <select id="visit_hw_ripple">
+        <option value="">Not checked</option>
+        <option value="yes">Yes — evidence seen</option>
+        <option value="no">No — verified</option>
+        <option value="uncertain">Uncertain — check meter / control equipment</option>
+      </select>
+    </div>
+    <div><label for="visit_hw_meter_circuit">Hot-water meter / circuit arrangement</label>
+      <select id="visit_hw_meter_circuit">
+        <option value="">Not checked</option>
+        <option value="dedicated">Dedicated controlled circuit identified</option>
+        <option value="uncontrolled">Uncontrolled supply identified</option>
+        <option value="trace">Unable to confirm — further electrical check needed</option>
+        <option value="other">Other arrangement</option>
+      </select>
+    </div>
+    <div><label for="visit_meter_notes">Meter / load-control observations</label><textarea id="visit_meter_notes" rows="2" placeholder="Meter model, receiver or control equipment seen"></textarea></div>
+  </div>
+  <div class="site-photo-grid">
+    <div class="site-photo-item">
+      <label for="visit_photo_meter_ICP">Take a meter / ICP / load-control photograph</label>
+      <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
+      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+    </div>
+  </div>
+
+  <h4 style="margin:18px 0 10px;">Switchboard &amp; supply</h4>
+  <div class="grid">
+    <div><label for="visit_connection_type">Electrical connection</label>
       <select id="visit_connection_type">
         <option value="">Select...</option>
         <option value="single_phase">Single phase</option>
@@ -889,10 +923,8 @@ window.currentAnswers = answers;
         <option value="three_phase">Three phase</option>
       </select>
     </div>
-    <div><label>Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
-    <div><label>ICP</label><input type="text" id="visit_icp"></div>
-    <div>
-      <label>Existing switchboard</label>
+    <div><label for="visit_main_supply">Main switch rating (A)</label><input type="number" id="visit_main_supply"></div>
+    <div><label for="visit_switchboard">Existing switchboard</label>
       <select id="visit_switchboard">
         <option value="">Select...</option>
         <option value="suitable">Appears suitable</option>
@@ -900,27 +932,17 @@ window.currentAnswers = answers;
         <option value="review">Needs further review</option>
       </select>
     </div>
+    <div><label for="visit_supply_notes">Switchboard / supply notes (including earlier combined notes)</label><textarea id="visit_supply_notes" rows="2"></textarea></div>
   </div>
-  <h4 style="margin:18px 0 10px;">Meter and hot-water load control</h4>
-  <div class="grid">
-    <div><label for="visit_hw_ripple">Ripple / network load control present?</label><select id="visit_hw_ripple"><option value="">Not checked</option><option value="yes">Yes — evidence seen</option><option value="no">No — verified</option><option value="uncertain">Uncertain — check meter / control equipment</option></select></div>
-    <div><label for="visit_hw_meter_circuit">Hot-water meter / circuit arrangement</label><select id="visit_hw_meter_circuit"><option value="">Not checked</option><option value="dedicated">Dedicated controlled circuit identified</option><option value="uncontrolled">Uncontrolled supply identified</option><option value="trace">Unable to confirm — further electrical check needed</option><option value="other">Other arrangement</option></select></div>
-  </div>
-  <div style="margin-top:16px;"><label>Meter / switchboard / supply notes</label><textarea id="visit_supply_notes"></textarea></div>
   <div class="site-photo-grid">
     <div class="site-photo-item">
-  <label for="visit_photo_meter_ICP">Take a meter / ICP / load-control photograph</label>
-  <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div>
-    <div class="site-photo-item">
-  <label for="visit_photo_switchboard">Take a switchboard photograph</label>
-  <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div>
+      <label for="visit_photo_switchboard">Take a switchboard photograph</label>
+      <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
+      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+    </div>
   </div>
 
-  <h3>2. Hot Water &amp; Heating</h3>
+<h3>2. Hot Water &amp; Heating</h3>
   <div class="placeholder">
     <strong>From the customer's Home Energy Check (unverified):</strong>
     Hot water: ${escapeHtml(String(answers.hotWater || "Not supplied"))};
@@ -3295,7 +3317,7 @@ async function saveAssessment() {
 
 const siteVisitFieldIds = [
   "visit_date", "visit_by", "visit_connection_type", "visit_main_supply",
-  "visit_icp", "visit_switchboard",
+  "visit_icp", "visit_switchboard", "visit_meter_notes",
   "visit_supply_notes", "visit_roof_length", "visit_roof_width",
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
@@ -3478,6 +3500,7 @@ function applySiteVisitToSystemDesign(visit) {
   });
 
   const environmentNotes = [
+    visit.visit_meter_notes && `Meter / load control: ${visit.visit_meter_notes}`,
     visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
     visit.visit_inverter_location && `Proposed inverter and battery location: ${visit.visit_inverter_location}`,
     visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
