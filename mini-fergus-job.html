@@ -142,6 +142,11 @@
     .hr-tom-tip p:last-child { margin-bottom:0; }
     .hr-help .placeholder { font-size:13px; margin:0 0 12px; }
     .hr-help label { display:block; font-size:14px; font-weight:700; }
+    .hr-multi-choice { margin:10px 0 14px; padding:0; border:0; min-width:0; }
+    .hr-multi-choice legend { font-weight:700; font-size:14px; }
+    .hr-multi-choice > label { display:flex; align-items:flex-start; gap:9px; font-size:14px; font-weight:500; padding:7px 0; }
+    .hr-multi-choice input[type="checkbox"] { flex:0 0 20px; width:20px; height:20px; margin:0; accent-color:#173f3f; }
+    .hr-multi-choice .placeholder { margin:6px 0 10px; }
     .hr-original { font-size:13px; color:#69766e; margin:5px 0 8px; overflow-wrap:anywhere; }
     .hr-checklist { display:grid; gap:12px; margin:12px 0; }
     .hr-checklist label { display:flex; align-items:flex-start; gap:9px; font-size:14px; }
@@ -3389,6 +3394,13 @@ function homeownerCorrectedValue(key,review){
   return Object.prototype.hasOwnProperty.call(corrections,key) ? String(corrections[key]) : homeownerAnswerText(currentAnswers?.[key]);
 }
 
+function homeownerHotWaterChoices(value){
+  const allowed=new Set(["timer","diverter","heat_pump","keep","advice"]);
+  // Older saved Homeowner Reviews contain one string; new reviews contain a list.
+  const selections=Array.isArray(value)?value:(typeof value==="string"?[value]:[]);
+  return [...new Set(selections.filter(choice=>allowed.has(choice)))];
+}
+
 function homeownerReviewHelpFields(groupKey){
   // Place the homeowner's options immediately beside the relevant original HEC answers.
   // Keep IDs unchanged so existing autosave, separate review storage and Office email work.
@@ -3401,15 +3413,15 @@ function homeownerReviewHelpFields(groupKey){
         <p><strong>Don't promise savings without checking:</strong> the actual hot-water system, solar export value, retailer tariff, cylinder capacity and existing ripple/controlled-load arrangement. Any timer or controller needs an electrical suitability check, and safe hot-water storage temperatures must be maintained.</p>
       </div>
       <p class="placeholder">We can explore keeping the existing system, adding a timer or solar diverter, or upgrading to heat-pump hot water if appropriate.</p>
-      <label for="hr_hot_water_interest">What would you like us to investigate for hot water?</label>
-      <select id="hr_hot_water_interest">
-        <option value="">Not discussed</option>
-        <option value="timer">Timer / smarter scheduling</option>
-        <option value="diverter">Solar diverter / smart controller</option>
-        <option value="heat_pump">Explore a hot-water heat pump</option>
-        <option value="keep">Keep existing arrangement</option>
-        <option value="advice">Would like Solectrics' advice</option>
-      </select>
+      <fieldset class="hr-multi-choice">
+        <legend>What would you like us to investigate for hot water?</legend>
+        <p class="placeholder">Tick all that apply.</p>
+        <label><input type="checkbox" data-hot-water-interest value="timer"> Timer / smarter scheduling</label>
+        <label><input type="checkbox" data-hot-water-interest value="diverter"> Solar diverter / smart controller</label>
+        <label><input type="checkbox" data-hot-water-interest value="heat_pump"> Explore a hot-water heat pump</label>
+        <label><input type="checkbox" data-hot-water-interest value="keep"> Keep existing arrangement</label>
+        <label><input type="checkbox" data-hot-water-interest value="advice"> Would like Solectrics' advice</label>
+      </fieldset>
       <label for="hr_hot_water_notes">Hot-water conversation notes</label>
       <textarea id="hr_hot_water_notes" rows="2" placeholder="Customer preferences and practical details"></textarea>
     </div>`;
@@ -3488,7 +3500,11 @@ function renderHomeownerReview(){
     </div>
   </details>`;
   root.innerHTML=result;
-  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+  const selectedHotWater=homeownerHotWaterChoices(review.hot_water_interest);
+  document.querySelectorAll("[data-hot-water-interest]").forEach(el=>{
+    el.checked=selectedHotWater.includes(el.value);
+  });
+  for(const key of ["smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
     const el=document.getElementById("hr_"+key);
     if(el) el.value=review[key]||"";
   }
@@ -3538,7 +3554,9 @@ function collectHomeownerReview(){
     reviewed[el.dataset.homeownerReviewed]=el.checked;
   });
   const review={corrections,reviewed};
-  for(const key of ["hot_water_interest","smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
+  review.hot_water_interest=Array.from(document.querySelectorAll("[data-hot-water-interest]"))
+    .filter(el=>el.checked).map(el=>el.value);
+  for(const key of ["smart_energy_interest","tariff_review_interest","hot_water_notes","other_interests","homeowner_notes","email_draft"]){
     review[key]=document.getElementById("hr_"+key)?.value||"";
   }
   for(const name of ["two_week","one_month","app_support","cleaning"]){
@@ -3552,7 +3570,7 @@ function collectHomeownerReview(){
 function hasHomeownerConversation(review){
   return Object.values(review.reviewed||{}).some(Boolean) ||
     Object.keys(review.corrections||{}).length>0 ||
-    Boolean(review.hot_water_interest||review.smart_energy_interest||review.tariff_review_interest) ||
+    Boolean(homeownerHotWaterChoices(review.hot_water_interest).length || review.smart_energy_interest || review.tariff_review_interest) ||
     Boolean(String(review.hot_water_notes||"").trim()||String(review.other_interests||"").trim()||String(review.homeowner_notes||"").trim()) ||
     ["two_week","one_month","app_support","cleaning"].some(key=>review["aftercare_"+key]===true);
 }
@@ -3635,7 +3653,9 @@ function buildHomeownerEmail(review){
     keep:"We've noted your preference to keep your existing hot-water arrangement.",
     advice:"We'll review your hot-water options and recommend a suitable approach."
   };
-  if(hot[review.hot_water_interest])lines.push("",hot[review.hot_water_interest]);
+  for(const choice of homeownerHotWaterChoices(review.hot_water_interest)){
+    if(hot[choice])lines.push("",hot[choice]);
+  }
   if(review.smart_energy_interest==="yes")lines.push("","We'll also share information about smart home energy management, including ways to use more of your solar power automatically.");
   if(review.smart_energy_interest==="maybe")lines.push("","We can share information on smart home energy management if you'd like to explore it.");
   if(review.tariff_review_interest==="yes")lines.push("","Following your solar installation, we'll offer to compare suitable electricity retailers and tariffs, including electricity import and solar export rates.");
@@ -5606,7 +5626,7 @@ function scheduleSectionAutosave(event) {
       autosaveBusy.delete(key);
       if (autosavePending.has(key)) {
         autosavePending.delete(key);
-        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType", homeowner:"#hr_hot_water_interest" }[key];
+        const selector = { general:"#general_job_description", assessment:"#panel_wattage", siteVisit:"#visit_date", systemDesign:"#design_connection_type", supplierPricing:"#supplier_name", costing:"#costingOptionName", jobType:"#jobType", homeowner:"[data-hot-water-interest]" }[key];
         const retryTarget = document.querySelector(selector);
         if (retryTarget) scheduleSectionAutosave({ target: retryTarget });
       }
