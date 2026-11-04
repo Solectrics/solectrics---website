@@ -110,3 +110,26 @@ test("future EV interest prefills draft quote only, preserving manual or sent te
   prefill();
   assert.equal(fields.quote_inverter.value, "Approved description");
 });
+
+
+test("one shared inverter/battery photo and 900 mm check; legacy notes survive", () => {
+  const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
+  assert.ok(visit.includes('id="visit_inverter_location"'));
+  assert.ok(visit.includes('id="visit_clearance_900mm"'));
+  assert.ok(visit.includes('id="visit_photo_inverter_location"'));
+  assert.ok(!visit.includes('id="visit_photo_battery_location"'));
+  assert.ok(!visit.includes('id="visit_battery_location"'));
+  assert.ok(visit.includes('900 mm side clearance confirmed?'));
+  const fields = new Function(segment("const siteVisitFieldIds = [", "let loadedSiteVisit = {};") +
+    "\nreturn siteVisitFieldIds;")();
+  assert.ok(fields.includes("visit_clearance_900mm"));
+  assert.ok(!fields.includes("visit_battery_location"));
+  assert.ok(html.includes("const visit = { ...loadedSiteVisit };"));
+  const followups = new Function(
+    segment("function siteVisitFollowupItems(visit) {", "function renderSiteVisitFollowups()") +
+    "\nreturn siteVisitFollowupItems;"
+  )();
+  assert.ok(followups({visit_clearance_900mm:"no"}).some(x=>x.includes("900 mm")));
+  assert.ok(followups({visit_inverter_location:"Garage wall"}).some(x=>x.includes("not checked")));
+  assert.ok(!followups({visit_inverter_location:"Garage wall",visit_clearance_900mm:"yes"}).some(x=>x.includes("900 mm")));
+});
