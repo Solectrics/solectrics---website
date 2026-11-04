@@ -1005,19 +1005,23 @@ window.currentAnswers = answers;
 
   <h3>7. Locations and dictated notes</h3>
   <div class="grid">
-    <div><label>Possible inverter location</label><textarea id="visit_inverter_location"></textarea>
+    <div>
+      <label for="visit_inverter_location">Proposed inverter and battery location</label>
+      <textarea id="visit_inverter_location" rows="2" placeholder="Position, mounting surface and access"></textarea>
+      <p id="visit_legacy_battery_note" class="placeholder" hidden></p>
       <div class="site-photo-grid"><div class="site-photo-item">
-  <label for="visit_photo_inverter_location">Take an inverter location photograph</label>
-  <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: inverter location">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div></div>
+        <label for="visit_photo_inverter_location">Take one inverter / battery location photograph</label>
+        <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: combined inverter and battery location">
+        <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+      </div></div>
     </div>
-    <div><label>Possible battery location</label><textarea id="visit_battery_location"></textarea>
-      <div class="site-photo-grid"><div class="site-photo-item">
-  <label for="visit_photo_battery_location">Take a battery location photograph</label>
-  <input type="file" id="visit_photo_battery_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: battery location">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
-</div></div>
+    <div>
+      <label for="visit_clearance_900mm">900 mm side clearance confirmed?</label>
+      <select id="visit_clearance_900mm">
+        <option value="">Not checked</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
     </div>
     <div>
       <label for="visit_inverter_mount">How will the inverter be mounted?</label>
@@ -3293,7 +3297,7 @@ const siteVisitFieldIds = [
   "visit_roof_pitch", "visit_roof_orientation", "visit_roof_material",
   "visit_roof_access",
   "visit_roof_shading", "visit_roof_notes", "visit_inverter_location",
-  "visit_battery_location", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
+  "visit_clearance_900mm", "visit_cable_route", "visit_cable_length_m", "visit_inverter_mount", "visit_inverter_pad", "visit_access_notes",
   "visit_general_notes", "visit_funding_interest", "visit_funding_bank",
   "visit_funding_links",
   "visit_hw_system", "visit_hw_cylinder_l", "visit_hw_element_kw", "visit_hw_condition", "visit_heating_arrangement", "visit_heating_notes",
@@ -3319,6 +3323,15 @@ function updateInverterPadVisibility() {
   }
 }
 
+
+function updateLegacyBatteryLocationNote(visit) {
+  const note = document.getElementById("visit_legacy_battery_note");
+  if (!note) return;
+  const old = String(visit.visit_battery_location || "").trim();
+  const current = String(document.getElementById("visit_inverter_location")?.value || "").trim();
+  note.hidden = !old || old === current;
+  note.textContent = note.hidden ? "" : "Previous battery-location note (retained for review): " + old;
+}
 
 function updateEvDetailsVisibility() {
   const el = document.getElementById("visit_ev_details");
@@ -3346,6 +3359,8 @@ function siteVisitFollowupItems(visit) {
       else if (answer !== "yes" && answer !== "not_applicable") items.push("Electrical: " + label + " — not checked");
     }
   }
+  add(visit.visit_clearance_900mm === "no", "Electrical / design: 900 mm side clearance not available — review location");
+  add(Boolean(visit.visit_inverter_location) && !visit.visit_clearance_900mm, "Site visit: 900 mm side clearance not checked");
   add(visit.visit_ev_future_interest === "undecided", "Office: EV charging installation / upgrade enquiry undecided");
   return items;
 }
@@ -3461,10 +3476,11 @@ function applySiteVisitToSystemDesign(visit) {
 
   const environmentNotes = [
     visit.visit_roof_access && `Roof access: ${visit.visit_roof_access}`,
-    visit.visit_inverter_location && `Possible inverter location: ${visit.visit_inverter_location}`,
+    visit.visit_inverter_location && `Proposed inverter and battery location: ${visit.visit_inverter_location}`,
     visit.visit_inverter_mount && `Inverter mounting: ${{wall:"wall-mounted",ground:"ground-mounted / freestanding",other:"other / to be determined"}[visit.visit_inverter_mount] || visit.visit_inverter_mount}`,
     visit.visit_inverter_mount === "ground" && visit.visit_inverter_pad && `Ground inverter pad / base needed: ${{yes:"Yes",no:"No",review:"Needs design confirmation"}[visit.visit_inverter_pad] || visit.visit_inverter_pad}`,
-    visit.visit_battery_location && `Possible battery location: ${visit.visit_battery_location}`,
+    visit.visit_battery_location && visit.visit_battery_location !== visit.visit_inverter_location && `Older battery location note (verify): ${visit.visit_battery_location}`,
+    visit.visit_clearance_900mm && `900 mm side clearance confirmed: ${visit.visit_clearance_900mm === "yes" ? "Yes" : "No — needs review"}`,
     visit.visit_cable_route && `Likely cable route: ${visit.visit_cable_route}`,
     visit.visit_cable_length_m && `Approximate cable length: ${visit.visit_cable_length_m} m`,
     visit.visit_access_notes && `Access / safety: ${visit.visit_access_notes}`,
@@ -3534,6 +3550,13 @@ async function loadSiteVisit() {
       const field = document.getElementById(id);
       if (field) field.checked = Boolean(data.site_visit[id]);
     });
+    // Older site visits may have only a battery-location note. Show it in the
+    // new shared field without discarding the original stored value.
+    const combinedLocation = document.getElementById("visit_inverter_location");
+    if (combinedLocation && !combinedLocation.value && data.site_visit.visit_battery_location) {
+      combinedLocation.value = data.site_visit.visit_battery_location;
+    }
+    updateLegacyBatteryLocationNote(data.site_visit);
     updateInverterPadVisibility();
     updateEvDetailsVisibility();
     renderSiteVisitFollowups();
@@ -5202,6 +5225,7 @@ document.addEventListener("change", event => {
     updateEvDetailsVisibility();
     renderSiteVisitFollowups();
     updateLinkedEvRequest();
+    updateLegacyBatteryLocationNote(collectSiteVisit());
     prefillQuoteFromDesign();
   }
 });
