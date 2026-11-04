@@ -18,7 +18,6 @@ function demo(){
     homeownerEmailRecipient:{textContent:""},
     hr_email_draft:{value:""},
     hr_email_reviewed:{checked:false},
-    hr_hot_water_interest:{value:"timer"},
     hr_smart_energy_interest:{value:"yes"},
     hr_tariff_review_interest:{value:"yes"},
     hr_hot_water_notes:{value:""},
@@ -30,12 +29,16 @@ function demo(){
     {dataset:{homeownerAnswer:"hotWater"},value:"Electric hot-water cylinder"}
   ];
   const reviewed=[{dataset:{homeownerReviewed:"household"},checked:true}];
+  const hotChoices=["timer","diverter","heat_pump","keep","advice"]
+    .map(value=>({value,checked:value==="timer"}));
   const doc={
     getElementById:id=>fields[id]||null,
-    querySelectorAll:q=>q==="[data-homeowner-answer]"?rows:q==="[data-homeowner-reviewed]"?reviewed:[]
+    querySelectorAll:q=>q==="[data-homeowner-answer]"?rows:
+      q==="[data-homeowner-reviewed]"?reviewed:
+      q==="[data-hot-water-interest]"?hotChoices:[]
   };
   const js=fragment("const homeownerReviewGroups = ","const siteVisitFieldIds = [");
-  const code=new Function("currentAnswers","currentJobCustomer","document","scheduleSectionAutosave","escapeHtml","fetch","navigator","console","window","jobId",js+"\nreturn {renderHomeownerReview, collectHomeownerReview, generateHomeownerEmail,saveHomeownerReview,loadHomeownerReview,copyHomeownerEmail,setEditedForTest:value=>{homeownerEmailEdited=value},getEditedForTest:()=>homeownerEmailEdited};");
+  const code=new Function("currentAnswers","currentJobCustomer","document","scheduleSectionAutosave","escapeHtml","fetch","navigator","console","window","jobId",js+"\nreturn {renderHomeownerReview, collectHomeownerReview, generateHomeownerEmail,saveHomeownerReview,loadHomeownerReview,copyHomeownerEmail,setLoadedReview:value=>{loadedHomeownerReview=value},setEditedForTest:value=>{homeownerEmailEdited=value},getEditedForTest:()=>homeownerEmailEdited};");
   const api=code(
     {goals:["Lower my bills"],hotWater:"Electric hot-water cylinder",people:"2",bills:{summer:{retailer:"ExamplePower"}}},
     {name:"Demo Customer",email:"demo@example.invalid"},doc,
@@ -51,7 +54,7 @@ function demo(){
     {confirm:()=>true},
     "42"
   );
-  return {api,fields,rows,calls,requests,copied};
+  return {api,fields,rows,hotChoices,calls,requests,copied};
 }
 
 test("Homeowner Review is a separate solar workspace; original HEC remains intact",()=>{
@@ -77,13 +80,13 @@ test("HEC answers render readably, never change their source, and corrections ar
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("Electric hot-water cylinder"));
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("Summer"));
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("ExamplePower"));
-  x.fields.hr_hot_water_interest.value="timer";
+  x.hotChoices[0].checked=true;
   x.rows[0].value="Reduce bills and improve backup";
   const data=x.api.collectHomeownerReview();
   assert.equal(data.corrections.goals,"Reduce bills and improve backup");
   assert.ok(!Object.hasOwn(data.corrections,"hotWater"));
   assert.equal(data.reviewed.household,true);
-  assert.equal(data.hot_water_interest,"timer");
+  assert.deepEqual(data.hot_water_interest,["timer"]);
 });
 
 test("what we can help with appears within the matching HEC answers sections",()=>{
@@ -91,7 +94,7 @@ test("what we can help with appears within the matching HEC answers sections",()
   x.api.renderHomeownerReview();
   const markup=x.fields.homeownerReviewQuestions.innerHTML;
   const sections=[
-    ["2. Existing hot water","3. Appliances and other electrical loads",["hr_hot_water_interest","hr_hot_water_notes"]],
+    ["2. Existing hot water","3. Appliances and other electrical loads",["hr_hot_water_notes"]],
     ["3. Appliances and other electrical loads","4. Solar goals and future plans",["hr_smart_energy_interest"]],
     ["4. Solar goals and future plans","5. Their understanding of the roof",["hr_other_interests","hr_homeowner_notes"]],
     ["6. Electricity bills and current retailer",null,["hr_tariff_review_interest"]]
@@ -129,8 +132,34 @@ test("Tom sees a qualified hot-water savings reminder within HEC Hot Water revie
   assert.ok(block.includes("sometimes late at night"));
   assert.ok(block.includes("ripple/controlled-load"));
   assert.ok(block.includes("safe hot-water storage temperatures"));
-  assert.ok(block.includes('id="hr_hot_water_interest"'));
+  assert.equal(block.split("data-hot-water-interest").length-1,5);
+  assert.ok(block.includes("Tick all that apply."));
+  assert.ok(!block.includes('<select id="hr_hot_water_interest">'));
   assert.equal(markup.split("Tom — explain to homeowner").length-1,1);
+});
+
+test("multiple hot-water choices are saved and all included in the automatic office email",async()=>{
+  const x=demo();
+  x.hotChoices.find(c=>c.value==="diverter").checked=true;
+  x.hotChoices.find(c=>c.value==="heat_pump").checked=true;
+  const review=x.api.collectHomeownerReview();
+  assert.deepEqual(review.hot_water_interest,["timer","diverter","heat_pump"]);
+  const ok=await x.api.saveHomeownerReview();
+  assert.equal(ok,true);
+  assert.deepEqual(x.requests.at(-1).review.hot_water_interest,["timer","diverter","heat_pump"]);
+  const email=x.fields.hr_email_draft.value;
+  assert.ok(email.includes("hot-water timer"));
+  assert.ok(email.includes("solar diverter"));
+  assert.ok(email.includes("hot-water heat pump"));
+  assert.equal(x.copied.length,0);
+});
+
+test("single selection saved by older version restores as one ticked checkbox",()=>{
+  const x=demo();
+  x.api.setLoadedReview({hot_water_interest:"diverter",reviewed:{hotwater:true}});
+  x.api.renderHomeownerReview();
+  assert.deepEqual(x.hotChoices.filter(c=>c.checked).map(c=>c.value),["diverter"]);
+  assert.deepEqual(x.api.collectHomeownerReview().hot_water_interest,["diverter"]);
 });
 
 test("email draft reflects opted-in interests but doesn't send",()=>{
@@ -208,17 +237,19 @@ test("server validates separate review storage and strips unrelated keys",async(
   const cleaned=mod.normalize({
     corrections:{people:"3",customer_password:"example"},
     reviewed:{household:true,secret:true},
-    hot_water_interest:"timer",smart_energy_interest:"yes",
+    hot_water_interest:["timer","diverter"],smart_energy_interest:"yes",
     tariff_review_interest:"yes",aftercare_one_month:true,
     email_draft_edited:true,email_draft_reviewed:true
   });
   assert.deepEqual(cleaned.corrections,{people:"3"});
   assert.deepEqual(cleaned.reviewed,{household:true});
-  assert.equal(cleaned.hot_water_interest,"timer");
+  assert.deepEqual(cleaned.hot_water_interest,["timer","diverter"]);
   assert.equal(cleaned.aftercare_one_month,true);
   assert.equal(cleaned.email_draft_edited,true);
   assert.equal(cleaned.email_draft_reviewed,true);
-  assert.equal(mod.normalize({hot_water_interest:"malicious"}).hot_water_interest,"");
+  assert.deepEqual(mod.normalize({hot_water_interest:"malicious"}).hot_water_interest,[]);
+  assert.deepEqual(mod.normalize({hot_water_interest:"timer"}).hot_water_interest,["timer"]);
+  assert.deepEqual(mod.normalize({hot_water_interest:["timer","timer","fake","heat_pump"]}).hot_water_interest,["timer","heat_pump"]);
   let record=null,sqls=[];
   const db={
     prepare(sql){
