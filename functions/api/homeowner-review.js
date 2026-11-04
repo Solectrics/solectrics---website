@@ -48,6 +48,8 @@ function normalize(input) {
   result.hot_water_notes = string(input.hot_water_notes,2000);
   result.other_interests = string(input.other_interests,2000);
   result.email_draft = string(input.email_draft,10000);
+  result.email_draft_edited = checked(input.email_draft_edited);
+  result.email_draft_reviewed = checked(input.email_draft_reviewed);
   result.aftercare_two_week = checked(input.aftercare_two_week);
   result.aftercare_one_month = checked(input.aftercare_one_month);
   result.aftercare_app_support = checked(input.aftercare_app_support);
