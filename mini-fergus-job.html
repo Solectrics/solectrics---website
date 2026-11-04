@@ -3403,13 +3403,14 @@ function renderHomeownerReview(){
   if(!root) return;
   const review=loadedHomeownerReview||{};
   let result="";
+  let groupIndex=0;
   for(const group of homeownerReviewGroups){
     const entries=group.fields.filter(([key])=>{
       const answer=currentAnswers?.[key];
       return (answer!==undefined && answer!==null && answer!=="" && (!Array.isArray(answer) || answer.length)) ||
         Object.prototype.hasOwnProperty.call(review.corrections||{},key);
     });
-    result+=`<details class="hr-group" open>
+    result+=`<details class="hr-group" ${groupIndex++===0 ? "open" : ""}>
       <summary>${escapeHtml(group.title)}</summary>
       <div class="hr-body">${entries.length ? entries.map(([key,label])=>{
         const original=homeownerAnswerText(currentAnswers?.[key]);
