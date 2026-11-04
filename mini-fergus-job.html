@@ -3461,7 +3461,9 @@ function renderHomeownerReview(){
     const el=document.getElementById("hr_aftercare_"+name);
     if(el) el.checked=review["aftercare_"+name]===true;
   }
-  homeownerEmailEdited=review.email_draft_edited===true;
+  // Preserve any email drafted in an earlier version that lacks an edit marker.
+  homeownerEmailEdited=review.email_draft_edited===true ||
+    (Boolean(review.email_draft) && !Object.prototype.hasOwnProperty.call(review,"email_draft_edited"));
   const emailReviewed=document.getElementById("hr_email_reviewed");
   if(emailReviewed) emailReviewed.checked=review.email_draft_reviewed===true;
   renderOfficeEmailState();
@@ -3479,8 +3481,11 @@ async function loadHomeownerReview(){
   }catch(error){
     console.error("Homeowner review loading failed:",error);
     if(message)message.textContent="Could not load saved homeowner review. Do not enter customer notes until connected.";
-    const section=document.getElementById("homeownerReviewSection");
-    section?.querySelectorAll("input, select, textarea, button").forEach(el=>el.disabled=true);
+    const officeMessage=document.getElementById("homeownerEmailMessage");
+    if(officeMessage)officeMessage.textContent="Could not load draft. Office editing is disabled until the connection is restored.";
+    for(const sectionId of ["homeownerReviewSection","homeownerEmailOfficeSection"]){
+      document.getElementById(sectionId)?.querySelectorAll("input, select, textarea, button").forEach(el=>el.disabled=true);
+    }
     const root=document.getElementById("homeownerReviewQuestions");
     if(root)root.textContent="Unable to load the homeowner review. Try reloading Job Hub.";
   }
