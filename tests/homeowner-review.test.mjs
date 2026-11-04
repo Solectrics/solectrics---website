@@ -18,7 +18,6 @@ function demo(){
     hr_hot_water_interest:{value:"timer"},
     hr_smart_energy_interest:{value:"yes"},
     hr_tariff_review_interest:{value:"yes"},
-    hr_cleaning_interest:{value:"no"},
     hr_hot_water_notes:{value:""},
     hr_other_interests:{value:""},
     hr_homeowner_notes:{value:""}
@@ -84,6 +83,8 @@ test("email draft reflects opted-in interests but doesn't send",()=>{
   assert.ok(body.includes("two weeks and one month"));
   assert.ok(body.includes("solar monitoring app"));
   assert.ok(!body.includes("Razor Sharp"));
+  assert.ok(!html.includes('id="hr_cleaning_interest"'));
+  assert.ok(html.includes('id="hr_aftercare_cleaning"'));
   assert.equal(x.calls.length,1);
   assert.ok(!html.includes('fetch("/api/send-homeowner-email"'));
 });
