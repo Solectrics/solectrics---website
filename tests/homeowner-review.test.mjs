@@ -35,7 +35,7 @@ function demo(){
     querySelectorAll:q=>q==="[data-homeowner-answer]"?rows:q==="[data-homeowner-reviewed]"?reviewed:[]
   };
   const js=fragment("const homeownerReviewGroups = ","const siteVisitFieldIds = [");
-  const code=new Function("currentAnswers","currentJobCustomer","document","scheduleSectionAutosave","escapeHtml","fetch","navigator","console","window",js+"\nreturn {renderHomeownerReview, collectHomeownerReview, generateHomeownerEmail,saveHomeownerReview,loadHomeownerReview,copyHomeownerEmail,setEditedForTest:value=>{homeownerEmailEdited=value},getEditedForTest:()=>homeownerEmailEdited};");
+  const code=new Function("currentAnswers","currentJobCustomer","document","scheduleSectionAutosave","escapeHtml","fetch","navigator","console","window","jobId",js+"\nreturn {renderHomeownerReview, collectHomeownerReview, generateHomeownerEmail,saveHomeownerReview,loadHomeownerReview,copyHomeownerEmail,setEditedForTest:value=>{homeownerEmailEdited=value},getEditedForTest:()=>homeownerEmailEdited};");
   const api=code(
     {goals:["Lower my bills"],hotWater:"Electric hot-water cylinder",people:"2",bills:{summer:{retailer:"ExamplePower"}}},
     {name:"Demo Customer",email:"demo@example.invalid"},doc,
@@ -48,7 +48,8 @@ function demo(){
     },
     {clipboard:{writeText:async value=>{copied.push(value)}}},
     {error:()=>{}},
-    {confirm:()=>true}
+    {confirm:()=>true},
+    "42"
   );
   return {api,fields,rows,calls,requests,copied};
 }
