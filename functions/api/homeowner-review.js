@@ -16,8 +16,7 @@ const GROUPS = new Set(["household","hotwater","loads","plans","roof","bills"]);
 const CHOICES = {
   hot_water_interest: new Set(["","timer","diverter","heat_pump","keep","advice"]),
   smart_energy_interest: new Set(["","yes","maybe","no"]),
-  tariff_review_interest: new Set(["","yes","maybe","no"]),
-  cleaning_interest: new Set(["","yes","maybe","no"])
+  tariff_review_interest: new Set(["","yes","maybe","no"])
 };
 
 function fail(message, status = 400) {
