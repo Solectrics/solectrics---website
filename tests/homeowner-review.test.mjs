@@ -86,6 +86,35 @@ test("HEC answers render readably, never change their source, and corrections ar
   assert.equal(data.hot_water_interest,"timer");
 });
 
+test("what we can help with appears within the matching HEC answers sections",()=>{
+  const x=demo();
+  x.api.renderHomeownerReview();
+  const markup=x.fields.homeownerReviewQuestions.innerHTML;
+  const sections=[
+    ["2. Existing hot water","3. Appliances and other electrical loads",["hr_hot_water_interest","hr_hot_water_notes"]],
+    ["3. Appliances and other electrical loads","4. Solar goals and future plans",["hr_smart_energy_interest"]],
+    ["4. Solar goals and future plans","5. Their understanding of the roof",["hr_other_interests","hr_homeowner_notes"]],
+    ["6. Electricity bills and current retailer",null,["hr_tariff_review_interest"]]
+  ];
+  for(const [heading,next,fieldIds] of sections){
+    const at=markup.indexOf(heading);
+    assert.ok(at>=0,"Missing HEC group: "+heading);
+    const last=next?markup.indexOf(next,at+heading.length):markup.length;
+    assert.ok(last>at,"Incorrect HEC section order: "+heading);
+    const section=markup.slice(at,last);
+    for(const id of fieldIds){
+      assert.ok(section.includes('id="'+id+'"'),"Field "+id+" should be inside "+heading);
+      assert.equal(markup.split('id="'+id+'"').length-1,1);
+    }
+    assert.ok(section.includes("Reviewed with homeowner"));
+  }
+  assert.ok(markup.indexOf("Original HEC:")<markup.indexOf("What Solectrics can help with"));
+  const beforeAftercare=fragment('<section class="card solar-only homeowner-review"','<section class="card solar-only" data-job-workspace="design"');
+  assert.ok(beforeAftercare.includes("Before leaving — explain the Solectrics aftercare service"));
+  assert.ok(!beforeAftercare.includes('<h3>Making more of their solar</h3>'));
+  assert.ok(html.includes('id="homeownerEmailOfficeSection"'));
+});
+
 test("email draft reflects opted-in interests but doesn't send",()=>{
   const x=demo();
   x.api.generateHomeownerEmail();
