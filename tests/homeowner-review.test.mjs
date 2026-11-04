@@ -64,6 +64,7 @@ test("HEC answers render readably, never change their source, and corrections ar
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("Electric hot-water cylinder"));
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("Summer"));
   assert.ok(x.fields.homeownerReviewQuestions.innerHTML.includes("ExamplePower"));
+  x.fields.hr_hot_water_interest.value="timer";
   x.rows[0].value="Reduce bills and improve backup";
   const data=x.api.collectHomeownerReview();
   assert.equal(data.corrections.goals,"Reduce bills and improve backup");
