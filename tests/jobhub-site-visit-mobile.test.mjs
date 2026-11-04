@@ -136,7 +136,7 @@ test("one shared inverter/battery photo and 900 mm check; legacy notes survive",
 
 test("ripple and hot-water circuit checks are together at meter inspection, with no duplicate questions", () => {
   const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
-  const meter = visit.slice(visit.indexOf('<h3>1. Visit and electrical supply'), visit.indexOf('<h3>2. Hot Water &amp; Heating'));
+  const meter = visit.slice(visit.indexOf('<h3>1. Visit, meter &amp; switchboard'), visit.indexOf('<h3>2. Hot Water &amp; Heating'));
   const otherHotWater = visit.slice(visit.indexOf('<h3>3. Hot-Water Wiring'), visit.indexOf('<h3>4. Other Electrical Loads'));
   assert.ok(meter.includes('id="visit_hw_ripple"'));
   assert.ok(meter.includes('id="visit_hw_meter_circuit"'));
@@ -146,4 +146,24 @@ test("ripple and hot-water circuit checks are together at meter inspection, with
   assert.ok(!otherHotWater.includes('id="visit_hw_meter_circuit"'));
   assert.equal((visit.match(/id="visit_hw_ripple"/g) || []).length, 1);
   assert.equal((visit.match(/id="visit_hw_meter_circuit"/g) || []).length, 1);
+});
+
+test("meter and switchboard questions, notes and camera inputs each form one cluster", () => {
+  const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
+  const section = visit.slice(visit.indexOf('<h3>1. Visit, meter'),visit.indexOf('<h3>2. Hot Water'));
+  const meter = section.slice(section.indexOf('Meter &amp; load control'),section.indexOf('Switchboard &amp; supply'));
+  const board = section.slice(section.indexOf('Switchboard &amp; supply'));
+  for(const id of ["visit_icp","visit_hw_ripple","visit_hw_meter_circuit","visit_meter_notes","visit_photo_meter_ICP"]) {
+    assert.ok(meter.includes('id="' + id + '"'),"meter field missing " + id);
+    assert.ok(!board.includes('id="' + id + '"'),"meter field duplicated in switchboard");
+  }
+  for(const id of ["visit_connection_type","visit_main_supply","visit_switchboard","visit_supply_notes","visit_photo_switchboard"]) {
+    assert.ok(board.includes('id="' + id + '"'),"switchboard field missing " + id);
+    assert.ok(!meter.includes('id="' + id + '"'),"switchboard field duplicated in meter");
+  }
+  assert.ok(meter.indexOf('id="visit_photo_meter_ICP"') > meter.indexOf('id="visit_meter_notes"'));
+  assert.ok(board.indexOf('id="visit_photo_switchboard"') > board.indexOf('id="visit_supply_notes"'));
+  const ids = new Function(segment("const siteVisitFieldIds = [", "let loadedSiteVisit = {};") +
+    "\nreturn siteVisitFieldIds;")();
+  assert.ok(ids.includes("visit_meter_notes"));
 });
