@@ -139,6 +139,9 @@
     .hr-checklist { display:grid; gap:12px; margin:12px 0; }
     .hr-checklist label { display:flex; align-items:flex-start; gap:9px; font-size:14px; }
     .hr-checklist input { flex-shrink:0; min-width:18px; min-height:18px; margin-top:2px; }
+    .homeowner-review .hr-reviewed { display:flex; align-items:center; gap:8px; margin:10px 0 16px; }
+    .homeowner-review .hr-reviewed input[type="checkbox"] { min-width:18px; min-height:18px; width:auto; margin:0; }
+    #homeownerEmailState { font-weight:700; color:#17635b; }
     .hr-bills { border:1px solid #e7e0d5; border-radius:12px; padding:14px; margin-top:16px; background:#faf9f5; }
     .hr-bills p { margin:6px 0; font-size:14px; }
     .site-visit input:not([type="checkbox"]),
@@ -749,12 +752,8 @@ window.currentAnswers = answers;
             <p id="homeownerReviewMessage" class="autosave-status" role="status" aria-live="polite">Changes save automatically.</p>
             <button type="button" class="button-link hr-button" onclick="saveHomeownerReview()">Save Homeowner Review</button>
 
-            <h3>Personalised follow-up email — before the quotation</h3>
-            <p class="placeholder">Generate a draft from the homeowner's confirmed interests. Edit and check it before copying to your email app. This does not send an email.</p>
-            <button type="button" class="button-link hr-button" onclick="generateHomeownerEmail()">Prepare email draft</button>
-            <textarea id="hr_email_draft" rows="13" aria-label="Editable follow-up email draft" placeholder="Choose Prepare email draft after the conversation."></textarea>
-            <button type="button" class="button-link hr-button" onclick="copyHomeownerEmail()">Copy email draft</button>
-            <p id="homeownerEmailMessage" class="placeholder" role="status" aria-live="polite"></p>
+            <p class="placeholder">The personalised follow-up email is prepared automatically from this conversation and appears at the top of <strong>Office &amp; Quote</strong> for review. It will not be sent automatically.</p>
+            <button type="button" class="button-link hr-button" onclick="selectJobWorkspace('office')">View email draft in Office &amp; Quote</button>
           </section>
 
           <section class="card solar-only" data-job-workspace="design">
@@ -1148,6 +1147,22 @@ window.currentAnswers = answers;
   </div>
   <br>
   <span id="siteVisitMessage" class="autosave-status" aria-live="polite">Changes save automatically.</span>
+</section>
+
+<!-- HOMEOWNER FOLLOW-UP EMAIL: OFFICE REVIEW ONLY; NOTHING IS SENT AUTOMATICALLY -->
+<section class="card solar-only homeowner-review" id="homeownerEmailOfficeSection" data-job-workspace="office">
+  <h2>Homeowner follow-up email — before the quotation</h2>
+  <p class="placeholder">After Tom completes the Homeowner Review, Job Hub automatically drafts a personal email using the confirmed priorities and selected interests. Read and edit it here before sending through your usual email app.</p>
+  <p id="homeownerEmailState" class="placeholder" role="status" aria-live="polite">No homeowner review recorded yet.</p>
+  <p id="homeownerEmailRecipient" class="placeholder"></p>
+  <label for="hr_email_draft">Editable email draft</label>
+  <textarea id="hr_email_draft" rows="14" aria-label="Editable personalised homeowner follow-up email" placeholder="The follow-up draft will appear after Tom saves the Homeowner Review."></textarea>
+  <label class="hr-reviewed"><input type="checkbox" id="hr_email_reviewed"> I have checked this draft and it's ready to copy into an email</label>
+  <div>
+    <button type="button" class="button-link hr-button" onclick="copyHomeownerEmail()">Copy reviewed email</button>
+    <button type="button" class="button-link hr-button" onclick="generateHomeownerEmail()">Rebuild from Homeowner Review</button>
+  </div>
+  <p id="homeownerEmailMessage" class="autosave-status" role="status" aria-live="polite">No email is sent automatically.</p>
 </section>
 
 <!-- OFFICE FOLLOW-UP: NOT PART OF TOM'S PHYSICAL SITE VISIT -->
@@ -5445,6 +5460,7 @@ function autosaveTarget(event) {
   const target = event.target;
   if (!target || target.disabled || target.readOnly || target.matches?.(".site-photo-input")) return null;
   if (target.closest("#homeownerReviewSection")) return ["homeowner", saveHomeownerReview, "homeownerReviewMessage"];
+  if (target.closest("#homeownerEmailOfficeSection")) return ["homeowner", saveHomeownerReview, "homeownerEmailMessage"];
   if (target.closest("#generalJobSection")) return ["general", saveGeneralJobDetails, "generalJobMessage"];
   if (target.closest("#assessmentForm")) return ["assessment", saveAssessment, "assessmentMessage"];
   if (target.closest("#siteVisitSection")) return ["siteVisit", saveSiteVisit, "siteVisitMessage"];
