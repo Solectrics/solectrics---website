@@ -3884,10 +3884,6 @@ function graph(
 
   const values = [
 
-    ...model.currentCost,
-
-    ...model.passiveCost,
-
     ...model.smartCost,
 
     ...model.batteryCost
@@ -4092,24 +4088,6 @@ function graph(
 
 
   html += `
-
-    <path
-      d="${path(model.currentCost)}"
-      fill="none"
-      stroke="#444"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-
-    <path
-      d="${path(model.passiveCost)}"
-      fill="none"
-      stroke="#aaa"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
 
     <path
       d="${path(model.smartCost)}"
@@ -4465,7 +4443,7 @@ ${!model.financialEstimateReady ? `
   </div>
 ` : `
     <h3>
-      Four ways your home could use energy
+      Your home now and two solar options
     </h3>
     
 <p class="ss-intro">
@@ -4504,40 +4482,13 @@ ${!model.financialEstimateReady ? `
       </div>
       
 <h3 class="ss-improvement-heading">
-  Three ways your home energy system could improve
+  Two ways your home energy system could improve
 </h3>
-
-      <div class="ss-stage">
-
-        <span class="ss-stage-label">
-          1 — SOLAR
-        </span>
-
-       <h4>
-  Use your solar first. Send the extra to the grid
-</h4>
-
-        <div class="ss-cost">
-          ${money(passiveAnnual)}
-        </div>
-
-        <div class="ss-annual-label">Estimated net annual electricity cost</div>
-
-        <div class="ss-small">
-          About ${money(solarSaving)}
-          less per year.
-
-          This assumes your household largely continues
-          using electricity at the same times as now.
-        </div>
-
-      </div>
-
 
       <div class="ss-stage smart">
 
         <span class="ss-stage-label">
-          2 — SOLAR + SMART TIMING
+          1 — SOLAR SMART
         </span>
 
         <h4>
@@ -4556,12 +4507,7 @@ ${!model.financialEstimateReady ? `
           less than today.
 
           <br><br>
-
-          Smarter timing contributes approximately
-          <strong>
-            ${!model.financialEstimateReady ? "Confirmed during assessment" : money(smartExtra)}
-          </strong>
-          per year beyond solar alone.
+          Suitable timers and smart controls may help shift flexible loads into solar-producing hours.
 
         </div>
 
@@ -4571,7 +4517,7 @@ ${!model.financialEstimateReady ? `
       <div class="ss-stage battery">
 
         <span class="ss-stage-label">
-        3 — SOLAR + SMART TIMING + BATTERY STORAGE
+        2 — SOLAR SMART + BATTERY
         </span>
 
        <h4>
@@ -4636,23 +4582,13 @@ ${
     <div class="ss-legend">
 
       <span class="ss-legend-item">
-        <i class="ss-legend-line ss-current"></i>
-        Your home now
-      </span>
-
-      <span class="ss-legend-item">
-        <i class="ss-legend-line ss-passive"></i>
-        Solar — same habits
-      </span>
-
-      <span class="ss-legend-item">
         <i class="ss-legend-line ss-smart"></i>
-        Solar — smarter timing
+        Solar Smart
       </span>
 
       <span class="ss-legend-item">
         <i class="ss-legend-line ss-battery"></i>
-        Solar Smart + storage
+        Solar Smart + Battery
       </span>
 
     </div>
@@ -5143,23 +5079,18 @@ ${
       <p class="ss-battery-small"><strong>Not ready for a battery?</strong> Your initial solar system can be designed to accommodate suitable storage later, subject to equipment compatibility and system design.</p>
     </div>
 
-    <h3>Three pathways worth discussing</h3>
-    <p class="ss-paths-intro">These are options to explore, not a final system recommendation or formal quote.</p>
+    <h3>Explore more with Solectrics</h3>
+    <p class="ss-paths-intro">Two options to explore, not a final system recommendation or formal quote.</p>
 
     <div class="ss-paths">
       <div class="ss-path">
-        <h4>1 — SOLAR START</h4>
-        <p>Solar panels and an inverter. Your home uses solar electricity when the panels are generating, with grid electricity covering any shortfall — particularly in the evening. Battery storage may be added later if the system is designed with compatible equipment.</p>
+        <h4>1 — SOLAR SMART</h4>
+        <p>Solar panels and an inverter, together with suitable timers and smart controls to help your home use more solar electricity as it is generated. Depending on your home and tariff, this might include scheduling hot water, EV charging and other flexible loads during solar-producing hours. Battery storage can be added later if the system is designed with compatible equipment.</p>
       </div>
 
       <div class="ss-path">
-        <h4>2 — SOLAR SMART</h4>
-        <p>Solar panels and an inverter, together with suitable timers and smart controls to help use more solar electricity as it is generated. Depending on your home and tariff, this might include scheduling hot water, EV charging and other flexible loads during solar-producing hours.</p>
-      </div>
-
-      <div class="ss-path">
-        <h4>3 — SOLAR SMART + BATTERY</h4>
-        <p>Solar panels, a compatible inverter and battery storage to keep available surplus solar electricity for later use, including after sunset. With the right backup equipment and electrical design, the system also powers selected essential circuits during a grid outage. How long they can run depends on battery charge, usable capacity, essential loads and available solar generation — particularly in winter.</p>
+        <h4>2 — SOLAR SMART + BATTERY</h4>
+        <p>Solar panels, a compatible inverter and battery storage to keep available surplus solar electricity for later use, including after sunset. Suitable timers and smart controls can also help maximise solar self-consumption. With the right backup equipment and electrical design, the system can power selected essential circuits during a grid outage. How long these circuits can run depends on battery charge, usable capacity, essential loads and available solar generation — particularly in winter.</p>
       </div>
     </div>
 

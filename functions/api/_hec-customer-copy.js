@@ -134,10 +134,9 @@ ${prioritiesHtml}
 <p style="background:#fff9ed;border-left:4px solid #ef9c20;padding:15px;font-size:14px;line-height:1.6;color:#40554f;">${escapeHtml(evidenceNote)} We won't quote savings figures until your electricity charges, GST treatment, seasonal use and roof/site assumptions have been checked.</p>
 </td></tr>
 <tr><td style="padding:24px 28px;background:#f7f7f2;border-top:1px solid #eee5d9;border-bottom:1px solid #eee5d9;">
-<h2 style="font-size:21px;margin:0 0 10px;color:#17332d;">Three pathways worth discussing</h2>
-<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>1. Solar Start:</strong> Solar panels and an inverter. Your home uses solar electricity when the panels are generating, with grid electricity covering any shortfall — particularly in the evening. Battery storage may be added later if the system is designed with compatible equipment.</p>
-<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>2. Solar Smart:</strong> Solar panels and an inverter, together with suitable timers and smart controls to help use more solar electricity as it is generated. Depending on your home and tariff, this might include scheduling hot water, EV charging and other flexible loads during solar-producing hours.</p>
-<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>3. Solar Smart + Battery:</strong> Solar panels, a compatible inverter and battery storage to keep available surplus solar electricity for later use, including after sunset. With the right backup equipment and electrical design, the system also powers selected essential circuits during a grid outage. How long they can run depends on battery charge, usable capacity, essential loads and available solar generation — particularly in winter.</p>
+<h2 style="font-size:21px;margin:0 0 10px;color:#17332d;">Explore more with Solectrics</h2>
+<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>1. Solar Smart:</strong> Solar panels and an inverter, together with suitable timers and smart controls to help your home use more solar electricity as it is generated. Depending on your home and electricity tariff, this might include scheduling hot water, EV charging and other flexible loads during solar-producing hours. Battery storage can be added later if the system is designed with compatible equipment.</p>
+<p style="font-size:15px;line-height:1.6;margin:8px 0 14px;"><strong>2. Solar Smart + Battery:</strong> Solar panels, a compatible inverter and battery storage to keep available surplus solar electricity for later use, including after sunset. Suitable timers and smart controls can also help maximise solar self-consumption. With the right backup equipment and electrical design, the system can power selected essential circuits during a grid outage. How long these circuits can run depends on battery charge, usable capacity, essential loads and available solar generation — particularly in winter.</p>
 <p style="font-size:12px;color:#66736d;line-height:1.6;">These are options to explore, not a final recommendation or formal quote.</p>
 </td></tr>
 <tr><td style="padding:24px 28px;border-bottom:1px solid #eee5d9;">
@@ -151,7 +150,7 @@ ${prioritiesHtml}
 <p style="font-size:12px;line-height:1.6;color:#61716c;">This is general information, not a personalised tariff recommendation or an estimate of switching savings. A reliable time-of-use comparison may require smart-meter interval data.</p>
 </td></tr>
 <tr><td style="padding:25px 28px 22px;">
-<h2 style="font-size:21px;margin:0 0 12px;color:#17332d;">Explore more with Solectrics</h2>
+<h2 style="font-size:21px;margin:0 0 12px;color:#17332d;">Learn more with Solectrics</h2>
 <p style="margin:9px 0;font-size:15px;line-height:1.5;"><a href="https://solectrics.co.nz/smart-energy.html" style="font-weight:700;color:#147258;">Smart energy for your home →</a><br><span style="color:#62716b;">Hot water, energy controls and EV charging.</span></p>
 <p style="margin:15px 0;font-size:15px;line-height:1.5;"><a href="https://solectrics.co.nz/home-battery-guide.html" style="font-weight:700;color:#147258;">Understanding home batteries →</a><br><span style="color:#62716b;">What to expect in summer, winter and outages.</span></p>
 <p style="margin:15px 0;font-size:15px;line-height:1.5;"><a href="https://solectrics.co.nz/smart-solar-prices.html" style="font-weight:700;color:#147258;">Explore solar system price guides →</a><br><span style="color:#62716b;">Illustrative packages and what affects a bespoke quote.</span></p>
