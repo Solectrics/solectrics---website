@@ -10,6 +10,7 @@ test("HEC shows just the two agreed options without Solar Start",()=>{
   assert.match(pathways,/<h4>1 — SOLAR SMART<\/h4>/);
   assert.match(pathways,/<h4>2 — SOLAR SMART \+ BATTERY<\/h4>/);
   assert.equal((pathways.match(/<h4>/g)||[]).length,2);
+  assert.match(page,/\/\* CURRENT BASELINE \+ TWO SOLAR OPTIONS \*\/\s*\.ss-stages\s*\{\s*display:grid;\s*grid-template-columns:repeat\(2,1fr\);/);
   assert.doesNotMatch(pathways,/SOLAR START|Three pathways/i);
 });
 
