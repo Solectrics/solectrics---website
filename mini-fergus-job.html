@@ -3170,7 +3170,36 @@ function syncDesignFromAssessment() {
   return changed;
 }
 
+// Only prefill blank fields. Never replace onsite observations or approved design.
+function syncSharedJobInformation() {
+  let changed=false;
+  const answer=currentAnswers || {};
+  const read=id=>String(document.getElementById(id)?.value ?? "").trim();
+  const first=(...values)=>values.find(v=>v!==undefined && v!==null && String(v).trim()) ?? "";
+  const setBlank=(id,value)=>{
+    if(fillBlankField(id,value)){changed=true;return true;}
+    return false;
+  };
+  const reviewed=document.getElementById("design_reviewed")?.checked===true;
+  const icp=first(read("visit_icp"),read("design_icp"),answer.icp,answer.ICP);
+  setBlank("visit_icp",icp);
+  if(!reviewed)setBlank("design_icp",icp);
+  const retailer=first(read("current_retailer"),read("design_retailer"),answer.retailer);
+  setBlank("current_retailer",retailer);
+  if(!reviewed)setBlank("design_retailer",retailer);
+  const roof=document.getElementById("visit_roof_orientation");
+  const direction=first(read("visit_roof_orientation"),
+    document.querySelector("#designRoofs .design-roof .roof_orientation_design")?.value,
+    read("roof_orientation"),answer.direction);
+  if(roof && !roof.value && direction){
+    const option=Array.from(roof.options||[]).find(o=>String(o.value).toLowerCase()===String(direction).toLowerCase());
+    if(option && option.value){roof.value=option.value;changed=true;}
+  }
+  return changed;
+}
+
 function syncLinkedEquipmentFields() {
+  syncSharedJobInformation();
   // Sync empty draft fields both ways so reopening a job never requires
   // retyping an assessment figure that already exists in System Design.
   syncDesignFromAssessment();
@@ -5667,6 +5696,8 @@ document.addEventListener("change", event => {
     renderSiteVisitFollowups();
     updateLinkedEvRequest();
     updateLegacyBatteryLocationNote(collectSiteVisit());
+    if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());
+    syncSharedJobInformation();
     prefillQuoteFromDesign();
   }
 });
@@ -5694,6 +5725,8 @@ loadJob().then(() => {
 
     // Fill only previously empty, unreviewed design fields from saved legacy Site Visit data.
     if (prefillLegacySiteVisitEquipment()) saveSystemDesign();
+    syncSharedJobInformation();
+    applySiteVisitToSystemDesign(collectSiteVisit());
     updateLinkedEvRequest();
     syncLinkedEquipmentFields();
   });

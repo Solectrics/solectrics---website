@@ -182,3 +182,40 @@ test("photo action is tap-sized, with accessible native picker and saved status 
   assert.match(html, /await loadJobFiles\(\)/);
   assert.match(html, /No photo saved yet/);
 });
+
+test("shared job facts are blank-only and review-aware", () => {
+  const code=segment("function syncSharedJobInformation() {","function syncLinkedEquipmentFields() {");
+  const fields={};
+  for(const id of ["visit_icp","design_icp","current_retailer","design_retailer","visit_roof_orientation","roof_orientation","design_reviewed"])
+    fields[id]={value:"",checked:false};
+  fields.visit_roof_orientation.options=[{value:""},{value:"North"}];
+  const document={getElementById:id=>fields[id]||null,querySelector:()=>null};
+  const fillBlankField=(id,value)=>{
+    const el=fields[id];
+    if(!el||value==null||!String(value).trim()||String(el.value||"").trim())return false;
+    el.value=String(value);return true;
+  };
+  const sync=new Function("document","currentAnswers","fillBlankField",code+"\nreturn syncSharedJobInformation;")(
+    document,{icp:"0001234567",retailer:"Genesis",direction:"North"},fillBlankField);
+  assert.equal(sync(),true);
+  assert.equal(fields.visit_icp.value,"0001234567");
+  assert.equal(fields.design_icp.value,"0001234567");
+  assert.equal(fields.current_retailer.value,"Genesis");
+  assert.equal(fields.design_retailer.value,"Genesis");
+  assert.equal(fields.visit_roof_orientation.value,"North");
+  fields.visit_icp.value="Onsite ICP";
+  fields.design_icp.value="Checked design ICP";
+  fields.design_retailer.value="Checked retailer";
+  fields.design_reviewed.checked=true;
+  sync();
+  assert.equal(fields.visit_icp.value,"Onsite ICP");
+  assert.equal(fields.design_icp.value,"Checked design ICP");
+  assert.equal(fields.design_retailer.value,"Checked retailer");
+  fields.design_icp.value="";
+  sync();
+  assert.equal(fields.design_icp.value,"");
+});
+test("post-load reconciliation and site-to-design updates are connected",()=>{
+  assert.ok(html.includes("syncSharedJobInformation();\n    applySiteVisitToSystemDesign(collectSiteVisit());"));
+  assert.ok(html.includes('if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());'));
+});
