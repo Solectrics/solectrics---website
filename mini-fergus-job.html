@@ -5713,8 +5713,8 @@ document.addEventListener("change", event => {
     renderSiteVisitFollowups();
     updateLinkedEvRequest();
     updateLegacyBatteryLocationNote(collectSiteVisit());
-    if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());
-    syncSharedJobInformation();
+    // Site Visit autosave copies saved observations into draft System Design.
+    // Do not prefill here: it would make the save step think nothing changed.
     prefillQuoteFromDesign();
   }
 });
@@ -5740,12 +5740,17 @@ loadJob().then(() => {
       roofOrientationField.value = window.currentAnswers.direction;
     }
 
-    // Fill only previously empty, unreviewed design fields from saved legacy Site Visit data.
-    if (prefillLegacySiteVisitEquipment()) saveSystemDesign();
-    syncSharedJobInformation();
-    applySiteVisitToSystemDesign(collectSiteVisit());
+    // Wait for all three records to load before reconciling. Persist newly
+    // filled draft design fields once, instead of leaving unsaved DOM-only values.
+    const legacyChanged = prefillLegacySiteVisitEquipment();
+    const sharedChanged = syncSharedJobInformation();
+    const onsiteChanged = applySiteVisitToSystemDesign(collectSiteVisit());
     updateLinkedEvRequest();
     syncLinkedEquipmentFields();
+    if ((legacyChanged || sharedChanged || onsiteChanged) &&
+        !document.getElementById("design_reviewed")?.checked) {
+      saveSystemDesign();
+    }
   });
 });
   </script>

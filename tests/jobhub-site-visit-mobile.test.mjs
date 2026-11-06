@@ -216,8 +216,11 @@ test("shared job facts are blank-only and review-aware", () => {
   assert.equal(fields.design_icp.value,"");
 });
 test("post-load reconciliation and site-to-design updates are connected",()=>{
-  assert.ok(html.includes("syncSharedJobInformation();\n    applySiteVisitToSystemDesign(collectSiteVisit());"));
-  assert.ok(html.includes('if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());'));
+  assert.ok(html.includes("const sharedChanged = syncSharedJobInformation();"));
+  assert.ok(html.includes("const onsiteChanged = applySiteVisitToSystemDesign(collectSiteVisit());"));
+  assert.ok(html.includes("legacyChanged || sharedChanged || onsiteChanged"));
+  assert.ok(!html.includes('if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());'));
+  assert.ok(html.includes("const designChanged = applySiteVisitToSystemDesign(siteVisit);"));
 });
 
 test("other supply and roof details also return to empty Site Visit inputs",()=>{
