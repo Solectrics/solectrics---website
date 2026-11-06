@@ -184,6 +184,7 @@
     .site-visit-followups li { margin:4px 0; }
     .site-visit #visit_ev_details { margin-top:12px; }
     .site-visit #visit_ev_details[hidden] { display:none; }
+    .site-visit #visit_ev_charging_section[hidden] { display:none !important; }
 
     .general-job input,
     .general-job select,
@@ -1072,12 +1073,13 @@ window.currentAnswers = answers;
   </div>
   </div>
 
-  <h3>4. Other Electrical Loads &amp; EV Charging</h3>
-  <div class="grid">
-    <div><label for="visit_hw_other_loads">Other significant loads</label><textarea rows="2" id="visit_hw_other_loads" placeholder="Heat pumps, spa, induction cooking, workshop equipment; earlier notes retained"></textarea></div>
-    <div><label for="visit_ev_existing">Existing EV charging?</label><select id="visit_ev_existing"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+  <div class="grid" id="visit_ev_screening">
+    <div><label for="visit_ev_existing">Is there an electric vehicle or existing EV charging?</label><select id="visit_ev_existing"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+    <div><label for="visit_ev_future_interest">EV charging point installation or upgrade wanted in future?</label><select id="visit_ev_future_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="no">No</option><option value="undecided">Undecided</option></select></div>
   </div>
-  <div id="visit_ev_details" hidden><div class="grid">
+  <div id="visit_ev_charging_section">
+    <h3>4. EV Charging</h3>
+<div id="visit_ev_details" hidden><div class="grid">
     <div><label for="visit_ev_charger_type">Existing charger type</label><select id="visit_ev_charger_type"><option value="">Not checked</option><option value="portable_3pin">Portable 3-pin</option><option value="wall">Dedicated wall charger</option><option value="other">Other</option></select></div>
     <div><label for="visit_ev_make_model">Charger make / model</label><input type="text" id="visit_ev_make_model" placeholder="If known"></div>
     <div><label for="visit_ev_circuit">Dedicated supply / circuit confirmed?</label><select id="visit_ev_circuit"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
@@ -1085,11 +1087,20 @@ window.currentAnswers = answers;
     <div><label for="visit_ev_isolator">Safety isolation switch (where required)?</label><select id="visit_ev_isolator"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option><option value="not_applicable">Not required / N/A</option></select></div>
     <div><label for="visit_ev_cable">Cable size / circuit suitability confirmed?</label><select id="visit_ev_cable"><option value="">Not checked</option><option value="yes">Yes</option><option value="no">No</option></select></div>
   </div></div>
-  <div class="grid">
-    <div><label for="visit_ev_future_interest">EV charging point installation / upgrade wanted in future?</label><select id="visit_ev_future_interest"><option value="">Not discussed</option><option value="yes">Yes</option><option value="no">No</option><option value="undecided">Undecided</option></select></div>
   </div>
 
-  <h3>5. Main roof face</h3>
+  <h3>5. Other Electrical Loads</h3>
+  <p class="placeholder">Record significant loads, for example a heat pump, water pump, dishwasher, washing machine, dryer, spa pool, swimming-pool pump or heater, or workshop equipment. Include the power rating (kW) and usual running time if known.</p>
+  <label for="visit_hw_other_loads">Other electrical loads — equipment, ratings and usage notes</label>
+  <textarea rows="4" id="visit_hw_other_loads" placeholder="e.g. Pool pump 1 kW, runs 6 hours/day; dryer used evenings. Include earlier notes."></textarea>
+  <div class="site-photo-grid"><div class="site-photo-item">
+    <label for="visit_photo_other_loads">Photograph other electrical loads, equipment or nameplates (take as many as needed)</label>
+    <input type="file" id="visit_photo_other_loads" accept="image/*" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: other electrical loads">
+    <label class="site-photo-action" for="visit_photo_other_loads">📷 TAKE OR UPLOAD PHOTO</label>
+    <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
+  </div></div>
+
+  <h3>6. Main roof face</h3>
   <div class="grid">
     <div><label>Roof length (m)</label><input type="number" step="0.01" id="visit_roof_length"></div>
     <div><label>Roof width (m)</label><input type="number" step="0.01" id="visit_roof_width"></div>
@@ -1116,7 +1127,7 @@ window.currentAnswers = answers;
 </div>
   </div>
 
-  <h3>6. Site conditions</h3>
+  <h3>7. Site conditions</h3>
   <div class="grid">
     <label><input type="checkbox" id="visit_salt_spray"> Salt spray</label>
     <label><input type="checkbox" id="visit_high_wind"> High wind area</label>
@@ -1128,7 +1139,7 @@ window.currentAnswers = answers;
     <label><input type="checkbox" id="visit_satellite"> Satellite dish</label>
   </div>
 
-  <h3>7. Locations and dictated notes</h3>
+  <h3>8. Locations and dictated notes</h3>
   <div class="grid">
     <div>
       <label for="visit_inverter_location">Proposed inverter and battery location</label>
@@ -1175,7 +1186,7 @@ window.currentAnswers = answers;
 
 
 
-  <h3>8. Final Checks &amp; Supervisor Follow-up</h3>
+  <h3>9. Final Checks &amp; Supervisor Follow-up</h3>
   <div id="visit_auto_followups" class="site-visit-followups" role="status" aria-live="polite">No flagged checks yet.</div>
   <div style="margin-top:12px;"><label for="visit_hw_outstanding">Other outstanding electrical checks, Ben's review, office actions or technical questions</label>
     <textarea rows="2" id="visit_hw_outstanding" placeholder="Add only items not already flagged above"></textarea>
@@ -3848,8 +3859,12 @@ function updateHotWaterElectricalVisibility() {
   if(section)section.hidden=document.getElementById("visit_hw_system")?.value==="gas";
 }
 function updateEvDetailsVisibility() {
-  const el = document.getElementById("visit_ev_details");
-  if (el) el.hidden = document.getElementById("visit_ev_existing")?.value !== "yes";
+  const current=document.getElementById("visit_ev_existing")?.value;
+  const future=document.getElementById("visit_ev_future_interest")?.value;
+  const section=document.getElementById("visit_ev_charging_section");
+  if(section)section.hidden=current==="no" && future==="no";
+  const el=document.getElementById("visit_ev_details");
+  if(el)el.hidden=current!=="yes";
 }
 function siteVisitFollowupItems(visit) {
   const items = [];

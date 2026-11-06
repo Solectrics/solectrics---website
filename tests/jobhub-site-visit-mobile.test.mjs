@@ -21,12 +21,12 @@ test("mobile Site Visit contains the consolidated sections, camera and final fol
   const visit = segment('<section class="card site-visit', '<!-- OFFICE FOLLOW-UP:');
   for (const heading of [
     "Hot Water &amp; Heating", "Hot-Water Wiring, Timing &amp; Bill Comparison",
-    "Other Electrical Loads &amp; EV Charging", "Final Checks &amp; Supervisor Follow-up"
+    "4. EV Charging", "5. Other Electrical Loads", "9. Final Checks &amp; Supervisor Follow-up"
   ]) assert.ok(visit.includes(heading));
   assert.ok(visit.includes('value="trace">Unable to confirm — further electrical check needed'));
   assert.ok(visit.includes('id="visit_photo_hot_water_equipment"'));
-  assert.equal((visit.match(/class="site-photo-action"/g) || []).length, 5);
-  assert.equal((visit.match(/class="site-photo-input"/g) || []).length, 5);
+  assert.equal((visit.match(/class="site-photo-action"/g) || []).length, 6);
+  assert.equal((visit.match(/class="site-photo-input"/g) || []).length, 6);
   assert.ok(!visit.includes('capture="environment"'), "mobile picker should offer camera and photo library");
   for (const match of visit.matchAll(/<input type="file" id="(visit_photo_[^"]+)"[^>]*>\s*<label class="site-photo-action" for="([^"]+)">/g)) {
     assert.equal(match[1], match[2]);
@@ -244,7 +244,7 @@ test("gas hot water hides section three and restores it for other systems",()=>{
   const visit=segment('<section class="card site-visit','<!-- OFFICE FOLLOW-UP:');
   assert.ok(visit.includes('id="visit_hot_water_electrical" hidden'));
   assert.ok(visit.indexOf('id="visit_hot_water_electrical"')<visit.indexOf('id="visit_hw_wiring"'));
-  assert.ok(visit.indexOf('id="visit_hw_evidence"')<visit.indexOf("4. Other Electrical Loads"));
+  assert.ok(visit.indexOf('id="visit_hw_evidence"')<visit.indexOf("4. EV Charging"));
   const system={value:"gas"},section={hidden:false};
   const dom={getElementById:id=>id==="visit_hw_system"?system:id==="visit_hot_water_electrical"?section:null};
   const fn=new Function("document",segment("function updateHotWaterElectricalVisibility() {","function updateEvDetailsVisibility() {")+"return updateHotWaterElectricalVisibility;")(dom);
@@ -263,4 +263,26 @@ test("gas skips stale section three followups without hiding other warnings",()=
   const electric=fn({visit_hw_system:"electric_cylinder",visit_hw_wiring:"review",visit_hw_physical_match:"no"});
   assert.ok(electric.some(x=>/hot-water wiring/i.test(x)));
   assert.ok(electric.some(x=>/compare hot-water circuit/i.test(x)));
+});
+
+test("Sections four through nine are ordered with EV separate from other loads",()=>{
+  const visit=segment('<section class="card site-visit','<!-- OFFICE FOLLOW-UP:');
+  let prev=-1;
+  for(const h of ["4. EV Charging","5. Other Electrical Loads","6. Main roof face","7. Site conditions","8. Locations and dictated notes","9. Final Checks &amp; Supervisor Follow-up"]){
+    const at=visit.indexOf(h);assert.ok(at>prev,"Missing or reordered: "+h);prev=at;
+  }
+  for(const n of ["water pump","dishwasher","washing machine","dryer","heat pump","spa pool","swimming-pool"])assert.ok(visit.includes(n));
+  assert.ok(visit.includes('id="visit_hw_other_loads"'));
+  assert.ok(visit.includes('id="visit_photo_other_loads"'));
+  assert.ok(visit.includes('data-photo-caption="Site visit: other electrical loads"'));
+});
+test("EV section hides only when both current and future choices are No",()=>{
+  const source=segment("function updateEvDetailsVisibility() {","function siteVisitFollowupItems(visit) {");
+  const v={visit_ev_existing:{value:"no"},visit_ev_future_interest:{value:"no"},visit_ev_charging_section:{hidden:false},visit_ev_details:{hidden:false}};
+  const fn=new Function("document",source+"return updateEvDetailsVisibility;")({getElementById:id=>v[id]||null});
+  fn();assert.equal(v.visit_ev_charging_section.hidden,true);
+  v.visit_ev_existing.value="yes";fn();assert.equal(v.visit_ev_charging_section.hidden,false);assert.equal(v.visit_ev_details.hidden,false);
+  v.visit_ev_existing.value="no";v.visit_ev_future_interest.value="yes";fn();assert.equal(v.visit_ev_charging_section.hidden,false);assert.equal(v.visit_ev_details.hidden,true);
+  v.visit_ev_future_interest.value="";fn();assert.equal(v.visit_ev_charging_section.hidden,false);
+  v.visit_ev_future_interest.value="undecided";fn();assert.equal(v.visit_ev_charging_section.hidden,false);
 });
