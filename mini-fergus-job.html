@@ -123,6 +123,21 @@
     .answers-list li {
       margin: 7px 0;
     }
+    .hec-answer-sections{display:grid;gap:16px}
+    .hec-answer-section{background:#fff;border:1px solid #e5dbcc;border-radius:13px;padding:16px;min-width:0}
+    .hec-answer-section h4{margin:0 0 12px;color:#173f3f;font-size:18px}
+    .hec-answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .hec-answer-field{min-width:0;background:#faf9f5;border-radius:9px;padding:12px}
+    .hec-answer-field>.label{text-transform:none;letter-spacing:0;font-size:13px}
+    .hec-answer-field>.value{font-size:15px;font-weight:500;overflow-wrap:anywhere;white-space:normal}
+    .hec-nested{display:grid;gap:8px}
+    .hec-nested-row{border-top:1px solid #e7e0d5;padding:8px 0 0}
+    .hec-nested-row strong{display:block;font-size:13px;color:#51665e}
+    .hec-nested-row div{overflow-wrap:anywhere}
+    .hec-answer-items{margin:4px 0;padding-left:20px}
+    .hec-answer-items li{margin:5px 0;overflow-wrap:anywhere}
+    @media(max-width:700px){.hec-answer-grid{grid-template-columns:minmax(0,1fr)}.hec-answer-section{padding:12px}}
+
 
     .placeholder {
       color: #68746f;
@@ -490,27 +505,44 @@ if (typeof value === "object" && value !== null) {
       return String(value);
     }
 
+    function renderHecStructuredValue(value, depth=0) {
+      if(value===null || value===undefined || value==="")return '<span class="placeholder">Not provided</span>';
+      if(Array.isArray(value))return value.length
+        ? '<ul class="hec-answer-items">'+value.map(item=>'<li>'+renderHecStructuredValue(item,depth+1)+'</li>').join("")+'</ul>'
+        : '<span class="placeholder">None recorded</span>';
+      if(typeof value==="object"){
+        const fields=Object.entries(value);
+        if(!fields.length)return '<span class="placeholder">None recorded</span>';
+        if(depth>=12)return '<span class="placeholder">Additional structured information recorded</span>';
+        return '<div class="hec-nested">'+fields.map(([key,child])=>
+          '<div class="hec-nested-row"><strong>'+escapeHtml(prettyLabel(key))+'</strong><div>'+
+          renderHecStructuredValue(child,depth+1)+'</div></div>').join("")+'</div>';
+      }
+      return escapeHtml(prettyValue(value));
+    }
     function renderObject(obj) {
-      if (!obj || typeof obj !== "object") {
-        return `<div class="placeholder">No information provided.</div>`;
-      }
-
-      const entries = Object.entries(obj);
-
-      if (!entries.length) {
-        return `<div class="placeholder">No information provided.</div>`;
-      }
-
-      return `
-        <div class="grid">
-          ${entries.map(([key, value]) => `
-            <div>
-              <div class="label">${escapeHtml(prettyLabel(key))}</div>
-              <div class="value">${escapeHtml(prettyValue(value))}</div>
-            </div>
-          `).join("")}
-        </div>
-      `;
+      if(!obj || typeof obj!=="object" || !Object.keys(obj).length)
+        return '<div class="placeholder">No information provided.</div>';
+      const definitions=[
+        ["Household & property",["name","email","phone","address","people","householdPersona","homeType","dayHome","workFromHome"]],
+        ["Electricity bills & tariffs",["bills","summerBill","winterBill","energyDataUploads","uploadedBillCount","billFileName","billUploaded","meter","icp","ICP","retailer","plan","tariff","electricityPlan","annualUsage"]],
+        ["Hot water & electrical loads",["hotWater","hotWaterControl","cylinderSize","cylinderCondition","loads","evDayHome","loadTiming"]],
+        ["Roof & solar",["roof","roofCondition","direction","shade","existingSolar","batteryInterest"]],
+        ["Priorities",["goals","plannedChanges","financePlan","greenLoanBank"]]
+      ];
+      const used=new Set();
+      const groups=definitions.map(([name,keys])=>{
+        const entries=keys.filter(key=>Object.prototype.hasOwnProperty.call(obj,key)).map(key=>[key,obj[key]]);
+        entries.forEach(([key])=>used.add(key));
+        return [name,entries];
+      }).filter(([,entries])=>entries.length);
+      const others=Object.entries(obj).filter(([key])=>!used.has(key));
+      if(others.length)groups.push(["Other Home Energy Check answers",others]);
+      return '<div class="hec-answer-sections">'+groups.map(([heading,entries])=>
+        '<section class="hec-answer-section"><h4>'+escapeHtml(heading)+'</h4><div class="hec-answer-grid">'+
+        entries.map(([key,value])=>'<div class="hec-answer-field"><div class="label">'+escapeHtml(prettyLabel(key))+
+        '</div><div class="value">'+renderHecStructuredValue(value)+'</div></div>').join("")+
+        '</div></section>').join("")+'</div>';
     }
 
     function parseAnswers(raw) {
