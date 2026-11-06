@@ -239,3 +239,28 @@ test("other supply and roof details also return to empty Site Visit inputs",()=>
   ])assert.ok(helper.includes(pair));
   assert.ok(helper.includes("setBlank(siteId,read(designId))"));
 });
+
+test("gas hot water hides section three and restores it for other systems",()=>{
+  const visit=segment('<section class="card site-visit','<!-- OFFICE FOLLOW-UP:');
+  assert.ok(visit.includes('id="visit_hot_water_electrical" hidden'));
+  assert.ok(visit.indexOf('id="visit_hot_water_electrical"')<visit.indexOf('id="visit_hw_wiring"'));
+  assert.ok(visit.indexOf('id="visit_hw_evidence"')<visit.indexOf("4. Other Electrical Loads"));
+  const system={value:"gas"},section={hidden:false};
+  const dom={getElementById:id=>id==="visit_hw_system"?system:id==="visit_hot_water_electrical"?section:null};
+  const fn=new Function("document",segment("function updateHotWaterElectricalVisibility() {","function updateEvDetailsVisibility() {")+"return updateHotWaterElectricalVisibility;")(dom);
+  fn();assert.equal(section.hidden,true);
+  system.value="electric_cylinder";fn();assert.equal(section.hidden,false);
+  system.value="other";fn();assert.equal(section.hidden,false);
+  assert.ok(html.includes("const visit = { ...loadedSiteVisit };"));
+  assert.ok(html.includes('#visit_hot_water_electrical[hidden]{display:none !important;}'));
+  assert.ok(html.includes("updateHotWaterElectricalVisibility();"));
+});
+test("gas skips stale section three followups without hiding other warnings",()=>{
+  const fn=new Function(segment("function siteVisitFollowupItems(visit) {","function renderSiteVisitFollowups()")+"return siteVisitFollowupItems;")();
+  const gas=fn({visit_hw_system:"gas",visit_hw_wiring:"review",visit_hw_physical_match:"no",visit_switchboard:"upgrade"});
+  assert.ok(!gas.some(x=>/hot-water wiring|compare hot-water circuit/i.test(x)));
+  assert.ok(gas.some(x=>/switchboard/i.test(x)));
+  const electric=fn({visit_hw_system:"electric_cylinder",visit_hw_wiring:"review",visit_hw_physical_match:"no"});
+  assert.ok(electric.some(x=>/hot-water wiring/i.test(x)));
+  assert.ok(electric.some(x=>/compare hot-water circuit/i.test(x)));
+});
