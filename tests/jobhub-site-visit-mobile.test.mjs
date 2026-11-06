@@ -219,3 +219,20 @@ test("post-load reconciliation and site-to-design updates are connected",()=>{
   assert.ok(html.includes("syncSharedJobInformation();\n    applySiteVisitToSystemDesign(collectSiteVisit());"));
   assert.ok(html.includes('if (event.target?.closest?.("#siteVisitSection")) applySiteVisitToSystemDesign(collectSiteVisit());'));
 });
+
+test("other supply and roof details also return to empty Site Visit inputs",()=>{
+  const helper=segment("function syncSharedJobInformation() {","function syncLinkedEquipmentFields() {");
+  for(const pair of [
+    '"visit_connection_type","design_connection_type"',
+    '"visit_main_supply","design_main_supply"',
+    '"visit_switchboard","design_switchboard"',
+    '"visit_supply_notes","design_supply_notes"',
+    '"visit_roof_length","roof_length"',
+    '"visit_roof_width","roof_width"',
+    '"visit_roof_pitch","roof_pitch"',
+    '"visit_roof_material","roof_material"',
+    '"visit_roof_shading","roof_shading"',
+    '"visit_roof_notes","roof_notes"'
+  ])assert.ok(helper.includes(pair));
+  assert.ok(helper.includes("setBlank(siteId,read(designId))"));
+});

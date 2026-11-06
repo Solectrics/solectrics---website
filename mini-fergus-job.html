@@ -3184,6 +3184,23 @@ function syncSharedJobInformation() {
   const icp=first(read("visit_icp"),read("design_icp"),answer.icp,answer.ICP);
   setBlank("visit_icp",icp);
   if(!reviewed)setBlank("design_icp",icp);
+  // Existing System Design may be the only populated section when a Site Visit
+  // is reopened. Backfill blank visit fields; never overwrite onsite entries.
+  for(const [siteId,designId] of [
+    ["visit_connection_type","design_connection_type"],
+    ["visit_main_supply","design_main_supply"],
+    ["visit_switchboard","design_switchboard"],
+    ["visit_supply_notes","design_supply_notes"]
+  ]) setBlank(siteId,read(designId));
+  const roofFields=document.querySelector("#designRoofs .design-roof");
+  for(const [siteId,designClass] of [
+    ["visit_roof_length","roof_length"],
+    ["visit_roof_width","roof_width"],
+    ["visit_roof_pitch","roof_pitch"],
+    ["visit_roof_material","roof_material"],
+    ["visit_roof_shading","roof_shading"],
+    ["visit_roof_notes","roof_notes"]
+  ]) setBlank(siteId,roofFields?.querySelector("." + designClass)?.value);
   const retailer=first(read("current_retailer"),read("design_retailer"),answer.retailer);
   setBlank("current_retailer",retailer);
   if(!reviewed)setBlank("design_retailer",retailer);
