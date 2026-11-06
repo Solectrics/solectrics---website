@@ -28,7 +28,7 @@ test("mobile Site Visit contains the consolidated sections, camera and final fol
   assert.equal((visit.match(/class="site-photo-action"/g) || []).length, 5);
   assert.equal((visit.match(/class="site-photo-input"/g) || []).length, 5);
   assert.ok(!visit.includes('capture="environment"'), "mobile picker should offer camera and photo library");
-  for (const match of visit.matchAll(/<input type="file" id="(visit_photo_[^"]+)"[^>]*>\\s*<label class="site-photo-action" for="([^"]+)">/g)) {
+  for (const match of visit.matchAll(/<input type="file" id="(visit_photo_[^"]+)"[^>]*>\s*<label class="site-photo-action" for="([^"]+)">/g)) {
     assert.equal(match[1], match[2]);
   }
   assert.ok(visit.indexOf('id="visit_hw_outstanding"') > visit.indexOf('id="visit_general_notes"'));
@@ -174,9 +174,9 @@ test("meter and switchboard questions, notes and camera inputs each form one clu
 });
 
 test("photo action is tap-sized, with accessible native picker and saved status feedback", () => {
-  assert.match(html, /\.site-photo-action\\s*\\{[\\s\\S]*?min-height:52px/);
+  assert.match(html, /\.site-photo-action\s*\{[\s\S]*?min-height:52px/);
   assert.match(html, /\.site-photo-item:focus-within \.site-photo-action/);
-  assert.match(html, /document\.addEventListener\("change", event => \\{[\\s\\S]*?uploadInlineSitePhoto\(event\.target\)/);
+  assert.match(html, /document\.addEventListener\("change", event => \{[\s\S]*?uploadInlineSitePhoto\(event\.target\)/);
   assert.match(html, /form\.append\("job_id", jobId\)/);
   assert.match(html, /form\.append\("caption", input\.dataset\.photoCaption\)/);
   assert.match(html, /await loadJobFiles\(\)/);
