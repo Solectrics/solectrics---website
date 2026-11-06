@@ -216,8 +216,19 @@
     .site-photo-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:14px 0 18px; }
     .site-photo-item { background:#faf9f5; border:1px solid #e5dbcc; border-radius:12px; padding:13px; min-width:0; }
     .site-photo-item label { font-weight:700; display:block; margin-bottom:8px; font-size:14px; }
-    .site-photo-item input[type="file"] { display:block; width:100%; min-height:44px; font-size:14px; }
-    .site-photo-status { font-size:13px; color:#62736b; margin-top:6px; overflow-wrap:anywhere; }
+    .site-photo-item { position:relative; }
+    .site-photo-item input[type="file"].site-photo-input {
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+    .site-photo-action {
+      display:flex; align-items:center; justify-content:center; width:100%;
+      min-height:52px; padding:13px 16px; border-radius:10px;
+      background:#173f3f; color:#fff; font-size:15px; font-weight:800;
+      text-align:center; cursor:pointer; touch-action:manipulation;
+    }
+    .site-photo-item:focus-within .site-photo-action { outline:3px solid #ef9c20; outline-offset:2px; }
+    .site-photo-status { font-size:13px; color:#62736b; margin-top:8px; overflow-wrap:anywhere; }
     .site-photo-status a { color:#17635b; font-weight:700; }
     @media(max-width:700px){.site-photo-grid{grid-template-columns:1fr}}
     .job-workspace-nav { display: flex; gap: 8px; overflow-x: auto; padding: 10px 4px 12px; margin: 0 0 18px; position: sticky; top: 0; z-index: 8; background: #f7f5ef; scrollbar-width: thin; }
@@ -958,8 +969,9 @@ window.currentAnswers = answers;
   <div class="site-photo-grid">
     <div class="site-photo-item">
       <label for="visit_photo_meter_ICP">Take a meter / ICP / load-control photograph</label>
-      <input type="file" id="visit_photo_meter_ICP" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
-      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+      <input type="file" id="visit_photo_meter_ICP" accept="image/*" class="site-photo-input" data-photo-category="meter" data-photo-caption="Site visit: meter/ICP">
+      <label class="site-photo-action" for="visit_photo_meter_ICP">📷 TAKE OR UPLOAD PHOTO</label>
+      <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
     </div>
   </div>
 
@@ -987,8 +999,9 @@ window.currentAnswers = answers;
   <div class="site-photo-grid">
     <div class="site-photo-item">
       <label for="visit_photo_switchboard">Take a switchboard photograph</label>
-      <input type="file" id="visit_photo_switchboard" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
-      <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+      <input type="file" id="visit_photo_switchboard" accept="image/*" class="site-photo-input" data-photo-category="switchboard" data-photo-caption="Site visit: switchboard">
+      <label class="site-photo-action" for="visit_photo_switchboard">📷 TAKE OR UPLOAD PHOTO</label>
+      <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
     </div>
   </div>
 
@@ -1010,8 +1023,9 @@ window.currentAnswers = answers;
   </div>
   <div class="site-photo-grid"><div class="site-photo-item">
     <label for="visit_photo_hot_water_equipment">Take a cylinder / hot-water equipment photograph</label>
-    <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
-    <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+    <input type="file" id="visit_photo_hot_water_equipment" accept="image/*" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: hot water equipment">
+      <label class="site-photo-action" for="visit_photo_hot_water_equipment">📷 TAKE OR UPLOAD PHOTO</label>
+      <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
   </div></div>
 
   <h3>3. Hot-Water Wiring, Timing &amp; Bill Comparison</h3>
@@ -1061,8 +1075,9 @@ window.currentAnswers = answers;
   <div class="site-photo-grid">
     <div class="site-photo-item">
   <label for="visit_photo_roof">Take a roof photograph</label>
-  <input type="file" id="visit_photo_roof" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="roof" data-photo-caption="Site visit: roof">
-  <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+  <input type="file" id="visit_photo_roof" accept="image/*" class="site-photo-input" data-photo-category="roof" data-photo-caption="Site visit: roof">
+      <label class="site-photo-action" for="visit_photo_roof">📷 TAKE OR UPLOAD PHOTO</label>
+      <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
 </div>
   </div>
 
@@ -1086,8 +1101,9 @@ window.currentAnswers = answers;
       <p id="visit_legacy_battery_note" class="placeholder" hidden></p>
       <div class="site-photo-grid"><div class="site-photo-item">
         <label for="visit_photo_inverter_location">Take one inverter / battery location photograph</label>
-        <input type="file" id="visit_photo_inverter_location" accept="image/*" capture="environment" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: combined inverter and battery location">
-        <div class="site-photo-status" role="status" aria-live="polite">Take or upload a photo here</div>
+        <input type="file" id="visit_photo_inverter_location" accept="image/*" class="site-photo-input" data-photo-category="equipment" data-photo-caption="Site visit: combined inverter and battery location">
+      <label class="site-photo-action" for="visit_photo_inverter_location">📷 TAKE OR UPLOAD PHOTO</label>
+      <div class="site-photo-status" role="status" aria-live="polite">No photo saved yet</div>
       </div></div>
     </div>
     <div>
@@ -4134,7 +4150,7 @@ function renderSiteVisitPhotoStatuses(files) {
     );
     status.replaceChildren();
     if (!matches.length) {
-      status.textContent = "Take or upload a photo here";
+      status.textContent = "No photo saved yet";
       return;
     }
     const anchor = document.createElement("a");
