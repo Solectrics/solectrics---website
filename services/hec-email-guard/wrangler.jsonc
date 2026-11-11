@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/wrangler.json",
+  "name": "solectrics-hec-email-guard",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-03",
+  "account_id": "f18794d67b0bddb52b51da7817f400fd",
+  "workers_dev": false,
+  "preview_urls": false,
+  "ratelimits": [
+    {
+      "name": "IP_LIMIT",
+      "namespace_id": "202611031",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    },
+    {
+      "name": "RECIPIENT_LIMIT",
+      "namespace_id": "202611032",
+      "simple": {
+        "limit": 1,
+        "period": 60
+      }
+    },
+    {
+      "name": "GLOBAL_LIMIT",
+      "namespace_id": "202611033",
+      "simple": {
+        "limit": 50,
+        "period": 60
+      }
+    }
+  ]
+}
